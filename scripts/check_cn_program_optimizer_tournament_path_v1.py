@@ -106,6 +106,24 @@ def check() -> dict[str, object]:
             )
             < wrapper_text.index("& $python @routeArgs")
         ),
+        "exact_source_preflight_precedes_project_control_route": (
+            "check_cn_program_optimizer_tournament_source_binding_v1.py"
+            in wrapper_text
+            and wrapper_text.index(
+                "check_cn_program_optimizer_tournament_source_binding_v1.py"
+            )
+            < wrapper_text.index("& $python @routeArgs")
+        ),
+        "canonical_wrapper_preserves_complete_child_logs": all(
+            token in wrapper_text
+            for token in (
+                "runner.stdout.log",
+                "runner.stderr.log",
+                "terminal_receipt.json",
+                "complete_python_traceback_preserved_in_stderr",
+                "exit_code = $runnerExitCode",
+            )
+        ),
         "runner_reuses_admission_and_uplift": (
             "AbsoluteEconomicAdmission" in runner.read_text(encoding="utf-8")
             and "conditional_uplift_credit" in runner_calls

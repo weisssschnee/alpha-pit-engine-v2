@@ -1,0 +1,62 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_source_binding_v1",
+  "status": "EXACT_EXISTING_SEARCH_V2_PREFINANCIAL_SOURCE_BOUND",
+  "source_search_v2_prefinancial_freeze": {
+    "root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88\\prefinancial_freeze",
+    "closure": {
+      "relative_path": "SEARCH_ENGINE_V2_CANARY_PREFINANCIAL_FREEZE_COMPLETE.json",
+      "file_sha256": "ba4a5423dc73a4e73a0782c40b64efbbce3fa8e5d78a6a6464f7343568dfa83d",
+      "payload_sha256": "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44"
+    },
+    "artifact_manifest": {
+      "relative_path": "ARTIFACT_MANIFEST.json",
+      "file_sha256": "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da",
+      "payload_sha256": "ccf9efdbc36b040b9fa24555471a2d2c9d614e3c8bf217b076a75eac883e8bf1"
+    },
+    "required_physical_leaf_count": 84,
+    "available_after_materialization_count": 84,
+    "unresolved_required_field_count": 0,
+    "financial_evaluation_executed": false
+  },
+  "registry_authority": {
+    "source_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "repository_relative_path": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
+    "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+  },
+  "node_resource_capacity_authority": {
+    "source_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\run_plans\\cn_alpha_node_resource_profiles_v1.json",
+    "sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5"
+  },
+  "accepted_field_manifest": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_program_materialization_preflight_v1_information_qualified_20260808_3fec6ad\\session_time_major_train_v1\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+    "sha256": "0f433704de8cb8818308d0fed0f81b80ae4d9ac666828c5db5992096b8bbfceb"
+  },
+  "phase_b_binding": {
+    "freeze_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_rolling_search_v0_phase_b_freeze_materialization_closed_20260808_3fec6ad",
+    "result_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_rolling_search_v0_phase_b_blocker_safe_recovery_20260809_bd771fd_10w",
+    "result_closure": {
+      "relative_path": "CN_JOINT_PROGRAM_PHASE_B_COMPLETE.json",
+      "file_sha256": "14623ebc131b84660bd131b11268e40433ea1f219d1ed77caff2eb6ab147106a",
+      "payload_sha256": "0765c684c3f67ab592eb1006dbd1a5dd6e96dad7825fef251ac0d4f6ee36f3cf"
+    }
+  },
+  "program_space": {
+    "entry_count": 3616,
+    "sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_sha256": {
+      "raw_program_reservoir": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+      "session_executable_component_pool": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+      "unified_capability_registry": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+    }
+  },
+  "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+  "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+  "restricted_reads": {
+    "validation": 0,
+    "holdout": 0,
+    "historical_2023": 0,
+    "forward_b": 0,
+    "forward_2026": 0
+  },
+  "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+}

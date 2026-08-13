@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
 import subprocess
 import sys
+
+import pytest
 
 from our_system_phase2.runtime.cn_program_optimizer_tournament_v1 import (
     AUTHORIZATION_STATUS,
@@ -16,9 +19,12 @@ from our_system_phase2.runtime.cn_program_optimizer_tournament_v1 import (
 )
 from our_system_phase2.services.program_tournament_freeze_v1 import (
     _phase_freeze,
+    build_stage01_freeze_v1,
     stage01_asks_v1,
     stage2_asks_v1,
+    verify_source_binding_v1,
 )
+from our_system_phase2.services import program_tournament_freeze_v1 as freeze
 from our_system_phase2.services.program_optimizer_tournament_v1 import (
     ProgramOptimizerTournamentV1,
 )
@@ -32,6 +38,219 @@ from our_system_phase2.services.program_search_optimizer_v1 import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class _SyntheticEntry:
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+    def to_dict(self) -> dict[str, int]:
+        return {"value": self.value}
+
+
+def _synthetic_source_binding(tmp_path, monkeypatch) -> tuple[Path, dict[str, Path]]:
+    source = tmp_path / "source_freeze"
+    source.mkdir()
+    phase_b_freeze = tmp_path / "phase_b_freeze"
+    phase_b_freeze.mkdir()
+    phase_b_result = tmp_path / "phase_b_result"
+    phase_b_result.mkdir()
+    repo = tmp_path / "repo"
+    registry_relative = Path("runtime/registry.json")
+    registry = repo / registry_relative
+    registry.parent.mkdir(parents=True)
+    capacity = tmp_path / "capacity.json"
+    accepted = tmp_path / "accepted.json"
+    closure = source / freeze.SOURCE_FREEZE_CLOSURE_NAME
+    manifest = source / "ARTIFACT_MANIFEST.json"
+    reservoir = source / "phase_c_raw_program_reservoir.jsonl"
+    components = source / "phase_c_session_executable_component_pool.jsonl"
+    phase_b_closure = phase_b_result / freeze.SOURCE_PHASE_B_CLOSURE_NAME
+    for path, content in (
+        (registry, "registry"),
+        (capacity, "capacity"),
+        (accepted, "accepted"),
+        (closure, "closure"),
+        (manifest, "manifest"),
+        (reservoir, "reservoir"),
+        (components, "components"),
+    ):
+        path.write_text(content, encoding="utf-8")
+    phase_b_closure.write_text(
+        json.dumps({"closure_payload_sha256": "phase-b-payload"}),
+        encoding="utf-8",
+    )
+    sha = freeze.phase_c._sha256
+    entries = (_SyntheticEntry(1), _SyntheticEntry(2))
+    space_sha = freeze.stable_hash([entry.to_dict() for entry in entries])
+    source_hashes = {
+        "raw_program_reservoir": sha(reservoir),
+        "session_executable_component_pool": sha(components),
+        "unified_capability_registry": sha(registry),
+    }
+    contract = {
+        "registry_path": str(registry),
+        "registry_file_sha256": sha(registry),
+        "node_resource_capacity_path": str(capacity),
+        "node_resource_capacity_file_sha256": sha(capacity),
+        "source_accepted_field_manifest_path": str(accepted),
+        "source_accepted_field_manifest_file_sha256": sha(accepted),
+        "phase_b_freeze_root": str(phase_b_freeze),
+        "phase_b_result_root": str(phase_b_result),
+    }
+    (source / "phase_c_run_contract.json").write_text(
+        json.dumps(contract), encoding="utf-8"
+    )
+    monkeypatch.setattr(freeze, "SOURCE_FREEZE_ROOT", source)
+    monkeypatch.setattr(freeze, "SOURCE_REGISTRY_PATH", registry)
+    monkeypatch.setattr(
+        freeze, "SOURCE_REGISTRY_REPOSITORY_RELATIVE_PATH", registry_relative
+    )
+    monkeypatch.setattr(freeze, "SOURCE_NODE_CAPACITY_PATH", capacity)
+    monkeypatch.setattr(freeze, "SOURCE_ACCEPTED_FIELD_MANIFEST_PATH", accepted)
+    monkeypatch.setattr(freeze, "SOURCE_PHASE_B_FREEZE_ROOT", phase_b_freeze)
+    monkeypatch.setattr(freeze, "SOURCE_PHASE_B_RESULT_ROOT", phase_b_result)
+    monkeypatch.setattr(freeze, "SOURCE_FREEZE_CLOSURE_FILE_SHA256", sha(closure))
+    monkeypatch.setattr(freeze, "SOURCE_FREEZE_CLOSURE_PAYLOAD_SHA256", "closure-payload")
+    monkeypatch.setattr(freeze, "SOURCE_FREEZE_MANIFEST_FILE_SHA256", sha(manifest))
+    monkeypatch.setattr(freeze, "SOURCE_FREEZE_MANIFEST_PAYLOAD_SHA256", "manifest-payload")
+    monkeypatch.setattr(freeze, "SOURCE_REGISTRY_SHA256", sha(registry))
+    monkeypatch.setattr(freeze, "SOURCE_NODE_CAPACITY_SHA256", sha(capacity))
+    monkeypatch.setattr(
+        freeze, "SOURCE_ACCEPTED_FIELD_MANIFEST_SHA256", sha(accepted)
+    )
+    monkeypatch.setattr(
+        freeze, "SOURCE_PHASE_B_CLOSURE_FILE_SHA256", sha(phase_b_closure)
+    )
+    monkeypatch.setattr(
+        freeze, "SOURCE_PHASE_B_CLOSURE_PAYLOAD_SHA256", "phase-b-payload"
+    )
+    monkeypatch.setattr(freeze, "FROZEN_PROGRAM_SPACE_ENTRY_COUNT", len(entries))
+    monkeypatch.setattr(freeze, "FROZEN_PROGRAM_SPACE_SHA256", space_sha)
+    monkeypatch.setattr(freeze, "FROZEN_PROGRAM_SPACE_SOURCE_SHA256", source_hashes)
+    monkeypatch.setattr(freeze, "_program_entries", lambda **_: entries)
+    monkeypatch.setattr(
+        freeze,
+        "verify_search_v2_freeze",
+        lambda _: {
+            "closure_sha256": "closure-payload",
+            "required_physical_leaf_count": 84,
+            "available_after_materialization_count": 84,
+            "unresolved_required_field_count": 0,
+        },
+    )
+    body = {
+        "schema_version": freeze.SOURCE_BINDING_SCHEMA,
+        "source_search_v2_prefinancial_freeze": {
+            "root": str(source),
+            "closure": {
+                "relative_path": freeze.SOURCE_FREEZE_CLOSURE_NAME,
+                "file_sha256": sha(closure),
+                "payload_sha256": "closure-payload",
+            },
+            "artifact_manifest": {
+                "file_sha256": sha(manifest),
+                "payload_sha256": "manifest-payload",
+            },
+            "required_physical_leaf_count": 84,
+            "available_after_materialization_count": 84,
+            "unresolved_required_field_count": 0,
+            "financial_evaluation_executed": False,
+        },
+        "registry_authority": {
+            "source_path": str(registry),
+            "repository_relative_path": str(registry_relative),
+            "sha256": sha(registry),
+        },
+        "node_resource_capacity_authority": {
+            "source_path": str(capacity),
+            "sha256": sha(capacity),
+        },
+        "accepted_field_manifest": {
+            "path": str(accepted),
+            "sha256": sha(accepted),
+        },
+        "phase_b_binding": {
+            "freeze_root": str(phase_b_freeze),
+            "result_root": str(phase_b_result),
+            "result_closure": {
+                "relative_path": freeze.SOURCE_PHASE_B_CLOSURE_NAME,
+                "file_sha256": sha(phase_b_closure),
+                "payload_sha256": "phase-b-payload",
+            },
+        },
+        "program_space": {
+            "entry_count": len(entries),
+            "sha256": space_sha,
+            "source_sha256": source_hashes,
+        },
+        "maximum_ask_plan_sha256": freeze.stable_hash(
+            list(freeze.build_maximum_ask_plan_v1())
+        ),
+        "tournament_authorization_payload_sha256": freeze.authorization_payload_v1()[
+            "authorization_payload_sha256"
+        ],
+        "restricted_reads": {
+            "validation": 0,
+            "holdout": 0,
+            "historical_2023": 0,
+            "forward_b": 0,
+            "forward_2026": 0,
+        },
+    }
+    payload = dict(body)
+    payload["source_binding_payload_sha256"] = freeze.stable_hash(body)
+    binding = tmp_path / "binding.json"
+    binding.write_text(json.dumps(payload), encoding="utf-8")
+    return binding, {
+        "repo": repo,
+        "registry": registry,
+        "capacity": capacity,
+        "accepted": accepted,
+        "closure": closure,
+    }
+
+
+def test_existing_source_freeze_is_verified_and_consumed_without_rebuild(
+    tmp_path, monkeypatch
+) -> None:
+    binding, paths = _synthetic_source_binding(tmp_path, monkeypatch)
+    verified = verify_source_binding_v1(binding, repository_root=paths["repo"])
+    assert len(verified["program_entries"]) == 2
+    monkeypatch.setattr(
+        freeze,
+        "verify_source_binding_v1",
+        lambda _: {
+            "source_freeze_root": tmp_path / "closed-source",
+            "program_entries": (_SyntheticEntry(1),),
+        },
+    )
+    monkeypatch.setattr(
+        freeze.ProgramOptimizerTournamentV1,
+        "fresh",
+        lambda **_: type("Tournament", (), {"snapshot": lambda self: {"program_space_hash": freeze.FROZEN_PROGRAM_SPACE_SHA256}})(),
+    )
+    captured = {}
+    monkeypatch.setattr(
+        freeze,
+        "_phase_freeze",
+        lambda **kwargs: captured.update(kwargs) or {"status": "complete"},
+    )
+    result = build_stage01_freeze_v1(
+        output_root=tmp_path / "target",
+        source_binding_path=binding,
+        repo_sha="a" * 40,
+    )
+    assert result["status"] == "complete"
+    assert captured["source_freeze_root"] == tmp_path / "closed-source"
+
+
+@pytest.mark.parametrize("field", ["registry", "capacity", "accepted", "closure"])
+def test_source_binding_asset_drift_fails_closed(tmp_path, monkeypatch, field) -> None:
+    binding, paths = _synthetic_source_binding(tmp_path, monkeypatch)
+    paths[field].write_text("drift", encoding="utf-8")
+    with pytest.raises(ValueError, match="source binding"):
+        verify_source_binding_v1(binding, repository_root=paths["repo"])
 
 
 def _import_smoke(statement: str) -> subprocess.CompletedProcess[str]:

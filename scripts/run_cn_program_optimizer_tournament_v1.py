@@ -51,6 +51,7 @@ from our_system_phase2.services.program_tournament_freeze_v1 import (
     build_stage01_freeze_v1,
     build_stage2_freeze_v1,
     verify_phase_freeze_v1,
+    verify_source_binding_v1,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -592,29 +593,18 @@ def run_authorized_tournament(
     admitted_root = args.output_root.resolve()
     freeze_root = admitted_root / "prefinancial_freeze_stage01"
     run_root = admitted_root / "stage01_run"
-    search_v2_authorization_path = PROJECT_ROOT / str(
-        authorization["source_search_v2_authorization_path"]
+    source_binding = verify_source_binding_v1(args.source_binding)
+    args.registry = Path(source_binding["registry_path"])
+    args.node_resource_capacity = Path(
+        source_binding["node_resource_capacity_path"]
     )
-    search_v2_authorization = engine._read_json(search_v2_authorization_path)
-    phase_b_outcome_path = PROJECT_ROOT / str(
-        authorization["source_phase_b_outcome_path"]
-    )
-    source_phase_b_root = Path(str(search_v2_authorization["source_phase_b_root"]))
     if freeze_root.exists():
         _verify_freeze(freeze_root)
     else:
         build_stage01_freeze_v1(
             output_root=freeze_root,
-            phase_b_freeze_root=args.phase_b_freeze_root,
-            phase_b_result_root=source_phase_b_root,
-            phase_b_outcome_path=phase_b_outcome_path,
-            registry_path=args.registry,
-            accepted_field_manifest_path=args.accepted_field_manifest,
-            information_metrics_path=args.information_metrics,
-            bar_source_root=args.bar_source_root,
-            node_resource_capacity_path=args.node_resource_capacity,
+            source_binding_path=args.source_binding,
             repo_sha=str(admission["repo_sha"]),
-            search_v2_authorization=search_v2_authorization,
         )
         _verify_freeze(freeze_root)
     repo_sha = str(admission["repo_sha"])

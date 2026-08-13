@@ -8,6 +8,7 @@ only state created inside the same tournament campaign.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import shutil
 from typing import Any, Mapping, Sequence
@@ -23,6 +24,7 @@ from our_system_phase2.runtime.cn_program_optimizer_tournament_v1 import (
     SEEDS,
     SURROGATE_CONFIG,
     TPE_CONFIG,
+    authorization_payload_v1,
     build_maximum_ask_plan_v1,
 )
 from our_system_phase2.services.program_optimizer_tournament_v1 import (
@@ -32,7 +34,6 @@ from our_system_phase2.services.program_search_optimizer_v1 import (
     program_availability_entries_v1,
 )
 from our_system_phase2.services.search_v2_canary_freeze import (
-    build_prefinancial_freeze_v1 as build_search_v2_freeze,
     verify_prefinancial_freeze_v1 as verify_search_v2_freeze,
 )
 from our_system_phase2.services.unified_capability_registry import (
@@ -44,6 +45,63 @@ from our_system_phase2.services.unified_capability_registry import (
 FREEZE_CLOSURE_NAME = "PROGRAM_OPTIMIZER_TOURNAMENT_PREFINANCIAL_FREEZE_COMPLETE.json"
 FREEZE_SCHEMA = "cn_program_optimizer_tournament_prefinancial_freeze_v1"
 FREEZE_STATUS = "PROGRAM_OPTIMIZER_TOURNAMENT_PHASE_FROZEN"
+SOURCE_BINDING_SCHEMA = "cn_program_optimizer_tournament_source_binding_v1"
+SOURCE_BINDING_RELATIVE_PATH = Path(
+    "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json"
+)
+SOURCE_FREEZE_ROOT = Path(
+    r"D:\ChengboRemote\runtime\cn_search_engine_v2_canary_replacement_20260812_1b91c88\prefinancial_freeze"
+)
+SOURCE_FREEZE_CLOSURE_NAME = (
+    "SEARCH_ENGINE_V2_CANARY_PREFINANCIAL_FREEZE_COMPLETE.json"
+)
+SOURCE_FREEZE_CLOSURE_FILE_SHA256 = (
+    "ba4a5423dc73a4e73a0782c40b64efbbce3fa8e5d78a6a6464f7343568dfa83d"
+)
+SOURCE_FREEZE_CLOSURE_PAYLOAD_SHA256 = (
+    "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44"
+)
+SOURCE_FREEZE_MANIFEST_FILE_SHA256 = (
+    "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da"
+)
+SOURCE_FREEZE_MANIFEST_PAYLOAD_SHA256 = (
+    "ccf9efdbc36b040b9fa24555471a2d2c9d614e3c8bf217b076a75eac883e8bf1"
+)
+SOURCE_REGISTRY_PATH = Path(
+    r"D:\ChengboRemote\workspace\alpha_pit_search_v2_1b91c88_20260812\runtime\field_registry\cn_unified_capability_registry_v3_20260717\unified_capability_registry.json"
+)
+SOURCE_REGISTRY_REPOSITORY_RELATIVE_PATH = Path(
+    "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
+    "unified_capability_registry.json"
+)
+SOURCE_REGISTRY_SHA256 = (
+    "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+)
+SOURCE_NODE_CAPACITY_PATH = Path(
+    r"D:\ChengboRemote\workspace\alpha_pit_search_v2_1b91c88_20260812\runtime\run_plans\cn_alpha_node_resource_profiles_v1.json"
+)
+SOURCE_NODE_CAPACITY_SHA256 = (
+    "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5"
+)
+SOURCE_ACCEPTED_FIELD_MANIFEST_PATH = Path(
+    r"D:\ChengboRemote\runtime\cn_program_materialization_preflight_v1_information_qualified_20260808_3fec6ad\session_time_major_train_v1\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+)
+SOURCE_ACCEPTED_FIELD_MANIFEST_SHA256 = (
+    "0f433704de8cb8818308d0fed0f81b80ae4d9ac666828c5db5992096b8bbfceb"
+)
+SOURCE_PHASE_B_FREEZE_ROOT = Path(
+    r"D:\ChengboRemote\runtime\cn_joint_program_rolling_search_v0_phase_b_freeze_materialization_closed_20260808_3fec6ad"
+)
+SOURCE_PHASE_B_RESULT_ROOT = Path(
+    r"D:\ChengboRemote\runtime\cn_joint_program_rolling_search_v0_phase_b_blocker_safe_recovery_20260809_bd771fd_10w"
+)
+SOURCE_PHASE_B_CLOSURE_NAME = "CN_JOINT_PROGRAM_PHASE_B_COMPLETE.json"
+SOURCE_PHASE_B_CLOSURE_FILE_SHA256 = (
+    "14623ebc131b84660bd131b11268e40433ea1f219d1ed77caff2eb6ab147106a"
+)
+SOURCE_PHASE_B_CLOSURE_PAYLOAD_SHA256 = (
+    "0765c684c3f67ab592eb1006dbd1a5dd6e96dad7825fef251ac0d4f6ee36f3cf"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -60,6 +118,262 @@ def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> Path:
 
 def _self_hashed(payload: Mapping[str, Any], field: str) -> dict[str, Any]:
     return phase_c._self_hashed(payload, field)
+
+
+def _same_path(actual: str | Path, expected: str | Path) -> bool:
+    return os.path.normcase(os.path.normpath(str(actual))) == os.path.normcase(
+        os.path.normpath(str(expected))
+    )
+
+
+def _verify_bound_file(path: Path, expected_sha256: str, label: str) -> None:
+    if not path.is_file() or phase_c._sha256(path) != str(expected_sha256):
+        raise ValueError(f"Program tournament source binding {label} drift")
+
+
+def verify_source_binding_v1(
+    binding_path: Path, *, repository_root: Path | None = None
+) -> dict[str, Any]:
+    payload = _read_json(binding_path.resolve())
+    body = dict(payload)
+    expected = str(body.pop("source_binding_payload_sha256", ""))
+    if not expected or stable_hash(body) != expected:
+        raise ValueError("Program tournament source binding self-hash drift")
+    if payload.get("schema_version") != SOURCE_BINDING_SCHEMA:
+        raise ValueError("Program tournament source binding schema drift")
+
+    source = dict(payload["source_search_v2_prefinancial_freeze"])
+    registry = dict(payload["registry_authority"])
+    capacity = dict(payload["node_resource_capacity_authority"])
+    accepted = dict(payload["accepted_field_manifest"])
+    phase_b = dict(payload["phase_b_binding"])
+    program_space = dict(payload["program_space"])
+    exact_values = (
+        (source["root"], SOURCE_FREEZE_ROOT, "freeze root"),
+        (
+            source["closure"]["relative_path"],
+            SOURCE_FREEZE_CLOSURE_NAME,
+            "closure path",
+        ),
+        (
+            source["closure"]["file_sha256"],
+            SOURCE_FREEZE_CLOSURE_FILE_SHA256,
+            "closure file SHA",
+        ),
+        (
+            source["closure"]["payload_sha256"],
+            SOURCE_FREEZE_CLOSURE_PAYLOAD_SHA256,
+            "closure payload SHA",
+        ),
+        (
+            source["artifact_manifest"]["file_sha256"],
+            SOURCE_FREEZE_MANIFEST_FILE_SHA256,
+            "artifact manifest file SHA",
+        ),
+        (
+            source["artifact_manifest"]["payload_sha256"],
+            SOURCE_FREEZE_MANIFEST_PAYLOAD_SHA256,
+            "artifact manifest payload SHA",
+        ),
+        (registry["source_path"], SOURCE_REGISTRY_PATH, "registry source path"),
+        (
+            registry["repository_relative_path"],
+            SOURCE_REGISTRY_REPOSITORY_RELATIVE_PATH,
+            "registry repository path",
+        ),
+        (registry["sha256"], SOURCE_REGISTRY_SHA256, "registry SHA"),
+        (
+            capacity["source_path"],
+            SOURCE_NODE_CAPACITY_PATH,
+            "node-capacity source path",
+        ),
+        (capacity["sha256"], SOURCE_NODE_CAPACITY_SHA256, "node-capacity SHA"),
+        (
+            accepted["path"],
+            SOURCE_ACCEPTED_FIELD_MANIFEST_PATH,
+            "accepted manifest path",
+        ),
+        (
+            accepted["sha256"],
+            SOURCE_ACCEPTED_FIELD_MANIFEST_SHA256,
+            "accepted manifest SHA",
+        ),
+        (phase_b["freeze_root"], SOURCE_PHASE_B_FREEZE_ROOT, "Phase B freeze root"),
+        (phase_b["result_root"], SOURCE_PHASE_B_RESULT_ROOT, "Phase B result root"),
+        (
+            phase_b["result_closure"]["relative_path"],
+            SOURCE_PHASE_B_CLOSURE_NAME,
+            "Phase B closure path",
+        ),
+        (
+            phase_b["result_closure"]["file_sha256"],
+            SOURCE_PHASE_B_CLOSURE_FILE_SHA256,
+            "Phase B closure file SHA",
+        ),
+        (
+            phase_b["result_closure"]["payload_sha256"],
+            SOURCE_PHASE_B_CLOSURE_PAYLOAD_SHA256,
+            "Phase B closure payload SHA",
+        ),
+        (
+            program_space["entry_count"],
+            FROZEN_PROGRAM_SPACE_ENTRY_COUNT,
+            "Program-space count",
+        ),
+        (
+            program_space["sha256"],
+            FROZEN_PROGRAM_SPACE_SHA256,
+            "Program-space SHA",
+        ),
+        (
+            payload["maximum_ask_plan_sha256"],
+            stable_hash(list(build_maximum_ask_plan_v1())),
+            "maximum ask-plan SHA",
+        ),
+        (
+            payload["tournament_authorization_payload_sha256"],
+            authorization_payload_v1()["authorization_payload_sha256"],
+            "Tournament authorization payload SHA",
+        ),
+    )
+    for actual, expected_value, label in exact_values:
+        if isinstance(expected_value, Path):
+            matches = _same_path(actual, expected_value)
+        else:
+            matches = actual == expected_value
+        if not matches:
+            raise ValueError(f"Program tournament source binding {label} drift")
+    if (
+        int(source["required_physical_leaf_count"]) != 84
+        or int(source["available_after_materialization_count"]) != 84
+        or int(source["unresolved_required_field_count"]) != 0
+        or bool(source["financial_evaluation_executed"])
+        or any(
+            int(payload["restricted_reads"][key])
+            for key in (
+                "validation",
+                "holdout",
+                "historical_2023",
+                "forward_b",
+                "forward_2026",
+            )
+        )
+    ):
+        raise ValueError("Program tournament source binding access boundary drift")
+
+    source_root = Path(str(source["root"]))
+    closure_path = source_root / str(source["closure"]["relative_path"])
+    manifest_path = source_root / "ARTIFACT_MANIFEST.json"
+    registry_source = Path(str(registry["source_path"]))
+    capacity_source = Path(str(capacity["source_path"]))
+    accepted_path = Path(str(accepted["path"]))
+    phase_b_freeze_root = Path(str(phase_b["freeze_root"]))
+    phase_b_result_root = Path(str(phase_b["result_root"]))
+    phase_b_closure_path = phase_b_result_root / str(
+        phase_b["result_closure"]["relative_path"]
+    )
+    if not phase_b_freeze_root.is_dir() or not phase_b_result_root.is_dir():
+        raise ValueError("Program tournament source binding Phase B root drift")
+    _verify_bound_file(
+        closure_path, SOURCE_FREEZE_CLOSURE_FILE_SHA256, "closure file"
+    )
+    _verify_bound_file(
+        manifest_path, SOURCE_FREEZE_MANIFEST_FILE_SHA256, "artifact manifest"
+    )
+    _verify_bound_file(registry_source, SOURCE_REGISTRY_SHA256, "registry")
+    _verify_bound_file(capacity_source, SOURCE_NODE_CAPACITY_SHA256, "node capacity")
+    _verify_bound_file(
+        accepted_path, SOURCE_ACCEPTED_FIELD_MANIFEST_SHA256, "accepted manifest"
+    )
+    _verify_bound_file(
+        phase_b_closure_path,
+        SOURCE_PHASE_B_CLOSURE_FILE_SHA256,
+        "Phase B closure",
+    )
+    phase_b_closure = _read_json(phase_b_closure_path)
+    if (
+        phase_b_closure.get("closure_payload_sha256")
+        != SOURCE_PHASE_B_CLOSURE_PAYLOAD_SHA256
+    ):
+        raise ValueError("Program tournament source binding Phase B payload drift")
+
+    verified_source = verify_search_v2_freeze(source_root)
+    if (
+        verified_source.get("closure_sha256")
+        != SOURCE_FREEZE_CLOSURE_PAYLOAD_SHA256
+        or int(verified_source.get("required_physical_leaf_count", -1)) != 84
+        or int(verified_source.get("available_after_materialization_count", -1))
+        != 84
+        or int(verified_source.get("unresolved_required_field_count", -1)) != 0
+    ):
+        raise ValueError("Program tournament verified Search V2 freeze drift")
+    source_contract = _read_json(source_root / "phase_c_run_contract.json")
+    contract_values = (
+        (source_contract["registry_path"], SOURCE_REGISTRY_PATH),
+        (source_contract["registry_file_sha256"], SOURCE_REGISTRY_SHA256),
+        (
+            source_contract["node_resource_capacity_path"],
+            SOURCE_NODE_CAPACITY_PATH,
+        ),
+        (
+            source_contract["node_resource_capacity_file_sha256"],
+            SOURCE_NODE_CAPACITY_SHA256,
+        ),
+        (
+            source_contract["source_accepted_field_manifest_path"],
+            SOURCE_ACCEPTED_FIELD_MANIFEST_PATH,
+        ),
+        (
+            source_contract["source_accepted_field_manifest_file_sha256"],
+            SOURCE_ACCEPTED_FIELD_MANIFEST_SHA256,
+        ),
+        (source_contract["phase_b_freeze_root"], SOURCE_PHASE_B_FREEZE_ROOT),
+        (source_contract["phase_b_result_root"], SOURCE_PHASE_B_RESULT_ROOT),
+    )
+    if any(
+        not (_same_path(actual, expected_value) if isinstance(expected_value, Path) else actual == expected_value)
+        for actual, expected_value in contract_values
+    ):
+        raise ValueError("Program tournament Search V2 run-contract source drift")
+
+    source_hashes = {
+        "raw_program_reservoir": phase_c._sha256(
+            source_root / "phase_c_raw_program_reservoir.jsonl"
+        ),
+        "session_executable_component_pool": phase_c._sha256(
+            source_root / "phase_c_session_executable_component_pool.jsonl"
+        ),
+        "unified_capability_registry": phase_c._sha256(registry_source),
+    }
+    if source_hashes != FROZEN_PROGRAM_SPACE_SOURCE_SHA256 or source_hashes != dict(
+        program_space["source_sha256"]
+    ):
+        raise ValueError("Program tournament frozen-space source drift")
+    repo_root = (repository_root or Path(__file__).resolve().parents[3]).resolve()
+    repository_registry = repo_root / str(registry["repository_relative_path"])
+    _verify_bound_file(
+        repository_registry, SOURCE_REGISTRY_SHA256, "repository registry"
+    )
+    entries = _program_entries(
+        reservoir_path=source_root / "phase_c_raw_program_reservoir.jsonl",
+        component_path=source_root / "phase_c_session_executable_component_pool.jsonl",
+        registry_path=registry_source,
+    )
+    realized_space_hash = stable_hash([entry.to_dict() for entry in entries])
+    if (
+        len(entries) != FROZEN_PROGRAM_SPACE_ENTRY_COUNT
+        or realized_space_hash != FROZEN_PROGRAM_SPACE_SHA256
+    ):
+        raise ValueError("Program tournament frozen-space identity drift")
+    return {
+        "payload": payload,
+        "source_freeze_root": source_root,
+        "registry_path": registry_source,
+        "node_resource_capacity_path": capacity_source,
+        "accepted_field_manifest_path": accepted_path,
+        "program_entries": entries,
+        "program_space_sha256": realized_space_hash,
+    }
 
 
 def _program_entries(
@@ -297,55 +611,13 @@ def _phase_freeze(
 def build_stage01_freeze_v1(
     *,
     output_root: Path,
-    phase_b_freeze_root: Path,
-    phase_b_result_root: Path,
-    phase_b_outcome_path: Path,
-    registry_path: Path,
-    accepted_field_manifest_path: Path,
-    information_metrics_path: Path,
-    bar_source_root: Path,
-    node_resource_capacity_path: Path,
+    source_binding_path: Path,
     repo_sha: str,
-    search_v2_authorization: Mapping[str, Any],
 ) -> dict[str, Any]:
     root = output_root.resolve()
-    source = root.parent / "source_search_v2_prefinancial_freeze"
-    build_search_v2_freeze(
-        output_root=source,
-        phase_b_freeze_root=phase_b_freeze_root,
-        phase_b_result_root=phase_b_result_root,
-        phase_b_outcome_path=phase_b_outcome_path,
-        registry_path=registry_path,
-        accepted_field_manifest_path=accepted_field_manifest_path,
-        information_metrics_path=information_metrics_path,
-        bar_source_root=bar_source_root,
-        node_resource_capacity_path=node_resource_capacity_path,
-        repo_sha=repo_sha,
-        authorization=search_v2_authorization,
-    )
-    verify_search_v2_freeze(source)
-    source_hashes = {
-        "raw_program_reservoir": phase_c._sha256(
-            source / "phase_c_raw_program_reservoir.jsonl"
-        ),
-        "session_executable_component_pool": phase_c._sha256(
-            source / "phase_c_session_executable_component_pool.jsonl"
-        ),
-        "unified_capability_registry": phase_c._sha256(registry_path),
-    }
-    if source_hashes != FROZEN_PROGRAM_SPACE_SOURCE_SHA256:
-        raise RuntimeError("PROGRAM_TOURNAMENT_FROZEN_SPACE_SOURCE_DRIFT")
-    entries = _program_entries(
-        reservoir_path=source / "phase_c_raw_program_reservoir.jsonl",
-        component_path=source / "phase_c_session_executable_component_pool.jsonl",
-        registry_path=registry_path,
-    )
-    realized_space_hash = stable_hash([entry.to_dict() for entry in entries])
-    if (
-        len(entries) != FROZEN_PROGRAM_SPACE_ENTRY_COUNT
-        or realized_space_hash != FROZEN_PROGRAM_SPACE_SHA256
-    ):
-        raise RuntimeError("PROGRAM_TOURNAMENT_FROZEN_SPACE_IDENTITY_DRIFT")
+    binding = verify_source_binding_v1(source_binding_path)
+    source = Path(binding["source_freeze_root"])
+    entries = tuple(binding["program_entries"])
     tpe_config, surrogate_config = _optimizer_config()
     state = ProgramOptimizerTournamentV1.fresh(
         campaign_id=CAMPAIGN_ID,

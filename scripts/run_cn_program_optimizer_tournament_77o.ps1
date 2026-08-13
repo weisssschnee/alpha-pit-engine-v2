@@ -15,28 +15,16 @@ param(
     [ValidatePattern('^[0-9a-f]{64}$')]
     [string]$ProjectControlAdmissionSha256,
     [Parameter(Mandatory = $true)]
-    [string]$PhaseBFreezeRoot,
-    [Parameter(Mandatory = $true)]
     [string]$ExecutionContract,
     [Parameter(Mandatory = $true)]
-    [string]$TrainFieldRoot,
-    [Parameter(Mandatory = $true)]
     [string]$TrainPriceRoot,
-    [Parameter(Mandatory = $true)]
-    [string]$Registry,
-    [Parameter(Mandatory = $true)]
-    [string]$AcceptedFieldManifest,
-    [Parameter(Mandatory = $true)]
-    [string]$BarSourceRoot,
-    [Parameter(Mandatory = $true)]
-    [string]$NodeResourceCapacity,
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
     [string]$CampaignAuthorization = (
         'runtime\run_plans\cn_program_optimizer_tournament_v1.json'
     ),
-    [string]$InformationMetrics = (
-        'runtime\cn_full_field_information_research_v1_20260717\capability_information_metrics.json'
+    [string]$SourceBinding = (
+        'runtime\run_plans\cn_program_optimizer_tournament_source_binding_v1.json'
     ),
     [int]$ExecutorWorkers = 10
 )
@@ -51,11 +39,14 @@ $resolvedAuthorization = if ([IO.Path]::IsPathRooted($CampaignAuthorization)) {
 } else {
     [IO.Path]::GetFullPath((Join-Path $resolvedRepo $CampaignAuthorization))
 }
-$resolvedInformationMetrics = if ([IO.Path]::IsPathRooted($InformationMetrics)) {
-    [IO.Path]::GetFullPath($InformationMetrics)
+$resolvedSourceBinding = if ([IO.Path]::IsPathRooted($SourceBinding)) {
+    [IO.Path]::GetFullPath($SourceBinding)
 } else {
-    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $InformationMetrics))
+    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $SourceBinding))
 }
+$terminalRoot = Join-Path (
+    'D:\ChengboRemote\runtime\cn_program_optimizer_tournament_terminal_logs'
+) $TargetRunId
 
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
     throw "unauthorized host: $($env:COMPUTERNAME)"
@@ -89,15 +80,9 @@ $requiredPaths = @(
     $python,
     $resolvedAdmission,
     $resolvedAuthorization,
-    [IO.Path]::GetFullPath($PhaseBFreezeRoot),
+    $resolvedSourceBinding,
     [IO.Path]::GetFullPath($ExecutionContract),
-    [IO.Path]::GetFullPath($TrainFieldRoot),
     [IO.Path]::GetFullPath($TrainPriceRoot),
-    [IO.Path]::GetFullPath($Registry),
-    [IO.Path]::GetFullPath($AcceptedFieldManifest),
-    $resolvedInformationMetrics,
-    [IO.Path]::GetFullPath($BarSourceRoot),
-    [IO.Path]::GetFullPath($NodeResourceCapacity),
     (Join-Path $resolvedRepo 'app.py')
 )
 foreach ($path in $requiredPaths) {
@@ -107,6 +92,15 @@ foreach ($path in $requiredPaths) {
 }
 
 $env:PYTHONPATH = (Join-Path $resolvedRepo 'src')
+& $python (
+    Join-Path $resolvedRepo (
+        'scripts\check_cn_program_optimizer_tournament_source_binding_v1.py'
+    )
+) --source-binding $resolvedSourceBinding
+if ($LASTEXITCODE -ne 0) {
+    throw "Program tournament exact source authority preflight failed with exit code $LASTEXITCODE"
+}
+
 Push-Location $resolvedRepo
 try {
     & $python -c @'
@@ -131,20 +125,35 @@ $routeArgs = @(
     '--project-control-admission-sha256', $ProjectControlAdmissionSha256,
     '--',
     '--campaign-authorization', $resolvedAuthorization,
-    '--phase-b-freeze-root', [IO.Path]::GetFullPath($PhaseBFreezeRoot),
+    '--source-binding', $resolvedSourceBinding,
     '--execution-contract', [IO.Path]::GetFullPath($ExecutionContract),
-    '--train-field-root', [IO.Path]::GetFullPath($TrainFieldRoot),
     '--train-price-root', [IO.Path]::GetFullPath($TrainPriceRoot),
-    '--registry', [IO.Path]::GetFullPath($Registry),
-    '--accepted-field-manifest', [IO.Path]::GetFullPath($AcceptedFieldManifest),
-    '--information-metrics', $resolvedInformationMetrics,
-    '--bar-source-root', [IO.Path]::GetFullPath($BarSourceRoot),
-    '--node-resource-capacity', [IO.Path]::GetFullPath($NodeResourceCapacity),
     '--output-root', $resolvedOutput,
     '--executor-workers', $ExecutorWorkers
 )
 
-& $python @routeArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "Program tournament runner failed with exit code $LASTEXITCODE"
+New-Item -ItemType Directory -Path $terminalRoot -Force | Out-Null
+$stdoutPath = Join-Path $terminalRoot 'runner.stdout.log'
+$stderrPath = Join-Path $terminalRoot 'runner.stderr.log'
+$receiptPath = Join-Path $terminalRoot 'terminal_receipt.json'
+$ErrorActionPreference = 'Continue'
+& $python @routeArgs 1> $stdoutPath 2> $stderrPath
+$runnerExitCode = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
+if (Test-Path -LiteralPath $stdoutPath) {
+    [Console]::Out.Write((Get-Content -LiteralPath $stdoutPath -Raw))
+}
+if (Test-Path -LiteralPath $stderrPath) {
+    [Console]::Error.Write((Get-Content -LiteralPath $stderrPath -Raw))
+}
+[ordered]@{
+    schema_version = 'cn_program_optimizer_tournament_terminal_receipt_v1'
+    target_run_id = $TargetRunId
+    stdout_path = $stdoutPath
+    stderr_path = $stderrPath
+    exit_code = $runnerExitCode
+    complete_python_traceback_preserved_in_stderr = $true
+} | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $receiptPath -Encoding UTF8
+if ($runnerExitCode -ne 0) {
+    throw "Program tournament runner failed with exit code $runnerExitCode; complete stdout/stderr retained under $terminalRoot"
 }
