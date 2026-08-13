@@ -2,7 +2,7 @@
 
 Updated: 2026-08-13
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_RETRY_CONSUMED_INCOMPLETE_ZERO_RECORDS_PENDING_EXTERNAL_REVIEW_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_PREFINANCIAL_REHEARSAL_COMPLETE_PENDING_EXTERNAL_REVIEW_THIRD_RETRY_NOT_AUTHORIZED_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,33 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer exact-source prefinancial rehearsal complete; no third retry (2026-08-14)
+
+- The RETRY incident's externally reproduced root cause is
+  `PREFINANCIAL_SOURCE_AUTHORITY_SUBSTITUTION_DRIFT`: Tournament Stage 0/1
+  rebuilt a Search V2 source freeze from caller-selected current paths, which
+  substituted the field-master Registry and Phase-D capacity for the exact
+  Phase B/Search V2 sources. Stage 0/1 now consumes only the independently
+  verified existing Search V2 prefinancial freeze through the self-hashed
+  exact-source binding receipt. Missing or drifted closure, manifest,
+  Registry, node capacity, accepted manifest, Phase B root/closure, frozen
+  Program-space source, ask plan or Tournament authorization fails before the
+  canonical wrapper can call `app.py`; there is no rebuild fallback.
+- A zero-admission rehearsal on `DESKTOP-77OPJ6F` with the formal alpha311 venv
+  reused the accepted 84/84/0 Search V2 freeze and produced a complete
+  independently verified 368-ask Stage 0/1 Tournament prefinancial freeze at
+  `D:\ChengboRemote\runtime\diag_program_optimizer_stage01_prefinancial_20260814_0136_6a43e10`.
+  The exact Program space remains 3,616 entries with SHA256
+  `86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0`;
+  optimizer economic observations, financial evaluation and every restricted
+  read remain zero. No `app.py`, Project Control request/admission, RETRY,
+  Tournament evaluation, Stage 2, successor or promotion ran.
+- The canonical 77o launcher now writes complete child stdout and stderr plus
+  an exit-code receipt before surfacing a failure, so future Python traceback,
+  exception type and message are retained. This is implementation and
+  prefinancial evidence only. The Tournament remains experimental and stopped
+  for external review; the formal Hybrid TPE authority is unchanged.
 
 ### Program-level multi-optimizer tournament RETRY consumed; still incomplete before prefinancial freeze (2026-08-13)
 

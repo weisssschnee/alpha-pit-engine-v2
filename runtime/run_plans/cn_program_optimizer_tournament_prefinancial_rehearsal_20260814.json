@@ -1,0 +1,59 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_prefinancial_rehearsal_v1",
+  "status": "PREFINANCIAL_REHEARSAL_COMPLETE_PENDING_EXTERNAL_REVIEW",
+  "execution_host": "DESKTOP-77OPJ6F",
+  "implementation_commits": [
+    "6a43e109d96592e1cece4632f0377ccb822df62a",
+    "de2379f096b1eb5c8b8e3b9cf6f2ef3f8fb0ef7c"
+  ],
+  "failure_classification_repaired": "PREFINANCIAL_SOURCE_AUTHORITY_SUBSTITUTION_DRIFT",
+  "source_binding": {
+    "path": "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json",
+    "payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "source_search_v2_prefinancial_freeze": {
+    "root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88\\prefinancial_freeze",
+    "verify_result": "PASS",
+    "closure_file_sha256": "ba4a5423dc73a4e73a0782c40b64efbbce3fa8e5d78a6a6464f7343568dfa83d",
+    "closure_payload_sha256": "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44",
+    "artifact_manifest_file_sha256": "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da",
+    "required_physical_leaf_count": 84,
+    "available_after_materialization_count": 84,
+    "unresolved_required_field_count": 0
+  },
+  "exact_sources": {
+    "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "node_resource_capacity_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\run_plans\\cn_alpha_node_resource_profiles_v1.json",
+    "node_resource_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "accepted_field_manifest_path": "D:\\ChengboRemote\\runtime\\cn_program_materialization_preflight_v1_information_qualified_20260808_3fec6ad\\session_time_major_train_v1\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+    "accepted_field_manifest_sha256": "0f433704de8cb8818308d0fed0f81b80ae4d9ac666828c5db5992096b8bbfceb"
+  },
+  "stage01_freeze": {
+    "root": "D:\\ChengboRemote\\runtime\\diag_program_optimizer_stage01_prefinancial_20260814_0136_6a43e10",
+    "verify_result": "PASS",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "stage01_ask_count": 368,
+    "optimizer_economic_observations": 0,
+    "financial_evaluation_executed": false
+  },
+  "frozen_identity": {
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd"
+  },
+  "restricted_reads": {
+    "validation": 0,
+    "holdout": 0,
+    "historical_2023": 0,
+    "forward_b": 0,
+    "forward_2026": 0
+  },
+  "project_control_admission": "NOT_REQUESTED",
+  "retry": "NOT_RUN",
+  "tournament": "NOT_RUN",
+  "automatic_successor": false,
+  "promotion": false,
+  "terminal_state": "STOPPED_FOR_EXTERNAL_REVIEW_THIRD_RETRY_NOT_AUTHORIZED",
+  "receipt_payload_sha256": "f666b141fd26be9232441a18b56a4ee33ed6acc6f185a50f7110e7416833abec"
+}
