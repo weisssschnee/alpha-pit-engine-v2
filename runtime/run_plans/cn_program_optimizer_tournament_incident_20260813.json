@@ -1,0 +1,71 @@
+{
+  "schema": "cn_program_optimizer_tournament_incident_v1",
+  "incident_id": "cn-program-optimizer-tournament-import-contract-drift-20260813",
+  "status": "FAIL_CLOSED_INCOMPLETE",
+  "detected_at_utc": "2026-08-13T12:09:11Z",
+  "execution_identity": {
+    "run_id": "cn_program_optimizer_tournament_20260813_320e57d",
+    "execution_host": "DESKTOP-77OPJ6F",
+    "repository_branch": "feature/a-share-tradability-authority-repair",
+    "repository_sha": "320e57d65ac7510db19499ee681b7ac0d29b092d",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_20260813_320e57d",
+    "launcher_task_id": "lanjob_20260813_200904_f7371e"
+  },
+  "frozen_identity": {
+    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "program_space_count": 3616,
+    "maximum_records": 536
+  },
+  "project_control": {
+    "control_run_id": "387d4762-f72d-4a07-8283-90cbddbbd3b4",
+    "execution_request_task_id": "cn-execution-fae9f3f17e26128ef3cc3b1d",
+    "execution_request_payload_sha256": "fae9f3f17e26128ef3cc3b1d175ecf3bae8ba9ea4003bf04d029781719a17a69",
+    "preflight_receipt_sha256": "dc11356e1703589cba259137da07f33eb2227c38777b807b03177a498e77c270",
+    "admission_payload_sha256": "56f83168ae34eb4fed9ec8ff9eaa8817367f06a56d26f2bb8d1b6d4aff6817c3",
+    "admission_file_sha256": "e39d7fa073a1624295da1bd96ad09677df0b7cbd51b432ebd7f64d32f793971f",
+    "consumption_file_sha256": "9f49ee75ce4581476806c2a8266a5e76415b66a91e7e598d49e81238547fe058",
+    "consumed_once": true,
+    "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN"
+  },
+  "failure": {
+    "phase": "RUNNER_MODULE_IMPORT_BEFORE_PREFINANCIAL_FREEZE",
+    "exception_type": "ImportError",
+    "exception_message": "cannot import name '_evaluate_record' from 'scripts.run_cn_joint_program_search_v2_canary'",
+    "importing_file": "scripts/run_cn_program_optimizer_tournament_v1.py",
+    "importing_file_sha256": "176602d6bb6f53f55b1a7c37f354aa08ed34bee52923e9be82ee5528362c213f",
+    "incorrect_source_module_sha256": "0af23f1e97c5213502c3524dca90b2084f38c6e1ce1140584601b31bafc427c0",
+    "actual_symbol_owner": "scripts/run_cn_joint_program_phase_c_v0.py",
+    "actual_symbol_owner_sha256": "a4ba4ec34e5e0248f671c295af7311efe83b2ee15cd32a4e5d5f10573ee784f0",
+    "classification": "REVIEWED_CODE_IMPORT_CONTRACT_DRIFT",
+    "code_modified": false
+  },
+  "observed_runtime": {
+    "business_files": 0,
+    "checkpoint_files": 0,
+    "actual_records": 0,
+    "prefinancial_freeze_created": false,
+    "stage_1_racing_decision_created": false,
+    "stage_2_started": false,
+    "matching_processes_after_exit": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "terminal_policy": {
+    "recovery_eligible": false,
+    "reason": "The admitted route supports LAUNCH/RETRY, not RECOVERY; no checkpoint or prefinancial freeze exists.",
+    "retry_started": false,
+    "replacement_started": false,
+    "automatic_successor": false,
+    "promotion": false,
+    "required_next_authority": "EXTERNAL_REVIEW"
+  },
+  "self_hash": {
+    "algorithm": "sha256-canonical-json-with-null-self-hash-value",
+    "sha256": "613050a3f3ca911a05f6521df3af2a6b1b6387af00b4e6ebdf89aec77256a477"
+  }
+}

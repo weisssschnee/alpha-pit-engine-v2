@@ -2,7 +2,7 @@
 
 Updated: 2026-08-13
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_FROZEN_READY_NOT_RUN_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_INCOMPLETE_IMPORT_FAIL_CLOSED_ZERO_RECORDS_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,7 +16,23 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Program-level multi-optimizer tournament frozen and ready, not run (2026-08-13)
+### Program-level multi-optimizer tournament attempted once; incomplete before prefinancial freeze (2026-08-13)
+
+- The single externally authorized execution consumed one new exact-target Project
+  Control `LAUNCH_HIGH_COST_CAMPAIGN` admission on `DESKTOP-77OPJ6F` for run
+  `cn_program_optimizer_tournament_20260813_320e57d` at reviewed execution SHA
+  `320e57d65ac7510db19499ee681b7ac0d29b092d`. The frozen authorization,
+  ask-plan and 3,616-Program-space identities passed before route entry.
+- The canonical runner then failed closed during module import, before the
+  prefinancial freeze, because it imports `_evaluate_record` from
+  `run_cn_joint_program_search_v2_canary.py`, where the reviewed tree does not
+  export that symbol. No code was repaired and no retry, recovery, replacement
+  or successor was started.
+- The admitted root contains only Project Control execution identity and its
+  one-time consumption receipt: zero business files, zero checkpoints, zero
+  records, zero arm asks/tells and zero restricted reads. There is no economic
+  winner and OOS remains `NONE`. The incident, terminal outcome and read-only
+  independent audit are recorded under `runtime/run_plans`.
 
 - Capability lineage audit confirmed `LOCAL_REIMPLEMENTATION_DRIFT`: Search V2
   reused Candidate Program composition/compilation/materialization, matched
@@ -51,11 +67,11 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   Structured Surrogate always scores every eligible remaining Program and uses
   its configured pool size only as an inference batch. A zero-financial stress
   covered all 3,616 legal entries, 224 TPE actual asks plus depletion, and full
-  surrogate eligible-set comparison; Project Control was not requested and the
-  tournament remains not run, pending external review.
+  surrogate eligible-set comparison. These remain pre-execution static/synthetic
+  facts and do not constitute tournament economic evidence.
 - The route is requestable only through exact campaign-authorization-bound
-  Project Control and the canonical 77o wrapper. No Project Control admission
-  was requested or consumed and no tournament was started. New financial and
+  Project Control and the canonical 77o wrapper. Exactly one admission was
+  requested and consumed for this attempt; it is spent. New financial and
   market reads, validation, holdout, spent-2023, Forward-B and 2026 reads are
   zero. Retrospective Search V2 diagnostics imported no financial observation,
   candidate result or serialized optimizer state.
@@ -64,7 +80,7 @@ Current status summary:
 
 ```text
 PROGRAM_SEARCH_CORE = IMPLEMENTED / STATIC_AND_SYNTHETIC_VERIFIED
-TOURNAMENT = FROZEN / REQUESTABLE / NOT_RUN
+TOURNAMENT = ONE_ATTEMPT / INCOMPLETE_IMPORT_FAILURE / ZERO_RECORDS
 ARMS = UNIFORM_CONTROL / HYBRID_TPE_PROGRAM / STRUCTURED_SURROGATE_PROGRAM
 MAXIMUM_BUDGET = 536
 OLD_FINANCIAL_OBSERVATIONS_IMPORTED = 0
