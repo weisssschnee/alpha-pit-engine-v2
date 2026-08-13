@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-        "label":  "CN Program optimizer tournament V1 one attempt incomplete before prefinancial freeze",
+        "label":  "CN Program optimizer tournament V1 import repaired; retry not authorized",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1549,15 +1549,15 @@
                           }
                       ],
         "validation":  {
-                           "level":  "RUNTIME_VERIFIED",
-                           "result":  "FAIL",
-                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
-                           "verified_at_sha":  "2a6be3e97983419e63d60f00a0a5c98e833dae5b"
+                           "level":  "STATIC_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+                           "verified_at_sha":  "5af69652f6103e2619374f4e84c3a55a1f271bc0"
                        },
         "claim_badges":  [
-                             "ONE_ATTEMPT_INCOMPLETE",
-                             "IMPORT_FAILURE",
-                             "ZERO_RECORDS",
+                             "IMPORT_REPAIRED",
+                             "RETRY_NOT_AUTHORIZED",
+                             "PRIOR_ATTEMPT_ZERO_RECORDS",
                              "RESTRICTED_READS_ZERO",
                              "NO AUTHORITY CHANGE",
                              "NO PROMOTION"
