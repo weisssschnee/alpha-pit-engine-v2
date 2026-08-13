@@ -26,9 +26,11 @@
           "runtime/run_plans/cn_program_optimizer_tournament_incident_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_outcome_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_incident_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_outcome_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json",
           "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
           "runtime/run_plans/cn_project_control_trust_v1.json",
           "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
@@ -50,6 +52,7 @@
           "scripts/build_cn_project_control_execution_request.py",
           "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
           "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+          "scripts/check_cn_program_optimizer_tournament_source_binding_v1.py",
           "scripts/freeze_cn_program_optimizer_tournament_plan_v1.py",
           "scripts/freeze_cn_search_engine_v2_canary_plan.py",
           "scripts/materialize_cn_project_control_admission.py",
@@ -57,6 +60,7 @@
           "scripts/prepare_cn_program_materialized_session_sidecar_v1.py",
           "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
           "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
+          "scripts/rehearse_cn_program_optimizer_tournament_prefinancial_v1.py",
           "scripts/run_cn_fixed_stratified_production_v0_77o.ps1",
           "scripts/run_cn_fixed_survivor_forward_2026.py",
           "scripts/run_cn_fixed_survivor_historical_challenge_2023_77o.ps1",
@@ -125,7 +129,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "fece60f1f5eecdd15971afccdedb751ae4132f54"
+        "repo_head": "1d1f3ed809a2778c275d9b376cc1b0d50d278263"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2271,7 +2275,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-13T15:44:52.801014+00:00",
+  "generated_at": "2026-08-13T17:56:34.381330+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7296,9 +7300,10 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "IMPORT_REPAIRED",
-        "RETRY_CONSUMED_INCOMPLETE",
-        "ZERO_RECORDS",
+        "EXACT SOURCE BOUND",
+        "PREFINANCIAL REHEARSAL PASS",
+        "THIRD RETRY NOT AUTHORIZED",
+        "ZERO ECONOMIC RECORDS",
         "RESTRICTED_READS_ZERO",
         "NO AUTHORITY CHANGE",
         "NO PROMOTION"
@@ -7338,12 +7343,14 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 retry consumed; incomplete prefinancial",
+      "label": "CN Program optimizer tournament V1 prefinancial rehearsal complete; no third retry",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
         "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
         "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
         "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
         "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
         "docs/adr/0019-program-optimizer-tournament.md"
@@ -7353,21 +7360,23 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-13T15:44:52.801014+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
-        "evidence_sha256": "F4EBD20016BF47FBBB54808EF06438C0F55B389EC387FAC1D8F59B2E7212D38B",
+        "checked_at": "2026-08-13T17:56:34.381330+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
+        "evidence_sha256": "C220865D281A1ECCFEFA69CE190A3497CE61477EC0412604C322B78C25E7F1F0",
         "level": "PARTIAL",
-        "notes": [],
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
         "profile": "",
-        "result": "WARN",
-        "verified_at_sha": null
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "1d1f3ed809a2778c275d9b376cc1b0d50d278263"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "F26F7831FB3ECF6D6F6207C08401A1C56DDECACDE1A53DB90346548698FAAD9A"
+    "sha256": "074E1F15D505D3CCC6259982507A315AEA12F460793E352CF1A34B6F086580DF"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7384,7 +7393,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "fece60f1f5eecdd15971afccdedb751ae4132f54",
+  "repo_head": "1d1f3ed809a2778c275d9b376cc1b0d50d278263",
   "schema_version": 1,
   "semantic_authorities": [
     {

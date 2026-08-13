@@ -1511,13 +1511,15 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-        "label":  "CN Program optimizer tournament V1 retry consumed; incomplete prefinancial",
+      "label":  "CN Program optimizer tournament V1 prefinancial rehearsal complete; no third retry",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
-                      "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
-                      "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
-                      "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
+                       "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
+                       "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
+                       "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
                       "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
                       "docs/adr/0019-program-optimizer-tournament.md"
                   ],
@@ -1549,15 +1551,17 @@
                           }
                       ],
         "validation":  {
-                           "level":  "PARTIAL",
-                           "result":  "WARN",
-                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
-                           "evidence_sha256":  "f4ebd20016bf47fbbb54808ef06438c0f55b389ec387fac1d8f59b2e7212d38b"
+                           "level":  "RUNTIME_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
+                           "evidence_sha256":  "c220865d281a1eccfefa69ce190a3497ce61477ec0412604c322b78c25e7f1f0",
+                           "verified_at_sha":  "1d1f3ed809a2778c275d9b376cc1b0d50d278263"
                        },
         "claim_badges":  [
-                             "IMPORT_REPAIRED",
-                             "RETRY_CONSUMED_INCOMPLETE",
-                             "ZERO_RECORDS",
+                             "EXACT SOURCE BOUND",
+                             "PREFINANCIAL REHEARSAL PASS",
+                             "THIRD RETRY NOT AUTHORIZED",
+                             "ZERO ECONOMIC RECORDS",
                              "RESTRICTED_READS_ZERO",
                              "NO AUTHORITY CHANGE",
                              "NO PROMOTION"
