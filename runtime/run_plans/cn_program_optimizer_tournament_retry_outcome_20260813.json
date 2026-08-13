@@ -1,0 +1,86 @@
+{
+  "schema": "cn_program_optimizer_tournament_retry_outcome_v1",
+  "status": "TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "execution_status": "FAIL_CLOSED_DURING_PREFINANCIAL_FREEZE_BUILD",
+  "run_id": "cn_program_optimizer_tournament_retry_20260813_fece60f",
+  "project_control_run_id": "2edbf262-e014-4d05-8dbc-1783f307bc23",
+  "project_control_admission_payload_sha256": "d2f141fdd9c9b007687a42cd2746fe7761917d8b70cd029c266c7a97864a84c0",
+  "execution_repository_sha": "fece60f1f5eecdd15971afccdedb751ae4132f54",
+  "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+  "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+  "program_space": {
+    "count": 3616,
+    "sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0"
+  },
+  "execution": {
+    "maximum_records": 536,
+    "actual_records": 0,
+    "closed_checkpoints": 0,
+    "stage_1_racing_decision": "NOT_REACHED",
+    "stage_2_active_arms": [],
+    "failure_phase": "POST_ADMISSION_DURING_SOURCE_PREFINANCIAL_FREEZE_BUILD",
+    "failure_class": "PREFINANCIAL_RUNTIME_FAILURE_DETAIL_UNRESOLVED"
+  },
+  "arms": {
+    "UNIFORM_CONTROL": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null
+    },
+    "HYBRID_TPE_PROGRAM": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "raw_tpe_asks": 0,
+      "direct_exact_hits": 0,
+      "legal_projections": 0,
+      "duplicate_replacements": 0,
+      "eligibility_projections": 0,
+      "global_fallback": 0,
+      "projection_rate": null,
+      "actual_economic_told_trials": 0
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "runtime_full_eligible_comparison": "NOT_REACHED",
+      "runtime_acquisition_prediction_evidence": "NOT_REACHED",
+      "runtime_snapshot_restore_continuity": "NOT_REACHED"
+    }
+  },
+  "winner": {
+    "decision": "INCONCLUSIVE_NO_ECONOMIC_EXECUTION",
+    "winner_arm": null,
+    "non_winner_arms": [],
+    "oos_grade": "NONE"
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "automatic_successor": false,
+  "promotion": false,
+  "additional_retry_started": false,
+  "replacement_started": false,
+  "recovery_eligible": false,
+  "self_hash": {
+    "algorithm": "sha256-canonical-json-with-null-self-hash-value",
+    "sha256": "74b74643f77d1dcd5477f606fbac5b7225c82143347dd40f885a42e2623d9709"
+  }
+}

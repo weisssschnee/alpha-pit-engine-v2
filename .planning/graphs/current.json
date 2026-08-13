@@ -26,6 +26,9 @@
           "runtime/run_plans/cn_program_optimizer_tournament_incident_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_outcome_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_retry_incident_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_retry_outcome_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
           "runtime/run_plans/cn_project_control_trust_v1.json",
           "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
@@ -122,7 +125,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "5af69652f6103e2619374f4e84c3a55a1f271bc0"
+        "repo_head": "fece60f1f5eecdd15971afccdedb751ae4132f54"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2268,7 +2271,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-13T13:28:55.756445+00:00",
+  "generated_at": "2026-08-13T15:44:52.801014+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7294,8 +7297,8 @@
       "authority_bindings": [],
       "claim_badges": [
         "IMPORT_REPAIRED",
-        "RETRY_NOT_AUTHORIZED",
-        "PRIOR_ATTEMPT_ZERO_RECORDS",
+        "RETRY_CONSUMED_INCOMPLETE",
+        "ZERO_RECORDS",
         "RESTRICTED_READS_ZERO",
         "NO AUTHORITY CHANGE",
         "NO PROMOTION"
@@ -7335,7 +7338,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 import repaired; retry not authorized",
+      "label": "CN Program optimizer tournament V1 retry consumed; incomplete prefinancial",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7350,21 +7353,21 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-13T13:28:55.756445+00:00",
-        "evidence_ref": "scripts/check_cn_program_optimizer_tournament_path_v1.py",
-        "evidence_sha256": "8FB038050E44D7D3340D0A93232671A1ED82C3C6750B38794C4E136BF914DCF6",
-        "level": "STATIC_VERIFIED",
+        "checked_at": "2026-08-13T15:44:52.801014+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
+        "evidence_sha256": "F4EBD20016BF47FBBB54808EF06438C0F55B389EC387FAC1D8F59B2E7212D38B",
+        "level": "PARTIAL",
         "notes": [],
         "profile": "",
-        "result": "PASS",
-        "verified_at_sha": "5af69652f6103e2619374f4e84c3a55a1f271bc0"
+        "result": "WARN",
+        "verified_at_sha": null
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "E886B7723A952A3B70CFBBABCBA13998058986EC479C7ABA883970C89E02BB4A"
+    "sha256": "F26F7831FB3ECF6D6F6207C08401A1C56DDECACDE1A53DB90346548698FAAD9A"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7381,7 +7384,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "5af69652f6103e2619374f4e84c3a55a1f271bc0",
+  "repo_head": "fece60f1f5eecdd15971afccdedb751ae4132f54",
   "schema_version": 1,
   "semantic_authorities": [
     {

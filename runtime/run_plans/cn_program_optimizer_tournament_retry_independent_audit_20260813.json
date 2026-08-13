@@ -1,0 +1,89 @@
+{
+  "schema": "cn_program_optimizer_tournament_retry_independent_audit_v1",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED_STATE",
+  "audit_scope": "READ_ONLY_POST_EXIT",
+  "producer_closure_present": false,
+  "identity_checks": {
+    "execution_repository_sha_exact": true,
+    "branch_exact": true,
+    "local_tracking_exact_after_execution": true,
+    "remote_exact_before_execution": true,
+    "authorization_self_hash_exact": true,
+    "maximum_ask_plan_sha_exact": true,
+    "program_space_sha_exact": true,
+    "program_space_count_3616": true,
+    "execution_host_exact": true,
+    "output_root_exact": true
+  },
+  "prelaunch_checks": {
+    "freeze_checker": "PASS",
+    "path_checker": "PASS",
+    "execution_surface_import_smoke": "PASS_IN_FORMAL_77O_VENV",
+    "projection_fairness_p0_checker": "PASS",
+    "tpe_global_fallback_path_forbidden": true,
+    "structured_surrogate_full_eligible_scoring_policy": true,
+    "restricted_asset_boundary": "PASS"
+  },
+  "project_control_checks": {
+    "new_target_bound_retry_admission": true,
+    "old_launch_admission_reused": false,
+    "search_v2_admission_used": false,
+    "one_time_consumption": true,
+    "consumed_action": "RETRY",
+    "consumed_run_id": "cn_program_optimizer_tournament_retry_20260813_fece60f",
+    "consumed_repository_sha": "fece60f1f5eecdd15971afccdedb751ae4132f54",
+    "consumed_authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+    "execution_identity_file_sha256": "4103d77fc9d28204ab3326ea71dfc63354b30470de3fbbb5db8ba54d44b2b6b3",
+    "consumption_file_sha256": "5076f6dd8ba6590c900c2ef55ffb0a941b5748fdebbb29b00048a35acd6569d7"
+  },
+  "runtime_checks": {
+    "closed_checkpoints": 0,
+    "record_cardinality": 0,
+    "racing_decision": "NOT_REACHED",
+    "stage_2_active_arms": [],
+    "arm_ask_tell_coverage": "ZERO_FOR_ALL_ARMS_BECAUSE_PREFINANCIAL_FREEZE_DID_NOT_CLOSE",
+    "tpe_runtime_projection_statistics": "NOT_REACHED",
+    "surrogate_runtime_full_space_comparison": "NOT_REACHED",
+    "evaluator_identity_materialized": false,
+    "admission_uplift_identity_materialized": false,
+    "business_outputs": 0,
+    "output_files": [
+      ".project_control_execution/execution_identity.json",
+      ".project_control_execution/consumptions/d2f141fdd9c9b007687a42cd2746fe7761917d8b70cd029c266c7a97864a84c0.json"
+    ],
+    "empty_prefinancial_directory_present": true,
+    "process_alive_after_exit": false,
+    "scheduled_task_state_after_exit": "READY_NOT_RUNNING"
+  },
+  "failure_capture": {
+    "phase": "POST_ADMISSION_DURING_SOURCE_PREFINANCIAL_FREEZE_BUILD",
+    "captured_exception": "Traceback (most recent call last):",
+    "exception_detail_available": false,
+    "no_unverified_root_cause_asserted": true
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0,
+    "basis": "The route stopped before a prefinancial freeze closure, checkpoint, record, evaluator or economic feedback artifact existed."
+  },
+  "continuation_checks": {
+    "unauthorized_continuation": false,
+    "additional_retry": false,
+    "recovery": false,
+    "replacement": false,
+    "successor": false,
+    "promotion": false
+  },
+  "recovery_eligibility": {
+    "eligible": false,
+    "reason": "No RECOVERY action is supported by the tournament route and no prefinancial freeze/checkpoint exists to recover."
+  },
+  "producer_audit_consistency": "NO_PRODUCER_OUTCOME_EXISTS; AUDIT CONFIRMS ATOMIC INCOMPLETE STATE",
+  "self_hash": {
+    "algorithm": "sha256-canonical-json-with-null-self-hash-value",
+    "sha256": "9bf833adbc380db5d762fb16cceb97bb2bd6afc30deeb2901e22f769b43d3d8a"
+  }
+}

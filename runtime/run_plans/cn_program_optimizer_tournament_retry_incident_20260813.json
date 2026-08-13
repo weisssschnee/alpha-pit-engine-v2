@@ -1,0 +1,97 @@
+{
+  "schema": "cn_program_optimizer_tournament_retry_incident_v1",
+  "incident_id": "cn-program-optimizer-tournament-retry-prefinancial-traceback-20260813",
+  "status": "FAIL_CLOSED_INCOMPLETE",
+  "detected_at_utc": "2026-08-13T15:30:24Z",
+  "execution_identity": {
+    "run_id": "cn_program_optimizer_tournament_retry_20260813_fece60f",
+    "execution_host": "DESKTOP-77OPJ6F",
+    "repository_branch": "feature/a-share-tradability-authority-repair",
+    "repository_sha": "fece60f1f5eecdd15971afccdedb751ae4132f54",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_retry_20260813_fece60f",
+    "launcher_task_id": "lanjob_20260813_233018_cdb476",
+    "execution_identity_file_sha256": "4103d77fc9d28204ab3326ea71dfc63354b30470de3fbbb5db8ba54d44b2b6b3"
+  },
+  "frozen_identity": {
+    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "program_space_count": 3616,
+    "maximum_records": 536
+  },
+  "project_control": {
+    "control_run_id": "2edbf262-e014-4d05-8dbc-1783f307bc23",
+    "execution_request_task_id": "cn-execution-899c0d536c1217de598db7a5",
+    "execution_request_payload_sha256": "899c0d536c1217de598db7a5ad6453ca42d20a7de372f971d83e9fb0b42c339f",
+    "preflight_receipt_sha256": "92a7a0d878916ee098ff86313c46722d55aefe5c3ba1c5934c990c77eaf3bb58",
+    "admission_payload_sha256": "d2f141fdd9c9b007687a42cd2746fe7761917d8b70cd029c266c7a97864a84c0",
+    "admission_file_sha256": "ee8c505c79e597737b29cfd5d557748de0e5f64a569266135af074b5f6810f32",
+    "consumption_file_sha256": "5076f6dd8ba6590c900c2ef55ffb0a941b5748fdebbb29b00048a35acd6569d7",
+    "consumed_once": true,
+    "requested_action": "RETRY"
+  },
+  "pre_admission_transport": {
+    "economic_route_entries": 0,
+    "admission_consumptions": 0,
+    "output_roots_created": 0,
+    "failures": [
+      {
+        "task_id": "lanjob_20260813_231727_97930f",
+        "reason": "PortableGit was absent from the scheduled-task process PATH"
+      },
+      {
+        "task_id": "lanjob_20260813_232706_aa263d",
+        "reason": "PortableGit rejected the SSH-owned checkout as a dubious-ownership directory"
+      }
+    ],
+    "resolution": "The final launcher used a process-local PortableGit PATH and a single-directory staging Git config; repository and canonical wrapper bytes were unchanged."
+  },
+  "failure": {
+    "phase": "POST_ADMISSION_DURING_SOURCE_PREFINANCIAL_FREEZE_BUILD",
+    "captured_exception": "Traceback (most recent call last):",
+    "exception_detail_available": false,
+    "detail_limit": "The existing detached-task logger retained only the first traceback line in its caught exception message.",
+    "classification": "PREFINANCIAL_RUNTIME_FAILURE_DETAIL_UNRESOLVED",
+    "code_modified_after_authorization": false
+  },
+  "observed_runtime": {
+    "output_directories": [
+      ".project_control_execution",
+      ".project_control_execution/consumptions",
+      "source_search_v2_prefinancial_freeze"
+    ],
+    "business_files": 0,
+    "checkpoint_files": 0,
+    "actual_records": 0,
+    "prefinancial_freeze_created": false,
+    "stage_1_racing_decision_created": false,
+    "stage_2_started": false,
+    "matching_processes_after_exit": 0,
+    "financial_evaluation_executed": false,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "terminal_policy": {
+    "recovery_eligible": false,
+    "reason": "The admitted tournament route supports LAUNCH/RETRY, not RECOVERY, and no verifiable prefinancial freeze or checkpoint exists.",
+    "additional_retry_started": false,
+    "replacement_started": false,
+    "automatic_successor": false,
+    "promotion": false,
+    "required_next_authority": "EXTERNAL_REVIEW"
+  },
+  "terminal_receipts": {
+    "job_log_sha256": "c3f32c3ae8a7b353bede866908afbee71b795cf1c7642774b0467f65dddad3b9",
+    "job_status_sha256": "2f477b57c6019d68bf767581f4be3cfd91b2c397ecdcfdc27d9ac0c372776769",
+    "job_launcher_sha256": "5dfdd412d727c61d258c409f91e37055dbdec455448cf441c1a30fc333b33779",
+    "exit_code": 1
+  },
+  "self_hash": {
+    "algorithm": "sha256-canonical-json-with-null-self-hash-value",
+    "sha256": "86cab10654df2c290392154d9331334d7a26e8790d27a367b909e4f04b23a57a"
+  }
+}
