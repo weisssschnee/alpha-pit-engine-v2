@@ -94,6 +94,34 @@ def test_tpe_builds_complete_conditional_genes_and_factorizes_pairs() -> None:
     assert adapter.has_pending_population is False
 
 
+def test_multiple_field_pair_slots_use_distinct_optuna_parameters() -> None:
+    lanes = {
+        "PAIR_SKELETON": {
+            "ordered_categories_by_slot": OrderedDict(
+                (
+                    ("skeleton_id", ["PAIR_SKELETON"]),
+                    ("gene_surface_id", ["PAIR_SKELETON"]),
+                    ("base__field_pair_id", ["a::b", "c::d"]),
+                    ("event__field_pair_id", ["e::f", "g::h"]),
+                )
+            )
+        }
+    }
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="MULTI_PAIR",
+        lane_spaces=lanes,
+        seed=37,
+        n_startup_trials=2,
+        n_ei_candidates=4,
+    )
+
+    asked = adapter.ask_population(checkpoint_id="checkpoint_001", count=2)
+
+    assert all("base__field_pair_id" in row["genes"] for row in asked)
+    assert all("event__field_pair_id" in row["genes"] for row in asked)
+    assert all(row["typed_pair_compatible"] is True for row in asked)
+
+
 def test_tpe_adapter_round_trips_across_process_boundary() -> None:
     adapter = RouteConditionalTPESearchAdapter(
         route_id="TEST_ROUTE",

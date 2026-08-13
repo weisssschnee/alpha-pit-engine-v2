@@ -52,6 +52,9 @@ from our_system_phase2.services.candidate_program_v1 import (
 from our_system_phase2.services.program_factorized_bandit_v0 import (
     ProgramFactorizedBanditV0,
 )
+from our_system_phase2.services.program_search_optimizer_v1 import (
+    program_structural_genes_v1,
+)
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
     stable_hash,
@@ -210,7 +213,7 @@ def _catalog_entry(
                     reservoir["reservoir_record_sha256"]
                 ),
             }
-    compiler.compile(program)
+    compiled_program = compiler.compile(program)
     compiler.compile(control)
     receipt = adapter.build_receipt(
         program_template_id=template_id,
@@ -237,6 +240,13 @@ def _catalog_entry(
             )
         ),
         "combination_id": stable_hash(dict(reservoir["combination_policy"])),
+        "program_genes": program_structural_genes_v1(
+            program_template_id=template_id,
+            components=components,
+            combination_policy=dict(reservoir["combination_policy"]),
+            program=program,
+            compiled=compiled_program,
+        ),
     }
 
 

@@ -31,6 +31,10 @@ from our_system_phase2.services.program_factorized_bandit_v0 import (
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     RouteConditionalTPESearchAdapter,
 )
+from our_system_phase2.services.program_search_optimizer_v1 import (
+    PROGRAM_SPACE_ID,
+    program_structural_genes_v1,
+)
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
 )
@@ -112,6 +116,68 @@ def test_all_eight_templates_compile_and_enhanced_controls_remove_semantics(
             f"component_{role}"
             for role in PROGRAM_TEMPLATE_COMPONENTS[template_id]
         }
+
+
+def test_program_structural_genes_reuse_route_receipts_and_compiled_contracts(
+    program_context,
+) -> None:
+    registry, _ = program_context
+    allowlists = json.loads(ROOT_CONTRACT.read_text(encoding="utf-8"))[
+        "route_root_allowlists"
+    ]
+    grammar = CompositionalGrammarV2(
+        registry, route_root_allowlist=allowlists
+    )
+    routes = {
+        "base": "SLOW_CROSS_SECTIONAL_LEVEL",
+        "temporal": "SLOW_TEMPORAL_CHANGE",
+        "market": "MARKET_REGIME_CONDITION",
+        "event": "DISCLOSURE_EVENT",
+    }
+    components = {}
+    for role, route_id in routes.items():
+        lane = next(iter(grammar.categorical_gene_lanes(route_id)["lanes"].values()))
+        genes = {
+            slot: str(values[0])
+            for slot, values in lane["ordered_categories_by_slot"].items()
+        }
+        pair = grammar.propose_from_categorical_genes(route_id, genes=genes)
+        components[role] = ProgramSourceComponentV0(
+            role=role,
+            primary=dict(pair.primary),
+            control=dict(pair.control),
+            proposal_id=f"categorical-{role}",
+            trial_number=0,
+            sampling_phase="STARTUP_RANDOM",
+        )
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    compiler = ProgramCompilerV1(registry)
+    template_id = "BASE_TEMPORAL_MARKET_EVENT"
+    program = _compose(adapter, components, template_id)
+    compiled = compiler.compile(program)
+    genes = program_structural_genes_v1(
+        program_template_id=template_id,
+        components={
+            role: components[role]
+            for role in PROGRAM_TEMPLATE_COMPONENTS[template_id]
+        },
+        combination_policy=None,
+        program=program,
+        compiled=compiled,
+    )
+    assert genes["skeleton_id"] == PROGRAM_SPACE_ID
+    assert genes["program_template_id"] == template_id
+    assert genes["active_component_roles"] == "base+temporal+market+event"
+    assert genes["base__route_id"] == "SLOW_CROSS_SECTIONAL_LEVEL"
+    assert genes["temporal__route_id"] == "SLOW_TEMPORAL_CHANGE"
+    assert genes["market__route_id"] == "MARKET_REGIME_CONDITION"
+    assert genes["event__route_id"] == "DISCLOSURE_EVENT"
+    assert genes["base__skeleton_id"]
+    assert genes["temporal__window_id"]
+    assert int(genes["raw_field_count"]) == len(compiled.physical_leaf_ids)
+    assert genes["joint_clock_class"]
+    assert genes["lag_class"]
+    assert genes["interaction_topology"]
 
 
 def test_receipt_is_replayable_and_provenance_does_not_change_program_identity(

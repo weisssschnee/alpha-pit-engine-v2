@@ -38,7 +38,7 @@ def is_concrete_field_slot(slot: str) -> bool:
 
     normalized = str(slot)
     return (
-        normalized == "field_pair_id"
+        normalized.endswith("field_pair_id")
         or normalized.endswith("_field_id")
         or normalized.endswith("_field_ids")
     )
@@ -379,6 +379,48 @@ class RouteLocalAvailabilityController:
             len(remaining)
             for key, remaining in self._remaining_by_bucket.items()
             if self._bucket_route[key] == route
+        )
+
+    def remaining_entries(
+        self,
+        *,
+        route_id: str | None = None,
+    ) -> tuple[AvailabilityEntry, ...]:
+        route = None if route_id is None else str(route_id)
+        return tuple(
+            copy.deepcopy(self._entry_by_exact[identity])
+            for identity in sorted(
+                set().union(*self._remaining_by_bucket.values()),
+                key=lambda identity: _stable_hash(
+                    {
+                        "emitter_seed": self.emitter_seed,
+                        "route_id": self._entry_by_exact[identity].route_id,
+                        "exact_identity": identity,
+                    }
+                ),
+            )
+            if route is None
+            or self._entry_by_exact[identity].route_id == route
+        )
+
+    def reserve_exact(
+        self,
+        *,
+        route_id: str,
+        exact_identity: str,
+        emission_mode: str,
+        source_exact_identity: str = "",
+    ) -> AvailabilityEmission | None:
+        identity = str(exact_identity)
+        if identity in self._seen:
+            return None
+        entry = self._entry_by_exact.get(identity)
+        if entry is None or entry.route_id != str(route_id):
+            raise RuntimeError("AVAILABILITY_EXACT_OUTSIDE_INDEX")
+        return self._reserve(
+            entry,
+            emission_mode=str(emission_mode),
+            source_exact_identity=str(source_exact_identity),
         )
 
     def bucket_key_for_genes(

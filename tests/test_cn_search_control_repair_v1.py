@@ -167,6 +167,7 @@ def _run_record(
             "cn-large-tpe-search-campaign",
             "cn-targeted-search-medium-campaign",
             "cn-joint-program-search-v2-canary",
+            "cn-program-optimizer-tournament-v1",
         }
         and "campaign_authorization_path" not in request_fields
     ):
@@ -174,6 +175,8 @@ def _run_record(
             profile = "slow_cross_sectional_evaluated384"
         elif campaign_id == "cn-joint-program-search-v2-canary":
             profile = "cn_joint_program_search_v2_prospective_512_v1"
+        elif campaign_id == "cn-program-optimizer-tournament-v1":
+            profile = "cn_program_optimizer_tournament_v1"
         elif action == ACTION_SUCCESSOR:
             profile = "cn_full_compute_successor_search_v1"
         else:
@@ -878,6 +881,52 @@ def test_search_v2_root_finalization_recovery_binds_original_and_repair_shas(
         )
 
 
+def test_program_tournament_admission_is_exact_authorization_bound_and_one_use(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    trust = _trust_config(tmp_path)
+    run = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="program-tournament",
+        campaign_id="cn-program-optimizer-tournament-v1",
+        target_run_id="program-tournament-run-1",
+    )
+    admission = _materialize(
+        tmp_path / "program-tournament",
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=run,
+        campaign_id="cn-program-optimizer-tournament-v1",
+        target_run_id="program-tournament-run-1",
+    )
+    proof = _validate(
+        admission,
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        campaign_id="cn-program-optimizer-tournament-v1",
+        target_run_id="program-tournament-run-1",
+    )
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(project_control, "_clean_repository_head", lambda _: REPO_SHA)
+    activated = activate_admission(
+        admission,
+        expected_admission_file_sha256=sha256_file(admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-program-optimizer-tournament-v1",
+        expected_target_run_id="program-tournament-run-1",
+        expected_target_output_root=Path(proof["target_output_root"]),
+    )
+    consumed = consume_active_admission(
+        "cn-program-optimizer-tournament-v1", {ACTION_LAUNCH}
+    )
+    assert consumed == activated
+    with pytest.raises(ProjectControlDenied, match="DIRECT_HIGH_COST"):
+        consume_active_admission(
+            "cn-program-optimizer-tournament-v1", {ACTION_LAUNCH}
+        )
+
+
 def test_receipt_action_project_run_and_repo_binding_drift_denies(
     tmp_path: Path,
 ) -> None:
@@ -977,6 +1026,7 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         "cn-large-tpe-search-campaign",
         "cn-fixed-stratified-production-v0",
         "cn-joint-program-search-v2-canary",
+        "cn-program-optimizer-tournament-v1",
     }
     assert repo_app.HIGH_COST_ROUTE_ACTIONS["phase3cf-large-search-prelaunch"] == {
         ACTION_FREEZE

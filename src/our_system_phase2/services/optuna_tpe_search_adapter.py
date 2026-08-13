@@ -22,6 +22,17 @@ from our_system_phase2.services.source_route_sampling_phase_v0 import (
 EXPECTED_OPTUNA_VERSION = "4.8.0"
 EVALUATED = "EVALUATED"
 PRUNED = "LIVE_RUNNER_PRUNED"
+ADMISSION_CONSTRAINT_USER_ATTR = "admission_constraint_violation"
+
+
+def _admission_constraints(trial: Any) -> tuple[float]:
+    value = trial.user_attrs.get(ADMISSION_CONSTRAINT_USER_ATTR)
+    if value is None:
+        raise RuntimeError("OPTUNA_ADMISSION_CONSTRAINT_MISSING")
+    parsed = float(value)
+    if not math.isfinite(parsed) or parsed < 0.0:
+        raise RuntimeError("OPTUNA_ADMISSION_CONSTRAINT_INVALID")
+    return (parsed,)
 
 
 def _stable_hash(value: Any) -> str:
@@ -73,12 +84,16 @@ class ConditionalLane:
             )
         if any(not values for values in categories.values()):
             raise ValueError(f"empty categorical lane: {skeleton_id}")
-        pair_values = tuple(categories.get("field_pair_id", ()))
-        for value in pair_values:
-            if value.count("::") != 1:
-                raise ValueError(
-                    f"invalid typed field pair token: {skeleton_id}:{value}"
-                )
+        pair_values: list[str] = []
+        for slot, values in categories.items():
+            if not slot.endswith("field_pair_id"):
+                continue
+            for value in values:
+                if value.count("::") != 1:
+                    raise ValueError(
+                        f"invalid typed field pair token: {skeleton_id}:{value}"
+                    )
+                pair_values.append(value)
         return cls(
             skeleton_id=str(skeleton_id),
             ordered_categories_by_slot=categories,
@@ -134,6 +149,7 @@ class RouteConditionalTPESearchAdapter:
         multivariate: bool = True,
         group: bool = True,
         constant_liar: bool = True,
+        constraints_enabled: bool = False,
     ) -> None:
         if not lane_spaces:
             raise ValueError(f"route has no optimizer lanes: {route_id}")
@@ -152,6 +168,7 @@ class RouteConditionalTPESearchAdapter:
         self.multivariate = bool(multivariate)
         self.group = bool(group)
         self.constant_liar = bool(constant_liar)
+        self.constraints_enabled = bool(constraints_enabled)
         self.policy_id = (
             "official_optuna_tpe_conditional_typed_grammar_v1"
             if self.multivariate and self.group
@@ -175,6 +192,9 @@ class RouteConditionalTPESearchAdapter:
             group=self.group,
             warn_independent_sampling=False,
             constant_liar=self.constant_liar,
+            constraints_func=(
+                _admission_constraints if self.constraints_enabled else None
+            ),
         )
         self._study = optuna.create_study(
             direction="maximize",
@@ -205,6 +225,12 @@ class RouteConditionalTPESearchAdapter:
             "multivariate": self.multivariate,
             "group": self.group,
             "constant_liar": self.constant_liar,
+            "constraints_enabled": self.constraints_enabled,
+            "constraint_semantics": (
+                "ABSOLUTE_ADMISSION_FEASIBILITY_SEPARATE_FROM_CONDITIONAL_OBJECTIVE"
+                if self.constraints_enabled
+                else None
+            ),
             "persistent_database": False,
             "restore_authority": (
                 "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
@@ -217,6 +243,12 @@ class RouteConditionalTPESearchAdapter:
     @staticmethod
     def _parameter_name(skeleton_id: str, slot: str) -> str:
         return f"{skeleton_id}|{slot}"
+
+    @staticmethod
+    def _pair_parameter_slot(slot: str, suffix: str) -> str:
+        if slot == "field_pair_id":
+            return suffix
+        return f"{slot}|{suffix}"
 
     def _sample_genes(self, trial: Any) -> tuple[dict[str, str], bool]:
         skeleton_id = str(
@@ -232,7 +264,7 @@ class RouteConditionalTPESearchAdapter:
             if slot in {"skeleton_id", "gene_surface_id"}:
                 genes[slot] = str(values[0])
                 continue
-            if slot == "field_pair_id":
+            if slot.endswith("field_pair_id"):
                 right_values_by_left: dict[str, list[str]] = {}
                 for value in values:
                     left_value, right_value = value.split("::", 1)
@@ -243,7 +275,8 @@ class RouteConditionalTPESearchAdapter:
                 left = str(
                     trial.suggest_categorical(
                         self._parameter_name(
-                            skeleton_id, "left_field_id"
+                            skeleton_id,
+                            self._pair_parameter_slot(slot, "left_field_id"),
                         ),
                         left_values,
                     )
@@ -252,7 +285,9 @@ class RouteConditionalTPESearchAdapter:
                     trial.suggest_categorical(
                         self._parameter_name(
                             skeleton_id,
-                            f"right_field_id|left={left}",
+                            self._pair_parameter_slot(
+                                slot, f"right_field_id|left={left}"
+                            ),
                         ),
                         tuple(
                             dict.fromkeys(
@@ -263,7 +298,9 @@ class RouteConditionalTPESearchAdapter:
                 )
                 pair_id = f"{left}::{right}"
                 genes[slot] = pair_id
-                pair_compatible = pair_id in lane.allowed_field_pairs
+                pair_compatible = (
+                    pair_compatible and pair_id in lane.allowed_field_pairs
+                )
                 continue
             genes[slot] = str(
                 trial.suggest_categorical(
@@ -505,13 +542,56 @@ class RouteConditionalTPESearchAdapter:
             outcome_class = str(source.get("outcome_class") or "")
             reward = source.get("optimizer_reward")
             if outcome_class == EVALUATED:
-                if reward is None or not math.isfinite(float(reward)):
-                    raise RuntimeError(
-                        "OPTUNA_COMPLETE_REQUIRES_FINITE_REAL_REWARD:"
-                        f"{proposal_id}"
+                objective_domain_eligible = bool(
+                    source.get("objective_domain_eligible", True)
+                )
+                constraint_violation = source.get(
+                    "admission_constraint_violation"
+                )
+                if self.constraints_enabled:
+                    if (
+                        constraint_violation is None
+                        or not math.isfinite(float(constraint_violation))
+                        or float(constraint_violation) < 0.0
+                    ):
+                        raise RuntimeError(
+                            "OPTUNA_COMPLETE_REQUIRES_ADMISSION_CONSTRAINT:"
+                            f"{proposal_id}"
+                        )
+                    constraint_violation = float(constraint_violation)
+                    trial.set_user_attr(
+                        ADMISSION_CONSTRAINT_USER_ATTR,
+                        constraint_violation,
                     )
-                value = float(reward)
-                self._study.tell(trial, value)
+                    if objective_domain_eligible:
+                        if reward is None or not math.isfinite(float(reward)):
+                            raise RuntimeError(
+                                "OPTUNA_FEASIBLE_COMPLETE_REQUIRES_FINITE_OBJECTIVE:"
+                                f"{proposal_id}"
+                            )
+                        study_value = float(reward)
+                    else:
+                        if reward is not None or constraint_violation <= 0.0:
+                            raise RuntimeError(
+                                "OPTUNA_INFEASIBLE_COMPLETE_DOMAIN_DRIFT:"
+                                f"{proposal_id}"
+                            )
+                        # Optuna requires a finite value for COMPLETE trials.
+                        # Constrained TPE excludes this neutral placeholder from
+                        # the feasible objective density via constraints_func.
+                        study_value = 0.0
+                    value = float(reward) if reward is not None else None
+                else:
+                    if reward is None or not math.isfinite(float(reward)):
+                        raise RuntimeError(
+                            "OPTUNA_COMPLETE_REQUIRES_FINITE_REAL_REWARD:"
+                            f"{proposal_id}"
+                        )
+                    value = float(reward)
+                    study_value = value
+                    objective_domain_eligible = True
+                    constraint_violation = None
+                self._study.tell(trial, study_value)
                 state = "COMPLETE"
                 completed += 1
                 intermediate_value = None
@@ -578,6 +658,22 @@ class RouteConditionalTPESearchAdapter:
                     "optimizer_intermediate_value": intermediate_value,
                     "optimizer_intermediate_step": intermediate_step,
                     "pruning_authority": pruning_authority,
+                    **(
+                        {
+                            "study_value": study_value,
+                            "objective_domain_eligible": (
+                                objective_domain_eligible
+                            ),
+                            "admission_constraint_violation": (
+                                constraint_violation
+                            ),
+                            "infeasible_objective_placeholder": (
+                                not objective_domain_eligible
+                            ),
+                        }
+                        if self.constraints_enabled and state == "COMPLETE"
+                        else {}
+                    ),
                 }
             )
         transcript = {
@@ -612,6 +708,7 @@ class RouteConditionalTPESearchAdapter:
                 for trial in self._study.trials
             ),
             "transcript_hash": _stable_hash(transcript),
+            "constraints_enabled": self.constraints_enabled,
         }
         transcript["receipt"] = receipt
         self._history.append(transcript)
@@ -642,7 +739,7 @@ class RouteConditionalTPESearchAdapter:
         for slot, values in lane.ordered_categories_by_slot.items():
             if slot in {"skeleton_id", "gene_surface_id"}:
                 continue
-            if slot == "field_pair_id":
+            if slot.endswith("field_pair_id"):
                 left_values: list[str] = []
                 right_values_by_left: dict[str, list[str]] = {}
                 for value in values:
@@ -656,11 +753,14 @@ class RouteConditionalTPESearchAdapter:
                     "::", 1
                 )
                 left_name = self._parameter_name(
-                    skeleton_id, "left_field_id"
+                    skeleton_id,
+                    self._pair_parameter_slot(slot, "left_field_id"),
                 )
                 right_name = self._parameter_name(
                     skeleton_id,
-                    f"right_field_id|left={chosen_left}",
+                    self._pair_parameter_slot(
+                        slot, f"right_field_id|left={chosen_left}"
+                    ),
                 )
                 params[left_name] = chosen_left
                 params[right_name] = chosen_right
@@ -687,6 +787,7 @@ class RouteConditionalTPESearchAdapter:
         multivariate: bool = True,
         group: bool = True,
         constant_liar: bool = True,
+        constraints_enabled: bool = False,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -697,6 +798,7 @@ class RouteConditionalTPESearchAdapter:
             multivariate=multivariate,
             group=group,
             constant_liar=constant_liar,
+            constraints_enabled=constraints_enabled,
         )
         complete = adapter._optuna.trial.TrialState.COMPLETE
         pruned = adapter._optuna.trial.TrialState.PRUNED
@@ -731,15 +833,37 @@ class RouteConditionalTPESearchAdapter:
                     observation.get("state") or ""
                 )
                 if observation_state == "COMPLETE":
-                    if observation.get("optimizer_reward") is None:
+                    study_value = observation.get(
+                        "study_value", observation.get("optimizer_reward")
+                    )
+                    if study_value is None:
                         raise RuntimeError(
                             "OPTUNA_TRIAL_IMPORT_COMPLETE_REWARD_MISSING"
                         )
+                    system_attrs = None
+                    user_attrs = None
+                    if constraints_enabled:
+                        violation = observation.get(
+                            "admission_constraint_violation"
+                        )
+                        if violation is None:
+                            raise RuntimeError(
+                                "OPTUNA_TRIAL_IMPORT_CONSTRAINT_MISSING"
+                            )
+                        parsed_violation = float(violation)
+                        system_attrs = {
+                            "constraints": (parsed_violation,)
+                        }
+                        user_attrs = {
+                            ADMISSION_CONSTRAINT_USER_ATTR: parsed_violation
+                        }
                     trial = adapter._optuna.trial.create_trial(
                         params=params,
                         distributions=distributions,
-                        value=float(observation["optimizer_reward"]),
+                        value=float(study_value),
                         state=complete,
+                        system_attrs=system_attrs,
+                        user_attrs=user_attrs,
                     )
                 elif observation_state == "PRUNED":
                     intermediate_value = observation.get(
@@ -799,6 +923,7 @@ class RouteConditionalTPESearchAdapter:
         multivariate: bool = True,
         group: bool = True,
         constant_liar: bool = True,
+        constraints_enabled: bool = False,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -809,6 +934,7 @@ class RouteConditionalTPESearchAdapter:
             multivariate=multivariate,
             group=group,
             constant_liar=constant_liar,
+            constraints_enabled=constraints_enabled,
         )
         for transcript in transcripts:
             asked = list(transcript.get("asked") or ())
@@ -895,6 +1021,19 @@ class RouteConditionalTPESearchAdapter:
                         ),
                         "pruning_authority": str(
                             row.get("pruning_authority") or ""
+                        ),
+                        **(
+                            {
+                                "objective_domain_eligible": bool(
+                                    row.get("objective_domain_eligible")
+                                ),
+                                "admission_constraint_violation": row.get(
+                                    "admission_constraint_violation"
+                                ),
+                            }
+                            if constraints_enabled
+                            and str(row.get("state") or "") == "COMPLETE"
+                            else {}
                         ),
                     }
                 )

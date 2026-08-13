@@ -1,0 +1,231 @@
+{
+  "schema_version": "cn_search_v2_512_retrospective_autopsy_v1",
+  "status": "RETROSPECTIVE_DIAGNOSIS_COMPLETE",
+  "source_output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88\\run",
+  "source_closure_file": "CN_JOINT_PROGRAM_SEARCH_V2_CANARY_COMPLETE.json",
+  "source_closure_payload_sha256": "4d3be8714b845ba8324c011e49d0ebc7d0a1c09d17d8ce4c111c229e912dae71",
+  "immutable_artifacts_read": {
+    "phase_c_selection_ledger.jsonl": {
+      "bytes": 1019651
+    },
+    "phase_c_bandit_feedback_ledger.jsonl": {
+      "bytes": 1199119
+    },
+    "template_productivity.json": {
+      "payload_sha256": "dcb1f8b8e96f8a55ab0bf9f67bd3abca91ac632ad7f9d912ccf2cb302f24cb16"
+    }
+  },
+  "observed": {
+    "enhanced_records": 448,
+    "enhanced_unique_programs": 448,
+    "maximum_program_reuse": 1,
+    "program_head_selections": 0,
+    "template_head_fallback_selections": 448,
+    "conditional_exploit_records": 168,
+    "conditional_uplift_exploit_eligible_records": 60,
+    "eligibility_by_checkpoint_band": [
+      {
+        "checkpoint_start": 1,
+        "checkpoint_end": 16,
+        "records": 24,
+        "eligible": 6
+      },
+      {
+        "checkpoint_start": 17,
+        "checkpoint_end": 32,
+        "records": 48,
+        "eligible": 6
+      },
+      {
+        "checkpoint_start": 33,
+        "checkpoint_end": 48,
+        "records": 48,
+        "eligible": 21
+      },
+      {
+        "checkpoint_start": 49,
+        "checkpoint_end": 64,
+        "records": 48,
+        "eligible": 27
+      }
+    ],
+    "eligibility_by_template": {
+      "BASE_TEMPORAL": {
+        "records": 24,
+        "eligible": 6,
+        "first_eligible_checkpoint": 15
+      },
+      "BASE_MARKET": {
+        "records": 24,
+        "eligible": 0,
+        "first_eligible_checkpoint": null
+      },
+      "BASE_EVENT": {
+        "records": 24,
+        "eligible": 6,
+        "first_eligible_checkpoint": 31
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "records": 24,
+        "eligible": 0,
+        "first_eligible_checkpoint": null
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "records": 24,
+        "eligible": 21,
+        "first_eligible_checkpoint": 42
+      },
+      "BASE_MARKET_EVENT": {
+        "records": 24,
+        "eligible": 21,
+        "first_eligible_checkpoint": 50
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "records": 24,
+        "eligible": 6,
+        "first_eligible_checkpoint": 58
+      }
+    },
+    "acquisition_rank_distinct_vectors": 50,
+    "acquisition_rank_records_in_ties": 168,
+    "acquisition_rank_tie_rate": 1.0,
+    "maximum_acquisition_rank_tie_size": 21,
+    "admitted_exploit_records": 102,
+    "spearman_predicted_vs_realized_matched_return_increment": 0.41353278462548915,
+    "spearman_predicted_vs_realized_matched_reward_increment": 0.46619448332046326,
+    "predicted_positive_groups": {
+      "false": {
+        "records": 34,
+        "realized_matched_return_increment_mean": 0.0901973161623419,
+        "realized_matched_reward_increment_mean": 0.7258934225779053
+      },
+      "true": {
+        "records": 68,
+        "realized_matched_return_increment_mean": 0.25615546073292766,
+        "realized_matched_reward_increment_mean": 1.4606786031387688
+      }
+    },
+    "descriptive_old_arm_outcome": {
+      "CONDITIONAL_UPLIFT_EXPLOIT_admission_rate": 0.6071428571428571,
+      "UNIFORM_FRESH_admission_rate": 0.6205357142857143,
+      "improved_templates": 0,
+      "supported_templates": 5,
+      "decision": "FAIL"
+    },
+    "novelty_arm_role": "DIAGNOSTIC_ONLY_NOT_IN_PROSPECTIVE_GATE",
+    "admission_head_rank_and_calibration": {
+      "roc_auc": 0.8339569101418812,
+      "spearman_probability_vs_admission": 0.5650692258836478,
+      "brier_score": 0.15659648725787736,
+      "calibration_bins": [
+        {
+          "probability_bin": [
+            0,
+            0.25
+          ],
+          "records": 104,
+          "mean_predicted_probability": 0.16764305994451095,
+          "realized_admission_rate": 0.20192307692307693
+        },
+        {
+          "probability_bin": [
+            0.25,
+            0.5
+          ],
+          "records": 88,
+          "mean_predicted_probability": 0.36380155791920515,
+          "realized_admission_rate": 0.48863636363636365
+        },
+        {
+          "probability_bin": [
+            0.5,
+            0.75
+          ],
+          "records": 88,
+          "mean_predicted_probability": 0.5047021943573669,
+          "realized_admission_rate": 0.5795454545454546
+        },
+        {
+          "probability_bin": [
+            0.75,
+            1.0
+          ],
+          "records": 168,
+          "mean_predicted_probability": 0.9323399881614886,
+          "realized_admission_rate": 0.9523809523809523
+        }
+      ]
+    },
+    "early_to_late_learning_curve": [
+      {
+        "checkpoint_start": 1,
+        "checkpoint_end": 16,
+        "records": 64,
+        "admission_rate": 0.484375,
+        "admitted_matched_return_increment_mean": 0.052206329794986274,
+        "admitted_matched_reward_increment_mean": 0.16129927664185958
+      },
+      {
+        "checkpoint_start": 17,
+        "checkpoint_end": 32,
+        "records": 128,
+        "admission_rate": 0.40625,
+        "admitted_matched_return_increment_mean": 0.10731837437071287,
+        "admitted_matched_reward_increment_mean": 1.2582313962375813
+      },
+      {
+        "checkpoint_start": 33,
+        "checkpoint_end": 48,
+        "records": 128,
+        "admission_rate": 0.546875,
+        "admitted_matched_return_increment_mean": 0.528553762754482,
+        "admitted_matched_reward_increment_mean": 2.0709666224421377
+      },
+      {
+        "checkpoint_start": 49,
+        "checkpoint_end": 64,
+        "records": 128,
+        "admission_rate": 0.953125,
+        "admitted_matched_return_increment_mean": 0.09863912954647974,
+        "admitted_matched_reward_increment_mean": 1.05076977986577
+      }
+    ],
+    "descriptive_arm_outcomes": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": {
+        "records": 168,
+        "admitted": 102,
+        "admission_rate": 0.6071428571428571,
+        "admitted_matched_return_increment_mean": 0.2008360792093991,
+        "admitted_matched_reward_increment_mean": 1.2157502096184811
+      },
+      "NOVELTY_RESERVE": {
+        "records": 56,
+        "admitted": 34,
+        "admission_rate": 0.6071428571428571,
+        "admitted_matched_return_increment_mean": 0.18063315428708057,
+        "admitted_matched_reward_increment_mean": 1.242844996671282
+      },
+      "UNIFORM_FRESH": {
+        "records": 224,
+        "admitted": 139,
+        "admission_rate": 0.6205357142857143,
+        "admitted_matched_return_increment_mean": 0.2129847594481041,
+        "admitted_matched_reward_increment_mean": 1.2757311915605527
+      }
+    }
+  },
+  "diagnosis": "ALL_UNIQUE_PROGRAMS_FORCED_TEMPLATE_HEAD_FALLBACK_AND_COARSE_TIED_ACQUISITION",
+  "manual_diagnosis_imported": true,
+  "objective_designed_after_parent_results": true,
+  "cross_campaign_development_feedback": true,
+  "development_financial_observations_imported": false,
+  "serialized_optimizer_state_imported": false,
+  "candidate_results_imported": false,
+  "new_market_data_reads": 0,
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "historical_2023_reads": 0,
+  "forward_b_reads": 0,
+  "forward_2026_reads": 0,
+  "autopsy_payload_sha256": "d558f05c5dad06e333424e48b4b373a6fe46f4305764436b005763df116a2b61"
+}

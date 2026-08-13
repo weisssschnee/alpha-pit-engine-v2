@@ -73,6 +73,7 @@ ROUTES: dict[str, str] = {
     "cn-candidate-representation-v0-preflight": "our_system_phase2.runtime.cn_candidate_representation_v0_preflight",
     "cn-fixed-stratified-production-v0": "our_system_phase2.runtime.cn_fixed_stratified_production_v0",
     "cn-joint-program-search-v2-canary": "our_system_phase2.runtime.cn_joint_program_search_v2_canary",
+    "cn-program-optimizer-tournament-v1": "our_system_phase2.runtime.cn_program_optimizer_tournament_v1",
     "cn-typed-candidate-program-v1-smoke": "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke",
     "cn-core-pack-authority-smoke": "scripts.run_cn_core_pack_authority_smoke",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
@@ -121,6 +122,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
     ),
     "cn-joint-program-search-v2-canary": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY, ACTION_RECOVERY}
+    ),
+    "cn-program-optimizer-tournament-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
     ),
 }
 

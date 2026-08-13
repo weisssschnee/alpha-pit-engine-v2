@@ -1,0 +1,90 @@
+{
+  "schema_version": "cn_search_core_vnext_capability_lineage_audit_v1",
+  "audit_status": "COMPLETE",
+  "repository": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711",
+  "audited_repo_sha": "2a1b30e0872d6942767f7447fa7dd8c39d9e3b27",
+  "formal_search_core": {
+    "authority_path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+    "optimizer_adapter": "RouteConditionalTPESearchAdapter",
+    "optimizer": "official optuna.samplers.TPESampler 4.8.0",
+    "runtime_capabilities": [
+      "conditional typed Grammar lanes frozen from RegistryDrivenGenerator.categorical_gene_lanes",
+      "categorical skeleton and typed route genes with factorized compatible field pairs",
+      "multivariate TPE",
+      "group-decomposed TPE",
+      "constant-liar batched asks",
+      "real Optuna trial numbers for native and availability-fixed asks",
+      "RouteLocalAvailabilityController with exact-identity admission, same-bucket replacement, and global fallback",
+      "ask/tell coverage with COMPLETE, PRUNED, and FAIL outcomes",
+      "hash-bound transcripts and optimizer snapshot/restore",
+      "behavior admission and exact-identity dedupe",
+      "route scheduling and the existing evaluator binding"
+    ],
+    "actual_call_path": [
+      "cn_large_tpe_search_campaign.run",
+      "_restore_or_import_adapters",
+      "_restore_or_initialize_availability_controller",
+      "_ask_availability_aware_populations",
+      "RouteConditionalTPESearchAdapter.ask_trial or enqueue_fixed_trial",
+      "RegistryDrivenGenerator.propose_categorical_genes",
+      "existing materializer and evaluator",
+      "_tell_scheduled_route_populations",
+      "RouteConditionalTPESearchAdapter.tell_population",
+      "_write_optimizer_snapshot"
+    ]
+  },
+  "search_v2_512": {
+    "reused": [
+      "CandidateProgramProposalAdapterV0",
+      "Candidate Program compiler and materializer",
+      "exact Full-vs-Base matched-control construction",
+      "Phase3CM evaluation engine",
+      "AbsoluteEconomicAdmission",
+      "admitted-only conditional_uplift_credit",
+      "checkpoint and evidence engine",
+      "Project Control and prefinancial freeze"
+    ],
+    "bypassed": [
+      "RouteConditionalTPESearchAdapter",
+      "official Optuna TPESampler asks and real trial numbers",
+      "RouteLocalAvailabilityController",
+      "formal optimizer transcripts and snapshots"
+    ],
+    "reimplemented": [
+      "SearchV2SchedulerV1 empirical template/program median heads",
+      "deterministic pre-enumerated Program reservoir selection"
+    ],
+    "experimental_substitute": "AVAILABILITY_FIXED component pool plus deterministic reservoir plus empirical template/program median scheduler",
+    "conditional_uplift_exploit_actual_call_path": [
+      "run_cn_joint_program_search_v2_canary._configure_engine",
+      "engine.ProgramFactorizedBanditV0 = SearchV2SchedulerV1",
+      "_choose_entry iterates the frozen reservoir",
+      "SearchV2SchedulerV1.score_receipt ranks a ProgramProposalReceiptV0",
+      "min(scored) selects an already-materializable reservoir entry",
+      "after evaluation _feedback_update calls SearchV2SchedulerV1.observe"
+    ],
+    "conditional_uplift_exploit_used_existing_hybrid_tpe": false,
+    "diagnosis": "LOCAL_REIMPLEMENTATION_DRIFT",
+    "technical_gap": "The mature adapter was route-local and no shared Program-level typed gene contract existed. That required a small generalization at the Program boundary, but did not require bypassing the mature TPE and Availability mechanics or replacing them with a local median scheduler."
+  },
+  "structured_surrogate_dependency_audit": {
+    "smac": "ABSENT",
+    "ConfigSpace": "ABSENT",
+    "hebo": "ABSENT",
+    "sklearn": "PRESENT_1.6.1",
+    "numpy": "PRESENT",
+    "scipy": "PRESENT",
+    "selected_capability_direction": "sklearn tree-ensemble constrained surrogate BO with conditional encoding, ensemble dispersion, deterministic acquisition, dual heads, and snapshot/restore"
+  },
+  "boundaries": {
+    "financial_reads": 0,
+    "market_data_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "year_2023_reads": 0,
+    "forward_b_reads": 0,
+    "year_2026_reads": 0,
+    "tournament_run": "NOT_RUN",
+    "promotion": "NOT_AUTHORIZED"
+  }
+}

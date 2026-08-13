@@ -2,7 +2,7 @@
 
 Updated: 2026-08-13
 
-Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_REPLACEMENT_CANARY_COMPLETE_NEGATIVE_STOP_CONTINUATION_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_FROZEN_READY_NOT_RUN_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,55 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program-level multi-optimizer tournament frozen and ready, not run (2026-08-13)
+
+- Capability lineage audit confirmed `LOCAL_REIMPLEMENTATION_DRIFT`: Search V2
+  reused Candidate Program composition/compilation/materialization, matched
+  Full/Base evaluation, two-head economics and checkpoint/Project Control, but
+  bypassed `RouteConditionalTPESearchAdapter`, Optuna `TPESampler` and
+  `RouteLocalAvailabilityController`. Its completed negative economic result is
+  preserved and is not reinterpreted.
+- ADR 0019 accepts one non-formal Program-level experimental candidate. Uniform,
+  Hybrid TPE and a structured ExtraTrees surrogate now implement one
+  `ProgramSearchOptimizerAdapter` and share the exact fixed-dimensional typed
+  Program space, candidate engine, Availability boundary, evaluator, absolute
+  admission and admitted-only conditional uplift. Hybrid TPE uses real Optuna
+  trials and constraints; the surrogate has separate feasibility and
+  admitted-only uplift heads with ensemble-dispersion acquisition. Whole
+  Program uplift is never attributed to components.
+- The self-hashed maximum plan is 536 records: 32 Base parity plus equal Stage
+  0/1 support, followed inside the same admission by a frozen automatic
+  one-sided-95% Wilson futility decision and Stage 2. Uniform retains an
+  eight-per-template floor; supported futile smart arms stop, nonfutile or
+  insufficient-support arms receive eight per template. Manual post-result
+  reallocation, winner-takes-all, Stage-1 exact replay, automatic successor and
+  promotion are forbidden.
+- The common typed Program space is frozen from immutable prefinancial inputs
+  at 3,616 exact entries with SHA256
+  `86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0`.
+  The source reservoir/component/Registry hashes and the rebuilt space hash
+  must match before any economic evaluator can start.
+- The route is requestable only through exact campaign-authorization-bound
+  Project Control and the canonical 77o wrapper. No Project Control admission
+  was requested or consumed and no tournament was started. New financial and
+  market reads, validation, holdout, spent-2023, Forward-B and 2026 reads are
+  zero. Retrospective Search V2 diagnostics imported no financial observation,
+  candidate result or serialized optimizer state.
+
+Current status summary:
+
+```text
+PROGRAM_SEARCH_CORE = IMPLEMENTED / STATIC_AND_SYNTHETIC_VERIFIED
+TOURNAMENT = FROZEN / REQUESTABLE / NOT_RUN
+ARMS = UNIFORM_CONTROL / HYBRID_TPE_PROGRAM / STRUCTURED_SURROGATE_PROGRAM
+MAXIMUM_BUDGET = 536
+OLD_FINANCIAL_OBSERVATIONS_IMPORTED = 0
+FORMAL_HYBRID_AUTHORITY = UNCHANGED
+FORWARD_B = SEALED
+OOS_GRADE = NONE
+PROMOTION = HOLD
+```
 
 ### Search Engine V2 replacement canary complete; frozen economic gate FAIL (2026-08-13)
 

@@ -1,0 +1,138 @@
+{
+  "absolute_admission_contract": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+  "ask_tell_contract": "ProgramSearchOptimizerAdapter->CandidateProgram->FullBaseEvaluator->AbsoluteAdmission->ConditionalUplift->ProgramOptimizerObservationV1",
+  "authorization_payload_sha256": "00a885a2721ab4d58345009520d0984484acb981980334a5f66737dd6bc2273d",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "automatic_successor_authorized": false,
+  "base_parity_records": 32,
+  "batch_id": "CN_PROGRAM_OPTIMIZER_TOURNAMENT_FROZEN_V1",
+  "campaign_id": "CN_PROGRAM_OPTIMIZER_TOURNAMENT_V1",
+  "campaign_profile": "cn_program_optimizer_tournament_v1",
+  "common_program_space_contract": {
+    "availability_entry_builder": "our_system_phase2.services.program_search_optimizer_v1:program_availability_entries_v1",
+    "candidate_program_composer": "CandidateProgramProposalAdapterV0.compose",
+    "compiler": "ProgramCompilerV1.compile",
+    "evaluator": "PHASE3CM_STREAMING_MULTICANDIDATE_EVALUATOR",
+    "matched_control_contract_id": "CANDIDATE_PROGRAM_V1_FULL_VS_BASE_MATCHED_CONTROL",
+    "materializer": "prepare_cn_program_materialized_session_sidecar_v1",
+    "program_gene_builder": "our_system_phase2.services.program_search_optimizer_v1:program_structural_genes_v1",
+    "program_space_id": "CN_TYPED_PROGRAM_GENE_SPACE_V1",
+    "same_exact_entries_for_all_arms": true,
+    "source_component_authority": "SEARCH_V2_PHASE_B_SESSION_EXECUTABLE_COMPONENT_POOL",
+    "source_raw_program_authority": "SEARCH_V2_PREFINANCIAL_RAW_PROGRAM_RESERVOIR"
+  },
+  "common_program_space_contract_sha256": "ab7f0bd9e8d2aa39a9415f35eb2da077edd8d511a9f4b6fcbc23b7636189ca2a",
+  "component_attribution": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+  "conditional_uplift_contract": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+  "development_feedback_provenance": {
+    "behavior_statistics_imported": false,
+    "candidate_results_imported": false,
+    "cross_campaign_development_feedback": true,
+    "development_financial_observations_imported": false,
+    "development_observation_count": 0,
+    "factor_statistics_imported": false,
+    "manual_diagnosis_imported": true,
+    "objective_designed_after_parent_results": true,
+    "serialized_optimizer_state_imported": false,
+    "template_classification_imported": false
+  },
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "financial_data_reads": 0,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "frozen_program_space_entry_count": 3616,
+  "frozen_program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+  "frozen_program_space_source_sha256": {
+    "raw_program_reservoir": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "session_executable_component_pool": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "unified_capability_registry": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+  },
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "maximum_arm_counts": {
+    "HYBRID_TPE_PROGRAM": 168,
+    "STRUCTURED_SURROGATE_PROGRAM": 168,
+    "UNIFORM_CONTROL": 200
+  },
+  "maximum_ask_plan_generator": "our_system_phase2.runtime.cn_program_optimizer_tournament_v1:build_maximum_ask_plan_v1",
+  "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+  "maximum_total_records": 536,
+  "optimizer_arms": [
+    "UNIFORM_CONTROL",
+    "HYBRID_TPE_PROGRAM",
+    "STRUCTURED_SURROGATE_PROGRAM"
+  ],
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "project_control_required": true,
+  "project_control_route_id": "cn-program-optimizer-tournament-v1",
+  "promotion_authorized": false,
+  "racing_rules": {
+    "comparison_boundary": "AFTER_STAGE_1_ONLY",
+    "futility_rule": {
+      "absolute_admission_noninferiority_margin": -0.05,
+      "confidence_interval": "ONE_SIDED_95_PERCENT_WILSON",
+      "insufficient_support_action": "CONTINUE_TO_STAGE_2_WITHIN_FROZEN_CAP",
+      "positive_conditional_uplift_efficiency_margin": -0.05,
+      "stop_smart_arm_only_if": "SUPPORT_MET_AND_EITHER_SMART_ADMISSION_UPPER_LT_UNIFORM_LOWER_MINUS_0P05_OR_SMART_PRODUCTIVE_UPPER_LT_UNIFORM_LOWER_MINUS_0P05"
+    },
+    "manual_change_after_financial_read_allowed": false,
+    "minimum_support_before_pruning": {
+      "admitted_global_per_arm": 48,
+      "evaluated_per_enhanced_template_per_arm": 16,
+      "templates_with_four_admitted_per_arm": 5
+    },
+    "smart_arm_stage_2_maximum_per_template": 8,
+    "stage_2_allocation": "UNIFORM_FLOOR_ALWAYS_PLUS_EACH_NONFUTILE_SMART_ARM_FULL_STAGE2_QUOTA",
+    "uniform_control_stage_2_floor_per_template": 8,
+    "winner_takes_all_allowed": false
+  },
+  "realized_program_space_hash_freeze_boundary": "PREFINANCIAL_AFTER_EXACT_CATALOG_BUILD_BEFORE_MARKET_READ",
+  "scalar_absolute_plus_uplift_reward": null,
+  "schema_version": "cn_program_optimizer_tournament_authorization_v1",
+  "seeds": {
+    "HYBRID_TPE_PROGRAM": 721013,
+    "STRUCTURED_SURROGATE_PROGRAM": 721019,
+    "UNIFORM_CONTROL": 721003
+  },
+  "source_phase_b_outcome_path": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
+  "source_search_v2_authorization_path": "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
+  "status": "PROGRAM_OPTIMIZER_TOURNAMENT_FROZEN_NOT_RUN",
+  "surrogate_policy": {
+    "candidate_pool_size": 256,
+    "cold_start_asks": 24,
+    "exploration_beta": 1.0,
+    "implementation": "sklearn.ensemble.ExtraTreesClassifier+ExtraTreesRegressor",
+    "min_samples_leaf": 2,
+    "n_estimators": 256,
+    "n_jobs": 1
+  },
+  "template_order": [
+    "BASE",
+    "BASE_TEMPORAL",
+    "BASE_MARKET",
+    "BASE_EVENT",
+    "BASE_TEMPORAL_MARKET",
+    "BASE_TEMPORAL_EVENT",
+    "BASE_MARKET_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT"
+  ],
+  "tournament_status": "FROZEN_NOT_RUN",
+  "tpe_policy": {
+    "constant_liar": true,
+    "constraints_enabled": true,
+    "group": true,
+    "multivariate": true,
+    "n_ei_candidates": 64,
+    "n_startup_trials": 24
+  },
+  "uniform_policy": {
+    "implementation": "RouteLocalAvailabilityController.reserve_exact",
+    "learning": false,
+    "selection": "SEED_BOUND_HASH_PERMUTATION_WITHOUT_REPLACEMENT"
+  },
+  "validation_reads": 0
+}
