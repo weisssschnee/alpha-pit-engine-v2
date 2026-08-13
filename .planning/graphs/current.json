@@ -23,6 +23,9 @@
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
           "runtime/run_plans/cn_program_optimizer_projection_fairness_p0_report.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_final_retry_outcome_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_incident_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_outcome_20260813.json",
@@ -129,7 +132,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "1d1f3ed809a2778c275d9b376cc1b0d50d278263"
+        "repo_head": "b347e95617218f07b8bd70c3ca05b5e7e595d252"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2275,7 +2278,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-13T17:56:34.381330+00:00",
+  "generated_at": "2026-08-13T20:36:47.236105+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7301,8 +7304,10 @@
       "authority_bindings": [],
       "claim_badges": [
         "EXACT SOURCE BOUND",
-        "PREFINANCIAL REHEARSAL PASS",
-        "THIRD RETRY NOT AUTHORIZED",
+        "FINAL RETRY CONSUMED",
+        "PREFINANCIAL FREEZE PASS",
+        "STATE REPLAY DRIFT",
+        "NO FURTHER RETRY",
         "ZERO ECONOMIC RECORDS",
         "RESTRICTED_READS_ZERO",
         "NO AUTHORITY CHANGE",
@@ -7343,7 +7348,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 prefinancial rehearsal complete; no third retry",
+      "label": "CN Program optimizer tournament V1 final retry incomplete on state replay; no further retry",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7351,6 +7356,9 @@
         "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
         "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json",
         "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_outcome_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
         "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
         "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
         "docs/adr/0019-program-optimizer-tournament.md"
@@ -7360,23 +7368,23 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-13T17:56:34.381330+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
-        "evidence_sha256": "C220865D281A1ECCFEFA69CE190A3497CE61477EC0412604C322B78C25E7F1F0",
+        "checked_at": "2026-08-13T20:36:47.236105+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
+        "evidence_sha256": "FA7D90E97A31591A99F1236494DD6709E79A918DED39194025CCC2268E09C227",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "1d1f3ed809a2778c275d9b376cc1b0d50d278263"
+        "verified_at_sha": "b347e95617218f07b8bd70c3ca05b5e7e595d252"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "074E1F15D505D3CCC6259982507A315AEA12F460793E352CF1A34B6F086580DF"
+    "sha256": "F8D0192716A444560156D40B5CEB97F094104899C16E18D5EEBA13BB6C40E82F"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7393,7 +7401,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "1d1f3ed809a2778c275d9b376cc1b0d50d278263",
+  "repo_head": "b347e95617218f07b8bd70c3ca05b5e7e595d252",
   "schema_version": 1,
   "semantic_authorities": [
     {
