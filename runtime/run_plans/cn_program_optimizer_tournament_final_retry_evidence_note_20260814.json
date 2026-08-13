@@ -1,0 +1,35 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_final_retry_evidence_note_v1",
+  "status": "TERMINAL_FAILURE_EVIDENCE_PRESERVED",
+  "remote_evidence": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b",
+    "terminal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_terminal_logs\\cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b",
+    "job_status_sha256": "d896dce397f88d5376400c58b85315ced0f2864747fe374f255784cc0f666e12",
+    "job_log_sha256": "79556b022cc1dddd20c72232ddcbb9f9cbe2910ce589ca294b80a4057b107abb",
+    "terminal_receipt_sha256": "021199b0c5dd7c7c621a3329960cf480bd74f6b5b265fd513c3aa9c984c78b60",
+    "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner_stderr_sha256": "864e4f785187f907a67aa8f2bcdd312a02b9d63c3c24abbc83ab508f42de3e1f",
+    "execution_identity_sha256": "4500574cc02a9d559bbd509660e0526147707f7c9e55dabe00e0a5561fc4f2f6",
+    "admission_consumption_sha256": "97ba68b23e92e5e38cf23c4adf6a6bc52382b89e15f71f5b4d4a79cf438f7195",
+    "stage01_freeze_closure_sha256": "8bd02248f2f0278fbb21187b43511daa0d6c4bb7c0f8b3beb6eda2db39f1d6c8",
+    "stage01_freeze_artifact_manifest_sha256": "e5ecf2e92c70a792d315c1a61e1e0551f8703e75315f13c3926172da4ecf85d8",
+    "stage01_initial_bandit_state_sha256": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "stage01_run_contract_sha256": "232edfebcc3799d183005348939b57ad6a23fef78dd6008b09e20645720f14fc"
+  },
+  "source_binding_deployment_note": "The 77o versioned checkout preserved the exact authorized LF working-file bytes for the source-binding file while Git's Windows text normalization still reported a clean worktree. The runtime file SHA matched a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813 before admission materialization and again before route entry.",
+  "rehearsal_bookkeeping_correction": {
+    "status": "RECORDED_WITHOUT_EXECUTION_SHA_CHANGE",
+    "incorrect_first_implementation_commit_text": "de2379f096b1eb5c8b8e3b9cf6f2ef3f8fb0ef7c",
+    "successful_rehearsal_runtime_lineage_end": "3c9fe7b27d9372005391b5380c8b2a12e0e895e1",
+    "execution_critical_path_changed_between_rehearsal_and_final_retry": false
+  },
+  "continuation_boundary": {
+    "automatic_successor": false,
+    "further_retry": false,
+    "replacement": false,
+    "validation": false,
+    "forward_b": false,
+    "promotion": false
+  },
+  "evidence_payload_sha256": "11d824c23028002c06ac242c4e0aa743c166e354aa60eacdcd884a2f8df18cae"
+}

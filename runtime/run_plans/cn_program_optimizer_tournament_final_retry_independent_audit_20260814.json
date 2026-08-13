@@ -1,0 +1,115 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_final_retry_independent_audit_v1",
+  "audit_mode": "READ_ONLY_POST_TERMINAL",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "producer_audit_consistent": true,
+  "checks": {
+    "execution_sha": {
+      "expected": "3c9fe7b27d9372005391b5380c8b2a12e0e895e1",
+      "observed": "3c9fe7b27d9372005391b5380c8b2a12e0e895e1",
+      "result": "PASS"
+    },
+    "authorization_payload_sha256": {
+      "expected": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "observed": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "result": "PASS"
+    },
+    "source_binding": {
+      "file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813",
+      "payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+      "checker_status": "PASS",
+      "financial_reads": 0,
+      "result": "PASS"
+    },
+    "maximum_ask_plan_sha256": {
+      "expected": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "observed": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "result": "PASS"
+    },
+    "program_space": {
+      "expected_count": 3616,
+      "observed_count": 3616,
+      "expected_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "observed_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "result": "PASS"
+    },
+    "project_control": {
+      "run_id": "1f09ecc8-21b1-4fff-8404-246b7791e2d4",
+      "admission_payload_sha256": "f1eeaf58523e7a16990a93c568bf83d10d1cf7c92b3dd271a2b08607bee51a5e",
+      "requested_action": "RETRY",
+      "consumption_receipt_count": 1,
+      "target_identity_match": true,
+      "result": "PASS"
+    },
+    "prefinancial_freeze": {
+      "required_available_unresolved": [84, 84, 0],
+      "stage01_freeze_closed": true,
+      "planned_records": 368,
+      "planned_checkpoints": 46,
+      "financial_evaluation_executed": false,
+      "result": "PASS"
+    },
+    "terminal_cardinality": {
+      "stage01_run_exists": false,
+      "business_record_count": 0,
+      "closed_checkpoint_count": 0,
+      "stage1_racing_decision_exists": false,
+      "stage2_run_exists": false,
+      "terminal_closure_exists": false,
+      "result": "PASS_INCOMPLETE_CONFIRMED"
+    },
+    "three_arm_ask_tell_coverage": {
+      "UNIFORM_CONTROL": {"asks": 0, "tells": 0},
+      "HYBRID_TPE_PROGRAM": {"asks": 0, "tells": 0},
+      "STRUCTURED_SURROGATE_PROGRAM": {"asks": 0, "tells": 0},
+      "result": "NOT_REACHED_ZERO_CONTAMINATION"
+    },
+    "tpe_projection_statistics": {
+      "direct_exact_hits": 0,
+      "legal_projections": 0,
+      "global_fallback": 0,
+      "economic_told_trials": 0,
+      "result": "NOT_REACHED_ZERO_CONTAMINATION"
+    },
+    "surrogate_full_space_comparison": {
+      "eligible_compared_count": 0,
+      "full_eligible_scoring": "NOT_REACHED",
+      "snapshot_restore_continuity": "FAILED_BEFORE_SCORING",
+      "result": "NOT_REACHED_ZERO_CONTAMINATION"
+    },
+    "economic_contract": {
+      "absolute_admission_and_conditional_uplift_separate": true,
+      "program_space_same_for_all_arms": true,
+      "program_level_credit_only": true,
+      "evaluator_invoked": false,
+      "absolute_admission_invoked": false,
+      "conditional_uplift_invoked": false,
+      "result": "FROZEN_IDENTITY_PASS_RUNTIME_NOT_REACHED"
+    },
+    "restricted_reads": {
+      "validation_reads": 0,
+      "holdout_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0,
+      "market_price_rows_read": 0,
+      "result": "PASS"
+    },
+    "terminal_stop": {
+      "active_target_process_count": 0,
+      "automatic_successor": false,
+      "further_retry": false,
+      "promotion": false,
+      "result": "PASS"
+    }
+  },
+  "failure_identity": {
+    "exception_type": "ValueError",
+    "exception_message": "PROGRAM_TOURNAMENT_STATE_REPLAY_DRIFT",
+    "failure_boundary": "ProgramOptimizerTournamentV1.restore(initial_bandit_state) before stage01_run",
+    "complete_traceback_preserved": true,
+    "stderr_sha256": "864e4f785187f907a67aa8f2bcdd312a02b9d63c3c24abbc83ab508f42de3e1f"
+  },
+  "audit_conclusion": "Producer failure is reproduced by immutable terminal evidence. The run consumed exactly one RETRY admission, closed the prefinancial freeze, then stopped before any economic record, checkpoint, optimizer ask/tell, restricted read, racing decision, Stage 2, successor, further retry or promotion.",
+  "audit_payload_sha256": "6ca864b42051641298265d7c2ae8887b5ab49b3064c366055be21f0ea18e1d03"
+}

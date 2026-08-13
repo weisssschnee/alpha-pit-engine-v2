@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-13
+Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_PREFINANCIAL_REHEARSAL_COMPLETE_PENDING_EXTERNAL_REVIEW_THIRD_RETRY_NOT_AUTHORIZED_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_FINAL_RETRY_INCOMPLETE_STATE_REPLAY_DRIFT_ZERO_ECONOMIC_RECORDS_NO_FURTHER_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,36 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer final technical RETRY incomplete; no further retry (2026-08-14)
+
+- The externally authorized final technical `RETRY` ran exactly once on
+  `DESKTOP-77OPJ6F` through
+  `scripts/run_cn_program_optimizer_tournament_77o.ps1` and the canonical
+  `app.py cn-program-optimizer-tournament-v1` route at execution SHA
+  `3c9fe7b27d9372005391b5380c8b2a12e0e895e1`. Project Control run
+  `1f09ecc8-21b1-4fff-8404-246b7791e2d4` materialized and consumed exactly one
+  target-bound `RETRY` admission with payload SHA256
+  `f1eeaf58523e7a16990a93c568bf83d10d1cf7c92b3dd271a2b08607bee51a5e`.
+- Exact-source and execution-surface preflight passed before admission
+  consumption. The admitted route then closed the frozen 368-record / 46-
+  checkpoint Stage 0/1 prefinancial freeze with exact 3,616-Program space,
+  Search V2 source `84/84/0`, financial evaluation false and every restricted
+  read zero. Before `stage01_run` was created, restoration of the frozen
+  `initial_bandit_state` failed with
+  `ValueError: PROGRAM_TOURNAMENT_STATE_REPLAY_DRIFT` because the restored
+  Tournament snapshot did not equal the frozen snapshot.
+- The terminal result is therefore zero economic records, zero closed
+  checkpoints, zero three-arm asks/tells, no Stage-1 racing decision and no
+  Stage 2. There is no economic winner; OOS remains `NONE`. The complete
+  traceback, exit-code receipt, outcome and read-only independent audit are
+  preserved in the remote terminal root and the three
+  `cn_program_optimizer_tournament_final_retry_*_20260814.json` receipts under
+  `runtime/run_plans`.
+- This terminal failure authorizes no fourth retry, successor, replacement,
+  validation, Forward-B access, promotion or production activation. The
+  Program optimizer Tournament remains experimental; the formal Hybrid TPE
+  authority and the already negative Search V2 result remain unchanged.
 
 ### Program optimizer exact-source prefinancial rehearsal complete; no third retry (2026-08-14)
 

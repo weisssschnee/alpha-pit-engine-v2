@@ -1,0 +1,113 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_final_retry_outcome_v1",
+  "status": "TOURNAMENT_INCOMPLETE_FAIL_CLOSED",
+  "execution": {
+    "host": "DESKTOP-77OPJ6F",
+    "branch": "feature/a-share-tradability-authority-repair",
+    "repo_sha": "3c9fe7b27d9372005391b5380c8b2a12e0e895e1",
+    "canonical_wrapper": "scripts/run_cn_program_optimizer_tournament_77o.ps1",
+    "canonical_route": "app.py cn-program-optimizer-tournament-v1",
+    "project_control_run_id": "1f09ecc8-21b1-4fff-8404-246b7791e2d4",
+    "requested_action": "RETRY",
+    "target_run_id": "cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b",
+    "admission_file_sha256": "7dae30067a68ce75164974065173be64f3fa4249e4762f334ef42de6edc4dc36",
+    "admission_payload_sha256": "f1eeaf58523e7a16990a93c568bf83d10d1cf7c92b3dd271a2b08607bee51a5e",
+    "admission_consumed_exactly_once": true,
+    "admission_consumption_file_sha256": "97ba68b23e92e5e38cf23c4adf6a6bc52382b89e15f71f5b4d4a79cf438f7195",
+    "detached_task_id": "lanjob_20260814_042318_e2ff01",
+    "exit_code": 1
+  },
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "tournament_authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "prefinancial_source_verification": {
+    "status": "PASS",
+    "search_v2_source_freeze_verify": "PASS",
+    "required_physical_leaves": 84,
+    "available_after_materialization": 84,
+    "unresolved": 0,
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "financial_reads": 0
+  },
+  "terminal_progress": {
+    "stage01_prefinancial_freeze_status": "PROGRAM_OPTIMIZER_TOURNAMENT_PHASE_FROZEN",
+    "stage01_planned_records": 368,
+    "stage01_planned_checkpoints": 46,
+    "stage01_actual_records": 0,
+    "stage01_closed_checkpoints": 0,
+    "stage1_racing_decision": "NOT_REACHED",
+    "stage2_active_arms": [],
+    "final_records": 0,
+    "final_closed_checkpoints": 0,
+    "terminal_closure_written": false
+  },
+  "failure": {
+    "phase": "STAGE01_INITIAL_OPTIMIZER_STATE_RESTORE",
+    "exception_type": "ValueError",
+    "exception_message": "PROGRAM_TOURNAMENT_STATE_REPLAY_DRIFT",
+    "traceback_complete": true,
+    "stderr_sha256": "864e4f785187f907a67aa8f2bcdd312a02b9d63c3c24abbc83ab508f42de3e1f",
+    "terminal_receipt_sha256": "021199b0c5dd7c7c621a3329960cf480bd74f6b5b265fd513c3aa9c984c78b60"
+  },
+  "arm_results": {
+    "UNIFORM_CONTROL": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null
+    },
+    "HYBRID_TPE_PROGRAM": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "raw_tpe_asks": 0,
+      "legal_exact_raw_asks": 0,
+      "direct_exact_hits": 0,
+      "legal_projections": 0,
+      "duplicate_replacements": 0,
+      "eligibility_projections": 0,
+      "global_fallback": 0,
+      "economic_told_trials": 0
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "asked": 0,
+      "evaluated": 0,
+      "admitted": 0,
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "eligible_compared_count": 0,
+      "full_eligible_scoring": "NOT_REACHED",
+      "acquisition_evidence": "NOT_REACHED",
+      "snapshot_restore_continuity": "TOURNAMENT_AGGREGATE_REPLAY_FAILED_BEFORE_SCORING"
+    }
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0,
+    "market_price_rows_read": 0
+  },
+  "economic_conclusion": "INCONCLUSIVE_NO_ECONOMIC_RECORDS",
+  "oos_grade": "NONE",
+  "automatic_successor": false,
+  "further_retry": false,
+  "promotion": false,
+  "terminal_status": "TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "outcome_payload_sha256": "a09eaadd3458ff6875ce604ae518e929c9896cd670ecf2b02e8f53747a98e799"
+}
