@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-        "label":  "CN Program optimizer tournament V1 frozen and not run",
+        "label":  "CN Program optimizer tournament V1 one attempt incomplete before prefinancial freeze",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1549,16 +1549,16 @@
                           }
                       ],
         "validation":  {
-                           "level":  "STATIC_VERIFIED",
-                           "result":  "PASS",
-                           "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
-                           "verified_at_sha":  "30897b429f6eac4035dc2ca91f10d196e5233f35"
+                           "level":  "RUNTIME_VERIFIED",
+                           "result":  "FAIL",
+                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
+                           "verified_at_sha":  "2a6be3e97983419e63d60f00a0a5c98e833dae5b"
                        },
         "claim_badges":  [
-                             "REQUESTABLE_NOT_RUN",
-                             "PROJECTION_FAIRNESS_P0_PASS",
-                             "ZERO_OLD_OBSERVATION_IMPORT",
-                             "NO SEALED READS",
+                             "ONE_ATTEMPT_INCOMPLETE",
+                             "IMPORT_FAILURE",
+                             "ZERO_RECORDS",
+                             "RESTRICTED_READS_ZERO",
                              "NO AUTHORITY CHANGE",
                              "NO PROMOTION"
                          ]

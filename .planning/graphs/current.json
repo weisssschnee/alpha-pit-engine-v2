@@ -23,6 +23,9 @@
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
           "runtime/run_plans/cn_program_optimizer_projection_fairness_p0_report.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_incident_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_outcome_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
           "runtime/run_plans/cn_project_control_trust_v1.json",
           "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
@@ -119,7 +122,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "30897b429f6eac4035dc2ca91f10d196e5233f35"
+        "repo_head": "2a6be3e97983419e63d60f00a0a5c98e833dae5b"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2265,7 +2268,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-13T10:02:48.371307+00:00",
+  "generated_at": "2026-08-13T12:35:29.737186+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7290,10 +7293,10 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "REQUESTABLE_NOT_RUN",
-        "PROJECTION_FAIRNESS_P0_PASS",
-        "ZERO_OLD_OBSERVATION_IMPORT",
-        "NO SEALED READS",
+        "ONE_ATTEMPT_INCOMPLETE",
+        "IMPORT_FAILURE",
+        "ZERO_RECORDS",
+        "RESTRICTED_READS_ZERO",
         "NO AUTHORITY CHANGE",
         "NO PROMOTION"
       ],
@@ -7332,7 +7335,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 frozen and not run",
+      "label": "CN Program optimizer tournament V1 one attempt incomplete before prefinancial freeze",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7347,21 +7350,23 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-13T10:02:48.371307+00:00",
-        "evidence_ref": "scripts/check_cn_program_optimizer_tournament_path_v1.py",
-        "evidence_sha256": "29E61019D2F375D37FEFB8F11AB9258E8429E27FE47F48A23CEE0CD7D847E4C9",
-        "level": "STATIC_VERIFIED",
-        "notes": [],
+        "checked_at": "2026-08-13T12:32:36.824982+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
+        "evidence_sha256": "A6637DA5155DADC539AD644B8F60CCBF4FC7FDF3E25B8F32C45A7DE105F877A4",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
         "profile": "",
-        "result": "PASS",
-        "verified_at_sha": "30897b429f6eac4035dc2ca91f10d196e5233f35"
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "2a6be3e97983419e63d60f00a0a5c98e833dae5b"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "2EEA301DF8CC1E199DD25CA499942B25BDA24774C0AFDA7CCBFC3C26515EBECE"
+    "sha256": "DA36B627D5D400BDCF63A733F20462FF798ACF6BAE40D1D767661E8F7920F62E"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7378,7 +7383,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "30897b429f6eac4035dc2ca91f10d196e5233f35",
+  "repo_head": "2a6be3e97983419e63d60f00a0a5c98e833dae5b",
   "schema_version": 1,
   "semantic_authorities": [
     {
