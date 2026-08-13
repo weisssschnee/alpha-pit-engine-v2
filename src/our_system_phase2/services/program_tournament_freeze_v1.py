@@ -131,6 +131,22 @@ def _verify_bound_file(path: Path, expected_sha256: str, label: str) -> None:
         raise ValueError(f"Program tournament source binding {label} drift")
 
 
+def _artifact_path(binding: Mapping[str, Any]) -> str:
+    value = str(binding.get("relative_path") or binding.get("path") or "")
+    if not value:
+        raise ValueError("Program tournament artifact path drift")
+    return value
+
+
+def _artifact_size(binding: Mapping[str, Any]) -> int:
+    value = binding.get("size_bytes")
+    if value is None:
+        value = binding.get("bytes")
+    if value is None or int(value) < 0:
+        raise ValueError("Program tournament artifact size drift")
+    return int(value)
+
+
 def verify_source_binding_v1(
     binding_path: Path, *, repository_root: Path | None = None
 ) -> dict[str, Any]:
@@ -681,17 +697,17 @@ def verify_phase_freeze_v1(root: Path) -> dict[str, Any]:
         closure.get("financial_evaluation_executed")
     ):
         raise ValueError("Program tournament freeze status drift")
-    manifest_path = resolved / str(closure["artifact_manifest"]["relative_path"])
+    manifest_path = resolved / _artifact_path(closure["artifact_manifest"])
     manifest = _read_json(manifest_path)
     manifest_body = dict(manifest)
     manifest_hash = str(manifest_body.pop("artifact_manifest_sha256", ""))
     if not manifest_hash or stable_hash(manifest_body) != manifest_hash:
         raise ValueError("Program tournament freeze manifest self-hash drift")
     for artifact in manifest["artifacts"]:
-        path = resolved / str(artifact["relative_path"])
+        path = resolved / _artifact_path(artifact)
         if (
             not path.is_file()
-            or path.stat().st_size != int(artifact["size_bytes"])
+            or path.stat().st_size != _artifact_size(artifact)
             or phase_c._sha256(path) != str(artifact["sha256"])
         ):
             raise ValueError(f"Program tournament freeze artifact drift: {path}")

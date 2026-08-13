@@ -470,6 +470,11 @@ def test_stage2_freeze_carries_same_campaign_state_without_import(tmp_path) -> N
         repo_sha="a" * 40,
     )
     frozen = json.loads((target / "phase_c_run_contract.json").read_text())
+    from our_system_phase2.services.program_tournament_freeze_v1 import (
+        verify_phase_freeze_v1,
+    )
+
+    assert verify_phase_freeze_v1(target)["status"].endswith("PHASE_FROZEN")
     assert frozen["main_record_count"] == 56
     assert frozen["minimum_base_identities_per_template"] == 8
     assert frozen["same_campaign_optimizer_state_carried_forward"] is True
