@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-      "label":  "CN Program optimizer tournament V1 fourth retry stopped pre-admission; zero execution",
+      "label":  "CN Program optimizer tournament V1 fourth RETRY incomplete at memory gate; 16 closed records",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1559,23 +1559,18 @@
                           }
                       ],
         "validation":  {
-                           "level":  "STATIC_VERIFIED",
+                           "level":  "PARTIAL",
                            "result":  "PASS",
                            "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
-                           "evidence_sha256":  "82f5ad641fb7843247e5500ff40cb78e231e9620f94af8f119908816df6f7587",
-                           "verified_at_sha":  "a8b2e12187a71b9b23d7ce25762364e3e959015a"
+                           "evidence_sha256":  "c7c2aec059cde9bea18b0e3676d86a65e52dc4e24cc4950c29daae30e9dc0a1b",
+                           "verified_at_sha":  "82af91a8a59c66777dcf379aa6eb118a518288a5"
                        },
         "claim_badges":  [
-                             "EXACT SOURCE BOUND",
-                             "FOURTH RETRY STOPPED PRE_ADMISSION",
-                             "PREFINANCIAL FREEZE PASS",
-                             "STATE REPLAY REPAIRED",
-                             "EXECUTION ASK SCHEMA REPAIRED",
-                             "PRE-EVALUATOR REHEARSAL PASS",
-                             "ZERO PROJECT CONTROL",
-                             "ZERO ECONOMIC RECORDS",
-                             "RESTRICTED_READS_ZERO",
-                             "NO AUTHORITY CHANGE",
+                             "FOURTH RETRY CONSUMED",
+                             "16 RECORDS 2 CHECKPOINTS",
+                             "MEMORY GATE FAIL CLOSED",
+                             "NO ARM COMPARISON",
+                             "RESTRICTED READS ZERO",
                              "NO PROMOTION"
                          ]
     }

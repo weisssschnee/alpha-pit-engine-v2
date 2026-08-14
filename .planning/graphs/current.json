@@ -137,7 +137,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "a8b2e12187a71b9b23d7ce25762364e3e959015a"
+        "repo_head": "82af91a8a59c66777dcf379aa6eb118a518288a5"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2283,7 +2283,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-14T06:36:36.004605+00:00",
+  "generated_at": "2026-08-14T08:26:54.783341+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7308,16 +7308,11 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "EXACT SOURCE BOUND",
-        "FOURTH RETRY STOPPED PRE_ADMISSION",
-        "PREFINANCIAL FREEZE PASS",
-        "STATE REPLAY REPAIRED",
-        "EXECUTION ASK SCHEMA REPAIRED",
-        "PRE-EVALUATOR REHEARSAL PASS",
-        "ZERO PROJECT CONTROL",
-        "ZERO ECONOMIC RECORDS",
-        "RESTRICTED_READS_ZERO",
-        "NO AUTHORITY CHANGE",
+        "FOURTH RETRY CONSUMED",
+        "16 RECORDS 2 CHECKPOINTS",
+        "MEMORY GATE FAIL CLOSED",
+        "NO ARM COMPARISON",
+        "RESTRICTED READS ZERO",
         "NO PROMOTION"
       ],
       "color": "#f9a825",
@@ -7355,7 +7350,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 fourth retry stopped pre-admission; zero execution",
+      "label": "CN Program optimizer tournament V1 fourth RETRY incomplete at memory gate; 16 closed records",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7380,21 +7375,21 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-14T06:36:36.004605+00:00",
+        "checked_at": "2026-08-14T08:26:54.783341+00:00",
         "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
-        "evidence_sha256": "82F5AD641FB7843247E5500FF40CB78E231E9620F94AF8F119908816DF6F7587",
-        "level": "STATIC_VERIFIED",
+        "evidence_sha256": "C7C2AEC059CDE9BEA18B0E3676D86A65E52DC4E24CC4950C29DAAE30E9DC0A1B",
+        "level": "PARTIAL",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a8b2e12187a71b9b23d7ce25762364e3e959015a"
+        "verified_at_sha": "82af91a8a59c66777dcf379aa6eb118a518288a5"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "90467282CDC740D2C0B9F3675BAFBAE16FB3E8CBC86220C3079198DDAF7461D4"
+    "sha256": "F5069E1FDE37CF355C4699E8172DFEA62B22B2E7BEB67B20E6E6D7A73C53350D"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7411,7 +7406,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "a8b2e12187a71b9b23d7ce25762364e3e959015a",
+  "repo_head": "82af91a8a59c66777dcf379aa6eb118a518288a5",
   "schema_version": 1,
   "semantic_authorities": [
     {
