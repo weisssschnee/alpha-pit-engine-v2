@@ -26,7 +26,10 @@
           "runtime/run_plans/cn_program_optimizer_checkpoint003_resource_benchmark_20260814.json",
           "runtime/run_plans/cn_program_optimizer_projection_fairness_p0_report.json",
           "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_diagnostic_audit_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_evidence_note_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_incident_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_outcome_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
@@ -150,10 +153,48 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94"
+        "repo_head": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_NODE_ASSURANCE_FAILED",
+      "evidence": {
+        "component_id": "cn_program_optimizer_tournament_v1_experimental",
+        "validation": {
+          "checked_at": "2026-08-14T14:29:12.341119+00:00",
+          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+          "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+          "level": "FAILED",
+          "notes": [],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+        }
+      },
+      "message": "Critical component assurance is failed or stale",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_EDGE_ASSURANCE_FAILED",
+      "evidence": {
+        "edge_id": "project_control_admission_to_program_tournament",
+        "validation": {
+          "checked_at": "2026-08-14T14:29:12.341119+00:00",
+          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+          "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+          "level": "FAILED",
+          "notes": [],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+        }
+      },
+      "message": "Critical relationship assurance is failed or stale",
+      "severity": "WARN"
     }
   ],
   "edges": [
@@ -2379,14 +2420,14 @@
       "source": "cn_project_control_execution_admission",
       "target": "cn_program_optimizer_tournament_v1_experimental",
       "validation": {
-        "checked_at": "2026-08-14T12:51:32.922465+00:00",
-        "evidence_ref": "tests/test_program_optimizer_tournament_resource_recovery_v1.py",
-        "evidence_sha256": "BEEB00CD821B131336CF8C7FB44ED7A95147E26E08F3CE70170E2B1447C97ABD",
-        "level": "STATIC_VERIFIED",
+        "checked_at": "2026-08-14T14:29:12.341119+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+        "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+        "level": "FAILED",
         "notes": [],
         "profile": "",
-        "result": "PASS",
-        "verified_at_sha": "a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94"
+        "result": "FAIL",
+        "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
       }
     },
     {
@@ -2424,7 +2465,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-14T12:51:32.922465+00:00",
+  "generated_at": "2026-08-14T14:29:12.341119+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7449,12 +7490,12 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "FOURTH RETRY CONSUMED",
-        "16 RECORDS 2 CHECKPOINTS",
-        "MEMORY GATE FAIL CLOSED",
-        "NO ARM COMPARISON",
+        "RECOVERY CONSUMED ONCE",
+        "16 RECORDS 2 CHECKPOINTS UNCHANGED",
+        "INCIDENT ROOT BINDING FAIL CLOSED",
+        "NO CHECKPOINT 3 EXECUTION",
         "RESTRICTED READS ZERO",
-        "NO PROMOTION"
+        "NO FURTHER RETRY OR PROMOTION"
       ],
       "color": "#f9a825",
       "contracts": [
@@ -7491,7 +7532,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 fourth RETRY incomplete at memory gate; 16 closed records",
+      "label": "CN Program optimizer tournament V1 checkpoint RECOVERY failed closed at incident-root binding; 16 records remain",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7507,6 +7548,9 @@
         "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_outcome_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_evidence_note_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_outcome_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_evidence_note_20260814.json",
         "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
         "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
         "docs/adr/0019-program-optimizer-tournament.md"
@@ -7516,21 +7560,21 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-14T08:26:54.783341+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
-        "evidence_sha256": "C7C2AEC059CDE9BEA18B0E3676D86A65E52DC4E24CC4950C29DAAE30E9DC0A1B",
-        "level": "PARTIAL",
+        "checked_at": "2026-08-14T14:29:12.341119+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
+        "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+        "level": "FAILED",
         "notes": [],
         "profile": "",
-        "result": "PASS",
-        "verified_at_sha": "82af91a8a59c66777dcf379aa6eb118a518288a5"
+        "result": "FAIL",
+        "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "A598B2867774F799E6AEA234901C647C6F657BFFAD6B4DE21F7DF6CBF4A27C28"
+    "sha256": "B45E0516602D16F6053DE79244E489715C700922A026CA2B61CCFD4CF4D10C45"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7547,7 +7591,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94",
+  "repo_head": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -7635,7 +7679,7 @@
     "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 0
+    "warnings": 2
   },
   "trace": {
     "path": null,
