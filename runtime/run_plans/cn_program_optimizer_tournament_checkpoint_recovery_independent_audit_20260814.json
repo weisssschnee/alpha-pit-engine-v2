@@ -1,0 +1,111 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_v1",
+  "recorded_date": "2026-08-14",
+  "audit_mode": "READ_ONLY_POST_TERMINAL_OUTPUT_ARTIFACTS_ONLY",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "producer_audit_consistent": true,
+  "financial_source_reads_performed_by_audit": 0,
+  "checks": {
+    "execution_identity": {
+      "expected_repo_sha": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+      "observed_repo_sha": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+      "requested_action": "RECOVERY",
+      "execution_lineage_action": "RETRY",
+      "target_run_id": "cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+      "result": "PASS"
+    },
+    "frozen_identities": {
+      "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+      "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "program_space_count": 3616,
+      "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "result": "PASS_UNCHANGED"
+    },
+    "project_control": {
+      "task_id": "cn-execution-955ea5ae30c2b72bd7ef8428",
+      "run_id": "87d0b787-9acd-42d1-a08e-f65f9fd4d4be",
+      "admission_file_sha256": "c997f30b28bfb10bef8a602ded79ce1acb1e8fb0e71e1c769609b4484f29e9e1",
+      "admission_payload_sha256": "8f5289d6ba743290f1a1ecbf7a6bc947fa9aeca22e9a145a43c96035b82c15f9",
+      "recovery_consumption_count": 1,
+      "total_root_consumption_count": 2,
+      "recovery_consumption_file_sha256": "dc941a1088dd3b52356bcf1313f96643bdb31aa02d9cda46beb49ff09caf2908",
+      "result": "PASS_CONSUMED_EXACTLY_ONCE"
+    },
+    "deployment": {
+      "path": "D:\\ChengboRemote\\staging\\cn_program_optimizer_recovery_deployment_6b428c9.json",
+      "file_sha256": "764e56735b5583e86c76ef87d007eb8beb0eb5b77174ece20400318caa6d392d",
+      "result": "PASS"
+    },
+    "incident_and_diagnostic": {
+      "incident_file_sha256": "40499b3ca8fd8419566907ce0fec1b49951b9410bab8cb2cf51dc7bb3909eaba",
+      "incident_self_hash_valid": true,
+      "diagnostic_file_sha256": "ebaf33787c75443f740cd1d0b24c53fa0a9ebf286575e1259555fc61bbf1d8f9",
+      "diagnostic_self_hash_valid": true,
+      "incident_boundary_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+      "phase_c_runtime_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e\\stage01_run",
+      "boundary_paths_equal": false,
+      "result": "FAIL_CLOSED_EXPECTED_FROM_OBSERVED_RUNTIME_ARGUMENTS"
+    },
+    "checkpoint_integrity": {
+      "closed_checkpoint_count": 2,
+      "closed_record_count": 16,
+      "checkpoint_001_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+      "checkpoint_002_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+      "checkpoint_003_exists": false,
+      "inflight_entry_count": 0,
+      "quarantine_results_reused": false,
+      "result": "PASS_ORIGINAL_BOUNDARY_UNCHANGED"
+    },
+    "terminal_failure": {
+      "detached_task_id": "lanjob_20260814_215947_865a7e",
+      "detached_exit_code": 1,
+      "exception_type": "RuntimeError",
+      "exception_message": "Phase C checkpoint recovery incident binding drift",
+      "complete_traceback_preserved": true,
+      "terminal_closure_exists": false,
+      "result": "PASS_FAILURE_EVIDENCE_PRESERVED"
+    },
+    "racing_and_stage2": {
+      "stage1_racing_decision_exists": false,
+      "stage2_run_exists": false,
+      "economic_winner": "NONE",
+      "result": "NOT_REACHED"
+    },
+    "optimizer_evidence": {
+      "uniform_closed_base_parity_records": 16,
+      "hybrid_tpe_closed_records": 0,
+      "hybrid_tpe_global_fallback": 0,
+      "hybrid_tpe_economic_told_trials": 0,
+      "surrogate_eligible_compared_count": 0,
+      "surrogate_full_eligible_scoring": "NOT_REACHED",
+      "result": "NO_NEW_COMPARABLE_EVIDENCE"
+    },
+    "resource_cleanliness": {
+      "status": "PASS",
+      "abnormal_large_process_count": 0,
+      "commit_headroom_bytes": 173082816512,
+      "pagefile_sane": true,
+      "paging_in_bytes": 0,
+      "paging_out_bytes": 0,
+      "result": "PASS"
+    },
+    "restricted_reads": {
+      "prefinancial_financial_reads": 0,
+      "validation_reads": 0,
+      "holdout_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0,
+      "result": "PASS"
+    },
+    "terminal_stop": {
+      "automatic_successor": false,
+      "further_retry": false,
+      "promotion": false,
+      "result": "PASS"
+    }
+  },
+  "audit_conclusion": "The one authorized checkpoint RECOVERY consumed exactly one target-bound admission and then failed closed before checkpoint_003 execution because the Phase C runtime root was stage01_run while the accepted incident and diagnostic bind the outer tournament output root. The two original immutable checkpoints and 16 records remain unchanged, no inflight or quarantined result was reused, racing and Stage 2 were not reached, all restricted-read counters are zero, and no continuation or promotion occurred.",
+  "audit_payload_sha256": "7a6b87084b58360d968ab768e8d1c83cd39796fb00cd70d0b142e9cee4a23814"
+}

@@ -1,0 +1,65 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_evidence_note_v1",
+  "recorded_date": "2026-08-14",
+  "status": "TERMINAL_RECOVERY_FAILURE_EVIDENCE_PRESERVED",
+  "execution_workspace": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_recovery_adaptive_6b428c9_20260814",
+    "head": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+    "host": "DESKTOP-77OPJ6F"
+  },
+  "project_control": {
+    "authority_run_root": "D:\\ChengboRemote\\runtime\\cn_project_control_authority_store\\cn-execution-955ea5ae30c2b72bd7ef8428\\87d0b787-9acd-42d1-a08e-f65f9fd4d4be",
+    "request_payload_sha256": "955ea5ae30c2b72bd7ef84288b1e3dd61d574013f21e184e516ce25cc867ebb9",
+    "preflight_receipt_sha256": "321667949b9ab7bedcbf2b3ca7ee11eaf8f23f014fbaa8992da1d9270a490d0f",
+    "admission_file_sha256": "c997f30b28bfb10bef8a602ded79ce1acb1e8fb0e71e1c769609b4484f29e9e1",
+    "admission_payload_sha256": "8f5289d6ba743290f1a1ecbf7a6bc947fa9aeca22e9a145a43c96035b82c15f9",
+    "recovery_consumption_file_sha256": "dc941a1088dd3b52356bcf1313f96643bdb31aa02d9cda46beb49ff09caf2908"
+  },
+  "remote_terminal_evidence": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "terminal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_terminal_logs\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e_c997f30b28bf",
+    "detached_job_status_sha256": "1ad113b11884d2ee9507d2c3c0736699c7e85e31103fdd2a0d799b467d9dd133",
+    "detached_job_log_sha256": "a83cc5d3b82054ff5058074a78d229b82e03a4fe7a3f6402273c4249eab7fef8",
+    "terminal_receipt_sha256": "0143c8b411d9b518ef1adf778d55c5777690907b52a1a171e3366a20dc89d386",
+    "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner_stderr_sha256": "bb5c810633994823d521016b201ad24c89758f041cf62c85da7f73a56822bc7f",
+    "execution_node_cleanliness_sha256": "b294a6be4c6ce38e4fcf09b263e2d3d73658b43566d87bd9ca53e7473dd44cbb",
+    "execution_identity_sha256": "4976c297902ed9eeba87516a1b373711223cf6ae6581aab4c5e35919a2a84648",
+    "checkpoint_001_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+    "checkpoint_002_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d"
+  },
+  "pre_admission_operational_events": [
+    {
+      "event": "SCHEDULED_TASK_GIT_DUBIOUS_OWNERSHIP",
+      "admission_consumed": false,
+      "resolution": "A task-local GIT_CONFIG_GLOBAL bound only the exact recovery checkout; no global Git config or repository bytes changed."
+    },
+    {
+      "event": "CLEANLINESS_REJECTED_STALE_READ_ONLY_DIAGNOSTICS",
+      "admission_consumed": false,
+      "identified_process_ids": [25868, 28588],
+      "process_origin": "Earlier read-only checkpoint and Project Control inspection commands from this task",
+      "resolution": "The exact diagnostics and cmd wrappers were stopped after command-line identity verification; the failed pre-admission terminal directory was renamed and retained."
+    }
+  ],
+  "independent_audit": {
+    "mode": "READ_ONLY_POST_TERMINAL_OUTPUT_ARTIFACTS_ONLY",
+    "result": "PASS_INCOMPLETE_FAIL_CLOSED",
+    "financial_source_reads_performed": 0,
+    "original_checkpoint_boundary_unchanged": true,
+    "checkpoint_003_exists": false,
+    "quarantine_results_reused": false,
+    "restricted_reads_zero": true
+  },
+  "continuation_boundary": {
+    "automatic_successor": false,
+    "further_retry": false,
+    "replacement": false,
+    "validation": false,
+    "forward_b": false,
+    "promotion": false
+  },
+  "outcome_file_sha256": "862cc5625fd0c36a9c9e94290edb4f89f2d48959e3343c354341a1705c7e2ede",
+  "independent_audit_file_sha256": "b3e6e1fcb462a2c8a767030c1727328269be399ad6138775751b2377e5ee15db",
+  "evidence_payload_sha256": "c6d6075acdcb5a64ae27adc490aaf745dc2fd8a77af4ca9e3e25a380b48cac7d"
+}

@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_RECOVERY_FIRST_CHECKPOINT_ISOLATION_ADAPTIVE_CONTINUATION_READY_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_CHECKPOINT003_QUARANTINED_RECOMPUTATION_PENDING_EXTERNAL_REVIEW_PROJECT_CONTROL_NOT_REQUESTED_RECOVERY_NOT_RUN_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_CHECKPOINT_RECOVERY_INCOMPLETE_INCIDENT_ROOT_BINDING_FAIL_CLOSED_RECOVERY_ADMISSION_CONSUMED_ONCE_ORIGINAL_16_RECORDS_2_CHECKPOINTS_UNCHANGED_CHECKPOINT003_NOT_STARTED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,38 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer checkpoint RECOVERY incomplete at incident-root binding; no further retry (2026-08-14)
+
+- The one externally authorized checkpoint `RECOVERY` ran on
+  `DESKTOP-77OPJ6F` through the canonical wrapper and `app.py` route at exact
+  execution SHA `6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6`. Project Control run
+  `87d0b787-9acd-42d1-a08e-f65f9fd4d4be` consumed the target-bound RECOVERY
+  admission payload
+  `8f5289d6ba743290f1a1ecbf7a6bc947fa9aeca22e9a145a43c96035b82c15f9`
+  exactly once over the original `RETRY` lineage.
+- Pre-admission source, frozen, path, execution-surface and execution-node
+  checks passed with zero financial reads, no abnormal process, 173,082,816,512
+  bytes commit headroom, sane pagefile and zero paging. The frozen
+  authorization, ask plan, 3,616-Program space and source binding were
+  unchanged.
+- Runtime failed closed before checkpoint execution with
+  `Phase C checkpoint recovery incident binding drift`. The incident and
+  diagnostic are self-hash valid and correctly bind the outer tournament
+  output root, but the Tournament invokes Phase C with `stage01_run` as its
+  runtime root and the recovery gate compares those two path layers as equal.
+- The original checkpoint_001/002 manifest hashes remain
+  `329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3`
+  and
+  `7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d`.
+  The durable boundary remains 16 records / 2 checkpoints; checkpoint_003 does
+  not exist, inflight is empty, quarantine results were not reused, and no
+  optimizer tell, racing decision or Stage 2 execution occurred.
+- Independent read-only audit returned `PASS_INCOMPLETE_FAIL_CLOSED`. All
+  validation, holdout, spent-2023, Forward-B and Forward-2026 reads are zero.
+  No additional recovery/retry, successor, replacement or promotion was
+  started or authorized. Canonical evidence is the three
+  `cn_program_optimizer_tournament_checkpoint_recovery_*_20260814.json` files.
 
 ### Program optimizer recovery first-checkpoint isolation and adaptive continuation ready; RECOVERY not run (2026-08-14)
 
