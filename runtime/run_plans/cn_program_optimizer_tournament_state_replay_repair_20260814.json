@@ -1,0 +1,104 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_state_replay_repair_v1",
+  "status": "STATE_REPLAY_REPAIR_PASS_EXECUTION_BOUNDARY_REHEARSAL_INCOMPLETE_FAIL_CLOSED",
+  "base_sha": "0fd7ec9f5a81eb3aff64b72ad08e9f160838352c",
+  "implementation_sha": "174a18c8cc0eb09948e146d5edb1647beecc9cfe",
+  "root_cause": {
+    "classification": "JSON_SERIALIZATION_CONTAINER_SHAPE_DRIFT",
+    "first_differing_json_path": "/arms/STRUCTURED_SURROGATE_PROGRAM/categories/program_template_id",
+    "persisted_type": "list",
+    "restored_snapshot_type_before_repair": "tuple",
+    "semantic_state_drift": false,
+    "old_test_boundary": "Python-memory snapshot -> restore -> snapshot",
+    "production_boundary": "snapshot -> JSON persistence -> JSON load -> restore -> snapshot",
+    "why_old_tests_missed": "tuple/list normalization occurs only across the JSON persistence boundary"
+  },
+  "repair": {
+    "component": "StructuredSurrogateProgramSearchAdapter.snapshot",
+    "change": "serialize categories as dict[str, list[str]] while retaining internal tuple categories",
+    "stable_hash_changed": false,
+    "optimizer_algorithm_changed": false,
+    "feature_values_or_order_changed": false,
+    "replay_equality_weakened": false,
+    "diagnostic_added": "first differing JSON path plus original/restored type and bounded value summary; mismatch still raises"
+  },
+  "tests": {
+    "local_focused": "29 passed",
+    "remote_formal_venv_focused": "29 passed",
+    "surrogate_genesis_json_roundtrip": "PASS_EXACT",
+    "surrogate_nonempty_trained_json_roundtrip": "PASS_EXACT",
+    "hybrid_tpe_genesis_json_roundtrip": "PASS_EXACT",
+    "hybrid_tpe_nonempty_ask_tell_json_roundtrip": "PASS_EXACT",
+    "uniform_consumed_json_roundtrip": "PASS_EXACT",
+    "aggregate_tournament_genesis_json_roundtrip": "PASS_EXACT",
+    "aggregate_tournament_nonempty_mixed_arm_json_roundtrip": "PASS_EXACT",
+    "path_checker": "PASS_ZERO_FINANCIAL",
+    "frozen_checker": "PASS_ZERO_FINANCIAL",
+    "source_binding_checker_77o": "PASS_ZERO_FINANCIAL"
+  },
+  "real_failed_state_replay": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b\\prefinancial_freeze_stage01\\initial_bandit_state.json",
+    "artifact_file_sha256_before_and_after": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "exact_snapshot_equality": true,
+    "original_bandit_state_sha256": "2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3",
+    "restored_bandit_state_sha256": "2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3",
+    "frozen_artifact_modified": false
+  },
+  "execution_boundary_rehearsal": {
+    "host": "DESKTOP-77OPJ6F",
+    "formal_python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "repo_sha": "174a18c8cc0eb09948e146d5edb1647beecc9cfe",
+    "root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_state_replay_rehearsal_20260814_174a18c",
+    "freeze_closure_file_sha256": "3dc4ce662450a53fce06f0c58d073bd2639a3d6ec6db3c49939e415ef5da91c1",
+    "new_initial_state_file_sha256": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "exact_source_binding": "PASS",
+    "search_v2_source_freeze": "PASS_84_84_0",
+    "stage01_freeze_build": "PASS",
+    "stage01_freeze_verify": "PASS",
+    "initial_state_loaded_from_disk": "PASS",
+    "tournament_restore": "PASS",
+    "exact_replay_equality": true,
+    "first_checkpoint_uniform_optimizer_ask": "PASS_BEFORE_SCHEDULE_CONSTRUCTION",
+    "first_checkpoint_schedule": "FAIL_CLOSED",
+    "hybrid_tpe_first_ask": "NOT_REACHED",
+    "structured_surrogate_first_ask": "NOT_REACHED",
+    "schedule_legality_and_cardinality": "NOT_REACHED",
+    "failure": {
+      "phase": "CHECKPOINT_000_SCHEDULE_CONSTRUCTION",
+      "exception_type": "KeyError",
+      "exception_message": "template_record_ordinal",
+      "observed_contract_drift": "frozen Tournament ask rows carry template_stage_ordinal while Phase C _schedule_record requires template_record_ordinal",
+      "runner_repair_in_current_scope": false
+    }
+  },
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813",
+    "search_v2_source": "84/84/0"
+  },
+  "read_boundary": {
+    "financial_evaluation_executed": false,
+    "market_price_rows_read": 0,
+    "optimizer_economic_observations": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "continuation_boundary": {
+    "project_control_requested": false,
+    "project_control_admission": "NOT_REQUESTED",
+    "app_high_cost_route": "NOT_CALLED",
+    "retry": false,
+    "tournament_economic_execution": false,
+    "automatic_successor": false,
+    "promotion": false,
+    "fourth_retry_authorized": false
+  },
+  "evidence_payload_sha256": "dabb3e51c35233cba815fc5a57df91973ddaeb435d39626c17a526ef280302a5"
+}

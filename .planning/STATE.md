@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_FINAL_RETRY_INCOMPLETE_STATE_REPLAY_DRIFT_ZERO_ECONOMIC_RECORDS_NO_FURTHER_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_STATE_REPLAY_REPAIRED_EXECUTION_BOUNDARY_REHEARSAL_BLOCKED_TEMPLATE_ORDINAL_ZERO_ECONOMIC_RECORDS_NO_FOURTH_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,34 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer JSON state replay repaired; execution-boundary rehearsal exposed a separate schedule blocker (2026-08-14)
+
+- At implementation SHA `174a18c8cc0eb09948e146d5edb1647beecc9cfe`,
+  `StructuredSurrogateProgramSearchAdapter.snapshot()` now serializes its
+  frozen categories as JSON-native lists while retaining tuple categories
+  internally. Exact replay equality remains fail-closed and now reports the
+  first differing JSON path and original/restored types. `stable_hash`, the
+  optimizer algorithms, Program values/order, seeds, asks, tells and all
+  frozen identities are unchanged.
+- Genesis and nonempty JSON-persisted roundtrips pass exactly for Uniform,
+  Hybrid TPE, Structured Surrogate and the aggregate Tournament. On 77o, the
+  original failed `initial_bandit_state.json` and a newly built Stage 0/1
+  freeze both restore to exact snapshot equality with original/restored state
+  SHA256 `2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3`.
+  The original frozen file remained byte-identical.
+- The required no-admission execution-boundary rehearsal then failed closed at
+  checkpoint-000 schedule construction: frozen Tournament asks contain
+  `template_stage_ordinal`, while the reused Phase C `_schedule_record`
+  requires `template_record_ordinal`. Uniform's optimizer ask was constructed;
+  no schedule, TPE ask, Surrogate ask, evaluator call, market-price row or
+  economic observation was produced. This is a separate prefinancial runner
+  adapter blocker and was not repaired under the JSON-only scope.
+- Evidence is recorded in
+  `runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json`.
+  Project Control was not requested, no `RETRY`/`LAUNCH`/`RECOVERY` ran, all
+  restricted reads are zero, and no fourth retry, successor or promotion is
+  authorized.
 
 ### Program optimizer final technical RETRY incomplete; no further retry (2026-08-14)
 
