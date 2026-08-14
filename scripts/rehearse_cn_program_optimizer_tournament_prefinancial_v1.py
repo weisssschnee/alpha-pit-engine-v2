@@ -153,11 +153,12 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--failed-initial-state", type=Path, required=True)
     parser.add_argument("--repo-sha", required=True)
+    parser.add_argument("--git-executable", default="git")
     args = parser.parse_args()
     if args.output_root.exists():
         raise FileExistsError(args.output_root)
     actual_repo_sha = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        [args.git_executable, "rev-parse", "HEAD"], cwd=ROOT, text=True
     ).strip()
     if actual_repo_sha != args.repo_sha:
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_REPO_SHA_DRIFT")
