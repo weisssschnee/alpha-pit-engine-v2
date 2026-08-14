@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_EXECUTION_ASK_SCHEMA_REPAIRED_PRE_EVALUATOR_REHEARSAL_COMPLETE_ZERO_ECONOMIC_RECORDS_NO_FOURTH_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_FOURTH_TECHNICAL_RETRY_STOPPED_PRE_ADMISSION_ZERO_PROJECT_CONTROL_ZERO_ECONOMIC_RECORDS_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,35 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer fourth technical RETRY stopped pre-admission; zero execution (2026-08-14)
+
+- The authorized fourth technical `RETRY` was staged on `DESKTOP-77OPJ6F`
+  from exact clean execution SHA
+  `517b66eab86a233549b90aeca45ddbef312d37ff`; local, tracking and remote
+  branch identities matched. The frozen authorization, ask plan, 3,616-entry
+  Program space and exact-source binding remained unchanged. Source-binding,
+  frozen-contract and execution-path checkers passed before any Project
+  Control request.
+- The mandatory execution-surface import smoke failed because the operator-
+  created temporary helper had a UTF-8 BOM and ran outside the repository, so
+  `import app` raised `ModuleNotFoundError`. This does not establish a
+  production-code defect. The external execution contract nevertheless says
+  any failed pre-admission check must stop without a rerun, so the checker was
+  not repeated and no admission was requested.
+- Project Control run, admission, target run and execution output root are all
+  absent. The canonical wrapper and `app.py` route were not invoked; economic
+  records, closed checkpoints, optimizer asks/tells and every restricted read
+  are zero. There is no racing decision, Stage 2 arm or economic winner; OOS
+  remains `NONE`.
+- Outcome, evidence and read-only independent audit are recorded in
+  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_outcome_20260814.json`,
+  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_evidence_note_20260814.json`
+  and
+  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json`.
+  The Tournament remains experimental; the formal Hybrid TPE authority and
+  the completed negative Search V2 result are unchanged. No further retry,
+  successor, promotion or authority transition is authorized.
 
 ### Program optimizer derived execution ask schema repaired; full pre-evaluator rehearsal complete; no fourth retry (2026-08-14)
 
@@ -221,8 +250,8 @@ Current status summary:
 
 ```text
 PROGRAM_SEARCH_CORE = IMPLEMENTED / STATIC_AND_SYNTHETIC_VERIFIED
-TOURNAMENT = TWO PREFINANCIAL INCOMPLETE ENTRIES / EXECUTION-SCHEMA PRE-EVALUATOR REHEARSAL PASS / ZERO RECORDS / EXTERNAL REVIEW REQUIRED
-TOURNAMENT_RETRY = CONSUMED / SPENT / INCOMPLETE_PREFINANCIAL / NO RECOVERY ELIGIBILITY
+TOURNAMENT = FOURTH TECHNICAL RETRY STOPPED PRE_ADMISSION / ZERO PROJECT CONTROL / ZERO RECORDS / EXTERNAL REVIEW REQUIRED
+TOURNAMENT_RETRY = FOURTH AUTHORIZATION NOT CONSUMED / STOPPED_PRE_ADMISSION / NO FURTHER RETRY AUTHORIZED
 ARMS = UNIFORM_CONTROL / HYBRID_TPE_PROGRAM / STRUCTURED_SURROGATE_PROGRAM
 MAXIMUM_BUDGET = 536
 OLD_FINANCIAL_OBSERVATIONS_IMPORTED = 0

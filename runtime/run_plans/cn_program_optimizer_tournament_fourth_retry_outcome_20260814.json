@@ -1,0 +1,73 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_fourth_retry_outcome_v1",
+  "recorded_date": "2026-08-14",
+  "status": "TOURNAMENT_INCOMPLETE_STOPPED_PRE_ADMISSION",
+  "external_authorization": "AUTHORIZE_ONE_FOURTH_TECHNICAL_RETRY_PROGRAM_OPTIMIZER_TOURNAMENT",
+  "execution": {
+    "branch": "feature/a-share-tradability-authority-repair",
+    "authorized_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "execution_host": "DESKTOP-77OPJ6F",
+    "project_control_run_id": "NOT_CREATED",
+    "project_control_admission": "NOT_CREATED",
+    "project_control_admission_payload_sha256": "NOT_CREATED",
+    "target_run_id": "NOT_CREATED",
+    "output_root": "NOT_CREATED",
+    "canonical_wrapper_invoked": false,
+    "app_route_invoked": false,
+    "tournament_invoked": false
+  },
+  "frozen_identity": {
+    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813"
+  },
+  "git_preflight": {
+    "local_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "tracking_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "remote_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "worktree_clean": true
+  },
+  "pre_admission_checks": {
+    "source_binding_checker": "PASS",
+    "frozen_checker": "PASS",
+    "path_checker": "PASS",
+    "execution_surface_import_smoke": "FAIL",
+    "failure_type": "ModuleNotFoundError",
+    "failure_detail": "The operator-created temporary smoke script contained a UTF-8 BOM and ran outside the repository, so import app failed before the canonical wrapper path was exercised.",
+    "production_code_defect_claimed": false,
+    "checker_rerun": false,
+    "hard_gate_decision": "STOP_NO_EXECUTION"
+  },
+  "runtime_result": {
+    "stage_0_records": 0,
+    "stage_1_records": 0,
+    "stage_2_records": 0,
+    "total_records": 0,
+    "closed_checkpoints": 0,
+    "racing_decision": "NOT_REACHED",
+    "stage_2_active_arms": [],
+    "economic_winner": "INCONCLUSIVE_NO_EXECUTION",
+    "oos_grade": "NONE"
+  },
+  "arm_results": {
+    "UNIFORM_CONTROL": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0},
+    "HYBRID_TPE_PROGRAM": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0, "global_fallback": 0},
+    "STRUCTURED_SURROGATE_PROGRAM": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0, "eligible_compared_count": 0}
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "continuation": {
+    "automatic_successor": false,
+    "further_retry": false,
+    "promotion": false
+  },
+  "outcome_payload_sha256": "c093a8dc438b5e83036e7f98a92b07730fa95637259fb28515a31b572ab2be49"
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_fourth_retry_evidence_note_v1",
+  "recorded_date": "2026-08-14",
+  "deployment": {
+    "local_bundle_path": "G:\\Chengbo\\runtime\\cn_program_optimizer_fourth_retry_517b66e_20260814.bundle",
+    "bundle_sha256": "abe4601a069ff861a3ecffa25493a1776893e22d97366228ddcd41d361aa97a0",
+    "bundle_size_bytes": 4981,
+    "remote_bundle_path": "D:\\ChengboRemote\\staging\\cn_program_optimizer_fourth_retry_517b66e_20260814.bundle",
+    "remote_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_fourth_retry_517b66e_20260814",
+    "remote_branch": "feature/a-share-tradability-authority-repair",
+    "remote_head": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "remote_worktree_clean": true,
+    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813"
+  },
+  "preflight_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_preflight_20260814_517b66e",
+  "checker_receipts": {
+    "source_stdout_sha256": "e4b40b84354b54f645323cf7ffaea7bcde6836e11cf3fe1b58bdccc3d3416b3a",
+    "source_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "freeze_stdout_sha256": "aa77dfb0e3a89d3582eabf61153a460785b3458d9e4923f05354cf05b8628d12",
+    "freeze_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "path_stdout_sha256": "08ee6404924488457ff971f7c49be012edb139a0635718d615461d6a3f0581e5",
+    "path_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "import_smoke_script_sha256": "ad86efeea2364728478f0f9faa626f318cb0b6ef9204cc013a8f434ccb4e558b",
+    "import_smoke_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "import_smoke_stderr_sha256": "0cb7a3574e8c1ee183abda5948f6d5cfe4cd92100513cbdef0e59c42dc4806ce"
+  },
+  "network_observation": {
+    "device": "DESKTOP-77OPJ6F",
+    "address": "192.168.3.93",
+    "uuyc_online": true,
+    "wlan_state": "Up",
+    "sshd_state": "Running",
+    "tcp_22_state": "INTERMITTENT_THEN_RECOVERED",
+    "configuration_changes_applied": false
+  },
+  "terminal_audit": {
+    "project_control_authority_store_directory_count": 8,
+    "new_project_control_run": false,
+    "admission_created_or_consumed": false,
+    "target_process_present": false,
+    "execution_output_root_present": false,
+    "economic_records": 0,
+    "closed_checkpoints": 0,
+    "restricted_reads": 0
+  },
+  "continuation": {
+    "checker_rerun": false,
+    "project_control_request": false,
+    "tournament_execution": false,
+    "automatic_successor": false,
+    "further_retry": false,
+    "promotion": false
+  },
+  "evidence_payload_sha256": "6a4dd2b5c2de6f5a175145791b635c37f626f4aa232042b29ae322209b5be19b"
+}

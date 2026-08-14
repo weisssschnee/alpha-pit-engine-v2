@@ -1,0 +1,44 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_fourth_retry_independent_audit_v1",
+  "recorded_date": "2026-08-14",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED_ZERO_EXECUTION",
+  "authorized_identity": {
+    "branch": "feature/a-share-tradability-authority-repair",
+    "repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "findings": {
+    "source_binding_checker": "PASS",
+    "frozen_checker": "PASS",
+    "path_checker": "PASS",
+    "execution_surface_import_smoke": "FAIL",
+    "mandatory_fail_closed_applied": true,
+    "project_control_run_created": false,
+    "admission_created": false,
+    "admission_consumed": false,
+    "canonical_wrapper_invoked": false,
+    "app_route_invoked": false,
+    "execution_output_root_created": false,
+    "target_process_present": false,
+    "economic_records": 0,
+    "closed_checkpoints": 0,
+    "restricted_reads": 0,
+    "unauthorized_continuation": false,
+    "promotion": false
+  },
+  "authority_store_observation": {
+    "directory_count": 8,
+    "new_project_control_run_detected": false,
+    "latest_existing_run_directories": [
+      "cn-execution-1b359871011a916578fecd2d",
+      "cn-execution-899c0d536c1217de598db7a5",
+      "cn-execution-fae9f3f17e26128ef3cc3b1d"
+    ]
+  },
+  "audit_conclusion": "The fourth technical retry stopped at the mandatory pre-admission gate. No Project Control identity or admission was created or consumed, no Tournament route ran, no economic record or checkpoint exists, and all restricted-read counters remain zero.",
+  "audit_payload_sha256": "0ef725dc76a536cd06b3d71347aefcbdee1e7f61092c763e11ec9366bcd5e712"
+}
