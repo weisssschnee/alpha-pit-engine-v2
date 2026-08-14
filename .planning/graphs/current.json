@@ -23,6 +23,7 @@
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
           "runtime/run_plans/cn_program_optimizer_projection_fairness_p0_report.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_outcome_20260814.json",
@@ -133,10 +134,94 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "5763d0c91885b454ad7fa7e373b9e97fed4cb9f1"
+        "repo_head": "fd7ed63aeb1c772de3c685ce7de951c088a97943"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_NODE_ASSURANCE_FAILED",
+      "evidence": {
+        "component_id": "cn_joint_program_allocator_repair_canary_v0",
+        "validation": {
+          "checked_at": "2026-08-14T04:08:53.112870+00:00",
+          "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
+          "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
+          "level": "FAILED",
+          "notes": [
+            "evidence SHA256 mismatch"
+          ],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": null
+        }
+      },
+      "message": "Critical component assurance is failed or stale",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_NODE_ASSURANCE_FAILED",
+      "evidence": {
+        "component_id": "cn_joint_program_phase_d_v0",
+        "validation": {
+          "checked_at": "2026-08-14T04:08:53.112870+00:00",
+          "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+          "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
+          "level": "FAILED",
+          "notes": [
+            "evidence SHA256 mismatch"
+          ],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": null
+        }
+      },
+      "message": "Critical component assurance is failed or stale",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_EDGE_ASSURANCE_FAILED",
+      "evidence": {
+        "edge_id": "allocator_repair_canary_candidate_for_development_search_policy",
+        "validation": {
+          "checked_at": "2026-08-14T04:08:53.112870+00:00",
+          "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
+          "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
+          "level": "FAILED",
+          "notes": [
+            "evidence SHA256 mismatch"
+          ],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": null
+        }
+      },
+      "message": "Critical relationship assurance is failed or stale",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "CRITICAL_EDGE_ASSURANCE_FAILED",
+      "evidence": {
+        "edge_id": "joint_program_phase_d_not_qualified_for_development_search_policy",
+        "validation": {
+          "checked_at": "2026-08-14T04:08:53.112870+00:00",
+          "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+          "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
+          "level": "FAILED",
+          "notes": [
+            "evidence SHA256 mismatch"
+          ],
+          "profile": "",
+          "result": "FAIL",
+          "verified_at_sha": null
+        }
+      },
+      "message": "Critical relationship assurance is failed or stale",
+      "severity": "WARN"
     }
   ],
   "edges": [
@@ -242,7 +327,7 @@
       "source": "pit_fundamental_fabric",
       "target": "unified_capability_registry",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/registry_build_summary.json",
         "evidence_sha256": "B13934479658DFBD7AF8868D354D231FF247FA07C199542CC577BD10A5C5A3B9",
         "level": "STATIC_VERIFIED",
@@ -276,7 +361,7 @@
       "source": "unified_capability_registry",
       "target": "compositional_nline_bounded_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_route_supply_closure.py",
         "evidence_sha256": "26F762A1D2D13CE24C2694EACAE9F51E67471425E8F52F255BE74BD90DEFDB53",
         "level": "STATIC_VERIFIED",
@@ -362,7 +447,7 @@
       "source": "cn_field_master_registry",
       "target": "unified_capability_registry",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
         "evidence_sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "level": "STATIC_VERIFIED",
@@ -448,7 +533,7 @@
       "source": "field_information_evidence",
       "target": "field_information_census",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/information_research_contract.json",
         "evidence_sha256": "E2AF6D59C0D330B2CB6B92F16D90E2289E76432A74AB85AD887C1BA0705A64D0",
         "level": "PARTIAL",
@@ -484,7 +569,7 @@
       "source": "field_information_census",
       "target": "field_information_core_pack",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/core_pack.json",
         "evidence_sha256": "6D986996C04F8C90F3558057B8F8C41429AD2C3E1CC23C528D5DF4951CBE6900",
         "level": "PARTIAL",
@@ -520,7 +605,7 @@
       "source": "field_information_core_pack",
       "target": "unified_capability_registry",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json",
         "evidence_sha256": "C6B30D7FF5765808DCF523667D8F0C5B811F8E5AB93FEDA47B4F41B168B9D5DA",
         "level": "PARTIAL",
@@ -608,7 +693,7 @@
       "source": "core_pack_generator_capacity_review",
       "target": "core_pack_development_discovery_contract",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/route_capacity_review.json",
         "evidence_sha256": "0DA51131BC89C60B695D490029D6FA018650FA595F31FB91DCEE53054F71BA86",
         "level": "STATIC_VERIFIED",
@@ -642,7 +727,7 @@
       "source": "core_pack_development_discovery_contract",
       "target": "compositional_nline_bounded_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -676,7 +761,7 @@
       "source": "unified_capability_registry",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -710,7 +795,7 @@
       "source": "fixed_split_authority",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -770,7 +855,7 @@
       "source": "compositional_nline_bounded_search",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/full_coordinate_development_qualification/candidate_receipts.jsonl",
         "evidence_sha256": "BD2ADE00F3CB6C658BE1BA28596422102718394798D47D820F27D56EF4945E7E",
         "level": "PARTIAL",
@@ -806,7 +891,7 @@
       "source": "compositional_nline_bounded_search",
       "target": "compositional_stage_a_route_eligibility",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -840,7 +925,7 @@
       "source": "candidate_submission_receipt",
       "target": "matched_control_pair_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json",
         "evidence_sha256": "0522800B3249CB6FA9F63C9685A58CE40C266F72F836CF02654DFE2C13F34C54",
         "level": "STATIC_VERIFIED",
@@ -874,7 +959,7 @@
       "source": "matched_control_pair_authority",
       "target": "candidate_parallel_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -908,7 +993,7 @@
       "source": "matched_control_pair_authority",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -942,7 +1027,7 @@
       "source": "compositional_nline_bounded_search",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "evidence_sha256": "61AC0E0DE1FD7BE6F4654842D7BF76724714BF162471DB4613A09E0A3DCA03AE",
         "level": "PARTIAL",
@@ -978,7 +1063,7 @@
       "source": "unified_capability_registry",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
         "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
         "level": "PARTIAL",
@@ -1014,7 +1099,7 @@
       "source": "cn_shared_node_resource_authority",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_resource_topology_authorization.py",
         "evidence_sha256": "23E2B688D658DA4328476BD1E9BF79516C69BC3CF8CC04D64CE9DA88D3726C64",
         "level": "STATIC_VERIFIED",
@@ -1048,7 +1133,7 @@
       "source": "unified_capability_registry",
       "target": "candidate_execution_clock_capability",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_stock_session_field_capability.py",
         "evidence_sha256": "86B306FAE189D1E7CE22A19E59964422190712F8789C643BD09686E322631FC6",
         "level": "STATIC_VERIFIED",
@@ -1082,7 +1167,7 @@
       "source": "candidate_execution_clock_capability",
       "target": "a_share_finalist_replay_contract",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_execution_clock_capability.py",
         "evidence_sha256": "0598F1BED89580D77BAC6DCC21E6C4898D138E16156C5C9CE5B39E9D5463F2F5",
         "level": "STATIC_VERIFIED",
@@ -1116,7 +1201,7 @@
       "source": "cn_shared_node_resource_authority",
       "target": "a_share_finalist_replay_contract",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_node_resource_governor.py",
         "evidence_sha256": "213D0F02644473181A962079CE09170DBE89D496307EE711AD11B8FA6B230E58",
         "level": "STATIC_VERIFIED",
@@ -1150,7 +1235,7 @@
       "source": "cn_development_search_policy",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -1184,7 +1269,7 @@
       "source": "matched_train_feedback",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -1218,7 +1303,7 @@
       "source": "compositional_stage_a_route_eligibility",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -1252,7 +1337,7 @@
       "source": "candidate_parallel_evaluator",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_evaluation_access_guard.py",
         "evidence_sha256": "4F2921AA8AD2F7041C36CA7888260696067E846C9807FF7712BCCC79F7C4F982",
         "level": "STATIC_VERIFIED",
@@ -1312,7 +1397,7 @@
       "source": "validation_holdout_feedback",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1346,7 +1431,7 @@
       "source": "validation_holdout_feedback",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1380,9 +1465,9 @@
       "source": "forward_2026",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
+        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1414,9 +1499,9 @@
       "source": "forward_2026",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
+        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1448,7 +1533,7 @@
       "source": "historical_challenge_2023",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "93428B82300B758E7FC217014B12B95823BA60108362BE4637BE58E6CA7248FE",
         "level": "STATIC_VERIFIED",
@@ -1482,7 +1567,7 @@
       "source": "historical_challenge_2023",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "93428B82300B758E7FC217014B12B95823BA60108362BE4637BE58E6CA7248FE",
         "level": "STATIC_VERIFIED",
@@ -1516,7 +1601,7 @@
       "source": "cn_project_control_execution_admission",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "03E2495E2D879F41F452E94A35643DE44D80B060B26CA63B824DAABB32FDFFF9",
         "level": "STATIC_VERIFIED",
@@ -1550,7 +1635,7 @@
       "source": "cn_project_control_execution_admission",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "598A87FBCFFA7A1C705F56658DC093689AB34E76CAF1C441EED665A9461372EE",
         "level": "STATIC_VERIFIED",
@@ -1584,9 +1669,9 @@
       "source": "forward_b_2026",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1618,9 +1703,9 @@
       "source": "forward_b_2026",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1652,7 +1737,7 @@
       "source": "candidate_parallel_evaluator",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1686,7 +1771,7 @@
       "source": "phase3cm_streaming_multicandidate_evaluator",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
         "evidence_sha256": "04CABBD9B068EA71FE27B1E2840E2C056C326E03C55C2D01B01F30D72BF67DB3",
         "level": "STATIC_VERIFIED",
@@ -1720,7 +1805,7 @@
       "source": "matched_train_feedback",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1754,7 +1839,7 @@
       "source": "unified_capability_registry",
       "target": "cn_typed_candidate_program_v1",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
         "evidence_sha256": "9810E97A78F2BD5750D7C52AADEFC239851A3AAA9CF799FFC32C076C12A088C0",
         "level": "STATIC_VERIFIED",
@@ -1788,7 +1873,7 @@
       "source": "cn_typed_candidate_program_v1",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
         "evidence_sha256": "9810E97A78F2BD5750D7C52AADEFC239851A3AAA9CF799FFC32C076C12A088C0",
         "level": "STATIC_VERIFIED",
@@ -1822,7 +1907,7 @@
       "source": "cn_typed_candidate_program_v1",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
         "evidence_sha256": "9810E97A78F2BD5750D7C52AADEFC239851A3AAA9CF799FFC32C076C12A088C0",
         "level": "STATIC_VERIFIED",
@@ -1882,7 +1967,7 @@
       "source": "cn_joint_program_rolling_search_v0_phase_b",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
         "evidence_sha256": "5A09E569219DC78557C8780688B0D351E350262BB54B62EF0365ADC5CCC3DD54",
         "level": "PARTIAL",
@@ -1944,7 +2029,7 @@
       "source": "cn_joint_program_rolling_search_v0_phase_c",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json",
         "evidence_sha256": "41FE5DE37CA165BA2EDF167746B14AA8672D5439E9CADE74FBCF3C7632AEC822",
         "level": "PARTIAL",
@@ -2006,15 +2091,15 @@
       "source": "cn_joint_program_allocator_repair_canary_v0",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-        "evidence_sha256": "013166235CFC6B92D07C5D241B42ECCBBEB2D0462CAA5C106750B7937E768317",
-        "level": "PARTIAL",
+        "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
+        "level": "FAILED",
         "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
+          "evidence SHA256 mismatch"
         ],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
+        "result": "FAIL",
         "verified_at_sha": null
       }
     },
@@ -2068,15 +2153,15 @@
       "source": "cn_joint_program_phase_d_v0",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
-        "level": "PARTIAL",
+        "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
+        "level": "FAILED",
         "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
+          "evidence SHA256 mismatch"
         ],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
+        "result": "FAIL",
         "verified_at_sha": null
       }
     },
@@ -2130,7 +2215,7 @@
       "source": "cn_search_engine_v2_experimental",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_engine_v2.py",
         "evidence_sha256": "9A64D58D7F18BCD3BFE3E1AE8D569C806D15F6D249C20975575239D8420A3A34",
         "level": "STATIC_VERIFIED",
@@ -2164,7 +2249,7 @@
       "source": "cn_project_control_execution_admission",
       "target": "cn_search_engine_v2_experimental",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json",
         "evidence_sha256": "AEB90FBF2ABC3B24937DE0B8765C379CED991CACC051D5A2C6C62D7799BCE11C",
         "level": "PARTIAL",
@@ -2200,7 +2285,7 @@
       "source": "cn_search_engine_v2_experimental",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_engine_v2.py",
         "evidence_sha256": "9A64D58D7F18BCD3BFE3E1AE8D569C806D15F6D249C20975575239D8420A3A34",
         "level": "STATIC_VERIFIED",
@@ -2234,7 +2319,7 @@
       "source": "shard_parallel_evaluation",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -2268,7 +2353,7 @@
       "source": "mean_shard_reward_fallback",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -2279,7 +2364,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-14T02:38:26.354200+00:00",
+  "generated_at": "2026-08-14T04:10:50.769818+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2336,7 +2421,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2406,7 +2491,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -2480,7 +2565,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -2580,7 +2665,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -2753,7 +2838,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -2913,7 +2998,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -3083,7 +3168,7 @@
       "required": true,
       "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -3555,7 +3640,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -4026,7 +4111,7 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
         "evidence_sha256": "959804532BA654090AD505F9754972990CA16D039FD4BF3D83BD92B7536084F7",
         "level": "PARTIAL",
@@ -4219,7 +4304,7 @@
       "required": false,
       "semantic_role": "development_search_policy_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -4332,7 +4417,7 @@
       "required": false,
       "semantic_role": "shared_node_resource_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_node_resource_governor.py",
         "evidence_sha256": "213D0F02644473181A962079CE09170DBE89D496307EE711AD11B8FA6B230E58",
         "level": "STATIC_VERIFIED",
@@ -4497,7 +4582,7 @@
       "required": false,
       "semantic_role": "candidate_execution_clock_capability_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_execution_clock_capability.py",
         "evidence_sha256": "0598F1BED89580D77BAC6DCC21E6C4898D138E16156C5C9CE5B39E9D5463F2F5",
         "level": "STATIC_VERIFIED",
@@ -4816,7 +4901,7 @@
       "required": false,
       "semantic_role": "finalist_execution_evidence_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_finalist_economic_admission.py",
         "evidence_sha256": "AD51B4014BFF0F339F8494D3D53CA8B549F447A28AF6C021CCFF17983FD59E23",
         "level": "STATIC_VERIFIED",
@@ -4880,7 +4965,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -4964,7 +5049,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -5094,7 +5179,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_pair_native_feedback_all_routes.py",
         "evidence_sha256": "EB5CE3343FAED6159142C5FB28FEA1C78B657801484A8F0F3996184994E78BF5",
         "level": "STATIC_VERIFIED",
@@ -5290,7 +5375,7 @@
       "required": false,
       "semantic_role": "development_predictive_evaluation_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_phase3cm_bootstrap.py",
         "evidence_sha256": "C68A46B830230E2D98DFB22A638FDF34AE346271F4AF7BB4BE45FB51F3EA64B5",
         "level": "STATIC_VERIFIED",
@@ -5568,7 +5653,7 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -5688,7 +5773,7 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_evaluation_access_guard.py",
         "evidence_sha256": "4F2921AA8AD2F7041C36CA7888260696067E846C9807FF7712BCCC79F7C4F982",
         "level": "STATIC_VERIFIED",
@@ -5830,7 +5915,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -5879,9 +5964,9 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
+        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -5932,7 +6017,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "93428B82300B758E7FC217014B12B95823BA60108362BE4637BE58E6CA7248FE",
         "level": "STATIC_VERIFIED",
@@ -5980,9 +6065,9 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -6022,7 +6107,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -6559,7 +6644,7 @@
       "required": false,
       "semantic_role": "high_cost_execution_admission_authority",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "03E2495E2D879F41F452E94A35643DE44D80B060B26CA63B824DAABB32FDFFF9",
         "level": "STATIC_VERIFIED",
@@ -6627,7 +6712,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -6669,7 +6754,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -6711,7 +6796,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -6881,7 +6966,7 @@
       "required": false,
       "semantic_role": "typed_candidate_program_representation",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
         "evidence_sha256": "9810E97A78F2BD5750D7C52AADEFC239851A3AAA9CF799FFC32C076C12A088C0",
         "level": "STATIC_VERIFIED",
@@ -6939,7 +7024,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
         "evidence_sha256": "5A09E569219DC78557C8780688B0D351E350262BB54B62EF0365ADC5CCC3DD54",
         "level": "PARTIAL",
@@ -7077,7 +7162,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json",
         "evidence_sha256": "41FE5DE37CA165BA2EDF167746B14AA8672D5439E9CADE74FBCF3C7632AEC822",
         "level": "PARTIAL",
@@ -7150,15 +7235,15 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-        "evidence_sha256": "013166235CFC6B92D07C5D241B42ECCBBEB2D0462CAA5C106750B7937E768317",
-        "level": "PARTIAL",
+        "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
+        "level": "FAILED",
         "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
+          "evidence SHA256 mismatch"
         ],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
+        "result": "FAIL",
         "verified_at_sha": null
       },
       "visible_by_default": true
@@ -7210,15 +7295,15 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:08:53.112870+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
-        "level": "PARTIAL",
+        "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
+        "level": "FAILED",
         "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
+          "evidence SHA256 mismatch"
         ],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
+        "result": "FAIL",
         "verified_at_sha": null
       },
       "visible_by_default": true
@@ -7286,7 +7371,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-12T21:59:32.030790+00:00",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json",
         "evidence_sha256": "392C0C1A007975421660C139FE6D9A2F25CA972FF275F88565467D682BD75401",
         "level": "PARTIAL",
@@ -7308,7 +7393,8 @@
         "FINAL RETRY CONSUMED",
         "PREFINANCIAL FREEZE PASS",
         "STATE REPLAY REPAIRED",
-        "SCHEDULE REHEARSAL BLOCKED",
+        "EXECUTION ASK SCHEMA REPAIRED",
+        "PRE-EVALUATOR REHEARSAL PASS",
         "NO FOURTH RETRY",
         "ZERO ECONOMIC RECORDS",
         "RESTRICTED_READS_ZERO",
@@ -7350,7 +7436,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 state replay repaired; schedule rehearsal blocked; no fourth retry",
+      "label": "CN Program optimizer tournament V1 execution ask schema repaired; pre-evaluator rehearsal complete; no fourth retry",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7362,6 +7448,7 @@
         "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
         "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
         "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
         "docs/adr/0019-program-optimizer-tournament.md"
@@ -7371,30 +7458,30 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-14T02:38:26.354200+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json",
-        "evidence_sha256": "77A22D94321F34877C538CA3738B50D996126F80E8A6DAAAF40275FD8FB3D8C7",
+        "checked_at": "2026-08-14T04:10:50.769818+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
+        "evidence_sha256": "35D3D1714D6CB59C35CF03C7AD01CC4978AE807BCFEC9F3638701F769AFEC303",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "5763d0c91885b454ad7fa7e373b9e97fed4cb9f1"
+        "verified_at_sha": "79ac8bfe43055f5153133041dc621a9ec23594c3"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "F4F81C69BD722AFD5EE84D799F04FE55C05D4C196C865F4D5AAAF6586D6F014D"
+    "sha256": "3F274400ED0C3AE5A7EA91CC3C3E0891841A6BAAA7CE88D8FA22BBEFC5247756"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
     {
       "id": "FIELD_INFORMATION_RESEARCH",
       "path": "profiles/field_information_research.json",
-      "sha256": "AC08F3EFDF90737759136F5BF2ACDFBF8BE2752E3D7433FD28816DE4DAD77945"
+      "sha256": "D0798A1DB70FEC6BAFA1C57106517BE2122B85DB663321C0A4A885AB317C028C"
     }
   ],
   "raw": {
@@ -7402,9 +7489,9 @@
     "edge_count": 20884,
     "node_count": 8091,
     "path": ".planning/graphs/graph.json",
-    "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
+    "sha256": "A9062615C0299F4BE7DABACED0301F42C6EAFBA912C6133F6F110BECF4D70457"
   },
-  "repo_head": "5763d0c91885b454ad7fa7e373b9e97fed4cb9f1",
+  "repo_head": "fd7ed63aeb1c772de3c685ce7de951c088a97943",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -7512,7 +7599,7 @@
     "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 0
+    "warnings": 4
   },
   "trace": {
     "path": null,
