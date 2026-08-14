@@ -22,7 +22,11 @@
           "runtime/run_plans/cn_alpha_node_resource_profiles_phase_d_v0.json",
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+          "runtime/run_plans/cn_program_optimizer_checkpoint003_inflight_quarantine_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_checkpoint003_resource_benchmark_20260814.json",
           "runtime/run_plans/cn_program_optimizer_projection_fairness_p0_report.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_diagnostic_audit_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_incident_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
@@ -34,6 +38,7 @@
           "runtime/run_plans/cn_program_optimizer_tournament_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_outcome_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_prefinancial_rehearsal_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_resource_recovery_readiness_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_incident_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_independent_audit_20260813.json",
           "runtime/run_plans/cn_program_optimizer_tournament_retry_outcome_20260813.json",
@@ -57,7 +62,9 @@
           "scripts/audit_cn_joint_program_phase_d_freeze_v0.py",
           "scripts/audit_cn_joint_program_phase_d_v0.py",
           "scripts/audit_cn_program_materialization_preflight_v1.py",
+          "scripts/benchmark_cn_program_optimizer_checkpoint_resource_v1.py",
           "scripts/build_cn_project_control_execution_request.py",
+          "scripts/check_cn_program_optimizer_execution_node_cleanliness_v1.py",
           "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
           "scripts/check_cn_program_optimizer_tournament_path_v1.py",
           "scripts/check_cn_program_optimizer_tournament_source_binding_v1.py",
@@ -69,6 +76,7 @@
           "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
           "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
           "scripts/rehearse_cn_program_optimizer_tournament_prefinancial_v1.py",
+          "scripts/run_cn_finalist_replay_then_oos.py",
           "scripts/run_cn_fixed_stratified_production_v0_77o.ps1",
           "scripts/run_cn_fixed_survivor_forward_2026.py",
           "scripts/run_cn_fixed_survivor_historical_challenge_2023_77o.ps1",
@@ -77,12 +85,14 @@
           "scripts/run_cn_hybrid_search_productivity_medium_77o.ps1",
           "scripts/run_cn_joint_program_allocator_repair_canary_77o.ps1",
           "scripts/run_cn_joint_program_allocator_repair_canary_v0.py",
+          "scripts/run_cn_joint_program_phase_b_v0.py",
           "scripts/run_cn_joint_program_phase_c_v0.py",
           "scripts/run_cn_joint_program_phase_d_77o.ps1",
           "scripts/run_cn_joint_program_phase_d_v0.py",
           "scripts/run_cn_joint_program_search_v2_77o.ps1",
           "scripts/run_cn_joint_program_search_v2_canary.py",
           "scripts/run_cn_large_optuna_tpe_actual20000_77o.ps1",
+          "scripts/run_cn_portfolio_decoder_v2.py",
           "scripts/run_cn_program_optimizer_tournament_77o.ps1",
           "scripts/run_cn_program_optimizer_tournament_v1.py",
           "scripts/run_cn_slow_cross_sectional_evaluated384_77o.ps1",
@@ -131,13 +141,14 @@
           "tests/test_evaluation_ledgers.py",
           "tests/test_nextgen_dark_development_canary.py",
           "tests/test_optuna_tpe_search_adapter.py",
+          "tests/test_program_optimizer_tournament_resource_recovery_v1.py",
           "tests/test_program_optimizer_tournament_v1.py",
           "tests/test_program_search_optimizer_v1.py",
           "tests/test_runtime_authority_convergence.py",
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "82af91a8a59c66777dcf379aa6eb118a518288a5"
+        "repo_head": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2281,9 +2292,137 @@
         "result": "PASS",
         "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       }
+    },
+    {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "program_tournament_derived_from_search_v2_diagnosis",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "derived_from_manual_diagnosis",
+      "required": false,
+      "source": "cn_program_optimizer_tournament_v1_experimental",
+      "target": "cn_search_engine_v2_experimental",
+      "validation": {
+        "checked_at": "2026-08-14T10:44:50.968742+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "ADR 0019 and development-search authority slot",
+        "evidence_ref": "",
+        "id": "program_tournament_no_silent_authority_replacement",
+        "rule": "Implementation, frozen authorization, static tests or a future tournament result cannot replace formal Hybrid TPE plus Availability without a separate accepted promotion decision and Authority Binding transition.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "program_tournament_candidate_for_development_search_policy",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "candidate_for",
+      "required": false,
+      "source": "cn_program_optimizer_tournament_v1_experimental",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-08-14T10:44:50.968742+00:00",
+        "evidence_ref": "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
+        "evidence_sha256": "B093ADD345F70D924C0B6856AB36F13C7AD7DE0BB6A6E402E6B5A2CD01852FA5",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "30897b429f6eac4035dc2ca91f10d196e5233f35"
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "app.py, project_control_admission.py, route-local consume and canonical 77o launcher",
+        "evidence_ref": "",
+        "id": "program_tournament_consumes_exact_bound_admission",
+        "rule": "Any Program tournament execution must consume one exact clean-checkout, action, campaign authorization/profile, run and output-root Project Control admission before route import; direct runner invocation is forbidden. A technical RECOVERY may target only the exact existing root and original RETRY lineage, with the allowlisted PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE scope, original admission, immutable checkpoint boundary, incident, diagnostic audit and active deployment bindings. It must reject all incomplete results and recompute the first unclosed checkpoint through the existing Phase C recovery path.",
+        "severity": "HARD",
+        "type": "ADMISSION"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "project_control_admission_to_program_tournament",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "precondition_for_prospective_tournament_execution",
+      "required": false,
+      "source": "cn_project_control_execution_admission",
+      "target": "cn_program_optimizer_tournament_v1_experimental",
+      "validation": {
+        "checked_at": "2026-08-14T10:44:50.968742+00:00",
+        "evidence_ref": "tests/test_program_optimizer_tournament_resource_recovery_v1.py",
+        "evidence_sha256": "FA0C48AD203FFD5035D6D25E7B593FA4FB823E4555B49E9A9B4C72CA6DCE85E8",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743"
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "run_cn_program_optimizer_tournament_v1 thin adapter and independent call-path checker",
+        "evidence_ref": "",
+        "id": "program_tournament_no_second_evaluator",
+        "rule": "The tournament may change only Program proposal optimization. It reuses existing compilation, materialization, exact Full/Base evaluation and TOPK_10_EQUAL semantics and cannot create a second financial evaluator.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "program_tournament_reuses_phase3cm_matched_evaluation",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "reuses_existing_matched_full_vs_base_evaluation",
+      "required": false,
+      "source": "cn_program_optimizer_tournament_v1_experimental",
+      "target": "phase3cm_streaming_multicandidate_evaluator",
+      "validation": {
+        "checked_at": "2026-08-14T10:44:50.968742+00:00",
+        "evidence_ref": "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+        "evidence_sha256": "29E61019D2F375D37FEFB8F11AB9258E8429E27FE47F48A23CEE0CD7D847E4C9",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "30897b429f6eac4035dc2ca91f10d196e5233f35"
+      }
     }
   ],
-  "generated_at": "2026-08-14T08:26:54.783341+00:00",
+  "generated_at": "2026-08-14T10:44:50.968742+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7389,7 +7528,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "F5069E1FDE37CF355C4699E8172DFEA62B22B2E7BEB67B20E6E6D7A73C53350D"
+    "sha256": "82B18A9552B45381319A15D43E53A4A22468DA2FF00E00CA3570A23D3341348C"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7406,29 +7545,9 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "82af91a8a59c66777dcf379aa6eb118a518288a5",
+  "repo_head": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743",
   "schema_version": 1,
   "semantic_authorities": [
-    {
-      "authoritative_component": "",
-      "authority_class": "",
-      "semantic_role": ""
-    },
-    {
-      "authoritative_component": "",
-      "authority_class": "",
-      "semantic_role": ""
-    },
-    {
-      "authoritative_component": "",
-      "authority_class": "",
-      "semantic_role": ""
-    },
-    {
-      "authoritative_component": "",
-      "authority_class": "",
-      "semantic_role": ""
-    },
     {
       "authoritative_component": "candidate_execution_clock_capability",
       "authority_class": "FORMAL",
@@ -7509,7 +7628,7 @@
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 66,
+    "current_edges": 70,
     "current_nodes": 42,
     "errors": 1,
     "runtime_edges": 0,

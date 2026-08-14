@@ -1,0 +1,39 @@
+{
+  "schema_version": "cn_program_optimizer_checkpoint003_inflight_quarantine_v1",
+  "status": "QUARANTINED_NOT_REUSABLE",
+  "original_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+  "quarantine_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_checkpoint003_inflight_quarantine_20260814_653220f",
+  "checkpoint_builder_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+  "checkpoint_id": "checkpoint_003",
+  "record_ordinals": [16, 17, 18, 19, 20, 21, 22, 23],
+  "records": [
+    {"name": "record_0016.json", "bytes": 13173, "sha256": "4a54ebb67b2f37e27b601a234ff3ea6062df0de527704e1d21fe31258dc4140d"},
+    {"name": "record_0017.json", "bytes": 13199, "sha256": "ee4f6fbb337fa8d1af6440226ef023ad2a8d7bad995110d51516e9c5e951998f"},
+    {"name": "record_0018.json", "bytes": 12437, "sha256": "d0c79a4907c2784f73b97686f092a5d8dabd19fe92292792304fa250312f767b"},
+    {"name": "record_0019.json", "bytes": 12453, "sha256": "96ad6221a1b73a8e323e18cd54d6b91c13c831c2d337245826cbe833a492b0e9"},
+    {"name": "record_0020.json", "bytes": 13202, "sha256": "b63066547af12719900cb7e9c9f15d646820e61dd31c562b67d6bc3d8ed25e59"},
+    {"name": "record_0021.json", "bytes": 13114, "sha256": "3c57641a7074e08a6096bc267df1885529366ec5de641e78ece944de6ed6d8d2"},
+    {"name": "record_0022.json", "bytes": 13189, "sha256": "8963121bc004b33e46d4a8b0240153837fc91103d1e8f5142f99f3bc64a9d44b"},
+    {"name": "record_0023.json", "bytes": 13190, "sha256": "a24d74fcd226eaec330dc391c54fa4f0d4b98977724da2c2508903e33db9ccdd"}
+  ],
+  "closed_checkpoints_preserved": [
+    {"checkpoint_id": "checkpoint_001", "record_count": 8, "batch_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3"},
+    {"checkpoint_id": "checkpoint_002", "record_count": 8, "batch_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d"}
+  ],
+  "benchmark_payload_sha256": "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d",
+  "remote_quarantine_manifest_file_sha256": "f1ad1a8cecbeab88dc8e330bc38ca6672522e6999faa5cb0a270c1d16c2e26a2",
+  "formal_inflight_checkpoint003_present_after_quarantine": false,
+  "formal_inflight_entry_count_after_quarantine": 0,
+  "financial_results_reusable": false,
+  "incomplete_results_reused": false,
+  "optimizer_tell_count": 0,
+  "checkpoint_closed": false,
+  "project_control": "NOT_REQUESTED",
+  "recovery": "NOT_RUN",
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "historical_2023_reads": 0,
+  "forward_b_reads": 0,
+  "forward_2026_reads": 0,
+  "quarantined_at_utc": "2026-08-14T10:27:19.3134006Z"
+}

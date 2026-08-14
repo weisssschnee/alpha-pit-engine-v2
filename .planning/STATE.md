@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_FOURTH_TECHNICAL_RETRY_INCOMPLETE_MEMORY_GATE_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_RESOURCE_AND_RECOVERY_PREPARATION_COMPLETE_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_CHECKPOINT003_QUARANTINED_RECOMPUTATION_PENDING_EXTERNAL_RECOVERY_AUTHORIZATION_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,62 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer practical resource repair and checkpoint recovery seam prepared; RECOVERY not run (2026-08-14)
+
+- The direct environmental cause of the fourth technical `RETRY` memory-gate
+  failure was the stale
+  `cn_program_optimizer_tournament_fourth_retry_preflight` helper, PID `18364`,
+  which had retained about 82 GiB working set / 179 GiB private bytes while host
+  commit approached 205.9 / 207.3 GiB. After the node restart it was already
+  absent, so no process kill was performed. Read-only cleanliness checks before
+  and after the diagnostic benchmark passed with no Tournament/helper/worker
+  orphan, no abnormal large process and more than 160 GiB commit headroom.
+- Resource implementation SHA
+  `da10b7abf7d4f77a7f12d7f0f48cc100863f2743` keeps the frozen 10-worker
+  capacity but projects each checkpoint's exact compiled physical-leaf union
+  plus mandatory replay columns, selects an effective 4/6/8 checkpoint cap from
+  commit headroom, and replaces the arbitrary 24-GiB physical-free scheduling
+  wall with commit/pagefile/paging/process-lifecycle/post-pool safety evidence.
+  It also adds a small execution-node cleanliness checker. No materializer,
+  evaluator, schedule, optimizer, racing or economic semantic changed.
+- A fixed checkpoint_003 diagnostic on `DESKTOP-77OPJ6F` compared 4 and 8
+  workers. Four workers produced 121.8048 records/hour with 6.24 GB peak tree
+  RSS; eight produced 216.3252 records/hour with 12.53 GB peak tree RSS. Both
+  had exact authoritative-economic parity, zero paging and no orphan workers;
+  eight workers retained at least 151,554,183,168 bytes commit headroom and is
+  the practical non-recovery cap. Diagnostic scratch results were deleted and
+  contributed zero formal records and zero optimizer tells.
+- Immutable `checkpoint_001` and `checkpoint_002` remain in the original root
+  with batch-manifest SHA256 values
+  `329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3`
+  and `7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d`.
+  The eight unclosed checkpoint_003 artifacts, ordinals 16..23, were moved out
+  of formal `inflight` into an explicitly non-reusable quarantine whose manifest
+  SHA256 is
+  `f1ad1a8cecbeab88dc8e330bc38ca6672522e6999faa5cb0a270c1d16c2e26a2`;
+  the formal inflight directory is empty and checkpoint_003 must be recomputed.
+- The existing Phase C checkpoint recovery is now wired through `app.py`, the
+  Tournament runtime and canonical 77o wrapper as `requested_action=RECOVERY`
+  over the original `execution_lineage_action=RETRY`. Cross-SHA recovery is
+  limited to
+  `PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE`, exact incident,
+  diagnostic and deployment bindings, the existing output root and the 2 /
+  16 / next-checkpoint-3 boundary. Recovery itself remains conservatively
+  single-worker with `max_tasks_per_child=1`.
+- The frozen Tournament authorization
+  `99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd`,
+  ask plan `eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b`,
+  3,616-Program space
+  `86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0`
+  and source binding
+  `d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94`
+  are unchanged. Project Control was not requested, no admission was created or
+  consumed, `RECOVERY` was not run, no checkpoint closed, racing/Stage 2 were
+  not reached and all restricted reads remain zero. Evidence is under the five
+  `runtime/run_plans/cn_program_optimizer_*resource*` /
+  `*checkpoint_recovery*` files. External review is required before any
+  recovery request.
 
 ### Program optimizer fourth technical RETRY incomplete at memory gate; 16 closed records (2026-08-14)
 

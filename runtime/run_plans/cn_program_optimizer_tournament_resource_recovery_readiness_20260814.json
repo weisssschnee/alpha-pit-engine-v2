@@ -1,0 +1,89 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_resource_recovery_readiness_v1",
+  "status": "READY_FOR_EXTERNAL_REVIEW_BEFORE_PROJECT_CONTROL_RECOVERY",
+  "execution_host": "DESKTOP-77OPJ6F",
+  "branch": "feature/a-share-tradability-authority-repair",
+  "original_execution_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+  "resource_recovery_implementation_repo_sha": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743",
+  "original_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "resource_repair": {
+    "column_projection": "EXACT_CHECKPOINT_PHYSICAL_LEAF_UNION_PLUS_MANDATORY_REPLAY_COLUMNS",
+    "adaptive_checkpoint_worker_caps": [4, 6, 8],
+    "selected_checkpoint_worker_cap": 8,
+    "executor_worker_capacity_unchanged": 10,
+    "memory_gate": "COMMIT_HEADROOM_PAGEFILE_PAGING_PROCESS_LIFECYCLE_AND_POST_POOL_RECOVERY",
+    "physical_free_memory_is_hard_24_gib_wall": false,
+    "minimum_commit_headroom_bytes": 25769803776,
+    "execution_node_cleanliness_check": "PASS"
+  },
+  "recovery_seam": {
+    "requested_action": "RECOVERY",
+    "execution_lineage_action": "RETRY",
+    "recovery_scope": "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE",
+    "reuse_existing_phase_c_checkpoint_recovery": true,
+    "checkpoint_recovery_effective_concurrent_workers": 1,
+    "checkpoint_recovery_max_tasks_per_child": 1,
+    "closed_checkpoint_count": 2,
+    "closed_record_count": 16,
+    "first_recovered_checkpoint": 3,
+    "checkpoint_003_recomputation_required": true,
+    "incomplete_results_reused": false
+  },
+  "evidence": {
+    "benchmark_payload_sha256": "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d",
+    "benchmark_summary_file_sha256": "21e10657f9f9faf753ad1a12d3f99de8b4d4e83b832e4789b20138e704dfd53a",
+    "quarantine_manifest_file_sha256": "f1ad1a8cecbeab88dc8e330bc38ca6672522e6999faa5cb0a270c1d16c2e26a2",
+    "checkpoint_001_batch_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+    "checkpoint_002_batch_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+    "fixed_checkpoint003_economic_parity": "PASS",
+    "formal_inflight_entry_count": 0,
+    "remote_readiness_check": {
+      "host": "DESKTOP-77OPJ6F",
+      "repo_sha": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743",
+      "worktree_clean": true,
+      "source_binding_checker": "PASS",
+      "frozen_checker": "PASS",
+      "path_checker": "PASS",
+      "execution_node_cleanliness_checker": "PASS",
+      "immutable_checkpoint_hashes": "PASS",
+      "quarantine_non_reuse_contract": "PASS",
+      "formal_inflight_entry_count": 0
+    }
+  },
+  "read_boundary": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "verification": {
+    "focused_local_tests": "74 passed",
+    "frozen_checker": "PASS",
+    "call_path_checker": "PASS",
+    "source_binding_checker_on_77o": "PASS",
+    "execution_node_cleanliness_checker_on_77o": "PASS",
+    "powershell_wrapper_parse": "PASS",
+    "fixed_checkpoint003_authoritative_economic_parity": "PASS",
+    "current_architecture_projection_refreshed": true
+  },
+  "continuation_boundary": {
+    "project_control": "NOT_REQUESTED",
+    "project_control_admission": "NOT_REQUESTED",
+    "recovery": "NOT_RUN",
+    "new_tournament_records_closed": 0,
+    "optimizer_tell_count": 0,
+    "stage1_racing": "NOT_RUN",
+    "stage2": "NOT_RUN",
+    "automatic_successor": false,
+    "promotion": false
+  },
+  "recovery_readiness_payload_sha256": "f8ea8e689ea760884a04c485ed29bb8bc4c41e5e5e31898097ca711efe2d9997"
+}

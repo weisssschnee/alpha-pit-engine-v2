@@ -1,0 +1,50 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_diagnostic_audit_v1",
+  "status": "PASS",
+  "classification": "PARALLEL_PROCESS_LIFECYCLE_OR_NATIVE_CONCURRENCY",
+  "direct_environmental_cause": "HOST_RESOURCE_POLLUTION_BY_STALE_PREFLIGHT_HELPER",
+  "accepted_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+  "runner_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+  "resource_recovery_implementation_repo_sha": "da10b7abf7d4f77a7f12d7f0f48cc100863f2743",
+  "checkpoint_id": "checkpoint_003",
+  "record_count": 8,
+  "record_ordinals": [16, 17, 18, 19, 20, 21, 22, 23],
+  "schedule_sha256": "2e6923e61f36ded53ca58506f52102d15591766971502202dc9682172f37cf42",
+  "benchmark_payload_sha256": "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d",
+  "benchmark_summary_file_sha256": "21e10657f9f9faf753ad1a12d3f99de8b4d4e83b832e4789b20138e704dfd53a",
+  "worker_results": {
+    "4": {
+      "wall_seconds": 236.44380210000963,
+      "records_per_hour": 121.80484156507173,
+      "maximum_process_tree_rss_bytes": 6243655680,
+      "minimum_commit_headroom_bytes": 162043490304,
+      "paging_in_bytes": 0,
+      "paging_out_bytes": 0,
+      "parity": "PASS"
+    },
+    "8": {
+      "wall_seconds": 133.13287219998892,
+      "records_per_hour": 216.32523487744282,
+      "maximum_process_tree_rss_bytes": 12530647040,
+      "minimum_commit_headroom_bytes": 151554183168,
+      "paging_in_bytes": 0,
+      "paging_out_bytes": 0,
+      "parity": "PASS"
+    }
+  },
+  "selected_checkpoint_worker_cap": 8,
+  "selected_worker_reason": "Highest observed fixed-checkpoint throughput with exact authoritative-economic parity, no paging and more than 141 GiB commit headroom.",
+  "diagnostic_financial_results_reusable": false,
+  "financial_results_reused": false,
+  "formal_checkpoint_closed": false,
+  "formal_records_closed": 0,
+  "optimizer_tell_count": 0,
+  "project_control": "NOT_REQUESTED",
+  "recovery": "NOT_RUN",
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "historical_2023_reads": 0,
+  "forward_b_reads": 0,
+  "forward_2026_reads": 0,
+  "audit_payload_sha256": "8e06a269274bcd2fc7850295a8fe7bb4cf8f075aeb43262ed5d24716474d586e"
+}
