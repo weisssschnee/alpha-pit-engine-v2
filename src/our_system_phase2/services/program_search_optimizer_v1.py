@@ -835,7 +835,7 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
             state=dict(snapshot["availability"]),
             input_hashes=adapter.controller.input_hashes,
         )
-        adapter.tpe = RouteConditionalTPESearchAdapter.restore_trials(
+        adapter.tpe = RouteConditionalTPESearchAdapter.replay(
             route_id=PROGRAM_ROUTE_ID,
             lane_spaces=program_optimizer_lane_v1(adapter.entries),
             seed=adapter.controller.emitter_seed,

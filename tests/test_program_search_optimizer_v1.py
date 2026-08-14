@@ -313,6 +313,79 @@ def test_hybrid_tpe_nonempty_json_persisted_roundtrip_exact() -> None:
     assert restored.snapshot() == persisted
 
 
+def test_all_program_optimizers_restore_the_exact_next_ask() -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    cases = (
+        (UniformProgramSearchAdapter, {"seed": 43}),
+        (
+            HybridTPEProgramSearchAdapter,
+            {"seed": 47, "n_startup_trials": 2, "n_ei_candidates": 8},
+        ),
+        (
+            StructuredSurrogateProgramSearchAdapter,
+            {
+                "seed": 53,
+                "cold_start_asks": 4,
+                "candidate_pool_size": 24,
+                "n_estimators": 16,
+                "min_samples_leaf": 1,
+            },
+        ),
+    )
+    for adapter_type, optimizer_config in cases:
+        config = {
+            "entries": entries,
+            "seen_exact_identities": (),
+            **optimizer_config,
+        }
+        live = adapter_type(**config)
+        for checkpoint_number in (1, 2):
+            asked = live.ask(
+                checkpoint_id=f"checkpoint_{checkpoint_number:03d}",
+                count=4,
+                required_program_template_id="BASE_TEMPORAL",
+            )
+            live.tell(
+                [
+                    _observation(
+                        row,
+                        admitted=index % 2 == 0,
+                        uplift=0.1 + index * 0.01,
+                    )
+                    for index, row in enumerate(asked)
+                ]
+            )
+
+        persisted = _json_persisted(live.snapshot())
+        restored = adapter_type.restore(snapshot=persisted, **config)
+        eligible = [
+            entry.exact_identity
+            for entry in entries
+            if entry.genes["program_template_id"] == "BASE_MARKET"
+        ][4:12]
+        live_next = live.ask(
+            checkpoint_id="checkpoint_003",
+            count=4,
+            required_program_template_id="BASE_MARKET",
+            eligible_exact_identities=eligible,
+        )
+        restored_next = restored.ask(
+            checkpoint_id="checkpoint_003",
+            count=4,
+            required_program_template_id="BASE_MARKET",
+            eligible_exact_identities=eligible,
+        )
+
+        assert restored_next == live_next
+        if adapter_type is HybridTPEProgramSearchAdapter:
+            assert any(
+                row["acquisition"]["projection"][
+                    "availability_replacement_applied"
+                ]
+                for row in live_next
+            )
+
+
 def test_uniform_consumed_json_persisted_roundtrip_exact() -> None:
     entries = program_availability_entries_v1(_space_rows(16))
     config = {

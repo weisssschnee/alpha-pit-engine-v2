@@ -414,6 +414,38 @@ def test_tournament_nonempty_mixed_arm_json_persisted_roundtrip_exact() -> None:
     assert restored.snapshot() == persisted
 
 
+def test_tournament_tpe_preview_matches_commit_after_real_tell() -> None:
+    tournament = _tournament()
+    eligible = [
+        entry.exact_identity
+        for entry in tournament.entries_by_arm[HYBRID_TPE_PROGRAM]
+    ][4:12]
+    for checkpoint_number in (1, 2):
+        checkpoint_id = f"checkpoint_{checkpoint_number:03d}"
+        preview = tournament.ask(
+            arm=HYBRID_TPE_PROGRAM,
+            checkpoint_id=checkpoint_id,
+            count=4,
+            required_program_template_id="BASE_TEMPORAL",
+            eligible_exact_identities=eligible,
+        )
+        tournament.commit_ask(
+            arm=HYBRID_TPE_PROGRAM,
+            checkpoint_id=checkpoint_id,
+            count=4,
+            required_program_template_id="BASE_TEMPORAL",
+            eligible_exact_identities=eligible,
+            expected_asks=preview,
+        )
+        tournament.tell(
+            arm=HYBRID_TPE_PROGRAM,
+            observations=[
+                _observation(row, admitted=index % 2 == 0)
+                for index, row in enumerate(preview)
+            ],
+        )
+
+
 def test_replay_diagnostic_reports_first_json_path_and_types() -> None:
     original = {
         "arms": {

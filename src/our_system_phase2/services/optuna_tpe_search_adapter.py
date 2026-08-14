@@ -819,6 +819,13 @@ class RouteConditionalTPESearchAdapter:
             str, Callable[[Any, Any], float]
         ] | None = None,
     ) -> "RouteConditionalTPESearchAdapter":
+        """Import immutable trial state without claiming continuation identity.
+
+        This is ``TRIAL_STATE_IMPORT_NOT_CONTINUATION_AUTHORITATIVE``: it
+        reconstructs study/trial facts with a fresh deterministic sampler RNG.
+        Call :meth:`replay` when the next live ask must match uninterrupted
+        execution exactly.
+        """
         adapter = cls(
             route_id=route_id,
             lane_spaces=lane_spaces,
@@ -959,6 +966,11 @@ class RouteConditionalTPESearchAdapter:
             str, Callable[[Any, Any], float]
         ] | None = None,
     ) -> "RouteConditionalTPESearchAdapter":
+        """Replay ask/tell transcripts for continuation-exact next-ask state.
+
+        This is ``CONTINUATION_EXACT_TRANSCRIPT_REPLAY`` and advances the
+        sampler through the same public ask/tell sequence as the live run.
+        """
         adapter = cls(
             route_id=route_id,
             lane_spaces=lane_spaces,
@@ -991,7 +1003,8 @@ class RouteConditionalTPESearchAdapter:
                 "optimizer_ask_kind",
                 "source_sampling_phase",
             }
-            for ordinal, source in enumerate(asked):
+            for source in asked:
+                ask_ordinal = int(source["ask_ordinal"])
                 ask_kind = str(
                     source.get("optimizer_ask_kind") or ""
                 )
@@ -1007,7 +1020,7 @@ class RouteConditionalTPESearchAdapter:
                                 transcript["checkpoint_id"]
                             ),
                             genes=dict(source["genes"]),
-                            ask_ordinal=ordinal,
+                            ask_ordinal=ask_ordinal,
                             metadata=metadata,
                         )
                     )
@@ -1023,7 +1036,7 @@ class RouteConditionalTPESearchAdapter:
                             checkpoint_id=str(
                                 transcript["checkpoint_id"]
                             ),
-                            ask_ordinal=ordinal,
+                            ask_ordinal=ask_ordinal,
                             expected_genes=dict(source["genes"]),
                             metadata=metadata,
                             record_ask_kind=bool(ask_kind),
