@@ -1,0 +1,177 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_head_b_checkpoint012_recovery_independent_audit_v1",
+  "recorded_date": "2026-08-15",
+  "original_experiment_date": "2026-08-14",
+  "audit_mode": "READ_ONLY_POST_FAILURE_DURABLE_ARTIFACTS_ONLY",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "producer_audit_consistent": true,
+  "financial_source_reads_performed_by_audit": 0,
+  "checks": {
+    "execution_identity": {
+      "expected_execution_repo_sha": "4a16efcd14438f0a74156e6bf2e7f03f5744921e",
+      "observed_admission_repo_sha": "4a16efcd14438f0a74156e6bf2e7f03f5744921e",
+      "checkpoint_builder_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+      "branch": "feature/a-share-tradability-authority-repair",
+      "host": "DESKTOP-77OPJ6F",
+      "requested_action": "RECOVERY",
+      "execution_lineage_action": "RETRY",
+      "target_run_id": "cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+      "result": "PASS"
+    },
+    "frozen_identities": {
+      "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "program_space_count": 3616,
+      "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+      "result": "PASS_UNCHANGED"
+    },
+    "objective_repair": {
+      "program_objective_key": "matched_cumulative_net_return_increment",
+      "real_admitted_objective_0090": -0.058932260016981486,
+      "real_admitted_objective_0092": 0.04459635200267065,
+      "failed_admission_objectives_none": true,
+      "checkpoint_012_runtime_feedback_and_tell_completed": true,
+      "result": "PASS"
+    },
+    "project_control": {
+      "task_id": "cn-execution-fcd3d96ffc76924378d35a80",
+      "run_id": "eb5dbe3a-175b-4a0c-bbe0-a1c1482b1dd6",
+      "request_payload_sha256": "fcd3d96ffc76924378d35a80526e5c29564717519eb4ae6f07429c55a865cfec",
+      "admission_file_sha256": "6e14e4f2362fe4b7734356d21f2e43e9f69457582da7404c8dfcd4d0805136cc",
+      "admission_payload_sha256": "c9aaffe4f153f4e38e42e73fddd55d90437ee965db91a40cfef7682101c6bbbf",
+      "new_recovery_consumption_count": 1,
+      "total_root_consumption_count": 4,
+      "consumption_file_sha256": "152837ea539f954d54003d60cb4a4ff09a0ba12d1e8ce3f243ad85085c64f0b5",
+      "result": "PASS_CONSUMED_EXACTLY_ONCE"
+    },
+    "quarantine_and_dry_replay": {
+      "quarantine_manifest_file_sha256": "7360afb283c7ac6bd88b190c8cb3b6f3c120631010ea2f46ed859c689ea8007b",
+      "quarantine_record_count": 8,
+      "quarantine_financial_results_reusable": false,
+      "dry_replay_file_sha256": "3238d6dd373697e56512733d0e8b254a191926fecffbb3c2b4dfedd2cd2474aa",
+      "program_identity_parity": true,
+      "dry_tpe_tell_completed": true,
+      "dry_financial_source_reads": 0,
+      "result": "PASS"
+    },
+    "recovery_history": {
+      "legacy_binding_file_sha256": "abe066617caa7ef01818301f4e2cbace664a64df74a9caf8be7dddac243fe57f",
+      "legacy_binding_payload_sha256": "22f9e4e03e02a5940708587733cc40d786c1f4a98d40fdd9b5825510a79d324e",
+      "new_binding_file_sha256": "43b00bcd9dc0627dd6f5f4a2a1bf9a04db4db56a0f84cfc999e408850add21c6",
+      "new_binding_payload_sha256": "90becf446904492b2b80a843d1ec1c0d26edf984f6ffdea68bbabebb369655d8",
+      "previous_binding_hash_match": true,
+      "historical_binding_immutable": true,
+      "result": "PASS_APPEND_ONLY_LINEAR_CHAIN"
+    },
+    "checkpoint_integrity": {
+      "closed_checkpoint_count": 12,
+      "closed_record_count": 96,
+      "checkpoint_manifest_sha256": {
+        "checkpoint_001": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+        "checkpoint_002": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+        "checkpoint_003": "aeb915d6d4fa581c7c3d28540122418108c1e580de4f279bcf6df5e5be85ec06",
+        "checkpoint_004": "db51a9c29952441a64c23c6dff199a52775835ce3cb2f5319478f1557d30e12e",
+        "checkpoint_005": "783feedefce235c2ceb04c89bec758b06ea0e5acebbafaff25e210d1d536d80f",
+        "checkpoint_006": "917218e7bb484864ccd9058d7d5dcdfd391b1e6de751f00edd4648a577de12a2",
+        "checkpoint_007": "35a9d59b745a5adf12450b7851c39b9f16b42e008d9e3e25ac35190399844131",
+        "checkpoint_008": "064df6c297366dd925b94c510e8e2641f758c3b615d5a2cca2dfce52d41cc400",
+        "checkpoint_009": "343ed832cdcbd99029077bab4bb183abcaccf86408be382750ec466aae3552e3",
+        "checkpoint_010": "afd1764b80b1d4e3c18a741c4741882b4bc465f9ca023455dda59d9b75d1b820",
+        "checkpoint_011": "05b4569cf1045aa4e009214006bbe62031f5afaf5a138a74406054f38ad41c75",
+        "checkpoint_012": "9a77f8f5c8253077b76ff27c08f00278aa26004389e964ec5db863c659f74eaf"
+      },
+      "checkpoint_chain_valid": true,
+      "all_manifest_artifacts_match": true,
+      "all_closed_checkpoint_restricted_reads_zero": true,
+      "result": "PASS"
+    },
+    "checkpoint_012_runtime": {
+      "effective_workers": 1,
+      "max_tasks_per_child": 1,
+      "executor_mode": "RECOVERY_ISOLATED_FIRST_CHECKPOINT",
+      "record_count": 8,
+      "tpe_asked": 8,
+      "tpe_told": 8,
+      "absolute_admitted": 2,
+      "positive_conditional_objective": 1,
+      "raw_tpe_asks": 8,
+      "direct_exact_hits": 7,
+      "legal_projections": 1,
+      "eligibility_projections": 1,
+      "availability_replacements": 1,
+      "duplicate_replacements": 0,
+      "global_fallback": 0,
+      "intent_preserved": 8,
+      "result": "PASS_CLOSED_ATOMICALLY"
+    },
+    "checkpoint_013_fail_closed_boundary": {
+      "inflight_record_count": 8,
+      "inflight_record_ordinals": "96..103",
+      "inflight_artifact_sha256": {
+        "record_0096.json": "99829435fdd52ea25047db04c60a2e9a8f4bbe7d7e2cb6b5f80a30fde8957b29",
+        "record_0097.json": "adb17e0aed223e8e2ccd3913e037111e4474bea608aa68143962beb419e5f6c9",
+        "record_0098.json": "be1213385bb3921264f917a2de352357c8640659da8a9aa2d8f7cf92ddb4fa3a",
+        "record_0099.json": "a3c5d632f3dff3367b9ea60ccb929813b54453d566c4bf6708b9f545731176e8",
+        "record_0100.json": "7714730297ba6b42339b7eca6af96358f20d4b3b66333b6ee0af0c7a3dd07f44",
+        "record_0101.json": "82c3389c99ee9980b48bb13c829c419dd115d3aca8bccce3845a17547b560264",
+        "record_0102.json": "b76ddb47e53f171136532836d592c939ff28b5739964a71e510f5e751fc3ed8f",
+        "record_0103.json": "a7ecfa41056296edf9f2b7c319ae7e49a7ed3c48e60224a5696dc77c2d7b6b6b"
+      },
+      "records_included_in_formal_closed_result": 0,
+      "financial_results_reusable": false,
+      "optimizer_tell_count": 0,
+      "exception_type": "RuntimeError",
+      "exception_message": "PROGRAM_TOURNAMENT_PREVIEW_COMMIT_DRIFT",
+      "complete_traceback_preserved": true,
+      "result": "PASS_INFLIGHT_EXCLUDED"
+    },
+    "terminal_evidence": {
+      "detached_task_id": "lanjob_20260815_023053_ba55b4",
+      "detached_task_exit_code": 1,
+      "detached_task_status_sha256": "4c3b18aeae797672bd3fe56f59434a6639385a689c3e50dea6d5412ef908e732",
+      "detached_task_log_sha256": "850fd95f7cddc8fcb7b43232f8c3f66d7fec56fed735a08b52c475af1dba5fee",
+      "terminal_receipt_sha256": "005c08ef9d29658f02017049d894db5c4c575919925a1fb6c12d44540ae423e5",
+      "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runner_stderr_sha256": "77ea09861c81e7a9828decdb1d649b5d59e68f2f6133533fc75da5c9b9ba30f2",
+      "execution_node_cleanliness_sha256": "b68f9eb8dd9f4ef496720175d676559dc2cde667c44b871d272dea92277c515f",
+      "execution_identity_sha256": "4976c297902ed9eeba87516a1b373711223cf6ae6581aab4c5e35919a2a84648",
+      "live_tournament_process_count": 0,
+      "result": "PASS_FAILURE_PRESERVED_PROCESS_STOPPED"
+    },
+    "arm_coverage": {
+      "uniform_closed_records": 88,
+      "hybrid_tpe_closed_records": 8,
+      "hybrid_tpe_optimizer_tells": 8,
+      "structured_surrogate_closed_records": 0,
+      "terminal_arm_metrics_available": false,
+      "result": "INCOMPLETE_NOT_ARM_COMPARABLE"
+    },
+    "racing_and_stage2": {
+      "stage1_racing_decision_exists": false,
+      "stage2_run_exists": false,
+      "economic_winner": "NONE",
+      "result": "NOT_REACHED"
+    },
+    "restricted_reads": {
+      "validation_reads": 0,
+      "holdout_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0,
+      "result": "PASS"
+    },
+    "terminal_stop": {
+      "automatic_successor": false,
+      "further_retry_or_recovery": false,
+      "replacement": false,
+      "validation": false,
+      "forward_b": false,
+      "promotion": false,
+      "unauthorized_artifact_count": 0,
+      "result": "PASS"
+    }
+  },
+  "audit_conclusion": "The Head-B objective-key repair and generalized append-only checkpoint recovery reached the real checkpoint_012 boundary, fully recomputed ordinals 88..95, completed eight Hybrid TPE feedback/tell updates and atomically closed checkpoint_012. Normal adaptive execution then produced eight checkpoint_013 inflight records, but feedback failed before tell and atomic close with PROGRAM_TOURNAMENT_PREVIEW_COMMIT_DRIFT. The durable chain therefore ends at 12 checkpoints and 96 records. Checkpoint_013 remains excluded and non-reusable; no racing, Stage 2, successor, additional recovery or promotion occurred, and all restricted-read counters remain zero.",
+  "audit_payload_sha256": "fd33cc5a961b0d126cdf51d76ecf9bfc2700c9374ca9c26c3b59b627ef0e885d"
+}

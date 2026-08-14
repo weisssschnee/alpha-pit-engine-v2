@@ -2,7 +2,7 @@
 
 Updated: 2026-08-15
 
-Current state: `PROGRAM_OPTIMIZER_CORRECTED_CHECKPOINT_RECOVERY_INCOMPLETE_CHECKPOINT003_ISOLATED_RECOMPUTE_CLOSED_CHECKPOINT004_TO_011_ADAPTIVE_CLOSED_88_RECORDS_CHECKPOINT012_TPE_FEEDBACK_NULL_FAIL_CLOSED_8_INFLIGHT_EXCLUDED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_OR_RECOVERY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_HEAD_B_OBJECTIVE_AND_GENERIC_APPEND_ONLY_RECOVERY_IMPLEMENTED_CHECKPOINT012_ISOLATED_RECOMPUTE_CLOSED_96_RECORDS_CHECKPOINT013_PREVIEW_COMMIT_DRIFT_FAIL_CLOSED_8_INFLIGHT_EXCLUDED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_OR_RECOVERY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,54 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer Head-B repair closed checkpoint 012; checkpoint 013 failed closed on preview/commit drift (2026-08-15)
+
+- Implementation SHA
+  `4a16efcd14438f0a74156e6bf2e7f03f5744921e` minimally rewires
+  `PROGRAM_OBJECTIVE_KEY` to the existing
+  `matched_cumulative_net_return_increment` authority, adds real
+  Admission-to-uplift-to-optimizer coverage, generalizes the exact checkpoint
+  continuation boundary/failure classification, and preserves multiple
+  continuations through an append-only recovery-binding chain. Focused 77o
+  coverage passed 118 tests; frozen authorization, ask plan, 3,616-Program
+  space and source binding remained byte/hash unchanged.
+- The prior failed checkpoint_012 inflight records were quarantined as
+  non-reusable at manifest SHA
+  `7360afb283c7ac6bd88b190c8cb3b6f3c120631010ea2f46ed859c689ea8007b`.
+  Zero-financial dry replay regenerated the exact Program identities, produced
+  the reviewed objectives for ordinals 90 and 92, completed all eight TPE
+  tells in memory and preserved global fallback at zero.
+- One target-bound Project Control `RECOVERY` admission over the original
+  `RETRY` lineage was consumed exactly once by task
+  `cn-execution-fcd3d96ffc76924378d35a80`, run
+  `eb5dbe3a-175b-4a0c-bbe0-a1c1482b1dd6`, admission payload
+  `c9aaffe4f153f4e38e42e73fddd55d90437ee965db91a40cfef7682101c6bbbf`.
+  The append-only checkpoint_012 recovery receipt payload is
+  `90becf446904492b2b80a843d1ec1c0d26edf984f6ffdea68bbabebb369655d8`
+  and exactly links the immutable legacy receipt.
+- Checkpoint_012 was fully recomputed with one worker and
+  `max_tasks_per_child=1`, completed eight Hybrid TPE asks/tells, and closed
+  atomically at manifest SHA
+  `9a77f8f5c8253077b76ff27c08f00278aa26004389e964ec5db863c659f74eaf`.
+  The durable formal boundary is now 12 checkpoints / 96 records, ordinals
+  0..95. Its runtime TPE evidence is 8 raw asks, 7 direct exact hits, 1 legal
+  projection, 1 eligibility projection, 1 availability replacement, 0
+  duplicate replacements, 0 global fallback and 8 economic tells.
+- Normal adaptive execution then evaluated checkpoint_013 ordinals 96..103,
+  but failed during feedback before tell and atomic close with
+  `PROGRAM_TOURNAMENT_PREVIEW_COMMIT_DRIFT`. Those eight inflight records are
+  preserved but excluded and non-reusable. The complete traceback and
+  exit-code-1 terminal receipt are retained; no live patch or new admission was
+  created after consumption.
+- Independent read-only audit returned `PASS_INCOMPLETE_FAIL_CLOSED`: all 12
+  checkpoint links and referenced artifact hashes match, all restricted-read
+  counters are zero, no Tournament process remains, and Stage-1 racing,
+  Stage 2, successor, further retry/recovery and promotion were not reached.
+  Canonical evidence is the three
+  `cn_program_optimizer_tournament_head_b_checkpoint012_recovery_*_20260815.json`
+  files, with terminal status
+  `TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW`.
 
 ### Program optimizer corrected checkpoint RECOVERY reached checkpoint 011, then failed closed before checkpoint 012 atomic close (2026-08-15)
 
