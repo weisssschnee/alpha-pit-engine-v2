@@ -74,7 +74,14 @@ MIN_BASE_IDENTITIES_PER_TEMPLATE = 16
 CATALOG_MIN_RECORDS_PER_TEMPLATE = 64
 PAIR_REPLAY_COMPLETE = phase_b.PAIR_REPLAY_COMPLETE
 PAIR_REPLAY_BLOCKED = phase_b.PAIR_REPLAY_BLOCKED
-CHECKPOINT_RECOVERY_EXECUTOR_MODE = "FRESH_SINGLE_WORKER_PROCESS_PER_RECORD"
+CHECKPOINT_RECOVERY_EXECUTOR_MODE = "RECOVERY_ISOLATED_FIRST_CHECKPOINT"
+CHECKPOINT_ADAPTIVE_EXECUTOR_MODE = "NORMAL_ADAPTIVE"
+CHECKPOINT_POST_RECOVERY_EXECUTOR_MODE = (
+    "NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION"
+)
+CHECKPOINT_RECOVERY_EXECUTOR_LIFECYCLE = (
+    "FIRST_RECOVERED_CHECKPOINT_ISOLATED_THEN_NORMAL_ADAPTIVE"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -233,6 +240,41 @@ def _effective_checkpoint_workers(
         if choice <= worker_cap and choice <= schedule_count and choice <= memory_cap
     ]
     return max(eligible) if eligible else min(4, worker_cap, schedule_count)
+
+
+def _checkpoint_executor_plan(
+    *,
+    checkpoint_index: int,
+    recovery_start_checkpoint_index: int,
+    checkpoint_recovery_mode: bool,
+    worker_cap: int,
+    schedule_count: int,
+    commit_headroom_bytes: int,
+) -> dict[str, Any]:
+    if (
+        checkpoint_recovery_mode
+        and checkpoint_index == recovery_start_checkpoint_index
+    ):
+        return {
+            "executor_mode": CHECKPOINT_RECOVERY_EXECUTOR_MODE,
+            "effective_checkpoint_workers": 1,
+            "max_tasks_per_child": 1,
+            "checkpoint_recovery_provenance": True,
+        }
+    return {
+        "executor_mode": (
+            CHECKPOINT_POST_RECOVERY_EXECUTOR_MODE
+            if checkpoint_recovery_mode
+            else CHECKPOINT_ADAPTIVE_EXECUTOR_MODE
+        ),
+        "effective_checkpoint_workers": _effective_checkpoint_workers(
+            worker_cap=worker_cap,
+            schedule_count=schedule_count,
+            commit_headroom_bytes=commit_headroom_bytes,
+        ),
+        "max_tasks_per_child": None,
+        "checkpoint_recovery_provenance": checkpoint_recovery_mode,
+    }
 
 
 def _new_child_process_ids(before: set[int]) -> list[int]:
@@ -1533,6 +1575,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     checkpoint_recovery_binding_path: Path | None = None
     checkpoint_recovery_binding: dict[str, Any] | None = None
+    closed_checkpoints_at_recovery_start = closed_checkpoints
     if checkpoint_recovery_mode:
         if len(checkpoint_recovery_from_sha) != 40:
             raise RuntimeError("Phase C checkpoint-builder SHA is not full length")
@@ -1627,6 +1670,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "closed_checkpoint_count": closed_checkpoints,
                 "closed_record_count": closed_checkpoints * RECORDS_PER_CHECKPOINT,
                 "first_recovered_checkpoint": closed_checkpoints + 1,
+                "first_isolated_recovery_checkpoint": closed_checkpoints + 1,
+                "isolated_recovery_checkpoint_count": 1,
+                "recovery_isolation_scope": "FIRST_RECOVERED_CHECKPOINT_ONLY",
+                "adaptive_continuation_enabled": True,
                 "executor_mode": CHECKPOINT_RECOVERY_EXECUTOR_MODE,
                 "executor_worker_authority": int(args.executor_workers),
                 "effective_concurrent_workers": 1,
@@ -1680,16 +1727,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint_field_columns = _checkpoint_field_columns(checkpoint_schedules)
             resource_before = _runtime_resource_snapshot()
             _require_runtime_resource_safety(resource_before)
-            effective_workers = (
-                1
-                if checkpoint_recovery_mode
-                else _effective_checkpoint_workers(
-                    worker_cap=int(getattr(args, "checkpoint_worker_cap", 8)),
-                    schedule_count=len(checkpoint_schedules),
-                    commit_headroom_bytes=int(
-                        resource_before["commit_headroom_bytes"]
-                    ),
-                )
+            executor_plan = _checkpoint_executor_plan(
+                checkpoint_index=checkpoint_index,
+                recovery_start_checkpoint_index=(
+                    closed_checkpoints_at_recovery_start
+                ),
+                checkpoint_recovery_mode=checkpoint_recovery_mode,
+                worker_cap=int(getattr(args, "checkpoint_worker_cap", 8)),
+                schedule_count=len(checkpoint_schedules),
+                commit_headroom_bytes=int(resource_before["commit_headroom_bytes"]),
+            )
+            effective_workers = int(
+                executor_plan["effective_checkpoint_workers"]
             )
             minimum_observed_free = int(
                 resource_before["available_physical_bytes"]
@@ -1725,7 +1774,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     checkpoint_field_columns,
                 ),
             }
-            if checkpoint_recovery_mode:
+            if executor_plan["max_tasks_per_child"] is not None:
                 executor_options.update(
                     {"max_workers": 1, "max_tasks_per_child": 1}
                 )
@@ -1869,7 +1918,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         resource_after["commit_headroom_bytes"]
                     ),
                     "orphan_worker_pids": orphan_worker_pids,
+                    "executor_mode": str(executor_plan["executor_mode"]),
                     "effective_checkpoint_workers": effective_workers,
+                    "max_tasks_per_child": executor_plan[
+                        "max_tasks_per_child"
+                    ],
+                    "checkpoint_recovery_provenance": bool(
+                        executor_plan["checkpoint_recovery_provenance"]
+                    ),
                     "checkpoint_field_column_count": len(checkpoint_field_columns),
                     "checkpoint_field_columns_sha256": stable_hash(
                         list(checkpoint_field_columns)
@@ -2088,10 +2144,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ),
             ),
             "executor_lifecycle": (
-                CHECKPOINT_RECOVERY_EXECUTOR_MODE
+                CHECKPOINT_RECOVERY_EXECUTOR_LIFECYCLE
                 if checkpoint_recovery_mode
                 else "CHECKPOINT_SCOPED_RECYCLE"
             ),
+            "first_isolated_recovery_checkpoint": (
+                int(checkpoint_recovery_binding["first_recovered_checkpoint"])
+                if checkpoint_recovery_binding is not None
+                else None
+            ),
+            "isolated_recovery_checkpoint_count": (
+                1 if checkpoint_recovery_mode else 0
+            ),
+            "adaptive_continuation_enabled": checkpoint_recovery_mode,
             "maximum_inflight_records": RECORDS_PER_CHECKPOINT,
             "native_threads_per_worker": 1,
         },
@@ -2164,6 +2229,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "root_finalization_recovery": recovery_mode,
             "checkpoint_recovery": checkpoint_recovery_mode,
             "checkpoint_recovery_executor_mode": (
+                CHECKPOINT_RECOVERY_EXECUTOR_LIFECYCLE
+                if checkpoint_recovery_mode
+                else None
+            ),
+            "checkpoint_recovery_first_isolated_executor_mode": (
                 CHECKPOINT_RECOVERY_EXECUTOR_MODE
                 if checkpoint_recovery_mode
                 else None
@@ -2172,6 +2242,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 int(checkpoint_recovery_binding["first_recovered_checkpoint"])
                 if checkpoint_recovery_binding is not None
                 else None
+            ),
+            "checkpoint_recovery_isolated_checkpoint_count": (
+                1 if checkpoint_recovery_mode else 0
+            ),
+            "checkpoint_recovery_adaptive_continuation_enabled": (
+                checkpoint_recovery_mode
             ),
             "phase_c_input_binding_sha256": input_hash,
             "record_count": len(records),

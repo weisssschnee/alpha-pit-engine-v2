@@ -136,7 +136,7 @@ def test_shared_engine_accepts_capacity_hash_from_frozen_contract() -> None:
     assert 'contract.get("resource_profile")' in source
 
 
-def test_phase_d_checkpoint_recovery_is_evidence_bound_and_single_child() -> None:
+def test_phase_d_checkpoint_recovery_is_evidence_bound_and_isolates_first() -> None:
     shared_source = (
         PROJECT_ROOT / "scripts" / "run_cn_joint_program_phase_c_v0.py"
     ).read_text(encoding="utf-8")
@@ -151,6 +151,8 @@ def test_phase_d_checkpoint_recovery_is_evidence_bound_and_single_child() -> Non
     assert "diagnostic_financial_results_reused" in shared_source
     assert "incomplete_results_reused" in shared_source
     assert "CHECKPOINT_RECOVERY_EXECUTOR_MODE" in shared_source
+    assert "CHECKPOINT_POST_RECOVERY_EXECUTOR_MODE" in shared_source
+    assert "FIRST_RECOVERED_CHECKPOINT_ONLY" in shared_source
 
 
 def test_checkpoint_recovery_accepts_real_preserved_incident_boundary_shape() -> None:

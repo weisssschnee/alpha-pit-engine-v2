@@ -212,9 +212,11 @@ def audit(
     _verify_self_hash(root_manifest, "artifact_manifest_sha256", "root manifest")
     _verify_artifacts(root, root_manifest)
     checkpoint_recovery = bool(closure.get("checkpoint_recovery"))
+    first_recovered_checkpoint: int | None = None
     if checkpoint_recovery:
         recovery = _read_json(root / "checkpoint_recovery_binding.json")
         _verify_self_hash(recovery, "recovery_binding_sha256", "checkpoint recovery")
+        first_recovered_checkpoint = int(recovery["first_recovered_checkpoint"])
         if (
             str(recovery.get("checkpoint_builder_repo_sha"))
             != expected_runner_repo_sha
@@ -224,6 +226,12 @@ def audit(
             != engine.CHECKPOINT_RECOVERY_EXECUTOR_MODE
             or int(recovery.get("effective_concurrent_workers", 0)) != 1
             or int(recovery.get("max_tasks_per_child", 0)) != 1
+            or int(recovery.get("first_isolated_recovery_checkpoint", 0))
+            != first_recovered_checkpoint
+            or int(recovery.get("isolated_recovery_checkpoint_count", 0)) != 1
+            or str(recovery.get("recovery_isolation_scope"))
+            != "FIRST_RECOVERED_CHECKPOINT_ONLY"
+            or not bool(recovery.get("adaptive_continuation_enabled"))
             or bool(recovery.get("financial_results_reused"))
             or bool(recovery.get("diagnostic_financial_results_reused"))
             or bool(recovery.get("incomplete_results_reused"))
@@ -277,6 +285,24 @@ def audit(
         )
         summary = _read_json(checkpoint / "checkpoint_summary.json")
         _verify_self_hash(summary, "summary_payload_sha256", "checkpoint summary")
+        if checkpoint_recovery and index >= int(first_recovered_checkpoint or 0):
+            first_isolated = index == first_recovered_checkpoint
+            if (
+                str(summary.get("executor_mode"))
+                != (
+                    engine.CHECKPOINT_RECOVERY_EXECUTOR_MODE
+                    if first_isolated
+                    else engine.CHECKPOINT_POST_RECOVERY_EXECUTOR_MODE
+                )
+                or int(summary.get("effective_checkpoint_workers", 0))
+                not in ({1} if first_isolated else set(engine.CHECKPOINT_WORKER_CHOICES))
+                or summary.get("max_tasks_per_child")
+                != (1 if first_isolated else None)
+                or not bool(summary.get("checkpoint_recovery_provenance"))
+            ):
+                raise RuntimeError(
+                    f"Phase D checkpoint recovery executor drift: {checkpoint_id}"
+                )
         boundary_free = int(summary["minimum_checkpoint_boundary_free_memory_bytes"])
         if boundary_free < 1:
             raise RuntimeError(f"Phase D memory telemetry missing: {checkpoint_id}")
@@ -322,9 +348,12 @@ def audit(
     resource = _read_json(root / "resource_summary.json")
     _verify_self_hash(resource, "resource_summary_payload_sha256", "resource summary")
     if checkpoint_recovery and (
-        int(resource.get("effective_workers_per_checkpoint", 0)) != 1
-        or str(resource.get("executor_lifecycle"))
-        != engine.CHECKPOINT_RECOVERY_EXECUTOR_MODE
+        str(resource.get("executor_lifecycle"))
+        != engine.CHECKPOINT_RECOVERY_EXECUTOR_LIFECYCLE
+        or int(resource.get("first_isolated_recovery_checkpoint", 0))
+        != first_recovered_checkpoint
+        or int(resource.get("isolated_recovery_checkpoint_count", 0)) != 1
+        or not bool(resource.get("adaptive_continuation_enabled"))
     ):
         raise RuntimeError("Phase D checkpoint recovery resource summary drift")
 

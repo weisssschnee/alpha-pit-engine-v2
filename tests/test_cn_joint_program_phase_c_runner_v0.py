@@ -101,11 +101,13 @@ def test_phase_c_recycles_pool_then_updates_and_seals_checkpoint() -> None:
     )
     process_pool = source.index("with ProcessPoolExecutor(", checkpoint_loop)
     resource_gate = source.index(
-        "if available < MINIMUM_FREE_MEMORY_BYTES:", process_pool
+        "_require_runtime_resource_safety(resource_after)", process_pool
     )
-    feedback = source.index("feedback = _feedback_update(", resource_gate)
+    orphan_gate = source.index("if orphan_worker_pids:", resource_gate)
+    feedback = source.index("feedback = _feedback_update(", orphan_gate)
     close = source.index("previous_manifest = _close_checkpoint(", feedback)
-    assert checkpoint_loop < process_pool < resource_gate < feedback < close
+    assert checkpoint_loop < process_pool < resource_gate < orphan_gate < feedback < close
+    assert "if available < MINIMUM_FREE_MEMORY_BYTES:" not in source
     assert '"executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE"' in source
 
 

@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AUTHORIZATION_SHA = "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd"
 ASK_PLAN_SHA = "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b"
 PROGRAM_SPACE_SHA = "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0"
+SOURCE_BINDING_SHA = "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
 
 
 def test_checkpoint_projection_uses_compiled_physical_leaves_only() -> None:
@@ -93,6 +94,86 @@ def test_commit_gate_and_adaptive_worker_cap() -> None:
         schedule_count=8,
         commit_headroom_bytes=phase_c.MINIMUM_COMMIT_HEADROOM_BYTES + 32 * 1024**3,
     ) == 4
+
+
+def test_recovery_isolates_only_first_recovered_checkpoint() -> None:
+    isolated = phase_c._checkpoint_executor_plan(
+        checkpoint_index=2,
+        recovery_start_checkpoint_index=2,
+        checkpoint_recovery_mode=True,
+        worker_cap=8,
+        schedule_count=8,
+        commit_headroom_bytes=phase_c.MINIMUM_COMMIT_HEADROOM_BYTES + 80 * 1024**3,
+    )
+    continued = phase_c._checkpoint_executor_plan(
+        checkpoint_index=3,
+        recovery_start_checkpoint_index=2,
+        checkpoint_recovery_mode=True,
+        worker_cap=8,
+        schedule_count=8,
+        commit_headroom_bytes=phase_c.MINIMUM_COMMIT_HEADROOM_BYTES + 80 * 1024**3,
+    )
+    assert isolated == {
+        "executor_mode": "RECOVERY_ISOLATED_FIRST_CHECKPOINT",
+        "effective_checkpoint_workers": 1,
+        "max_tasks_per_child": 1,
+        "checkpoint_recovery_provenance": True,
+    }
+    assert continued == {
+        "executor_mode": "NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION",
+        "effective_checkpoint_workers": 8,
+        "max_tasks_per_child": None,
+        "checkpoint_recovery_provenance": True,
+    }
+
+
+@pytest.mark.parametrize("boundary", [1, 7, 45])
+def test_arbitrary_partial_recovery_boundary_isolates_exactly_one_checkpoint(
+    boundary: int,
+) -> None:
+    modes = [
+        phase_c._checkpoint_executor_plan(
+            checkpoint_index=index,
+            recovery_start_checkpoint_index=boundary,
+            checkpoint_recovery_mode=True,
+            worker_cap=8,
+            schedule_count=8,
+            commit_headroom_bytes=(
+                phase_c.MINIMUM_COMMIT_HEADROOM_BYTES + 80 * 1024**3
+            ),
+        )["executor_mode"]
+        for index in (boundary, boundary + 1)
+    ]
+    assert modes == [
+        "RECOVERY_ISOLATED_FIRST_CHECKPOINT",
+        "NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION",
+    ]
+
+
+def test_non_recovery_executor_plan_remains_adaptive() -> None:
+    plan = phase_c._checkpoint_executor_plan(
+        checkpoint_index=0,
+        recovery_start_checkpoint_index=0,
+        checkpoint_recovery_mode=False,
+        worker_cap=8,
+        schedule_count=8,
+        commit_headroom_bytes=phase_c.MINIMUM_COMMIT_HEADROOM_BYTES + 48 * 1024**3,
+    )
+    assert plan == {
+        "executor_mode": "NORMAL_ADAPTIVE",
+        "effective_checkpoint_workers": 6,
+        "max_tasks_per_child": None,
+        "checkpoint_recovery_provenance": False,
+    }
+
+
+def test_quarantined_results_are_outside_recovery_read_path() -> None:
+    source = (
+        ROOT / "scripts/run_cn_joint_program_phase_c_v0.py"
+    ).read_text(encoding="utf-8")
+    assert "quarantine" not in source.lower()
+    assert 'record_root.glob("record_*.json")' in source
+    assert 'if inflight_root.exists() and any(inflight_root.iterdir())' in source
 
 
 def test_tournament_phase_forwards_recovery_only_to_stage01(
@@ -198,3 +279,12 @@ def test_recovery_surface_precedes_project_control_and_frozen_ids_hold() -> None
     assert stable_hash(list(build_maximum_ask_plan_v1())) == ASK_PLAN_SHA
     assert FROZEN_PROGRAM_SPACE_ENTRY_COUNT == 3616
     assert FROZEN_PROGRAM_SPACE_SHA256 == PROGRAM_SPACE_SHA
+    source_binding = json.loads(
+        (
+            ROOT
+            / "runtime/run_plans/cn_program_optimizer_tournament_source_binding_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    source_binding_body = dict(source_binding)
+    assert source_binding_body.pop("source_binding_payload_sha256") == SOURCE_BINDING_SHA
+    assert stable_hash(source_binding_body) == SOURCE_BINDING_SHA
