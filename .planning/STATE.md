@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_RESOURCE_AND_RECOVERY_PREPARATION_COMPLETE_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_CHECKPOINT003_QUARANTINED_RECOMPUTATION_PENDING_EXTERNAL_RECOVERY_AUTHORIZATION_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_RECOVERY_FIRST_CHECKPOINT_ISOLATION_ADAPTIVE_CONTINUATION_READY_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_CHECKPOINT003_QUARANTINED_RECOMPUTATION_PENDING_EXTERNAL_REVIEW_PROJECT_CONTROL_NOT_REQUESTED_RECOVERY_NOT_RUN_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,34 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer recovery first-checkpoint isolation and adaptive continuation ready; RECOVERY not run (2026-08-14)
+
+- Recovery executor implementation SHA
+  `a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94` separates recovery provenance
+  from executor isolation. The root remains a `RECOVERY` over the original
+  `RETRY` lineage throughout, while only the first recovered checkpoint uses
+  `RECOVERY_ISOLATED_FIRST_CHECKPOINT`, one effective worker and
+  `max_tasks_per_child=1`. A successfully closed first recovered checkpoint is
+  followed by `NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION` with the unchanged
+  4/6/8 commit-headroom policy.
+- Focused local coverage passed 62 tests. The frozen authorization, ask plan,
+  3,616-Program space and source binding are byte/hash unchanged. Exact column
+  projection, commit/pagefile/paging/orphan/post-pool checks and the absence of
+  the old 24-GiB physical-free hard wall remain enforced.
+- A zero-financial dry planning probe on clean `DESKTOP-77OPJ6F` code SHA
+  `a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94` verified the original root at two
+  immutable checkpoints / 16 records, empty formal inflight, unchanged
+  checkpoint manifest hashes and non-reusable quarantine. It planned
+  checkpoint_003 as isolated and checkpoint_004 as eight-worker adaptive with
+  recovery provenance still true. Source, frozen, path and node-cleanliness
+  checkers passed; all restricted reads were zero.
+- Evidence is
+  `runtime/run_plans/cn_program_optimizer_tournament_recovery_adaptive_continuation_readiness_20260814.json`.
+  Project Control was not requested, no admission was created or consumed,
+  `RECOVERY` was not run, no checkpoint or economic record was closed, no
+  optimizer tell occurred, and racing, Stage 2, successor and promotion remain
+  stopped for external review.
 
 ### Program optimizer practical resource repair and checkpoint recovery seam prepared; RECOVERY not run (2026-08-14)
 
@@ -56,8 +84,9 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   limited to
   `PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE`, exact incident,
   diagnostic and deployment bindings, the existing output root and the 2 /
-  16 / next-checkpoint-3 boundary. Recovery itself remains conservatively
-  single-worker with `max_tasks_per_child=1`.
+  16 / next-checkpoint-3 boundary. At that preparation SHA, isolation applied
+  to every remaining checkpoint; the section above supersedes that executor
+  scope while preserving the same recovery provenance and evidence boundary.
 - The frozen Tournament authorization
   `99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd`,
   ask plan `eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b`,

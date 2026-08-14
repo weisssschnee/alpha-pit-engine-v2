@@ -1,0 +1,74 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_recovery_adaptive_continuation_readiness_v1",
+  "status": "READY_PENDING_EXTERNAL_REVIEW",
+  "base_repo_sha": "3e7b0b6ea5043d90a76388dbda68785d1e0a3779",
+  "recovery_executor_implementation_repo_sha": "a8a864542ae6bd8b7bde8a176e17a38f4b8f0f94",
+  "original_execution_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+  "original_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+  "executor_semantics": {
+    "recovery_provenance_scope": "ENTIRE_RECOVERY_EXECUTION",
+    "isolation_scope": "FIRST_RECOVERED_CHECKPOINT_ONLY",
+    "first_recovered_checkpoint": 3,
+    "isolated_recovery_checkpoint_count": 1,
+    "first_checkpoint_executor_mode": "RECOVERY_ISOLATED_FIRST_CHECKPOINT",
+    "first_checkpoint_effective_workers": 1,
+    "first_checkpoint_max_tasks_per_child": 1,
+    "continuation_executor_mode": "NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION",
+    "adaptive_continuation_enabled": true,
+    "adaptive_worker_choices": [4, 6, 8],
+    "normal_selected_worker_cap": 8
+  },
+  "immutable_boundary": {
+    "closed_checkpoint_count": 2,
+    "closed_record_count": 16,
+    "checkpoint_001_batch_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+    "checkpoint_002_batch_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+    "formal_inflight_entry_count": 0,
+    "quarantine_manifest_file_sha256": "f1ad1a8cecbeab88dc8e330bc38ca6672522e6999faa5cb0a270c1d16c2e26a2",
+    "quarantine_reused": false,
+    "incomplete_results_reused": false
+  },
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "verification": {
+    "focused_local_tests": "62 passed",
+    "local_frozen_checker": "PASS",
+    "local_call_path_checker": "PASS",
+    "remote_deployment_root": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_recovery_adaptive_a8a8645_20260814",
+    "remote_deployment_clean": true,
+    "remote_source_binding_checker": "PASS",
+    "remote_frozen_checker": "PASS",
+    "remote_call_path_checker": "PASS",
+    "remote_execution_node_cleanliness_checker": "PASS",
+    "remote_execution_node_cleanliness_payload_sha256": "9f1d1d949920c27a0f76523039c413c06aebfbaa8e280aea75952e09c97cdb84",
+    "remote_dry_planning_probe": "PASS",
+    "dry_probe_commit_headroom_bytes": 172135092224,
+    "checkpoint_003_effective_workers": 1,
+    "checkpoint_004_effective_workers": 8
+  },
+  "read_boundary": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "execution_boundary": {
+    "project_control": "NOT_REQUESTED",
+    "project_control_admission": "NOT_REQUESTED",
+    "recovery": "NOT_RUN",
+    "new_checkpoint_closed": false,
+    "new_economic_record_count": 0,
+    "optimizer_tell_count": 0,
+    "stage1_racing": "NOT_RUN",
+    "stage2": "NOT_RUN",
+    "automatic_successor": false,
+    "promotion": false
+  },
+  "readiness_payload_sha256": "bedd36b23f996b093540c61229064c36ae165213e7b4dc09af36fdec8c33e0f7"
+}
