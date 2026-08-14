@@ -1,0 +1,191 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_execution_ask_schema_repair_v1",
+  "status": "EXECUTION_ASK_SCHEMA_REPAIR_PRE_EVALUATOR_REHEARSAL_COMPLETE_PENDING_EXTERNAL_REVIEW",
+  "base_sha": "d36878a5a580245ff06370c769ad9d45b30415a1",
+  "implementation_sha": "bba5dcb361b6f9dad791ef3d91597dc77b1ce6d5",
+  "root_cause": {
+    "classification": "PHASE_C_EXECUTION_ASK_SCHEMA_ADAPTER_DRIFT",
+    "frozen_field": "template_stage_ordinal",
+    "required_phase_c_field": "template_record_ordinal",
+    "failure_phase": "CHECKPOINT_000_SCHEDULE_CONSTRUCTION",
+    "selection_economics_affected": false
+  },
+  "repair": {
+    "authority": "our_system_phase2.services.program_tournament_freeze_v1:_renumber",
+    "semantics": "zero-based occurrence ordinal within template in each independently renumbered phase execution plan",
+    "frozen_maximum_plan_modified": false,
+    "template_stage_ordinal_preserved": true,
+    "phase_c_schedule_record_modified": false,
+    "ask_record_sha256_recomputed_after_derived_field": true
+  },
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_count": 536,
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  },
+  "derived_execution_plans": {
+    "stage01": {
+      "ask_count": 368,
+      "checkpoint_count": 46,
+      "checkpoint_stratification_pass": true,
+      "template_stage_ordinal_preserved": true,
+      "template_record_ordinal_ranges": {
+        "BASE": "0..31",
+        "BASE_TEMPORAL": "0..47",
+        "BASE_MARKET": "0..47",
+        "BASE_EVENT": "0..47",
+        "BASE_TEMPORAL_MARKET": "0..47",
+        "BASE_TEMPORAL_EVENT": "0..47",
+        "BASE_MARKET_EVENT": "0..47",
+        "BASE_TEMPORAL_MARKET_EVENT": "0..47"
+      }
+    },
+    "stage2_legal_active_arm_combinations": [
+      {
+        "active_arms": ["UNIFORM_CONTROL"],
+        "ask_count": 56,
+        "per_present_template_ordinal_range": "0..7"
+      },
+      {
+        "active_arms": ["UNIFORM_CONTROL", "HYBRID_TPE_PROGRAM"],
+        "ask_count": 112,
+        "per_present_template_ordinal_range": "0..15"
+      },
+      {
+        "active_arms": ["UNIFORM_CONTROL", "STRUCTURED_SURROGATE_PROGRAM"],
+        "ask_count": 112,
+        "per_present_template_ordinal_range": "0..15"
+      },
+      {
+        "active_arms": ["UNIFORM_CONTROL", "HYBRID_TPE_PROGRAM", "STRUCTURED_SURROGATE_PROGRAM"],
+        "ask_count": 168,
+        "per_present_template_ordinal_range": "0..23"
+      }
+    ]
+  },
+  "state_replay": {
+    "real_failed_state_path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_final_retry_20260814_3c9fe7b\\prefinancial_freeze_stage01\\initial_bandit_state.json",
+    "real_failed_state_file_sha256": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "real_failed_state_replay_exact": true,
+    "new_freeze_state_replay_exact": true,
+    "original_state_sha256": "2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3",
+    "restored_state_sha256": "2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3"
+  },
+  "rehearsal": {
+    "host": "DESKTOP-77OPJ6F",
+    "formal_python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_execution_schema_bba5dcb_20260814",
+    "workspace_clean": true,
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_execution_schema_rehearsal_20260814_bba5dcb",
+    "receipt_file_sha256": "9deb803ba4fb1f259550dcbd3f3d52500dd8de584d724cc5c3987efa604d44b9",
+    "phase_freeze_verify": "PASS",
+    "root_file_count": 8,
+    "root_directory_count": 0,
+    "root_has_project_control": false,
+    "closure_file_sha256": "b204543ff5167ad45849ced94561c73e37fda1db6f1c6ed43409af522ae8ddef",
+    "ask_plan_file_sha256": "a33737df77012c50e507cbbc84eb9ec5ebea0d71a1081b45d3d6d824e1bf675f",
+    "initial_state_file_sha256": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "source_search_v2_prefinancial_freeze": {
+      "required_physical_leaves": 84,
+      "available_after_materialization": 84,
+      "unresolved": 0
+    },
+    "checkpoint_zero": {
+      "optimizer_arm": "UNIFORM_CONTROL",
+      "template_id": "BASE",
+      "ask_count": 8,
+      "schedule_count": 8,
+      "all_exact_identities_legal": true,
+      "template_record_ordinals": "0..7"
+    },
+    "enhanced_arm_probes": {
+      "UNIFORM_CONTROL": {
+        "template_id": "BASE_TEMPORAL",
+        "ask_count": 8,
+        "schedule_count": 8,
+        "all_exact_identities_legal": true,
+        "economic_feedback_used": false,
+        "template_record_ordinals": "0..7"
+      },
+      "HYBRID_TPE_PROGRAM": {
+        "template_id": "BASE_TEMPORAL",
+        "ask_count": 8,
+        "schedule_count": 8,
+        "all_exact_identities_legal": true,
+        "official_optuna_ask": true,
+        "trial_numbers": [0, 1, 2, 3, 4, 5, 6, 7],
+        "raw_exact_identities": [
+          "d397ee97d17d918a46cd2c678dbeed84f940e890e7edd8337930568519556872",
+          "e964f4afe7a82c043ce5bc5ba176f7cd61e5d979d9ad9cbf8a5cd780ffeedec9",
+          "0e40a17d4e5f40a663cf6f2a70eb6149066fe7feb83d76e5b727aed86d9504bb",
+          "75f63c4549ff979eef51679a86a9f52c4610680e187634add4cc039a116d5013",
+          "bb7a2a297f156a1fce7c06167d58744f5f51db81e3557f01b7c1fbc80a22a843",
+          "ff4404c73b5903d29c9f7f1a256356a3b44999ce0b3c6b129ebf396d7cc3bd17",
+          "9d9b72d1b418924bad5ce3b05da8d49070ca0479156b946b0d1eb9debc6c6b7f",
+          "f251b49a148dbba3564686741b83d899d14e79f45299a5d235787ee2fb98e202"
+        ],
+        "actual_exact_identities_equal_raw": true,
+        "projection_modes": [
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT",
+          "DIRECT_LEGAL_EXACT"
+        ],
+        "global_fallback_count": 0,
+        "template_record_ordinals": "8..15"
+      },
+      "STRUCTURED_SURROGATE_PROGRAM": {
+        "template_id": "BASE_TEMPORAL",
+        "ask_count": 8,
+        "schedule_count": 8,
+        "all_exact_identities_legal": true,
+        "eligible_compared_count": 512,
+        "full_eligible_set_scored": true,
+        "mode": "COLD_START",
+        "template_record_ordinals": "16..23"
+      }
+    }
+  },
+  "read_boundary": {
+    "evaluator_guard": "INSTALLED_AND_NOT_TRIGGERED",
+    "evaluator_guard_attempts": 0,
+    "financial_evaluation_executed": false,
+    "market_price_rows_read": 0,
+    "optimizer_economic_observations": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "verification": {
+    "local_focused_and_related_tests": "33 passed",
+    "remote_focused_and_related_tests": "33 passed",
+    "frozen_checker": "PASS",
+    "path_checker": "PASS",
+    "source_binding_checker": "PASS",
+    "projection_fairness_report_checker": "PASS_SELF_HASHED_ZERO_FINANCIAL",
+    "independent_remote_audit": "PASS",
+    "first_outer_shell_capture_attempt": "ABORTED_BEFORE_ROOT_CREATION_ON_OPTUNA_WARNING_STDERR",
+    "completed_capture_transport": "START_PROCESS_NATIVE_STDOUT_STDERR"
+  },
+  "continuation_boundary": {
+    "project_control": "NOT_REQUESTED",
+    "project_control_admission": "NOT_REQUESTED",
+    "retry": "NOT_RUN",
+    "launch": "NOT_RUN",
+    "recovery": "NOT_RUN",
+    "tournament": "NOT_RUN",
+    "automatic_successor": false,
+    "promotion": false,
+    "fourth_retry_authorized": false
+  },
+  "evidence_payload_sha256": "699fa562b5d633a12765c10f1eea166381cbcccf0ddb427c788b40c2827508e1"
+}

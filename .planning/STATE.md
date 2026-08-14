@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_STATE_REPLAY_REPAIRED_EXECUTION_BOUNDARY_REHEARSAL_BLOCKED_TEMPLATE_ORDINAL_ZERO_ECONOMIC_RECORDS_NO_FOURTH_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_EXECUTION_ASK_SCHEMA_REPAIRED_PRE_EVALUATOR_REHEARSAL_COMPLETE_ZERO_ECONOMIC_RECORDS_NO_FOURTH_RETRY_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,35 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer derived execution ask schema repaired; full pre-evaluator rehearsal complete; no fourth retry (2026-08-14)
+
+- At implementation SHA `bba5dcb361b6f9dad791ef3d91597dc77b1ce6d5`,
+  `program_tournament_freeze_v1._renumber()` now derives a zero-based
+  `template_record_ordinal` per template within each Phase-C-facing execution
+  plan before recomputing `ask_record_sha256`. The frozen 536-row maximum plan,
+  `template_stage_ordinal`, optimizer and racing semantics remain unchanged.
+  Stage 0/1 closes at 368 rows / 46 checkpoints with BASE ordinals `0..31`
+  and every enhanced-template ordinal `0..47`; all four legal Stage-2 active-
+  arm combinations independently renumber contiguously.
+- On `DESKTOP-77OPJ6F`, exact source binding and Search V2 `84/84/0` passed,
+  the Stage 0/1 freeze rebuilt and independently verified, the new and original
+  failed JSON states both replayed exactly at state SHA256
+  `2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3`,
+  and checkpoint-000 produced eight legal schedules. Independent enhanced-
+  template probes produced eight schedules each for Uniform, real Optuna TPE
+  trials `0..7` and Structured Surrogate full-eligible scoring over 512 entries;
+  TPE global fallback remained zero.
+- The rehearsal installed hard guards over Phase C/Phase B worker, evaluator
+  and market-context entry points. Guard attempts, market-price rows, optimizer
+  economic observations, validation, holdout, spent-2023, Forward-B and 2026
+  reads are all zero. The disposable root contains only eight prefinancial
+  files and no Project Control marker or financial checkpoint.
+- Evidence is recorded in
+  `runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json`.
+  Project Control was not requested, no `RETRY`/`LAUNCH`/`RECOVERY` or
+  tournament ran, and no fourth retry, successor, promotion or authority
+  change is authorized.
 
 ### Program optimizer JSON state replay repaired; execution-boundary rehearsal exposed a separate schedule blocker (2026-08-14)
 
@@ -192,7 +221,7 @@ Current status summary:
 
 ```text
 PROGRAM_SEARCH_CORE = IMPLEMENTED / STATIC_AND_SYNTHETIC_VERIFIED
-TOURNAMENT = TWO PREFINANCIAL INCOMPLETE ENTRIES / ZERO RECORDS / EXTERNAL REVIEW REQUIRED
+TOURNAMENT = TWO PREFINANCIAL INCOMPLETE ENTRIES / EXECUTION-SCHEMA PRE-EVALUATOR REHEARSAL PASS / ZERO RECORDS / EXTERNAL REVIEW REQUIRED
 TOURNAMENT_RETRY = CONSUMED / SPENT / INCOMPLETE_PREFINANCIAL / NO RECOVERY ELIGIBILITY
 ARMS = UNIFORM_CONTROL / HYBRID_TPE_PROGRAM / STRUCTURED_SURROGATE_PROGRAM
 MAXIMUM_BUDGET = 536
