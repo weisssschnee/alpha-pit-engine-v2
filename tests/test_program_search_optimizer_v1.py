@@ -22,8 +22,11 @@ from our_system_phase2.services.search_v2_admission import (
     AbsoluteEconomicAdmission,
 )
 from our_system_phase2.services.search_v2_conditional_uplift import (
+    MATCHED_CONTROL_CONTRACT_ID,
     ProgramUpliftCredit,
+    conditional_uplift_credit,
 )
+from our_system_phase2.services.unified_capability_registry import stable_hash
 
 
 def _space_rows(count: int = 96) -> list[dict[str, object]]:
@@ -92,7 +95,7 @@ def _observation(
             program_id=admission.program_id,
             control_program_id=admission.control_program_id,
             program_credit={
-                "matched_cumulative_return_increment": uplift,
+                "matched_cumulative_net_return_increment": uplift,
                 "matched_net_reward_increment": uplift * 2.0,
             },
         )
@@ -109,6 +112,103 @@ def _observation(
 
 def _json_persisted(payload: dict[str, object]) -> dict[str, object]:
     return json.loads(json.dumps(payload, sort_keys=True))
+
+
+def _real_observation(
+    ask: dict[str, object], *, admitted: bool, uplift: float
+) -> ProgramOptimizerObservationV1:
+    identity = str(ask["exact_identity"])
+    program_id = f"program-{identity}"
+    control_program_id = f"control-{identity}"
+    pair_id = f"pair-{identity}"
+    primary_reward = 0.25 if admitted else -0.25
+    primary_return = 0.12 if admitted else -0.12
+    record = {
+        "record_kind": "ENHANCED_FULL_BASE_PAIR",
+        "replay_status": "PAIR_REPLAY_COMPLETE",
+        "blockers": [],
+        "control_contract_valid": True,
+        "compile_status": "PASS",
+        "physical_ready": True,
+        "dag_ready": True,
+        "semantic_noop": False,
+        "pair_id": pair_id,
+        "program_id": program_id,
+        "control_program_id": control_program_id,
+        "matched_control_contract_id": MATCHED_CONTROL_CONTRACT_ID,
+        "matched_net_reward_increment": uplift * 2.0,
+        "matched_cumulative_return_increment": uplift,
+        "primary": {
+            "continuous_book_net_reward": primary_reward,
+            "cumulative_net_return": primary_return,
+            "net_return_per_turnover": 0.4 if admitted else -0.4,
+            "mean_one_way_turnover": 0.30,
+            "fill_count": 10,
+            "development_subwindows": [
+                {"window_id": "w1", "cumulative_net_return": 0.05},
+                {"window_id": "w2", "cumulative_net_return": 0.04},
+                {"window_id": "w3", "cumulative_net_return": -0.01},
+            ],
+        },
+        "base_control": {
+            "continuous_book_net_reward": primary_reward - uplift * 2.0,
+            "cumulative_net_return": primary_return - uplift,
+            "net_return_per_turnover": 0.3,
+            "mean_one_way_turnover": 0.20,
+            "fill_count": 10,
+            "development_subwindows": [
+                {"window_id": "w1", "cumulative_net_return": 0.03},
+                {"window_id": "w2", "cumulative_net_return": 0.03},
+                {"window_id": "w3", "cumulative_net_return": -0.005},
+            ],
+        },
+    }
+    record["record_payload_sha256"] = stable_hash(record)
+    admission = AbsoluteEconomicAdmission.evaluate(
+        record,
+        expected_pair_id=pair_id,
+        expected_program_id=program_id,
+        expected_control_program_id=control_program_id,
+    )
+    credit = conditional_uplift_credit(record, admission)
+    return ProgramOptimizerObservationV1(
+        proposal_id=str(ask["proposal_id"]),
+        exact_identity=identity,
+        admission=admission,
+        uplift=credit,
+    )
+
+
+def test_real_dual_head_pipeline_feeds_both_learning_adapters() -> None:
+    entries = program_availability_entries_v1(_space_rows(24))
+    adapters = (
+        HybridTPEProgramSearchAdapter(
+            entries=entries,
+            seen_exact_identities=(),
+            seed=43,
+            n_startup_trials=2,
+            n_ei_candidates=8,
+        ),
+        StructuredSurrogateProgramSearchAdapter(
+            entries=entries,
+            seen_exact_identities=(),
+            seed=47,
+            cold_start_asks=2,
+            candidate_pool_size=24,
+            n_estimators=16,
+            min_samples_leaf=1,
+        ),
+    )
+    for adapter in adapters:
+        asks = adapter.ask(checkpoint_id="checkpoint_real_head_b", count=2)
+        observations = [
+            _real_observation(asks[0], admitted=True, uplift=0.125),
+            _real_observation(asks[1], admitted=False, uplift=0.5),
+        ]
+        assert observations[0].conditional_objective == pytest.approx(0.125)
+        assert observations[1].conditional_objective is None
+        receipt = adapter.tell(observations)
+        assert receipt["asked_count"] == 2
 
 
 def test_structured_surrogate_genesis_json_persisted_roundtrip_exact() -> None:

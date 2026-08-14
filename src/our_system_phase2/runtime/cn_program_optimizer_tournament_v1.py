@@ -30,6 +30,7 @@ from our_system_phase2.services.project_control_admission import (
     ACTION_RETRY,
     ProjectControlDenied,
     consume_active_admission,
+    sha256_file,
     verify_campaign_authorization_binding,
     verify_consumed_admission_target,
 )
@@ -565,6 +566,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if action == ACTION_RECOVERY and not all(recovery_bindings):
         raise ProjectControlDenied("Program tournament RECOVERY binding is incomplete")
+    if action == ACTION_RECOVERY:
+        incident_path = args.checkpoint_recovery_incident.resolve()
+        if (
+            str(incident_path) != str(admission.get("incident_path") or "")
+            or sha256_file(incident_path)
+            != str(admission.get("incident_file_sha256") or "")
+        ):
+            raise ProjectControlDenied(
+                "Program tournament RECOVERY incident is outside the admission"
+            )
     if action != ACTION_RECOVERY and any(recovery_bindings):
         raise ProjectControlDenied(
             "Program tournament checkpoint recovery binding requires RECOVERY"

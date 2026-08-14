@@ -45,7 +45,12 @@ SOURCE_REPAIR_RECOVERY_SCOPES = {
         "cn-program-optimizer-tournament-v1",
         "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE",
     ),
+    (
+        "cn-program-optimizer-tournament-v1",
+        "PHASE_C_CHECKPOINT_RECOVERY",
+    ),
 }
+PROGRAM_TOURNAMENT_RECORDS_PER_CHECKPOINT = 8
 
 # The qualified 77o wrappers create only these non-financial launch-control
 # artifacts before app.py can consume the admission. Business output remains
@@ -664,6 +669,11 @@ def _validate_source_repair_recovery(
     if (target_campaign_id, recovery_scope) not in SOURCE_REPAIR_RECOVERY_SCOPES:
         raise ProjectControlDenied("cross-SHA recovery scope forbidden")
     _, incident = _read_json(incident_path, "recovery incident")
+    if target_campaign_id == "cn-program-optimizer-tournament-v1":
+        incident_body = dict(incident)
+        incident_hash = str(incident_body.pop("incident_payload_sha256", ""))
+        if incident_hash != _stable_hash(incident_body):
+            raise ProjectControlDenied("source-repair recovery incident hash drift")
     common_drift = (
         str(incident.get("checkpoint_builder_repo_sha") or "")
         != original_repo_sha
@@ -671,12 +681,43 @@ def _validate_source_repair_recovery(
         or bool(incident.get("incomplete_results_reused"))
     )
     if target_campaign_id == "cn-program-optimizer-tournament-v1":
+        try:
+            closed_checkpoint_count = int(
+                incident.get("closed_checkpoint_count") or 0
+            )
+            closed_record_count = int(incident.get("closed_record_count") or 0)
+            first_recovered_checkpoint = int(
+                incident.get("first_recovered_checkpoint") or 0
+            )
+        except (TypeError, ValueError) as exc:
+            raise ProjectControlDenied(
+                "source-repair recovery incident boundary drift"
+            ) from exc
         boundary_drift = (
             not bool(incident.get("checkpoint_recomputation_authorized"))
-            or int(incident.get("closed_checkpoint_count") or 0) != 2
-            or int(incident.get("closed_record_count") or 0) != 16
-            or int(incident.get("first_recovered_checkpoint") or 0) != 3
+            or closed_checkpoint_count < 1
+            or closed_record_count
+            != closed_checkpoint_count
+            * PROGRAM_TOURNAMENT_RECORDS_PER_CHECKPOINT
+            or first_recovered_checkpoint != closed_checkpoint_count + 1
         )
+        if recovery_scope == "PHASE_C_CHECKPOINT_RECOVERY":
+            boundary_drift = (
+                boundary_drift
+                or not str(incident.get("failure_classification") or "")
+                or bool(incident.get("financial_results_reusable"))
+                or incident.get("optimizer_tell_count", 0) != 0
+                or any(
+                    incident.get(key, 0) != 0
+                    for key in (
+                        "validation_reads",
+                        "holdout_reads",
+                        "historical_2023_reads",
+                        "forward_b_reads",
+                        "forward_2026_reads",
+                    )
+                )
+            )
     else:
         boundary_drift = (
             bool(incident.get("checkpoint_recomputation_authorized"))
@@ -1035,6 +1076,10 @@ def validate_admission(
         "recovery_scope": str(child["request"].get("recovery_scope") or ""),
         "recovery_kind": str(child["request"].get("recovery_kind") or ""),
         "incident_id": str(child["request"].get("incident_id") or ""),
+        "incident_path": str(child["request"].get("incident_path") or ""),
+        "incident_file_sha256": str(
+            child["request"].get("incident_file_sha256") or ""
+        ),
         "original_admission_file_sha256": str(
             child["request"].get("original_admission_file_sha256") or ""
         ),

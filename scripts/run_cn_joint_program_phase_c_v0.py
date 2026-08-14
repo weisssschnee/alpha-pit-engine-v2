@@ -82,6 +82,17 @@ CHECKPOINT_POST_RECOVERY_EXECUTOR_MODE = (
 CHECKPOINT_RECOVERY_EXECUTOR_LIFECYCLE = (
     "FIRST_RECOVERED_CHECKPOINT_ISOLATED_THEN_NORMAL_ADAPTIVE"
 )
+CHECKPOINT_RECOVERY_SCOPE = "PHASE_C_CHECKPOINT_RECOVERY"
+LEGACY_CHECKPOINT_RECOVERY_SCOPE = (
+    "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE"
+)
+RESTRICTED_READ_KEYS = (
+    "validation_reads",
+    "holdout_reads",
+    "historical_2023_reads",
+    "forward_b_reads",
+    "forward_2026_reads",
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -145,6 +156,139 @@ def _resolve_checkpoint_recovery_incident_boundary(
     ):
         raise RuntimeError("Phase C checkpoint recovery incident boundary drift")
     return root_values[0], count_values[0]
+
+
+def _verify_payload_hash(
+    payload: Mapping[str, Any], field: str, label: str
+) -> str:
+    body = dict(payload)
+    declared = str(body.pop(field, ""))
+    if not declared or declared != stable_hash(body):
+        raise RuntimeError(f"{label} self-hash drift")
+    return declared
+
+
+def _same_path(left: str | Path, right: str | Path) -> bool:
+    return str(Path(left).resolve()).replace("/", "\\").lower() == str(
+        Path(right).resolve()
+    ).replace("/", "\\").lower()
+
+
+def _require_zero_restricted_reads(
+    payload: Mapping[str, Any], label: str
+) -> None:
+    if any(int(payload.get(key, 0)) for key in RESTRICTED_READ_KEYS):
+        raise RuntimeError(f"{label} restricted-read drift")
+
+
+def _checkpoint_recovery_history(
+    root: Path,
+) -> list[tuple[Path, dict[str, Any]]]:
+    legacy_path = root / "checkpoint_recovery_binding.json"
+    attempts_root = root / "checkpoint_recovery_attempts"
+    attempt_paths = (
+        sorted(attempts_root.glob("*.json")) if attempts_root.is_dir() else []
+    )
+    if not legacy_path.is_file():
+        if attempt_paths:
+            raise RuntimeError("Phase C checkpoint recovery history has no genesis")
+        return []
+
+    legacy = _read_json(legacy_path)
+    _verify_payload_hash(
+        legacy, "recovery_binding_sha256", "Phase C checkpoint recovery genesis"
+    )
+    history = [(legacy_path.resolve(), legacy)]
+    remaining: dict[Path, dict[str, Any]] = {}
+    for path in attempt_paths:
+        payload = _read_json(path)
+        payload_hash = _verify_payload_hash(
+            payload,
+            "recovery_binding_sha256",
+            "Phase C checkpoint recovery continuation",
+        )
+        if path.stem != payload_hash:
+            raise RuntimeError("Phase C checkpoint recovery continuation name drift")
+        remaining[path.resolve()] = payload
+
+    while remaining:
+        previous_path, previous = history[-1]
+        candidates = [
+            (path, payload)
+            for path, payload in remaining.items()
+            if _same_path(
+                str(payload.get("previous_recovery_binding") or ""),
+                previous_path,
+            )
+            and str(payload.get("previous_recovery_binding_file_sha256") or "")
+            == _sha256(previous_path)
+            and str(
+                payload.get("previous_recovery_binding_payload_sha256") or ""
+            )
+            == str(previous.get("recovery_binding_sha256") or "")
+        ]
+        if len(candidates) != 1:
+            raise RuntimeError("Phase C checkpoint recovery history is not linear")
+        path, payload = candidates[0]
+        history.append((path, payload))
+        remaining.pop(path)
+    return history
+
+
+def _verify_checkpoint_quarantine(
+    path: Path,
+    *,
+    root: Path,
+    checkpoint_number: int,
+) -> tuple[dict[str, Any], str]:
+    payload = _read_json(path)
+    payload_hash = _verify_payload_hash(
+        payload, "quarantine_payload_sha256", "Phase C checkpoint quarantine"
+    )
+    artifacts = list(payload.get("artifacts") or ())
+    if (
+        str(payload.get("status") or "") != "PASS"
+        or not _same_path(str(payload.get("accepted_root") or ""), root)
+        or int(payload.get("checkpoint_number") or 0) != checkpoint_number
+        or int(payload.get("record_count") or 0) != RECORDS_PER_CHECKPOINT
+        or len(artifacts) != RECORDS_PER_CHECKPOINT
+        or not bool(payload.get("formal_inflight_empty"))
+        or bool(payload.get("financial_results_reusable"))
+        or bool(payload.get("incomplete_results_reused"))
+        or int(payload.get("optimizer_tell_count") or 0) != 0
+    ):
+        raise RuntimeError("Phase C checkpoint quarantine contract drift")
+    _require_zero_restricted_reads(payload, "Phase C checkpoint quarantine")
+    expected_ordinals = set(
+        range(
+            (checkpoint_number - 1) * RECORDS_PER_CHECKPOINT,
+            checkpoint_number * RECORDS_PER_CHECKPOINT,
+        )
+    )
+    observed_ordinals: set[int] = set()
+    quarantine_paths: set[Path] = set()
+    for artifact in artifacts:
+        ordinal = int(artifact.get("main_record_ordinal", -1))
+        source_path = Path(str(artifact.get("source_path") or "")).resolve()
+        quarantine_path = Path(str(artifact.get("quarantine_path") or "")).resolve()
+        expected_hash = str(artifact.get("file_sha256") or "")
+        if (
+            ordinal in observed_ordinals
+            or quarantine_path in quarantine_paths
+            or not source_path.is_relative_to(
+                (root / "inflight" / f"checkpoint_{checkpoint_number:03d}").resolve()
+            )
+            or quarantine_path.is_relative_to(root.resolve())
+            or not quarantine_path.is_file()
+            or not expected_hash
+            or _sha256(quarantine_path) != expected_hash
+        ):
+            raise RuntimeError("Phase C checkpoint quarantine artifact drift")
+        observed_ordinals.add(ordinal)
+        quarantine_paths.add(quarantine_path)
+    if observed_ordinals != expected_ordinals:
+        raise RuntimeError("Phase C checkpoint quarantine ordinal drift")
+    return payload, payload_hash
 
 
 def _runtime_resource_snapshot() -> dict[str, int]:
@@ -1575,6 +1719,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     checkpoint_recovery_binding_path: Path | None = None
     checkpoint_recovery_binding: dict[str, Any] | None = None
+    checkpoint_recovery_history_paths: list[Path] = []
     closed_checkpoints_at_recovery_start = closed_checkpoints
     if checkpoint_recovery_mode:
         if len(checkpoint_recovery_from_sha) != 40:
@@ -1589,53 +1734,125 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         checkpoint_recovery_incident = Path(
             checkpoint_recovery_incident_arg
         ).resolve()
+        recovery_history = _checkpoint_recovery_history(root)
         incident_payload = _read_json(checkpoint_recovery_incident)
-        incident_body = dict(incident_payload)
-        incident_hash = str(incident_body.pop("incident_payload_sha256", ""))
+        incident_hash = _verify_payload_hash(
+            incident_payload,
+            "incident_payload_sha256",
+            "Phase C checkpoint recovery incident",
+        )
         incident_root, incident_checkpoint_count = (
             _resolve_checkpoint_recovery_incident_boundary(incident_payload)
         )
+        recovery_scope = str(incident_payload.get("recovery_scope") or "")
+        failure_classification = str(
+            incident_payload.get("failure_classification") or ""
+        )
         if (
-            incident_hash != stable_hash(incident_body)
-            or incident_root.replace("/", "\\").lower()
-            != str(root).replace("/", "\\").lower()
+            recovery_scope
+            not in {CHECKPOINT_RECOVERY_SCOPE, LEGACY_CHECKPOINT_RECOVERY_SCOPE}
+            or not _same_path(incident_root, root)
             or incident_checkpoint_count != closed_checkpoints
+            or str(incident_payload.get("checkpoint_builder_repo_sha") or "")
+            != checkpoint_recovery_from_sha
+            or not bool(incident_payload.get("checkpoint_recomputation_authorized"))
+            or int(incident_payload.get("closed_record_count") or 0)
+            != closed_checkpoints * RECORDS_PER_CHECKPOINT
+            or int(incident_payload.get("first_recovered_checkpoint") or 0)
+            != closed_checkpoints + 1
             or bool(incident_payload.get("incomplete_results_reused"))
         ):
             raise RuntimeError("Phase C checkpoint recovery incident binding drift")
+        _require_zero_restricted_reads(
+            incident_payload, "Phase C checkpoint recovery incident"
+        )
+        if recovery_scope == CHECKPOINT_RECOVERY_SCOPE and (
+            not failure_classification
+            or str(
+                incident_payload.get("continuation_implementation_repo_sha") or ""
+            )
+            != str(args.builder_commit_sha)
+            or bool(incident_payload.get("financial_results_reusable"))
+            or int(incident_payload.get("optimizer_tell_count") or 0) != 0
+        ):
+            raise RuntimeError("Phase C checkpoint recovery incident contract drift")
+
+        if previous_manifest is None:
+            raise RuntimeError("Phase C checkpoint recovery has no closed manifest")
+        previous_manifest_payload = _read_json(previous_manifest)
+        previous_manifest_hash = _verify_payload_hash(
+            previous_manifest_payload,
+            "manifest_payload_hash",
+            "Phase C last closed checkpoint manifest",
+        )
+        if recovery_scope == CHECKPOINT_RECOVERY_SCOPE and (
+            not _same_path(
+                str(incident_payload.get("last_closed_checkpoint_manifest") or ""),
+                previous_manifest,
+            )
+            or str(
+                incident_payload.get("last_closed_checkpoint_manifest_file_sha256")
+                or ""
+            )
+            != _sha256(previous_manifest)
+            or str(
+                incident_payload.get(
+                    "last_closed_checkpoint_manifest_payload_sha256"
+                )
+                or ""
+            )
+            != previous_manifest_hash
+        ):
+            raise RuntimeError("Phase C last closed checkpoint binding drift")
 
         diagnostic_audit = Path(
             checkpoint_recovery_diagnostic_audit_arg
         ).resolve()
         diagnostic_payload = _read_json(diagnostic_audit)
-        diagnostic_body = dict(diagnostic_payload)
-        diagnostic_hash = str(diagnostic_body.pop("audit_payload_sha256", ""))
+        diagnostic_hash = _verify_payload_hash(
+            diagnostic_payload,
+            "audit_payload_sha256",
+            "Phase C checkpoint recovery diagnostic",
+        )
+        expected_failure_classification = (
+            failure_classification
+            if recovery_scope == CHECKPOINT_RECOVERY_SCOPE
+            else "PARALLEL_PROCESS_LIFECYCLE_OR_NATIVE_CONCURRENCY"
+        )
         if (
-            diagnostic_hash != stable_hash(diagnostic_body)
-            or str(diagnostic_payload.get("status", "")) != "PASS"
+            str(diagnostic_payload.get("status", "")) != "PASS"
             or str(diagnostic_payload.get("classification", ""))
-            != "PARALLEL_PROCESS_LIFECYCLE_OR_NATIVE_CONCURRENCY"
-            or str(diagnostic_payload.get("accepted_root", "")).replace(
-                "/", "\\"
-            ).lower()
-            != str(root).replace("/", "\\").lower()
+            != expected_failure_classification
+            or not _same_path(
+                str(diagnostic_payload.get("accepted_root", "")), root
+            )
             or str(diagnostic_payload.get("runner_repo_sha", ""))
             != checkpoint_recovery_from_sha
             or int(diagnostic_payload.get("record_count", 0)) != RECORDS_PER_CHECKPOINT
             or bool(diagnostic_payload.get("diagnostic_financial_results_reusable"))
             or bool(diagnostic_payload.get("financial_results_reused"))
-            or any(
-                int(diagnostic_payload.get(key, 0))
-                for key in (
-                    "validation_reads",
-                    "holdout_reads",
-                    "historical_2023_reads",
-                    "forward_b_reads",
-                    "forward_2026_reads",
-                )
-            )
         ):
             raise RuntimeError("Phase C checkpoint diagnostic binding drift")
+        _require_zero_restricted_reads(
+            diagnostic_payload, "Phase C checkpoint recovery diagnostic"
+        )
+        if recovery_scope == CHECKPOINT_RECOVERY_SCOPE and (
+            int(diagnostic_payload.get("closed_checkpoint_count") or 0)
+            != closed_checkpoints
+            or int(diagnostic_payload.get("closed_record_count") or 0)
+            != closed_checkpoints * RECORDS_PER_CHECKPOINT
+            or int(diagnostic_payload.get("first_recovered_checkpoint") or 0)
+            != closed_checkpoints + 1
+            or str(
+                diagnostic_payload.get("continuation_implementation_repo_sha")
+                or ""
+            )
+            != str(args.builder_commit_sha)
+            or bool(diagnostic_payload.get("financial_results_reusable"))
+            or bool(diagnostic_payload.get("incomplete_results_reused"))
+            or int(diagnostic_payload.get("optimizer_tell_count") or 0) != 0
+        ):
+            raise RuntimeError("Phase C checkpoint diagnostic boundary drift")
 
         checkpoint_recovery_deployment = Path(
             checkpoint_recovery_deployment_arg
@@ -1651,10 +1868,85 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ):
             raise RuntimeError("Phase C checkpoint recovery deployment binding drift")
 
-        checkpoint_recovery_binding = _self_hashed(
-            {
+        previous_recovery_path: Path | None = None
+        previous_recovery_payload: dict[str, Any] | None = None
+        quarantine_path: Path | None = None
+        quarantine_hash = ""
+        if recovery_scope == CHECKPOINT_RECOVERY_SCOPE:
+            if not recovery_history:
+                raise RuntimeError(
+                    "Phase C generic checkpoint continuation requires prior recovery"
+                )
+            previous_recovery_path, previous_recovery_payload = recovery_history[-1]
+            quarantine_path = Path(
+                str(incident_payload.get("quarantine_manifest") or "")
+            ).resolve()
+            _, quarantine_hash = _verify_checkpoint_quarantine(
+                quarantine_path,
+                root=root,
+                checkpoint_number=closed_checkpoints + 1,
+            )
+            exact_incident_bindings = (
+                _same_path(
+                    str(incident_payload.get("diagnostic_audit") or ""),
+                    diagnostic_audit,
+                )
+                and str(
+                    incident_payload.get("diagnostic_audit_file_sha256") or ""
+                )
+                == _sha256(diagnostic_audit)
+                and str(
+                    incident_payload.get("diagnostic_audit_payload_sha256") or ""
+                )
+                == diagnostic_hash
+                and _same_path(
+                    str(incident_payload.get("deployment_manifest") or ""),
+                    checkpoint_recovery_deployment,
+                )
+                and str(
+                    incident_payload.get("deployment_manifest_file_sha256") or ""
+                )
+                == _sha256(checkpoint_recovery_deployment)
+                and _same_path(
+                    str(incident_payload.get("previous_recovery_binding") or ""),
+                    previous_recovery_path,
+                )
+                and str(
+                    incident_payload.get(
+                        "previous_recovery_binding_file_sha256"
+                    )
+                    or ""
+                )
+                == _sha256(previous_recovery_path)
+                and str(
+                    incident_payload.get(
+                        "previous_recovery_binding_payload_sha256"
+                    )
+                    or ""
+                )
+                == str(previous_recovery_payload["recovery_binding_sha256"])
+                and _same_path(
+                    str(incident_payload.get("quarantine_manifest") or ""),
+                    quarantine_path,
+                )
+                and str(
+                    incident_payload.get("quarantine_manifest_file_sha256") or ""
+                )
+                == _sha256(quarantine_path)
+                and str(
+                    incident_payload.get("quarantine_manifest_payload_sha256")
+                    or ""
+                )
+                == quarantine_hash
+            )
+            if not exact_incident_bindings:
+                raise RuntimeError("Phase C checkpoint incident artifact binding drift")
+
+        checkpoint_recovery_body = {
                 "schema_version": "cn_joint_program_phase_c_checkpoint_recovery_v0",
                 "status": "CHECKPOINT_RECOVERY_BOUND",
+                "recovery_scope": recovery_scope,
+                "failure_classification": expected_failure_classification,
                 "checkpoint_builder_repo_sha": checkpoint_recovery_from_sha,
                 "checkpoint_recovery_repo_sha": str(args.builder_commit_sha),
                 "deployment_manifest": str(checkpoint_recovery_deployment),
@@ -1667,6 +1959,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "diagnostic_audit": str(diagnostic_audit),
                 "diagnostic_audit_file_sha256": _sha256(diagnostic_audit),
                 "diagnostic_audit_payload_sha256": diagnostic_hash,
+                "last_closed_checkpoint_manifest": str(previous_manifest),
+                "last_closed_checkpoint_manifest_file_sha256": _sha256(
+                    previous_manifest
+                ),
+                "last_closed_checkpoint_manifest_payload_sha256": (
+                    previous_manifest_hash
+                ),
                 "closed_checkpoint_count": closed_checkpoints,
                 "closed_record_count": closed_checkpoints * RECORDS_PER_CHECKPOINT,
                 "first_recovered_checkpoint": closed_checkpoints + 1,
@@ -1686,10 +1985,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "historical_2023_reads": 0,
                 "forward_b_reads": 0,
                 "forward_2026_reads": 0,
-            },
+            }
+        if previous_recovery_path is not None and previous_recovery_payload is not None:
+            checkpoint_recovery_body.update(
+                {
+                    "previous_recovery_binding": str(previous_recovery_path),
+                    "previous_recovery_binding_file_sha256": _sha256(
+                        previous_recovery_path
+                    ),
+                    "previous_recovery_binding_payload_sha256": str(
+                        previous_recovery_payload["recovery_binding_sha256"]
+                    ),
+                    "quarantine_manifest": str(quarantine_path),
+                    "quarantine_manifest_file_sha256": _sha256(quarantine_path),
+                    "quarantine_manifest_payload_sha256": quarantine_hash,
+                }
+            )
+        checkpoint_recovery_binding = _self_hashed(
+            checkpoint_recovery_body,
             "recovery_binding_sha256",
         )
-        checkpoint_recovery_binding_path = root / "checkpoint_recovery_binding.json"
+        checkpoint_recovery_binding_path = (
+            root
+            / "checkpoint_recovery_attempts"
+            / f"{checkpoint_recovery_binding['recovery_binding_sha256']}.json"
+            if recovery_history
+            else root / "checkpoint_recovery_binding.json"
+        )
         if checkpoint_recovery_binding_path.is_file():
             if _read_json(checkpoint_recovery_binding_path) != checkpoint_recovery_binding:
                 raise RuntimeError("Phase C checkpoint recovery receipt drift")
@@ -1697,6 +2019,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _write_json(
                 checkpoint_recovery_binding_path, checkpoint_recovery_binding
             )
+        checkpoint_recovery_history_paths = [
+            path for path, _ in _checkpoint_recovery_history(root)
+        ]
 
     if closed_checkpoints < CHECKPOINT_COUNT:
         inflight_root.mkdir(parents=True, exist_ok=True)
@@ -2201,11 +2526,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         resource_path,
         access_path,
         *([recovery_binding_path] if recovery_binding_path is not None else []),
-        *(
-            [checkpoint_recovery_binding_path]
-            if checkpoint_recovery_binding_path is not None
-            else []
-        ),
+        *checkpoint_recovery_history_paths,
         *checkpoint_manifests,
     ]
     legacy_recovery_binding = root / "root_finalization_recovery_binding.json"
@@ -2242,6 +2563,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 int(checkpoint_recovery_binding["first_recovered_checkpoint"])
                 if checkpoint_recovery_binding is not None
                 else None
+            ),
+            "checkpoint_recovery_binding": (
+                str(checkpoint_recovery_binding_path)
+                if checkpoint_recovery_binding_path is not None
+                else None
+            ),
+            "checkpoint_recovery_binding_sha256": (
+                str(checkpoint_recovery_binding["recovery_binding_sha256"])
+                if checkpoint_recovery_binding is not None
+                else None
+            ),
+            "checkpoint_recovery_history_count": len(
+                checkpoint_recovery_history_paths
             ),
             "checkpoint_recovery_isolated_checkpoint_count": (
                 1 if checkpoint_recovery_mode else 0

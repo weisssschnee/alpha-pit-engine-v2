@@ -348,7 +348,7 @@ def _observation(ask: dict, *, admitted: bool) -> ProgramOptimizerObservationV1:
             program_id=admission.program_id,
             control_program_id=admission.control_program_id,
             program_credit={
-                "matched_cumulative_return_increment": 0.1,
+                "matched_cumulative_net_return_increment": 0.1,
                 "matched_net_reward_increment": 0.2,
             },
         )

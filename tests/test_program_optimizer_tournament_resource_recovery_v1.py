@@ -171,9 +171,65 @@ def test_quarantined_results_are_outside_recovery_read_path() -> None:
     source = (
         ROOT / "scripts/run_cn_joint_program_phase_c_v0.py"
     ).read_text(encoding="utf-8")
-    assert "quarantine" not in source.lower()
+    quarantine_verifier = source[
+        source.index("def _verify_checkpoint_quarantine(") : source.index(
+            "def _runtime_resource_snapshot("
+        )
+    ]
+    assert '_sha256(quarantine_path)' in quarantine_verifier
+    assert '_read_json(quarantine_path)' not in quarantine_verifier
     assert 'record_root.glob("record_*.json")' in source
     assert 'if inflight_root.exists() and any(inflight_root.iterdir())' in source
+
+
+def test_checkpoint_quarantine_binds_all_eight_inflight_hashes(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "stage01_run"
+    quarantine_root = tmp_path / "quarantine" / "checkpoint_012"
+    artifacts = []
+    for ordinal in range(88, 96):
+        quarantined = quarantine_root / f"record_{ordinal:04d}.json"
+        quarantined.parent.mkdir(parents=True, exist_ok=True)
+        quarantined.write_text(f"record-{ordinal}", encoding="utf-8")
+        artifacts.append(
+            {
+                "main_record_ordinal": ordinal,
+                "source_path": str(
+                    root
+                    / "inflight/checkpoint_012/records"
+                    / f"record_{ordinal:04d}.json"
+                ),
+                "quarantine_path": str(quarantined),
+                "file_sha256": phase_c._sha256(quarantined),
+            }
+        )
+    payload = {
+        "status": "PASS",
+        "accepted_root": str(root),
+        "checkpoint_number": 12,
+        "record_count": 8,
+        "artifacts": artifacts,
+        "formal_inflight_empty": True,
+        "financial_results_reusable": False,
+        "incomplete_results_reused": False,
+        "optimizer_tell_count": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "historical_2023_reads": 0,
+        "forward_b_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    payload["quarantine_payload_sha256"] = stable_hash(payload)
+    manifest = tmp_path / "quarantine.json"
+    phase_c._write_json(manifest, payload)
+
+    verified, payload_hash = phase_c._verify_checkpoint_quarantine(
+        manifest, root=root, checkpoint_number=12
+    )
+
+    assert verified == payload
+    assert payload_hash == payload["quarantine_payload_sha256"]
 
 
 def test_tournament_phase_forwards_recovery_only_to_stage01(
@@ -218,29 +274,36 @@ def test_tournament_phase_forwards_recovery_only_to_stage01(
     assert captured[1].checkpoint_recovery_from_repo_sha is None
 
 
-def test_tournament_cross_sha_recovery_scope_is_exact(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "scope,boundary",
+    [
+        ("PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE", 2),
+        ("PHASE_C_CHECKPOINT_RECOVERY", 1),
+        ("PHASE_C_CHECKPOINT_RECOVERY", 11),
+        ("PHASE_C_CHECKPOINT_RECOVERY", 45),
+    ],
+)
+def test_tournament_cross_sha_recovery_boundary_is_exact(
+    tmp_path: Path, scope: str, boundary: int
+) -> None:
     original_sha = "5" * 40
     current_sha = "6" * 40
     incident = tmp_path / "incident.json"
-    incident.write_text(
-        json.dumps(
-            {
-                "checkpoint_builder_repo_sha": original_sha,
-                "recovery_scope": (
-                    "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE"
-                ),
-                "checkpoint_recomputation_authorized": True,
-                "closed_checkpoint_count": 2,
-                "closed_record_count": 16,
-                "first_recovered_checkpoint": 3,
-                "incomplete_results_reused": False,
-            }
-        ),
-        encoding="utf-8",
-    )
+    payload = {
+        "checkpoint_builder_repo_sha": original_sha,
+        "recovery_scope": scope,
+        "failure_classification": "PROGRAM_CONDITIONAL_OBJECTIVE_KEY_DRIFT",
+        "checkpoint_recomputation_authorized": True,
+        "closed_checkpoint_count": boundary,
+        "closed_record_count": boundary * phase_c.RECORDS_PER_CHECKPOINT,
+        "first_recovered_checkpoint": boundary + 1,
+        "incomplete_results_reused": False,
+    }
+    payload["incident_payload_sha256"] = stable_hash(payload)
+    incident.write_text(json.dumps(payload), encoding="utf-8")
     request = {
         "original_repo_sha": original_sha,
-        "recovery_scope": "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE",
+        "recovery_scope": scope,
     }
     assert project_control._validate_source_repair_recovery(
         target_campaign_id="cn-program-optimizer-tournament-v1",
@@ -251,13 +314,87 @@ def test_tournament_cross_sha_recovery_scope_is_exact(tmp_path: Path) -> None:
     payload = json.loads(incident.read_text(encoding="utf-8"))
     payload["incomplete_results_reused"] = True
     incident.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(project_control.ProjectControlDenied, match="incident drift"):
+    with pytest.raises(project_control.ProjectControlDenied, match="incident.*drift"):
         project_control._validate_source_repair_recovery(
             target_campaign_id="cn-program-optimizer-tournament-v1",
             request=request,
             current_repo_sha=current_sha,
             incident_path=incident,
         )
+
+
+def test_checkpoint_recovery_history_is_append_only_and_linear(
+    tmp_path: Path,
+) -> None:
+    legacy_path = tmp_path / "checkpoint_recovery_binding.json"
+    legacy = phase_c._self_hashed(
+        {
+            "schema_version": "cn_joint_program_phase_c_checkpoint_recovery_v0",
+            "status": "CHECKPOINT_RECOVERY_BOUND",
+            "closed_checkpoint_count": 2,
+        },
+        "recovery_binding_sha256",
+    )
+    phase_c._write_json(legacy_path, legacy)
+    continuation = phase_c._self_hashed(
+        {
+            "schema_version": "cn_joint_program_phase_c_checkpoint_recovery_v0",
+            "status": "CHECKPOINT_RECOVERY_BOUND",
+            "closed_checkpoint_count": 11,
+            "previous_recovery_binding": str(legacy_path.resolve()),
+            "previous_recovery_binding_file_sha256": phase_c._sha256(legacy_path),
+            "previous_recovery_binding_payload_sha256": legacy[
+                "recovery_binding_sha256"
+            ],
+        },
+        "recovery_binding_sha256",
+    )
+    continuation_path = (
+        tmp_path
+        / "checkpoint_recovery_attempts"
+        / f"{continuation['recovery_binding_sha256']}.json"
+    )
+    phase_c._write_json(continuation_path, continuation)
+
+    history = phase_c._checkpoint_recovery_history(tmp_path)
+
+    assert [path for path, _ in history] == [
+        legacy_path.resolve(),
+        continuation_path.resolve(),
+    ]
+    assert history[-1][1]["closed_checkpoint_count"] == 11
+
+
+def test_checkpoint_recovery_history_rejects_a_fork(tmp_path: Path) -> None:
+    legacy_path = tmp_path / "checkpoint_recovery_binding.json"
+    legacy = phase_c._self_hashed(
+        {"status": "CHECKPOINT_RECOVERY_BOUND"},
+        "recovery_binding_sha256",
+    )
+    phase_c._write_json(legacy_path, legacy)
+    for ordinal in (1, 2):
+        continuation = phase_c._self_hashed(
+            {
+                "status": "CHECKPOINT_RECOVERY_BOUND",
+                "ordinal": ordinal,
+                "previous_recovery_binding": str(legacy_path.resolve()),
+                "previous_recovery_binding_file_sha256": phase_c._sha256(
+                    legacy_path
+                ),
+                "previous_recovery_binding_payload_sha256": legacy[
+                    "recovery_binding_sha256"
+                ],
+            },
+            "recovery_binding_sha256",
+        )
+        phase_c._write_json(
+            tmp_path
+            / "checkpoint_recovery_attempts"
+            / f"{continuation['recovery_binding_sha256']}.json",
+            continuation,
+        )
+    with pytest.raises(RuntimeError, match="not linear"):
+        phase_c._checkpoint_recovery_history(tmp_path)
 
 
 def test_recovery_surface_precedes_project_control_and_frozen_ids_hold() -> None:

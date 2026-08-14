@@ -63,7 +63,7 @@ PROGRAM_OPTIMIZER_ARMS = (
     HYBRID_TPE_PROGRAM,
     STRUCTURED_SURROGATE_PROGRAM,
 )
-PROGRAM_OBJECTIVE_KEY = "matched_cumulative_return_increment"
+PROGRAM_OBJECTIVE_KEY = "matched_cumulative_net_return_increment"
 PROGRAM_CLOCK_KEYS = (
     "joint_eligible_from_policy",
     "joint_support_policy",

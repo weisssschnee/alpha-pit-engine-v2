@@ -214,7 +214,21 @@ def audit(
     checkpoint_recovery = bool(closure.get("checkpoint_recovery"))
     first_recovered_checkpoint: int | None = None
     if checkpoint_recovery:
-        recovery = _read_json(root / "checkpoint_recovery_binding.json")
+        recovery_history = engine._checkpoint_recovery_history(root)
+        if not recovery_history:
+            raise RuntimeError("Phase D checkpoint recovery history missing")
+        recovery_path, recovery = recovery_history[-1]
+        if (
+            not engine._same_path(
+                str(closure.get("checkpoint_recovery_binding") or ""),
+                recovery_path,
+            )
+            or str(closure.get("checkpoint_recovery_binding_sha256") or "")
+            != str(recovery.get("recovery_binding_sha256") or "")
+            or int(closure.get("checkpoint_recovery_history_count") or 0)
+            != len(recovery_history)
+        ):
+            raise RuntimeError("Phase D checkpoint recovery chain-tip drift")
         _verify_self_hash(recovery, "recovery_binding_sha256", "checkpoint recovery")
         first_recovered_checkpoint = int(recovery["first_recovered_checkpoint"])
         if (

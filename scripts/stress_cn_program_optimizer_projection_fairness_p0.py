@@ -74,7 +74,7 @@ def _observation(
             program_id=admission.program_id,
             control_program_id=admission.control_program_id,
             program_credit={
-                "matched_cumulative_return_increment": (
+                "matched_cumulative_net_return_increment": (
                     (int(exact_identity[8:16], 16) % 2001 - 1000) / 10000.0
                 ),
                 "matched_net_reward_increment": (
