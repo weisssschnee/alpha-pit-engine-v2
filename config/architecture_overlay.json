@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-      "label":  "CN Program optimizer tournament V1 execution ask schema repaired; pre-evaluator rehearsal complete; no fourth retry",
+      "label":  "CN Program optimizer tournament V1 fourth retry stopped pre-admission; zero execution",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1524,6 +1524,9 @@
                        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_outcome_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_evidence_note_20260814.json",
                        "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
                       "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
                       "docs/adr/0019-program-optimizer-tournament.md"
@@ -1556,20 +1559,20 @@
                           }
                       ],
         "validation":  {
-                           "level":  "RUNTIME_VERIFIED",
+                           "level":  "STATIC_VERIFIED",
                            "result":  "PASS",
-                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
-                           "evidence_sha256":  "35d3d1714d6cb59c35cf03c7ad01cc4978ae807bcfec9f3638701f769afec303",
-                           "verified_at_sha":  "79ac8bfe43055f5153133041dc621a9ec23594c3"
+                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json",
+                           "evidence_sha256":  "82f5ad641fb7843247e5500ff40cb78e231e9620f94af8f119908816df6f7587",
+                           "verified_at_sha":  "a8b2e12187a71b9b23d7ce25762364e3e959015a"
                        },
         "claim_badges":  [
                              "EXACT SOURCE BOUND",
-                             "FINAL RETRY CONSUMED",
+                             "FOURTH RETRY STOPPED PRE_ADMISSION",
                              "PREFINANCIAL FREEZE PASS",
                              "STATE REPLAY REPAIRED",
                              "EXECUTION ASK SCHEMA REPAIRED",
                              "PRE-EVALUATOR REHEARSAL PASS",
-                             "NO FOURTH RETRY",
+                             "ZERO PROJECT CONTROL",
                              "ZERO ECONOMIC RECORDS",
                              "RESTRICTED_READS_ZERO",
                              "NO AUTHORITY CHANGE",
