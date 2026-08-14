@@ -1560,7 +1560,7 @@
                            "result":  "PASS",
                            "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
                            "evidence_sha256":  "35d3d1714d6cb59c35cf03c7ad01cc4978ae807bcfec9f3638701f769afec303",
-                           "verified_at_sha":  "bba5dcb361b6f9dad791ef3d91597dc77b1ce6d5"
+                           "verified_at_sha":  "79ac8bfe43055f5153133041dc621a9ec23594c3"
                        },
         "claim_badges":  [
                              "EXACT SOURCE BOUND",
