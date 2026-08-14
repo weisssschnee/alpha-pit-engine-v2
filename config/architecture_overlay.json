@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-      "label":  "CN Program optimizer tournament V1 final retry incomplete on state replay; no further retry",
+      "label":  "CN Program optimizer tournament V1 state replay repaired; schedule rehearsal blocked; no fourth retry",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1522,6 +1522,7 @@
                        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_outcome_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json",
                        "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
                       "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
                       "docs/adr/0019-program-optimizer-tournament.md"
@@ -1556,16 +1557,17 @@
         "validation":  {
                            "level":  "RUNTIME_VERIFIED",
                            "result":  "WARN",
-                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
-                           "evidence_sha256":  "fa7d90e97a31591a99f1236494dd6709e79a918ded39194025ccc2268e09c227",
-                           "verified_at_sha":  "b347e95617218f07b8bd70c3ca05b5e7e595d252"
+                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_state_replay_repair_20260814.json",
+                           "evidence_sha256":  "77a22d94321f34877c538ca3738b50d996126f80e8a6daaaf40275fd8fb3d8c7",
+                           "verified_at_sha":  "5763d0c91885b454ad7fa7e373b9e97fed4cb9f1"
                        },
         "claim_badges":  [
                              "EXACT SOURCE BOUND",
                              "FINAL RETRY CONSUMED",
                              "PREFINANCIAL FREEZE PASS",
-                             "STATE REPLAY DRIFT",
-                             "NO FURTHER RETRY",
+                             "STATE REPLAY REPAIRED",
+                             "SCHEDULE REHEARSAL BLOCKED",
+                             "NO FOURTH RETRY",
                              "ZERO ECONOMIC RECORDS",
                              "RESTRICTED_READS_ZERO",
                              "NO AUTHORITY CHANGE",
