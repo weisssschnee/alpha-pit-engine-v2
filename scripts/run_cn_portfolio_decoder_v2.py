@@ -232,6 +232,7 @@ def _load_evaluation_context(
     execution_price_root: Path | None = None,
     validated_execution_price_manifest: Mapping[str, Any] | None = None,
     validated_execution_price_manifest_path: Path | None = None,
+    field_columns: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     contract = v1._read_json(contract_path)
     base._verify_payload_hash(
@@ -258,7 +259,11 @@ def _load_evaluation_context(
         )
         if field_manifest_path != expected_manifest_path:
             raise RuntimeError("validated field manifest path/root drift")
-    field_frame = base._load_field_frame(train_field_root, field_manifest)
+    field_frame = base._load_field_frame(
+        train_field_root,
+        field_manifest,
+        columns=field_columns,
+    )
     price_override_values = (
         execution_price_root,
         validated_execution_price_manifest,

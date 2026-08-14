@@ -557,6 +557,7 @@ def _run_phase(
     freeze_root: Path,
     run_root: Path,
     repo_sha: str,
+    checkpoint_recovery: bool,
 ) -> dict[str, Any]:
     _verify_freeze(freeze_root)
     run_args = argparse.Namespace(**vars(args))
@@ -572,12 +573,16 @@ def _run_phase(
         "root_finalization_recovery_from_repo_sha",
         "root_finalization_incident",
         "root_finalization_deployment_manifest",
-        "checkpoint_recovery_from_repo_sha",
-        "checkpoint_recovery_incident",
-        "checkpoint_recovery_diagnostic_audit",
-        "checkpoint_recovery_deployment_manifest",
     ):
         setattr(run_args, name, None)
+    if not checkpoint_recovery:
+        for name in (
+            "checkpoint_recovery_from_repo_sha",
+            "checkpoint_recovery_incident",
+            "checkpoint_recovery_diagnostic_audit",
+            "checkpoint_recovery_deployment_manifest",
+        ):
+            setattr(run_args, name, None)
     engine.verify_phase_c_prefinancial_freeze_v0 = _verify_freeze
     engine._verify_run_contract = _verify_run_contract
     return engine.run(run_args)
@@ -609,7 +614,11 @@ def run_authorized_tournament(
         _verify_freeze(freeze_root)
     repo_sha = str(admission["repo_sha"])
     stage01_closure = _run_phase(
-        args, freeze_root=freeze_root, run_root=run_root, repo_sha=repo_sha
+        args,
+        freeze_root=freeze_root,
+        run_root=run_root,
+        repo_sha=repo_sha,
+        checkpoint_recovery=True,
     )
     feedback_rows = engine._read_jsonl(
         run_root / "phase_c_bandit_feedback_ledger.jsonl"
@@ -644,7 +653,11 @@ def run_authorized_tournament(
             repo_sha=repo_sha,
         )
     stage2_closure = _run_phase(
-        args, freeze_root=stage2_freeze, run_root=stage2_run, repo_sha=repo_sha
+        args,
+        freeze_root=stage2_freeze,
+        run_root=stage2_run,
+        repo_sha=repo_sha,
+        checkpoint_recovery=False,
     )
     body = {
         "schema_version": "cn_program_optimizer_tournament_closure_v1",

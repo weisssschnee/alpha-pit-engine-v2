@@ -725,9 +725,17 @@ def _validate_sidecar(
 def _load_field_frame(
     root: Path,
     manifest: Mapping[str, Any],
+    *,
+    columns: Sequence[str] | None = None,
 ) -> pd.DataFrame:
+    projected_columns = (
+        list(dict.fromkeys(map(str, columns))) if columns is not None else None
+    )
     frames = [
-        pd.read_parquet(Path(str(row["output_path"])).resolve())
+        pd.read_parquet(
+            Path(str(row["output_path"])).resolve(),
+            columns=projected_columns,
+        )
         for row in manifest.get("shards") or ()
     ]
     expected_shards = int(manifest.get("source_shard_count") or -1)

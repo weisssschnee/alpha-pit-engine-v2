@@ -40,7 +40,11 @@ ORIGINAL_EXECUTION_ACTIONS = {
 }
 TECHNICAL_RECOVERY = "TECHNICAL_RECOVERY_OF_ALREADY_AUTHORIZED_RUN"
 SOURCE_REPAIR_RECOVERY_SCOPES = {
-    ("cn-joint-program-search-v2-canary", "ENGINE_ROOT_FINALIZATION_ONLY")
+    ("cn-joint-program-search-v2-canary", "ENGINE_ROOT_FINALIZATION_ONLY"),
+    (
+        "cn-program-optimizer-tournament-v1",
+        "PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE",
+    ),
 }
 
 # The qualified 77o wrappers create only these non-financial launch-control
@@ -660,14 +664,26 @@ def _validate_source_repair_recovery(
     if (target_campaign_id, recovery_scope) not in SOURCE_REPAIR_RECOVERY_SCOPES:
         raise ProjectControlDenied("cross-SHA recovery scope forbidden")
     _, incident = _read_json(incident_path, "recovery incident")
-    if (
+    common_drift = (
         str(incident.get("checkpoint_builder_repo_sha") or "")
         != original_repo_sha
         or str(incident.get("recovery_scope") or "") != recovery_scope
-        or bool(incident.get("checkpoint_recomputation_authorized"))
-        or int(incident.get("closed_checkpoint_count") or 0) != 64
-        or int(incident.get("closed_record_count") or 0) != 512
-    ):
+        or bool(incident.get("incomplete_results_reused"))
+    )
+    if target_campaign_id == "cn-program-optimizer-tournament-v1":
+        boundary_drift = (
+            not bool(incident.get("checkpoint_recomputation_authorized"))
+            or int(incident.get("closed_checkpoint_count") or 0) != 2
+            or int(incident.get("closed_record_count") or 0) != 16
+            or int(incident.get("first_recovered_checkpoint") or 0) != 3
+        )
+    else:
+        boundary_drift = (
+            bool(incident.get("checkpoint_recomputation_authorized"))
+            or int(incident.get("closed_checkpoint_count") or 0) != 64
+            or int(incident.get("closed_record_count") or 0) != 512
+        )
+    if common_drift or boundary_drift:
         raise ProjectControlDenied("source-repair recovery incident drift")
     return original_repo_sha
 

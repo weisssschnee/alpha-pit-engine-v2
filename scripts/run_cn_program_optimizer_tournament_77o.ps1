@@ -5,7 +5,7 @@ param(
     [ValidatePattern('^[0-9a-f]{40}$')]
     [string]$RepoSha,
     [Parameter(Mandatory = $true)]
-    [ValidateSet('LAUNCH_HIGH_COST_CAMPAIGN', 'RETRY')]
+    [ValidateSet('LAUNCH_HIGH_COST_CAMPAIGN', 'RETRY', 'RECOVERY')]
     [string]$RequestedAction,
     [Parameter(Mandatory = $true)]
     [string]$TargetRunId,
@@ -26,7 +26,13 @@ param(
     [string]$SourceBinding = (
         'runtime\run_plans\cn_program_optimizer_tournament_source_binding_v1.json'
     ),
-    [int]$ExecutorWorkers = 10
+    [int]$ExecutorWorkers = 10,
+    [ValidateSet(4, 6, 8)]
+    [int]$CheckpointWorkerCap = 8,
+    [string]$CheckpointRecoveryFromRepoSha = '',
+    [string]$CheckpointRecoveryIncident = '',
+    [string]$CheckpointRecoveryDiagnosticAudit = '',
+    [string]$CheckpointRecoveryDeploymentManifest = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,7 +52,7 @@ $resolvedSourceBinding = if ([IO.Path]::IsPathRooted($SourceBinding)) {
 }
 $terminalRoot = Join-Path (
     'D:\ChengboRemote\runtime\cn_program_optimizer_tournament_terminal_logs'
-) $TargetRunId
+) ("{0}_{1}" -f $TargetRunId, $ProjectControlAdmissionSha256.Substring(0, 12))
 
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
     throw "unauthorized host: $($env:COMPUTERNAME)"
@@ -63,8 +69,42 @@ if (-not $resolvedOutput.StartsWith(
 )) {
     throw "unexpected Program tournament output root: $resolvedOutput"
 }
-if (Test-Path -LiteralPath $resolvedOutput) {
+if ($RequestedAction -eq 'RECOVERY') {
+    if (-not (Test-Path -LiteralPath $resolvedOutput -PathType Container)) {
+        throw "Program tournament recovery output root must exist: $resolvedOutput"
+    }
+} elseif (Test-Path -LiteralPath $resolvedOutput) {
     throw "Program tournament launch/retry output root must be absent: $resolvedOutput"
+}
+
+$resolvedRecoveryIncident = $null
+$resolvedRecoveryDiagnostic = $null
+$resolvedRecoveryDeployment = $null
+if ($RequestedAction -eq 'RECOVERY') {
+    if ($CheckpointRecoveryFromRepoSha -notmatch '^[0-9a-f]{40}$') {
+        throw 'Program tournament recovery requires a full checkpoint-builder SHA'
+    }
+    if (
+        [string]::IsNullOrWhiteSpace($CheckpointRecoveryIncident) -or
+        [string]::IsNullOrWhiteSpace($CheckpointRecoveryDiagnosticAudit) -or
+        [string]::IsNullOrWhiteSpace($CheckpointRecoveryDeploymentManifest)
+    ) {
+        throw 'Program tournament recovery binding is incomplete'
+    }
+    $resolvedRecoveryIncident = [IO.Path]::GetFullPath($CheckpointRecoveryIncident)
+    $resolvedRecoveryDiagnostic = [IO.Path]::GetFullPath(
+        $CheckpointRecoveryDiagnosticAudit
+    )
+    $resolvedRecoveryDeployment = [IO.Path]::GetFullPath(
+        $CheckpointRecoveryDeploymentManifest
+    )
+} elseif (
+    -not [string]::IsNullOrWhiteSpace($CheckpointRecoveryFromRepoSha) -or
+    -not [string]::IsNullOrWhiteSpace($CheckpointRecoveryIncident) -or
+    -not [string]::IsNullOrWhiteSpace($CheckpointRecoveryDiagnosticAudit) -or
+    -not [string]::IsNullOrWhiteSpace($CheckpointRecoveryDeploymentManifest)
+) {
+    throw 'checkpoint recovery binding is valid only for RECOVERY'
 }
 
 $head = (& git -C $resolvedRepo rev-parse HEAD).Trim()
@@ -83,8 +123,18 @@ $requiredPaths = @(
     $resolvedSourceBinding,
     [IO.Path]::GetFullPath($ExecutionContract),
     [IO.Path]::GetFullPath($TrainPriceRoot),
-    (Join-Path $resolvedRepo 'app.py')
+    (Join-Path $resolvedRepo 'app.py'),
+    (Join-Path $resolvedRepo (
+        'scripts\check_cn_program_optimizer_execution_node_cleanliness_v1.py'
+    ))
 )
+if ($RequestedAction -eq 'RECOVERY') {
+    $requiredPaths += @(
+        $resolvedRecoveryIncident,
+        $resolvedRecoveryDiagnostic,
+        $resolvedRecoveryDeployment
+    )
+}
 foreach ($path in $requiredPaths) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "required Program tournament input missing: $path"
@@ -116,6 +166,21 @@ if ($importExitCode -ne 0) {
     throw "Program tournament execution-surface import failed with exit code $importExitCode"
 }
 
+New-Item -ItemType Directory -Path $terminalRoot -Force | Out-Null
+$cleanlinessPath = Join-Path $terminalRoot 'execution_node_cleanliness.json'
+& $python (
+    Join-Path $resolvedRepo (
+        'scripts\check_cn_program_optimizer_execution_node_cleanliness_v1.py'
+    )
+) 1> $cleanlinessPath
+$cleanlinessExitCode = $LASTEXITCODE
+if (Test-Path -LiteralPath $cleanlinessPath) {
+    [Console]::Out.Write((Get-Content -LiteralPath $cleanlinessPath -Raw))
+}
+if ($cleanlinessExitCode -ne 0) {
+    throw "Program tournament execution-node cleanliness failed with exit code $cleanlinessExitCode"
+}
+
 $routeArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
     'cn-program-optimizer-tournament-v1',
@@ -129,10 +194,18 @@ $routeArgs = @(
     '--execution-contract', [IO.Path]::GetFullPath($ExecutionContract),
     '--train-price-root', [IO.Path]::GetFullPath($TrainPriceRoot),
     '--output-root', $resolvedOutput,
-    '--executor-workers', $ExecutorWorkers
+    '--executor-workers', $ExecutorWorkers,
+    '--checkpoint-worker-cap', $CheckpointWorkerCap
 )
+if ($RequestedAction -eq 'RECOVERY') {
+    $routeArgs += @(
+        '--checkpoint-recovery-from-repo-sha', $CheckpointRecoveryFromRepoSha,
+        '--checkpoint-recovery-incident', $resolvedRecoveryIncident,
+        '--checkpoint-recovery-diagnostic-audit', $resolvedRecoveryDiagnostic,
+        '--checkpoint-recovery-deployment-manifest', $resolvedRecoveryDeployment
+    )
+}
 
-New-Item -ItemType Directory -Path $terminalRoot -Force | Out-Null
 $stdoutPath = Join-Path $terminalRoot 'runner.stdout.log'
 $stderrPath = Join-Path $terminalRoot 'runner.stderr.log'
 $receiptPath = Join-Path $terminalRoot 'terminal_receipt.json'

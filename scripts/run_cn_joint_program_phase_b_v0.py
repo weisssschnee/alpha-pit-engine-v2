@@ -278,6 +278,7 @@ def _load_context(
     price_manifest_path: Path,
     field_manifest_file_sha256: str,
     field_manifest_payload_sha256: str,
+    field_columns: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     contract = _read_json(contract_path)
     decoder_v2.base._verify_payload_hash(
@@ -301,6 +302,7 @@ def _load_context(
         execution_price_root=train_price_root,
         validated_execution_price_manifest=price_manifest,
         validated_execution_price_manifest_path=price_manifest_path,
+        field_columns=field_columns,
     )
     for key in (
         "prepared_index",
@@ -326,6 +328,7 @@ def _initialize_worker(
     windows: Sequence[Mapping[str, Any]],
     field_manifest_file_sha256: str,
     field_manifest_payload_sha256: str,
+    field_columns: Sequence[str] | None = None,
 ) -> None:
     global _WORKER_CONTEXT, _WORKER_REGISTRY, _WORKER_INPUT_HASH, _WORKER_WINDOWS
     _WORKER_CONTEXT = _load_context(
@@ -336,6 +339,7 @@ def _initialize_worker(
         Path(price_manifest_path),
         field_manifest_file_sha256,
         field_manifest_payload_sha256,
+        field_columns,
     )
     _WORKER_REGISTRY = UnifiedCapabilityRegistry.read(Path(registry_path))
     _WORKER_INPUT_HASH = str(input_hash)

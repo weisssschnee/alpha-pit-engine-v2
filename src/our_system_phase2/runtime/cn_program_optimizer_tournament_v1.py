@@ -521,7 +521,8 @@ def verify_authorization(path: Path) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     admission = consume_active_admission(
-        "cn-program-optimizer-tournament-v1", {ACTION_LAUNCH, ACTION_RETRY}
+        "cn-program-optimizer-tournament-v1",
+        {ACTION_LAUNCH, ACTION_RETRY, ACTION_RECOVERY},
     )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--campaign-authorization", type=Path, required=True)
@@ -530,6 +531,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--train-price-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--executor-workers", type=int, default=10)
+    parser.add_argument("--checkpoint-worker-cap", type=int, choices=(4, 6, 8), default=8)
+    parser.add_argument("--checkpoint-recovery-from-repo-sha")
+    parser.add_argument("--checkpoint-recovery-incident", type=Path)
+    parser.add_argument("--checkpoint-recovery-diagnostic-audit", type=Path)
+    parser.add_argument("--checkpoint-recovery-deployment-manifest", type=Path)
     args = parser.parse_args(argv)
     verify_consumed_admission_target(admission, output_root=args.output_root)
     verified = verify_campaign_authorization_binding(
@@ -546,8 +552,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     action = str(admission.get("requested_action") or "")
     lineage = str(admission.get("execution_lineage_action") or action)
-    if action not in {ACTION_LAUNCH, ACTION_RETRY} or lineage != action:
+    lineage_valid = (
+        action in {ACTION_LAUNCH, ACTION_RETRY} and lineage == action
+    ) or (action == ACTION_RECOVERY and lineage == ACTION_RETRY)
+    if not lineage_valid:
         raise ProjectControlDenied("Program tournament Project Control lineage drift")
+    recovery_bindings = (
+        args.checkpoint_recovery_from_repo_sha,
+        args.checkpoint_recovery_incident,
+        args.checkpoint_recovery_diagnostic_audit,
+        args.checkpoint_recovery_deployment_manifest,
+    )
+    if action == ACTION_RECOVERY and not all(recovery_bindings):
+        raise ProjectControlDenied("Program tournament RECOVERY binding is incomplete")
+    if action != ACTION_RECOVERY and any(recovery_bindings):
+        raise ProjectControlDenied(
+            "Program tournament checkpoint recovery binding requires RECOVERY"
+        )
     repo_root = Path(__file__).resolve().parents[3]
     verify_search_feedback_boundary(
         role_registry_path=(

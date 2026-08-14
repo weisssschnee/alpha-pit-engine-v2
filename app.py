@@ -124,7 +124,7 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY, ACTION_RECOVERY}
     ),
     "cn-program-optimizer-tournament-v1": frozenset(
-        {ACTION_LAUNCH, ACTION_RETRY}
+        {ACTION_LAUNCH, ACTION_RETRY, ACTION_RECOVERY}
     ),
 }
 

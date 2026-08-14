@@ -65,6 +65,10 @@ AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 STATUS = "CN_JOINT_PROGRAM_PHASE_C_COMPLETE"
 CLOSURE_NAME = "CN_JOINT_PROGRAM_PHASE_C_COMPLETE.json"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
+MINIMUM_COMMIT_HEADROOM_BYTES = 24 * 1024**3
+PROJECTED_WORKER_COMMIT_BUDGET_BYTES = 8 * 1024**3
+CHECKPOINT_WORKER_CHOICES = (4, 6, 8)
+MANDATORY_CHECKPOINT_FIELD_COLUMNS = ("trade_time", "code", "close")
 MAX_VARIANTS_PER_BASE_PER_TEMPLATE = 4
 MIN_BASE_IDENTITIES_PER_TEMPLATE = 16
 CATALOG_MIN_RECORDS_PER_TEMPLATE = 64
@@ -134,6 +138,118 @@ def _resolve_checkpoint_recovery_incident_boundary(
     ):
         raise RuntimeError("Phase C checkpoint recovery incident boundary drift")
     return root_values[0], count_values[0]
+
+
+def _runtime_resource_snapshot() -> dict[str, int]:
+    available, parent_rss, tree_rss = phase_b._resource_snapshot()
+    swap = psutil.swap_memory()
+    if platform.system() == "Windows":
+        import ctypes
+        from ctypes import wintypes
+
+        class PerformanceInformation(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("CommitTotal", ctypes.c_size_t),
+                ("CommitLimit", ctypes.c_size_t),
+                ("CommitPeak", ctypes.c_size_t),
+                ("PhysicalTotal", ctypes.c_size_t),
+                ("PhysicalAvailable", ctypes.c_size_t),
+                ("SystemCache", ctypes.c_size_t),
+                ("KernelTotal", ctypes.c_size_t),
+                ("KernelPaged", ctypes.c_size_t),
+                ("KernelNonpaged", ctypes.c_size_t),
+                ("PageSize", ctypes.c_size_t),
+                ("HandleCount", wintypes.DWORD),
+                ("ProcessCount", wintypes.DWORD),
+                ("ThreadCount", wintypes.DWORD),
+            ]
+
+        info = PerformanceInformation()
+        info.cb = ctypes.sizeof(info)
+        if not ctypes.windll.psapi.GetPerformanceInfo(
+            ctypes.byref(info), info.cb
+        ):
+            raise ctypes.WinError()
+        committed = int(info.CommitTotal * info.PageSize)
+        commit_limit = int(info.CommitLimit * info.PageSize)
+        available = int(info.PhysicalAvailable * info.PageSize)
+    else:
+        virtual = psutil.virtual_memory()
+        committed = int((virtual.total - virtual.available) + swap.used)
+        commit_limit = int(virtual.total + swap.total)
+    return {
+        "available_physical_bytes": int(available),
+        "committed_bytes": committed,
+        "commit_limit_bytes": commit_limit,
+        "commit_headroom_bytes": max(0, commit_limit - committed),
+        "pagefile_total_bytes": int(swap.total),
+        "pagefile_used_bytes": int(swap.used),
+        "pagefile_pages_in_bytes": int(swap.sin),
+        "pagefile_pages_out_bytes": int(swap.sout),
+        "parent_rss_bytes": int(parent_rss),
+        "process_tree_rss_bytes": int(tree_rss),
+    }
+
+
+def _require_runtime_resource_safety(snapshot: Mapping[str, int]) -> None:
+    if int(snapshot["commit_headroom_bytes"]) < MINIMUM_COMMIT_HEADROOM_BYTES:
+        raise RuntimeError("Phase C runtime commit-headroom gate failed")
+
+
+def _checkpoint_field_columns(
+    schedules: Sequence[Mapping[str, Any]],
+) -> tuple[str, ...]:
+    fields = set(MANDATORY_CHECKPOINT_FIELD_COLUMNS)
+    for schedule in schedules:
+        for member in ("primary_compiled", "control_compiled"):
+            compiled = schedule.get(member)
+            if not isinstance(compiled, Mapping):
+                raise RuntimeError("Phase C checkpoint compiled field binding missing")
+            leaves = compiled.get("physical_leaf_ids")
+            if not isinstance(leaves, (list, tuple)):
+                raise RuntimeError("Phase C checkpoint physical leaves missing")
+            fields.update(map(str, leaves))
+    if any(not field for field in fields):
+        raise RuntimeError("Phase C checkpoint physical leaf identity drift")
+    return tuple(sorted(fields))
+
+
+def _effective_checkpoint_workers(
+    *,
+    worker_cap: int,
+    schedule_count: int,
+    commit_headroom_bytes: int,
+) -> int:
+    if worker_cap not in CHECKPOINT_WORKER_CHOICES:
+        raise RuntimeError("Phase C checkpoint worker cap drift")
+    usable_headroom = max(
+        0, int(commit_headroom_bytes) - MINIMUM_COMMIT_HEADROOM_BYTES
+    )
+    memory_cap = max(1, usable_headroom // PROJECTED_WORKER_COMMIT_BUDGET_BYTES)
+    eligible = [
+        choice
+        for choice in CHECKPOINT_WORKER_CHOICES
+        if choice <= worker_cap and choice <= schedule_count and choice <= memory_cap
+    ]
+    return max(eligible) if eligible else min(4, worker_cap, schedule_count)
+
+
+def _new_child_process_ids(before: set[int]) -> list[int]:
+    current = psutil.Process()
+    output: list[int] = []
+    for child in current.children(recursive=True):
+        try:
+            command = " ".join(child.cmdline()).lower()
+            if (
+                child.pid not in before
+                and child.is_running()
+                and "multiprocessing.resource_tracker" not in command
+            ):
+                output.append(int(child.pid))
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return sorted(output)
 
 
 def _component_from_row(row: Mapping[str, Any]) -> ProgramSourceComponentV0:
@@ -1154,6 +1270,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or int(profile.get("minimum_free_memory_bytes") or 0)
         != MINIMUM_FREE_MEMORY_BYTES
         or int(args.executor_workers) != 10
+        or int(getattr(args, "checkpoint_worker_cap", 8))
+        not in CHECKPOINT_WORKER_CHOICES
+        or int(getattr(args, "checkpoint_worker_cap", 8))
+        > int(args.executor_workers)
     ):
         raise RuntimeError("Phase C process resource contract drift")
     for candidate_root in (train_field_root, train_price_root):
@@ -1557,17 +1677,39 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
             completed: set[int] = set()
             futures = {}
-            available, parent_rss, tree_rss = phase_b._resource_snapshot()
-            minimum_observed_free = available
-            maximum_parent_rss = parent_rss
-            maximum_tree_rss = tree_rss
+            checkpoint_field_columns = _checkpoint_field_columns(checkpoint_schedules)
+            resource_before = _runtime_resource_snapshot()
+            _require_runtime_resource_safety(resource_before)
+            effective_workers = (
+                1
+                if checkpoint_recovery_mode
+                else _effective_checkpoint_workers(
+                    worker_cap=int(getattr(args, "checkpoint_worker_cap", 8)),
+                    schedule_count=len(checkpoint_schedules),
+                    commit_headroom_bytes=int(
+                        resource_before["commit_headroom_bytes"]
+                    ),
+                )
+            )
+            minimum_observed_free = int(
+                resource_before["available_physical_bytes"]
+            )
+            minimum_commit_headroom = int(
+                resource_before["commit_headroom_bytes"]
+            )
+            maximum_committed = int(resource_before["committed_bytes"])
+            maximum_pagefile_used = int(resource_before["pagefile_used_bytes"])
+            maximum_parent_rss = int(resource_before["parent_rss_bytes"])
+            maximum_tree_rss = int(resource_before["process_tree_rss_bytes"])
+            children_before = {
+                child.pid
+                for child in psutil.Process().children(recursive=True)
+            }
             cpu_samples: list[float] = []
             psutil.cpu_percent(interval=None)
             started = time.perf_counter()
             executor_options: dict[str, Any] = {
-                "max_workers": min(
-                    int(args.executor_workers), len(checkpoint_schedules)
-                ),
+                "max_workers": min(int(args.executor_workers), effective_workers),
                 "initializer": _initialize_worker,
                 "initargs": (
                     str(execution_contract_path),
@@ -1580,6 +1722,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     windows,
                     field_manifest_file_sha256,
                     field_manifest_payload_sha256,
+                    checkpoint_field_columns,
                 ),
             }
             if checkpoint_recovery_mode:
@@ -1601,19 +1744,68 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     for future in done:
                         payload = future.result()
                         completed.add(int(payload["main_record_ordinal"]))
-                    available, parent_rss, tree_rss = phase_b._resource_snapshot()
-                    minimum_observed_free = min(minimum_observed_free, available)
-                    maximum_parent_rss = max(maximum_parent_rss, parent_rss)
-                    maximum_tree_rss = max(maximum_tree_rss, tree_rss)
+                    resource_sample = _runtime_resource_snapshot()
+                    _require_runtime_resource_safety(resource_sample)
+                    minimum_observed_free = min(
+                        minimum_observed_free,
+                        int(resource_sample["available_physical_bytes"]),
+                    )
+                    minimum_commit_headroom = min(
+                        minimum_commit_headroom,
+                        int(resource_sample["commit_headroom_bytes"]),
+                    )
+                    maximum_committed = max(
+                        maximum_committed,
+                        int(resource_sample["committed_bytes"]),
+                    )
+                    maximum_pagefile_used = max(
+                        maximum_pagefile_used,
+                        int(resource_sample["pagefile_used_bytes"]),
+                    )
+                    maximum_parent_rss = max(
+                        maximum_parent_rss,
+                        int(resource_sample["parent_rss_bytes"]),
+                    )
+                    maximum_tree_rss = max(
+                        maximum_tree_rss,
+                        int(resource_sample["process_tree_rss_bytes"]),
+                    )
                     cpu_samples.append(float(psutil.cpu_percent(interval=None)))
-            available, parent_rss, tree_rss = phase_b._resource_snapshot()
+            gc.collect()
+            resource_after = _runtime_resource_snapshot()
+            _require_runtime_resource_safety(resource_after)
+            orphan_worker_pids = _new_child_process_ids(children_before)
+            if orphan_worker_pids:
+                raise RuntimeError(
+                    "Phase C checkpoint left orphan worker processes: "
+                    + ",".join(map(str, orphan_worker_pids))
+                )
             wall_seconds = float(time.perf_counter() - started)
-            minimum_observed_free = min(minimum_observed_free, available)
-            maximum_parent_rss = max(maximum_parent_rss, parent_rss)
-            maximum_tree_rss = max(maximum_tree_rss, tree_rss)
+            minimum_observed_free = min(
+                minimum_observed_free,
+                int(resource_after["available_physical_bytes"]),
+            )
+            minimum_commit_headroom = min(
+                minimum_commit_headroom,
+                int(resource_after["commit_headroom_bytes"]),
+            )
+            maximum_committed = max(
+                maximum_committed,
+                int(resource_after["committed_bytes"]),
+            )
+            maximum_pagefile_used = max(
+                maximum_pagefile_used,
+                int(resource_after["pagefile_used_bytes"]),
+            )
+            maximum_parent_rss = max(
+                maximum_parent_rss,
+                int(resource_after["parent_rss_bytes"]),
+            )
+            maximum_tree_rss = max(
+                maximum_tree_rss,
+                int(resource_after["process_tree_rss_bytes"]),
+            )
             cpu_samples.append(float(psutil.cpu_percent(interval=None)))
-            if available < MINIMUM_FREE_MEMORY_BYTES:
-                raise RuntimeError("Phase C runtime memory gate failed")
             if completed != ordinals:
                 raise RuntimeError(
                     f"Phase C checkpoint completion drift: {checkpoint_id}"
@@ -1651,8 +1843,37 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 feedback=feedback,
                 telemetry={
                     "wall_seconds": wall_seconds,
-                    "minimum_checkpoint_boundary_free_memory_bytes": available,
+                    "minimum_checkpoint_boundary_free_memory_bytes": int(
+                        resource_after["available_physical_bytes"]
+                    ),
                     "minimum_observed_in_pool_free_memory_bytes": minimum_observed_free,
+                    "minimum_commit_headroom_bytes": minimum_commit_headroom,
+                    "maximum_committed_bytes": maximum_committed,
+                    "commit_limit_bytes": int(resource_after["commit_limit_bytes"]),
+                    "maximum_pagefile_used_bytes": maximum_pagefile_used,
+                    "pagefile_total_bytes": int(resource_after["pagefile_total_bytes"]),
+                    "pagefile_pages_in_delta_bytes": max(
+                        0,
+                        int(resource_after["pagefile_pages_in_bytes"])
+                        - int(resource_before["pagefile_pages_in_bytes"]),
+                    ),
+                    "pagefile_pages_out_delta_bytes": max(
+                        0,
+                        int(resource_after["pagefile_pages_out_bytes"])
+                        - int(resource_before["pagefile_pages_out_bytes"]),
+                    ),
+                    "post_pool_available_physical_bytes": int(
+                        resource_after["available_physical_bytes"]
+                    ),
+                    "post_pool_commit_headroom_bytes": int(
+                        resource_after["commit_headroom_bytes"]
+                    ),
+                    "orphan_worker_pids": orphan_worker_pids,
+                    "effective_checkpoint_workers": effective_workers,
+                    "checkpoint_field_column_count": len(checkpoint_field_columns),
+                    "checkpoint_field_columns_sha256": stable_hash(
+                        list(checkpoint_field_columns)
+                    ),
                     "maximum_parent_rss_bytes": maximum_parent_rss,
                     "maximum_process_tree_rss_bytes": maximum_tree_rss,
                     "mean_host_cpu_percent": (
@@ -1778,25 +1999,93 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     cpu_mean = float(
         np.mean([float(row["mean_host_cpu_percent"]) for row in checkpoint_summaries])
     )
+    commit_headrooms = [
+        int(row["minimum_commit_headroom_bytes"])
+        for row in checkpoint_summaries
+        if row.get("minimum_commit_headroom_bytes") is not None
+    ]
+    maximum_committed_values = [
+        int(row["maximum_committed_bytes"])
+        for row in checkpoint_summaries
+        if row.get("maximum_committed_bytes") is not None
+    ]
+    orphan_worker_pids = sorted(
+        {
+            int(pid)
+            for row in checkpoint_summaries
+            for pid in row.get("orphan_worker_pids") or ()
+        }
+    )
+    commit_gate_passed = (
+        bool(commit_headrooms)
+        and min(commit_headrooms) >= MINIMUM_COMMIT_HEADROOM_BYTES
+        and not orphan_worker_pids
+    )
+    legacy_physical_gate_passed = (
+        not commit_headrooms and minimum_boundary_free >= MINIMUM_FREE_MEMORY_BYTES
+    )
     logical_cpu = int(psutil.cpu_count(logical=True) or 1)
     resource = _self_hashed(
         {
             "schema_version": "cn_joint_program_phase_c_resource_summary_v0",
-            "status": "PASS" if minimum_boundary_free >= MINIMUM_FREE_MEMORY_BYTES else "FAIL",
+            "status": (
+                "PASS"
+                if commit_gate_passed or legacy_physical_gate_passed
+                else "FAIL"
+            ),
+            "runtime_safety_gate": (
+                "COMMIT_HEADROOM_AND_POST_POOL_PROCESS_CLEANLINESS"
+                if commit_headrooms
+                else "LEGACY_PHYSICAL_FREE_MEMORY"
+            ),
             "wall_seconds": wall_seconds,
             "main_records_per_hour": EXPECTED_RECORDS / max(wall_seconds / 3600.0, 1e-12),
             "minimum_free_memory_bytes": minimum_boundary_free,
             "minimum_observed_free_memory_bytes": minimum_observed_free,
+            "minimum_commit_headroom_bytes": (
+                min(commit_headrooms) if commit_headrooms else None
+            ),
+            "minimum_required_commit_headroom_bytes": (
+                MINIMUM_COMMIT_HEADROOM_BYTES if commit_headrooms else None
+            ),
+            "maximum_committed_bytes": (
+                max(maximum_committed_values) if maximum_committed_values else None
+            ),
+            "maximum_pagefile_used_bytes": max(
+                (
+                    int(row.get("maximum_pagefile_used_bytes") or 0)
+                    for row in checkpoint_summaries
+                ),
+                default=0,
+            ),
+            "pagefile_pages_in_delta_bytes": sum(
+                int(row.get("pagefile_pages_in_delta_bytes") or 0)
+                for row in checkpoint_summaries
+            ),
+            "pagefile_pages_out_delta_bytes": sum(
+                int(row.get("pagefile_pages_out_delta_bytes") or 0)
+                for row in checkpoint_summaries
+            ),
+            "orphan_worker_pids": orphan_worker_pids,
             "maximum_parent_rss_bytes": maximum_parent_rss,
             "maximum_process_tree_rss_bytes": maximum_tree_rss,
             "mean_host_cpu_percent": cpu_mean,
             "mean_effective_cores": cpu_mean * logical_cpu / 100.0,
             "logical_cpu_count": logical_cpu,
             "executor_workers": int(args.executor_workers),
-            "effective_workers_per_checkpoint": (
-                1
-                if checkpoint_recovery_mode
-                else min(int(args.executor_workers), RECORDS_PER_CHECKPOINT)
+            "checkpoint_worker_cap": int(
+                getattr(args, "checkpoint_worker_cap", 8)
+            ),
+            "maximum_effective_workers_per_checkpoint": max(
+                (
+                    int(row.get("effective_checkpoint_workers") or 0)
+                    for row in checkpoint_summaries
+                ),
+                default=(
+                    1
+                    if checkpoint_recovery_mode
+                    else min(int(args.executor_workers), RECORDS_PER_CHECKPOINT)
+                ),
             ),
             "executor_lifecycle": (
                 CHECKPOINT_RECOVERY_EXECUTOR_MODE
@@ -1949,6 +2238,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--checkpoint-recovery-diagnostic-audit", type=Path)
     parser.add_argument("--checkpoint-recovery-deployment-manifest", type=Path)
     parser.add_argument("--executor-workers", type=int, default=10)
+    parser.add_argument(
+        "--checkpoint-worker-cap",
+        type=int,
+        choices=CHECKPOINT_WORKER_CHOICES,
+        default=8,
+    )
     args = parser.parse_args(argv)
     if len(str(args.builder_commit_sha)) != 40:
         parser.error("builder-commit-sha must be a full Git SHA")
