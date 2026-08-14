@@ -30,6 +30,85 @@ ARM_TYPES = {
 }
 
 
+def _value_summary(value: Any, *, limit: int = 160) -> str:
+    summary = repr(value)
+    return summary if len(summary) <= limit else f"{summary[: limit - 3]}..."
+
+
+def _first_replay_difference(
+    original: Any, restored: Any, *, path: str = ""
+) -> dict[str, str] | None:
+    if type(original) is not type(restored):
+        return {
+            "path": path or "/",
+            "original_type": type(original).__name__,
+            "restored_type": type(restored).__name__,
+            "original_value": _value_summary(original),
+            "restored_value": _value_summary(restored),
+        }
+    if isinstance(original, Mapping):
+        for key in sorted(set(original) | set(restored), key=str):
+            segment = str(key).replace("~", "~0").replace("/", "~1")
+            child_path = f"{path}/{segment}"
+            if key not in original or key not in restored:
+                return {
+                    "path": child_path,
+                    "original_type": (
+                        type(original[key]).__name__
+                        if key in original
+                        else "missing"
+                    ),
+                    "restored_type": (
+                        type(restored[key]).__name__
+                        if key in restored
+                        else "missing"
+                    ),
+                    "original_value": (
+                        _value_summary(original[key])
+                        if key in original
+                        else "<missing>"
+                    ),
+                    "restored_value": (
+                        _value_summary(restored[key])
+                        if key in restored
+                        else "<missing>"
+                    ),
+                }
+            difference = _first_replay_difference(
+                original[key], restored[key], path=child_path
+            )
+            if difference is not None:
+                return difference
+        return None
+    if isinstance(original, (list, tuple)):
+        if len(original) != len(restored):
+            return {
+                "path": path or "/",
+                "original_type": type(original).__name__,
+                "restored_type": type(restored).__name__,
+                "original_value": _value_summary(original),
+                "restored_value": _value_summary(restored),
+            }
+        for index, (original_value, restored_value) in enumerate(
+            zip(original, restored, strict=True)
+        ):
+            difference = _first_replay_difference(
+                original_value, restored_value, path=f"{path}/{index}"
+            )
+            if difference is not None:
+                return difference
+        return None
+    if original != restored:
+        return {
+            "path": path or "/",
+            "original_type": type(original).__name__,
+            "restored_type": type(restored).__name__,
+            "original_value": _value_summary(original),
+            "restored_value": _value_summary(restored),
+        }
+    return None
+
+
 class ProgramOptimizerTournamentV1:
     """Three shared-boundary Program optimizers with immutable state replay."""
 
@@ -252,8 +331,18 @@ class ProgramOptimizerTournamentV1:
             )
             for arm in ARM_TYPES
         }
-        if tournament.snapshot() != dict(snapshot):
-            raise ValueError("PROGRAM_TOURNAMENT_STATE_REPLAY_DRIFT")
+        restored_snapshot = tournament.snapshot()
+        if restored_snapshot != dict(snapshot):
+            difference = _first_replay_difference(
+                dict(snapshot), restored_snapshot
+            )
+            detail = ";".join(
+                f"{key}={value}" for key, value in (difference or {}).items()
+            )
+            raise ValueError(
+                "PROGRAM_TOURNAMENT_STATE_REPLAY_DRIFT"
+                + (f":{detail}" if detail else "")
+            )
         return tournament
 
     def optimizer_metadata(self) -> dict[str, Any]:

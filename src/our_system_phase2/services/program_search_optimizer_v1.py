@@ -1171,7 +1171,9 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
         payload = super().snapshot()
         payload.pop("snapshot_hash")
         payload["observations"] = copy.deepcopy(self._observations)
-        payload["categories"] = copy.deepcopy(self._categories)
+        payload["categories"] = {
+            slot: list(values) for slot, values in self._categories.items()
+        }
         payload["snapshot_hash"] = stable_hash(payload)
         return payload
 

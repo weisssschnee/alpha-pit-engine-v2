@@ -27,14 +27,18 @@ from our_system_phase2.services.program_tournament_freeze_v1 import (
 from our_system_phase2.services import program_tournament_freeze_v1 as freeze
 from our_system_phase2.services.program_optimizer_tournament_v1 import (
     ProgramOptimizerTournamentV1,
+    _first_replay_difference,
 )
 from our_system_phase2.services.program_search_optimizer_v1 import (
     HYBRID_TPE_PROGRAM,
     PROGRAM_OPTIMIZER_ARMS,
     STRUCTURED_SURROGATE_PROGRAM,
     UNIFORM_CONTROL,
+    ProgramOptimizerObservationV1,
     program_availability_entries_v1,
 )
+from our_system_phase2.services.search_v2_admission import AbsoluteEconomicAdmission
+from our_system_phase2.services.search_v2_conditional_uplift import ProgramUpliftCredit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -322,6 +326,120 @@ def _tournament() -> ProgramOptimizerTournamentV1:
     )
 
 
+def _persisted(payload: dict) -> dict:
+    return json.loads(json.dumps(payload, sort_keys=True))
+
+
+def _observation(ask: dict, *, admitted: bool) -> ProgramOptimizerObservationV1:
+    identity = str(ask["exact_identity"])
+    admission = AbsoluteEconomicAdmission(
+        record_payload_sha256=f"record-{identity}",
+        pair_id=f"pair-{identity}",
+        program_id=f"program-{identity}",
+        control_program_id=f"control-{identity}",
+        admitted=admitted,
+        failure_reasons=() if admitted else ("PRIMARY_NET_REWARD_NOT_POSITIVE",),
+        metrics={"synthetic": True},
+    )
+    uplift = (
+        ProgramUpliftCredit(
+            record_payload_sha256=admission.record_payload_sha256,
+            pair_id=admission.pair_id,
+            program_id=admission.program_id,
+            control_program_id=admission.control_program_id,
+            program_credit={
+                "matched_cumulative_return_increment": 0.1,
+                "matched_net_reward_increment": 0.2,
+            },
+        )
+        if admitted
+        else None
+    )
+    return ProgramOptimizerObservationV1(
+        proposal_id=str(ask["proposal_id"]),
+        exact_identity=identity,
+        admission=admission,
+        uplift=uplift,
+    )
+
+
+def _consume_arm(tournament: ProgramOptimizerTournamentV1, arm: str) -> None:
+    eligible = [entry.exact_identity for entry in tournament.entries_by_arm[arm]]
+    asked = tournament.ask(
+        arm=arm,
+        checkpoint_id=f"checkpoint-{arm}",
+        count=4,
+        required_program_template_id="BASE_TEMPORAL",
+        eligible_exact_identities=eligible,
+    )
+    tournament.commit_ask(
+        arm=arm,
+        checkpoint_id=f"checkpoint-{arm}",
+        count=4,
+        required_program_template_id="BASE_TEMPORAL",
+        eligible_exact_identities=eligible,
+        expected_asks=asked,
+    )
+    tournament.tell(
+        arm=arm,
+        observations=[
+            _observation(row, admitted=index % 2 == 0)
+            for index, row in enumerate(asked)
+        ],
+    )
+
+
+def test_tournament_genesis_json_persisted_roundtrip_exact() -> None:
+    tournament = _tournament()
+    persisted = _persisted(tournament.snapshot())
+    restored = ProgramOptimizerTournamentV1.restore(
+        persisted,
+        entries_by_arm=tournament.entries_by_arm,
+        expected_campaign_id="test-tournament",
+    )
+    assert restored.snapshot() == persisted
+
+
+def test_tournament_nonempty_mixed_arm_json_persisted_roundtrip_exact() -> None:
+    tournament = _tournament()
+    for arm in PROGRAM_OPTIMIZER_ARMS:
+        _consume_arm(tournament, arm)
+    persisted = _persisted(tournament.snapshot())
+    restored = ProgramOptimizerTournamentV1.restore(
+        persisted,
+        entries_by_arm=tournament.entries_by_arm,
+        expected_campaign_id="test-tournament",
+    )
+    assert persisted["observations"] > 0
+    assert restored.snapshot() == persisted
+
+
+def test_replay_diagnostic_reports_first_json_path_and_types() -> None:
+    original = {
+        "arms": {
+            STRUCTURED_SURROGATE_PROGRAM: {
+                "categories": {"program_template_id": ["BASE_TEMPORAL"]}
+            }
+        }
+    }
+    restored = {
+        "arms": {
+            STRUCTURED_SURROGATE_PROGRAM: {
+                "categories": {"program_template_id": ("BASE_TEMPORAL",)}
+            }
+        }
+    }
+    assert _first_replay_difference(original, restored) == {
+        "path": (
+            "/arms/STRUCTURED_SURROGATE_PROGRAM/categories/program_template_id"
+        ),
+        "original_type": "list",
+        "restored_type": "tuple",
+        "original_value": "['BASE_TEMPORAL']",
+        "restored_value": "('BASE_TEMPORAL',)",
+    }
+
+
 def test_frozen_plan_has_three_arms_uniform_support_and_no_runtime_authority() -> None:
     asks = build_maximum_ask_plan_v1()
     authorization = authorization_payload_v1()
@@ -340,7 +458,7 @@ def test_frozen_plan_has_three_arms_uniform_support_and_no_runtime_authority() -
 
 def test_tournament_shared_space_snapshot_restore_and_real_tpe_trial() -> None:
     tournament = _tournament()
-    snapshot = tournament.snapshot()
+    snapshot = _persisted(tournament.snapshot())
     restored = ProgramOptimizerTournamentV1.restore(
         snapshot,
         entries_by_arm=tournament.entries_by_arm,

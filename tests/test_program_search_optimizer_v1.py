@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import json
 
 import pytest
 
@@ -104,6 +105,130 @@ def _observation(
         admission=admission,
         uplift=credit,
     )
+
+
+def _json_persisted(payload: dict[str, object]) -> dict[str, object]:
+    return json.loads(json.dumps(payload, sort_keys=True))
+
+
+def test_structured_surrogate_genesis_json_persisted_roundtrip_exact() -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    config = {
+        "entries": entries,
+        "seen_exact_identities": (),
+        "seed": 23,
+        "cold_start_asks": 8,
+        "candidate_pool_size": 96,
+        "n_estimators": 32,
+        "min_samples_leaf": 1,
+        "exploration_beta": 0.5,
+    }
+    persisted = _json_persisted(
+        StructuredSurrogateProgramSearchAdapter(**config).snapshot()
+    )
+    restored = StructuredSurrogateProgramSearchAdapter.restore(
+        snapshot=persisted, **config
+    )
+    assert restored.snapshot() == persisted
+    assert all(
+        isinstance(values, list) for values in persisted["categories"].values()
+    )
+
+
+def test_structured_surrogate_trained_json_persisted_roundtrip_exact() -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    config = {
+        "entries": entries,
+        "seen_exact_identities": (),
+        "seed": 29,
+        "cold_start_asks": 4,
+        "candidate_pool_size": 96,
+        "n_estimators": 32,
+        "min_samples_leaf": 1,
+        "exploration_beta": 0.5,
+    }
+    adapter = StructuredSurrogateProgramSearchAdapter(**config)
+    asked = adapter.ask(checkpoint_id="checkpoint_001", count=8)
+    adapter.tell(
+        [
+            _observation(
+                row,
+                admitted=index % 3 != 0,
+                uplift=0.1 + index * 0.01,
+            )
+            for index, row in enumerate(asked)
+        ]
+    )
+    persisted = _json_persisted(adapter.snapshot())
+    restored = StructuredSurrogateProgramSearchAdapter.restore(
+        snapshot=persisted, **config
+    )
+    assert len(persisted["observations"]) > config["cold_start_asks"]
+    assert any(row["uplift"] is not None for row in persisted["observations"])
+    assert restored.snapshot() == persisted
+
+
+def test_hybrid_tpe_genesis_json_persisted_roundtrip_exact() -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    config = {
+        "entries": entries,
+        "seen_exact_identities": (),
+        "seed": 31,
+        "n_startup_trials": 2,
+        "n_ei_candidates": 8,
+    }
+    persisted = _json_persisted(HybridTPEProgramSearchAdapter(**config).snapshot())
+    restored = HybridTPEProgramSearchAdapter.restore(
+        snapshot=persisted, **config
+    )
+    assert restored.snapshot() == persisted
+
+
+def test_hybrid_tpe_nonempty_json_persisted_roundtrip_exact() -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    config = {
+        "entries": entries,
+        "seen_exact_identities": (),
+        "seed": 37,
+        "n_startup_trials": 2,
+        "n_ei_candidates": 8,
+    }
+    adapter = HybridTPEProgramSearchAdapter(**config)
+    asked = adapter.ask(checkpoint_id="checkpoint_001", count=6)
+    adapter.tell(
+        [
+            _observation(
+                row,
+                admitted=index % 2 == 0,
+                uplift=0.1 + index * 0.01,
+            )
+            for index, row in enumerate(asked)
+        ]
+    )
+    persisted = _json_persisted(adapter.snapshot())
+    restored = HybridTPEProgramSearchAdapter.restore(
+        snapshot=persisted, **config
+    )
+    assert len(persisted["tpe_history"]) > 0
+    assert restored.snapshot() == persisted
+
+
+def test_uniform_consumed_json_persisted_roundtrip_exact() -> None:
+    entries = program_availability_entries_v1(_space_rows(16))
+    config = {
+        "entries": entries,
+        "seen_exact_identities": (),
+        "seed": 41,
+    }
+    adapter = UniformProgramSearchAdapter(**config)
+    asked = adapter.ask(checkpoint_id="checkpoint_001", count=4)
+    adapter.tell(
+        [_observation(row, admitted=True, uplift=1.0) for row in asked]
+    )
+    persisted = _json_persisted(adapter.snapshot())
+    restored = UniformProgramSearchAdapter.restore(snapshot=persisted, **config)
+    assert restored.observation_count == 0
+    assert restored.snapshot() == persisted
 
 
 def test_all_three_adapters_share_one_program_space_and_availability() -> None:
