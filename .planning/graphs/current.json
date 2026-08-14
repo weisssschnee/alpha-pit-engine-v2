@@ -30,6 +30,9 @@
           "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_incident_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_outcome_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_evidence_note_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_outcome_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_execution_ask_schema_repair_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_evidence_note_20260814.json",
           "runtime/run_plans/cn_program_optimizer_tournament_final_retry_independent_audit_20260814.json",
@@ -153,7 +156,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+        "repo_head": "d45bf936c9807885b98fe323c8dabbbdce07868e"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -164,14 +167,14 @@
       "evidence": {
         "component_id": "cn_program_optimizer_tournament_v1_experimental",
         "validation": {
-          "checked_at": "2026-08-14T14:29:12.341119+00:00",
-          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
-          "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+          "checked_at": "2026-08-14T16:51:13.073032+00:00",
+          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+          "evidence_sha256": "89326F68D7ACFD4411E792967E983C265968A7A84239F28E66A4BCB24E1650C4",
           "level": "FAILED",
           "notes": [],
           "profile": "",
           "result": "FAIL",
-          "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+          "verified_at_sha": "d45bf936c9807885b98fe323c8dabbbdce07868e"
         }
       },
       "message": "Critical component assurance is failed or stale",
@@ -183,14 +186,14 @@
       "evidence": {
         "edge_id": "project_control_admission_to_program_tournament",
         "validation": {
-          "checked_at": "2026-08-14T14:29:12.341119+00:00",
-          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
-          "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+          "checked_at": "2026-08-14T16:51:13.073032+00:00",
+          "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+          "evidence_sha256": "89326F68D7ACFD4411E792967E983C265968A7A84239F28E66A4BCB24E1650C4",
           "level": "FAILED",
           "notes": [],
           "profile": "",
           "result": "FAIL",
-          "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+          "verified_at_sha": "d45bf936c9807885b98fe323c8dabbbdce07868e"
         }
       },
       "message": "Critical relationship assurance is failed or stale",
@@ -2420,14 +2423,14 @@
       "source": "cn_project_control_execution_admission",
       "target": "cn_program_optimizer_tournament_v1_experimental",
       "validation": {
-        "checked_at": "2026-08-14T14:29:12.341119+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
-        "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+        "checked_at": "2026-08-14T16:51:13.073032+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+        "evidence_sha256": "89326F68D7ACFD4411E792967E983C265968A7A84239F28E66A4BCB24E1650C4",
         "level": "FAILED",
         "notes": [],
         "profile": "",
         "result": "FAIL",
-        "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+        "verified_at_sha": "d45bf936c9807885b98fe323c8dabbbdce07868e"
       }
     },
     {
@@ -2465,7 +2468,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-14T14:29:12.341119+00:00",
+  "generated_at": "2026-08-14T16:51:13.073032+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7490,12 +7493,12 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "RECOVERY CONSUMED ONCE",
-        "16 RECORDS 2 CHECKPOINTS UNCHANGED",
-        "INCIDENT ROOT BINDING FAIL CLOSED",
-        "NO CHECKPOINT 3 EXECUTION",
+        "CORRECTED RECOVERY CONSUMED ONCE",
+        "88 RECORDS 11 CHECKPOINTS CLOSED",
+        "CHECKPOINT 3 ISOLATED RECOMPUTE PASS",
+        "CHECKPOINT 12 FEEDBACK NULL FAIL CLOSED",
         "RESTRICTED READS ZERO",
-        "NO FURTHER RETRY OR PROMOTION"
+        "NO RACING STAGE2 OR PROMOTION"
       ],
       "color": "#f9a825",
       "contracts": [
@@ -7532,7 +7535,7 @@
       "expires_at": "",
       "id": "cn_program_optimizer_tournament_v1_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Program optimizer tournament V1 checkpoint RECOVERY failed closed at incident-root binding; 16 records remain",
+      "label": "CN Program optimizer tournament V1 corrected RECOVERY closed 88 records; checkpoint 012 feedback failed closed",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
@@ -7551,6 +7554,9 @@
         "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_outcome_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
         "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_evidence_note_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_outcome_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_evidence_note_20260814.json",
         "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
         "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
         "docs/adr/0019-program-optimizer-tournament.md"
@@ -7560,21 +7566,21 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-14T14:29:12.341119+00:00",
-        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
-        "evidence_sha256": "B3E6E1FCB462A2C8A767030C1727328269BE399AD6138775751B2377E5EE15DB",
+        "checked_at": "2026-08-14T16:51:13.073032+00:00",
+        "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+        "evidence_sha256": "89326F68D7ACFD4411E792967E983C265968A7A84239F28E66A4BCB24E1650C4",
         "level": "FAILED",
         "notes": [],
         "profile": "",
         "result": "FAIL",
-        "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+        "verified_at_sha": "d45bf936c9807885b98fe323c8dabbbdce07868e"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "B45E0516602D16F6053DE79244E489715C700922A026CA2B61CCFD4CF4D10C45"
+    "sha256": "AAEA0E1E05F5ADAE54822DC2174EB5F938B8FCEE278759EAC7AC3301127BC2F0"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7591,7 +7597,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4",
+  "repo_head": "d45bf936c9807885b98fe323c8dabbbdce07868e",
   "schema_version": 1,
   "semantic_authorities": [
     {

@@ -1511,7 +1511,7 @@
     },
     {
         "id":  "cn_program_optimizer_tournament_v1_experimental",
-      "label":  "CN Program optimizer tournament V1 checkpoint RECOVERY failed closed at incident-root binding; 16 records remain",
+      "label":  "CN Program optimizer tournament V1 corrected RECOVERY closed 88 records; checkpoint 012 feedback failed closed",
         "kind":  "experimental-search-control",
         "lifecycle":  "EXPERIMENTAL",
         "paths":  [
@@ -1530,6 +1530,9 @@
                        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_outcome_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
                        "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_evidence_note_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_outcome_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+                       "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_evidence_note_20260814.json",
                        "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
                       "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
                       "docs/adr/0019-program-optimizer-tournament.md"
@@ -1564,17 +1567,17 @@
         "validation":  {
                            "level":  "FAILED",
                            "result":  "FAIL",
-                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json",
-                           "evidence_sha256":  "b3e6e1fcb462a2c8a767030c1727328269be399ad6138775751b2377e5ee15db",
-                           "verified_at_sha":  "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"
+                           "evidence_ref":  "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json",
+                           "evidence_sha256":  "89326f68d7acfd4411e792967e983c265968a7a84239f28e66a4bcb24e1650c4",
+                           "verified_at_sha":  "d45bf936c9807885b98fe323c8dabbbdce07868e"
                        },
         "claim_badges":  [
-                             "RECOVERY CONSUMED ONCE",
-                             "16 RECORDS 2 CHECKPOINTS UNCHANGED",
-                             "INCIDENT ROOT BINDING FAIL CLOSED",
-                             "NO CHECKPOINT 3 EXECUTION",
+                             "CORRECTED RECOVERY CONSUMED ONCE",
+                             "88 RECORDS 11 CHECKPOINTS CLOSED",
+                             "CHECKPOINT 3 ISOLATED RECOMPUTE PASS",
+                             "CHECKPOINT 12 FEEDBACK NULL FAIL CLOSED",
                              "RESTRICTED READS ZERO",
-                             "NO FURTHER RETRY OR PROMOTION"
+                             "NO RACING STAGE2 OR PROMOTION"
                          ]
     }
   ],
@@ -1923,7 +1926,7 @@
     {"id": "mean_shard_to_feedback_forbidden", "source": "mean_shard_reward_fallback", "target": "matched_train_feedback", "relation": "mean_shard_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "mean_shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Mean-of-shard reward fallback cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "phase3cn_matched_source_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "program_tournament_derived_from_search_v2_diagnosis", "source": "cn_program_optimizer_tournament_v1_experimental", "target": "cn_search_engine_v2_experimental", "relation": "derived_from_manual_diagnosis", "lifecycle": "EXPERIMENTAL", "required": false},
     {"id": "program_tournament_candidate_for_development_search_policy", "source": "cn_program_optimizer_tournament_v1_experimental", "target": "cn_development_search_policy", "relation": "candidate_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "program_tournament_no_silent_authority_replacement", "type": "BOUNDARY", "rule": "Implementation, frozen authorization, static tests or a future tournament result cannot replace formal Hybrid TPE plus Availability without a separate accepted promotion decision and Authority Binding transition.", "severity": "HARD", "enforced_by": "ADR 0019 and development-search authority slot", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "scripts/check_cn_program_optimizer_tournament_freeze_v1.py", "verified_at_sha": "30897b429f6eac4035dc2ca91f10d196e5233f35"}},
-    {"id": "project_control_admission_to_program_tournament", "source": "cn_project_control_execution_admission", "target": "cn_program_optimizer_tournament_v1_experimental", "relation": "precondition_for_prospective_tournament_execution", "lifecycle": "ACTIVE", "required": false, "critical": true, "contract": {"id": "program_tournament_consumes_exact_bound_admission", "type": "ADMISSION", "rule": "Any Program tournament execution must consume one exact clean-checkout, action, campaign authorization/profile, run and output-root Project Control admission before route import; direct runner invocation is forbidden. A technical RECOVERY may target only the exact existing root and original RETRY lineage, with the allowlisted PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE scope, original admission, immutable checkpoint boundary, incident, diagnostic audit and active deployment bindings. It must reject all incomplete results, recompute the first unclosed checkpoint under one-worker process isolation, and only after that checkpoint closes continue under the normal 4/6/8 adaptive resource policy while retaining RECOVERY provenance.", "severity": "HARD", "enforced_by": "app.py, project_control_admission.py, route-local consume and canonical 77o launcher", "bypass_forbidden": true}, "validation": {"level": "FAILED", "result": "FAIL", "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_independent_audit_20260814.json", "evidence_sha256": "b3e6e1fcb462a2c8a767030c1727328269be399ad6138775751b2377e5ee15db", "verified_at_sha": "4fb4b9a2b963c866fa9b4c8797a3b7b61f7321d4"}},
+    {"id": "project_control_admission_to_program_tournament", "source": "cn_project_control_execution_admission", "target": "cn_program_optimizer_tournament_v1_experimental", "relation": "precondition_for_prospective_tournament_execution", "lifecycle": "ACTIVE", "required": false, "critical": true, "contract": {"id": "program_tournament_consumes_exact_bound_admission", "type": "ADMISSION", "rule": "Any Program tournament execution must consume one exact clean-checkout, action, campaign authorization/profile, run and output-root Project Control admission before route import; direct runner invocation is forbidden. A technical RECOVERY may target only the exact existing root and original RETRY lineage, with the allowlisted PHASE_C_CHECKPOINT_RECOVERY_AFTER_RESOURCE_FAILURE scope, original admission, immutable checkpoint boundary, incident, diagnostic audit and active deployment bindings. It must reject all incomplete results, recompute the first unclosed checkpoint under one-worker process isolation, and only after that checkpoint closes continue under the normal 4/6/8 adaptive resource policy while retaining RECOVERY provenance.", "severity": "HARD", "enforced_by": "app.py, project_control_admission.py, route-local consume and canonical 77o launcher", "bypass_forbidden": true}, "validation": {"level": "FAILED", "result": "FAIL", "evidence_ref": "runtime/run_plans/cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_20260814.json", "evidence_sha256": "89326f68d7acfd4411e792967e983c265968a7a84239f28e66a4bcb24e1650c4", "verified_at_sha": "d45bf936c9807885b98fe323c8dabbbdce07868e"}},
     {"id": "program_tournament_reuses_phase3cm_matched_evaluation", "source": "cn_program_optimizer_tournament_v1_experimental", "target": "phase3cm_streaming_multicandidate_evaluator", "relation": "reuses_existing_matched_full_vs_base_evaluation", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "program_tournament_no_second_evaluator", "type": "BOUNDARY", "rule": "The tournament may change only Program proposal optimization. It reuses existing compilation, materialization, exact Full/Base evaluation and TOPK_10_EQUAL semantics and cannot create a second financial evaluator.", "severity": "HARD", "enforced_by": "run_cn_program_optimizer_tournament_v1 thin adapter and independent call-path checker", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "scripts/check_cn_program_optimizer_tournament_path_v1.py", "verified_at_sha": "30897b429f6eac4035dc2ca91f10d196e5233f35"}}
   ],
   "semantic_authorities": [
