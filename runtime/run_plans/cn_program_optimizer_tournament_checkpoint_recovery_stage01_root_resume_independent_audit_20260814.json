@@ -1,0 +1,120 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_independent_audit_v1",
+  "recorded_date": "2026-08-15",
+  "experiment_date": "2026-08-14",
+  "audit_mode": "READ_ONLY_POST_FAILURE_DURABLE_ARTIFACTS_ONLY",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "producer_audit_consistent": true,
+  "financial_source_reads_performed_by_audit": 0,
+  "checks": {
+    "execution_identity": {
+      "expected_repo_sha": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+      "observed_repo_sha": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+      "requested_action": "RECOVERY",
+      "execution_lineage_action": "RETRY",
+      "target_run_id": "cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+      "result": "PASS"
+    },
+    "frozen_identities": {
+      "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "program_space_count": 3616,
+      "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "result": "PASS_UNCHANGED"
+    },
+    "project_control": {
+      "task_id": "cn-execution-05ebdc7d9b8defd575b8066b",
+      "run_id": "b0629b16-0217-4eaf-adab-6ddc03d04abe",
+      "admission_file_sha256": "02320cae52d7052effefe220218f936d886b44253bf524dbe0f86ac55a41307f",
+      "admission_payload_sha256": "6edb219b0077521355ebfba186f073802002cd68064425e007cdc77e02d26c06",
+      "new_recovery_consumption_count": 1,
+      "total_root_consumption_count": 3,
+      "recovery_consumption_file_sha256": "99a162cba5e387d59e7cb627f15f042e488554d709b8d32a3aa7a9b34183859c",
+      "result": "PASS_CONSUMED_EXACTLY_ONCE"
+    },
+    "corrected_root_binding": {
+      "incident_payload_sha256": "a118bcf24a6143e764ef618c8b72ffa33a291e3d7d16e69c419b2c487e85a893",
+      "diagnostic_payload_sha256": "ac908afb540f8dc08724c7249ce17709bd4ce793a2852b0856e8b25fda24a9da",
+      "phase_c_runtime_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e\\stage01_run",
+      "tournament_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+      "phase_c_root_match": true,
+      "outer_root_retained_separately": true,
+      "result": "PASS"
+    },
+    "recovery_isolation": {
+      "checkpoint_003_manifest_sha256": "aeb915d6d4fa581c7c3d28540122418108c1e580de4f279bcf6df5e5be85ec06",
+      "effective_workers": 1,
+      "max_tasks_per_child": 1,
+      "full_recomputation": true,
+      "quarantine_results_reused": false,
+      "financial_results_reused": false,
+      "result": "PASS_CLOSED_ATOMICALLY"
+    },
+    "checkpoint_integrity": {
+      "closed_checkpoint_count": 11,
+      "closed_record_count": 88,
+      "checkpoint_manifest_sha256": {
+        "checkpoint_001": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+        "checkpoint_002": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+        "checkpoint_003": "aeb915d6d4fa581c7c3d28540122418108c1e580de4f279bcf6df5e5be85ec06",
+        "checkpoint_004": "db51a9c29952441a64c23c6dff199a52775835ce3cb2f5319478f1557d30e12e",
+        "checkpoint_005": "783feedefce235c2ceb04c89bec758b06ea0e5acebbafaff25e210d1d536d80f",
+        "checkpoint_006": "917218e7bb484864ccd9058d7d5dcdfd391b1e6de751f00edd4648a577de12a2",
+        "checkpoint_007": "35a9d59b745a5adf12450b7851c39b9f16b42e008d9e3e25ac35190399844131",
+        "checkpoint_008": "064df6c297366dd925b94c510e8e2641f758c3b615d5a2cca2dfce52d41cc400",
+        "checkpoint_009": "343ed832cdcbd99029077bab4bb183abcaccf86408be382750ec466aae3552e3",
+        "checkpoint_010": "afd1764b80b1d4e3c18a741c4741882b4bc465f9ca023455dda59d9b75d1b820",
+        "checkpoint_011": "05b4569cf1045aa4e009214006bbe62031f5afaf5a138a74406054f38ad41c75"
+      },
+      "all_checkpoint_artifacts_match_manifests": true,
+      "all_closed_record_self_hashes_valid": true,
+      "checkpoint_chain_valid": true,
+      "result": "PASS"
+    },
+    "checkpoint_012_fail_closed_boundary": {
+      "inflight_record_count": 8,
+      "inflight_records_self_hash_valid": true,
+      "records_included_in_formal_closed_result": 0,
+      "exception_type": "TypeError",
+      "exception_message": "float() argument must be a string or a real number, not 'NoneType'",
+      "complete_traceback_preserved": true,
+      "result": "PASS_INFLIGHT_EXCLUDED"
+    },
+    "arm_coverage": {
+      "uniform_closed_records": 88,
+      "uniform_optimizer_tells": 56,
+      "hybrid_tpe_closed_records": 0,
+      "hybrid_tpe_optimizer_tells": 0,
+      "hybrid_tpe_inflight_excluded_records": 8,
+      "hybrid_tpe_runtime_projection_statistics": "NOT_DURABLY_PERSISTED",
+      "hybrid_tpe_static_no_global_fallback_path": "PASS",
+      "surrogate_closed_records": 0,
+      "surrogate_full_eligible_scoring": "NOT_REACHED",
+      "result": "INCOMPLETE_NOT_ARM_COMPARABLE"
+    },
+    "racing_and_stage2": {
+      "stage1_racing_decision_exists": false,
+      "stage2_run_exists": false,
+      "economic_winner": "NONE",
+      "result": "NOT_REACHED"
+    },
+    "restricted_reads": {
+      "prefinancial_financial_reads": 0,
+      "validation_reads": 0,
+      "holdout_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0,
+      "result": "PASS"
+    },
+    "terminal_stop": {
+      "live_tournament_process_count": 0,
+      "automatic_successor": false,
+      "further_retry_or_recovery": false,
+      "promotion": false,
+      "result": "PASS"
+    }
+  },
+  "audit_conclusion": "The corrected Phase C stage01 root evidence and one-time RECOVERY admission were valid. Checkpoint_003 was fully recomputed under one-worker process isolation and closed atomically; checkpoints_004 through _011 then closed under the unchanged adaptive policy. Checkpoint_012 evaluated eight Hybrid TPE records but failed before feedback and atomic checkpoint close because one conditional objective was null. Those eight inflight records are excluded, leaving a valid 88-record, 11-checkpoint closed chain but no arm-comparable tournament, no racing decision, no Stage 2, zero restricted reads and no continuation or promotion.",
+  "audit_payload_sha256": "90369a243ad59e081423ff9ba973df8713ccdb2ca342db9c660cee9bff835fbd"
+}

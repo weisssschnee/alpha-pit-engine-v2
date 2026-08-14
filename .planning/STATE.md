@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 
-Current state: `PROGRAM_OPTIMIZER_CHECKPOINT_RECOVERY_INCOMPLETE_INCIDENT_ROOT_BINDING_FAIL_CLOSED_RECOVERY_ADMISSION_CONSUMED_ONCE_ORIGINAL_16_RECORDS_2_CHECKPOINTS_UNCHANGED_CHECKPOINT003_NOT_STARTED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_CORRECTED_CHECKPOINT_RECOVERY_INCOMPLETE_CHECKPOINT003_ISOLATED_RECOMPUTE_CLOSED_CHECKPOINT004_TO_011_ADAPTIVE_CLOSED_88_RECORDS_CHECKPOINT012_TPE_FEEDBACK_NULL_FAIL_CLOSED_8_INFLIGHT_EXCLUDED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_OR_RECOVERY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,46 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer corrected checkpoint RECOVERY reached checkpoint 011, then failed closed before checkpoint 012 atomic close (2026-08-15)
+
+- The corrected staging incident and diagnostic bind the exact Phase C
+  `stage01_run` runtime root while retaining the outer Tournament root as a
+  separate field. Their payload SHA256 values are
+  `a118bcf24a6143e764ef618c8b72ffa33a291e3d7d16e69c419b2c487e85a893`
+  and
+  `ac908afb540f8dc08724c7249ce17709bd4ce793a2852b0856e8b25fda24a9da`;
+  the historical originals were not changed.
+- One new target-bound Project Control `RECOVERY` admission over the original
+  `RETRY` lineage was consumed exactly once by task
+  `cn-execution-05ebdc7d9b8defd575b8066b`, run
+  `b0629b16-0217-4eaf-adab-6ddc03d04abe`, admission payload
+  `6edb219b0077521355ebfba186f073802002cd68064425e007cdc77e02d26c06`.
+  The canonical wrapper and `app.py cn-program-optimizer-tournament-v1` route
+  ran on clean execution SHA
+  `6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6`; no production code changed.
+- Checkpoint_003 was fully recomputed with one worker,
+  `max_tasks_per_child=1`, no quarantine or financial-result reuse, and closed
+  atomically at manifest SHA
+  `aeb915d6d4fa581c7c3d28540122418108c1e580de4f279bcf6df5e5be85ec06`.
+  Checkpoint_004 onward switched to the unchanged adaptive policy and
+  checkpoints_004 through _011 closed. The durable formal boundary is now 11
+  checkpoints / 88 records, ordinals 0..87; the checkpoint chain and every
+  closed artifact/self-hash pass independent verification.
+- Checkpoint_012 evaluated eight `HYBRID_TPE_PROGRAM` records but failed during
+  feedback update before atomic checkpoint close because one observation's
+  conditional objective was null and the adapter attempted `float(None)`.
+  All eight ordinals 88..95 remain inflight and are excluded from the formal
+  result. No closed Hybrid TPE tell or runtime projection receipt exists;
+  Structured Surrogate, Stage-1 racing and Stage 2 were not reached, so no
+  arm-comparable economic conclusion or winner exists.
+- Independent audit returned `PASS_INCOMPLETE_FAIL_CLOSED`. All validation,
+  holdout, spent-2023, Forward-B and Forward-2026 reads are zero. No automatic
+  successor, further retry/recovery or promotion was started. Canonical
+  evidence is the three
+  `cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_*_20260814.json`
+  files, and the terminal status is
+  `TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW`.
 
 ### Program optimizer checkpoint RECOVERY incomplete at incident-root binding; no further retry (2026-08-14)
 

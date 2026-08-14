@@ -1,0 +1,172 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_outcome_v1",
+  "recorded_date": "2026-08-15",
+  "experiment_date": "2026-08-14",
+  "status": "TOURNAMENT_INCOMPLETE_FAIL_CLOSED",
+  "external_authorization": "FIX_RECOVERY_ROOT_BINDING_EVIDENCE_RESUME_SAME_CHECKPOINT_RUN_NO_CODE_CHANGE",
+  "execution": {
+    "host": "DESKTOP-77OPJ6F",
+    "branch": "feature/a-share-tradability-authority-repair",
+    "repo_sha": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+    "original_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "canonical_wrapper": "scripts/run_cn_program_optimizer_tournament_77o.ps1",
+    "canonical_route": "app.py cn-program-optimizer-tournament-v1",
+    "requested_action": "RECOVERY",
+    "execution_lineage_action": "RETRY",
+    "target_run_id": "cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "tournament_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "phase_c_runtime_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e\\stage01_run",
+    "detached_task_id": "lanjob_20260815_000323_09e22d",
+    "started_at": "2026-08-15T00:03:28+08:00",
+    "ended_at": "2026-08-15T00:35:08+08:00",
+    "exit_code": 1,
+    "production_code_modified": false
+  },
+  "project_control": {
+    "task_id": "cn-execution-05ebdc7d9b8defd575b8066b",
+    "run_id": "b0629b16-0217-4eaf-adab-6ddc03d04abe",
+    "request_payload_sha256": "05ebdc7d9b8defd575b8066bc933535c9b3f0c6f63eb21d13c609ebb56b87db2",
+    "preflight_receipt_sha256": "25e446452575c4afd9a9ef262e9e8d60c5d01451e2ca120f9acf1fc558dff721",
+    "admission_file_sha256": "02320cae52d7052effefe220218f936d886b44253bf524dbe0f86ac55a41307f",
+    "admission_payload_sha256": "6edb219b0077521355ebfba186f073802002cd68064425e007cdc77e02d26c06",
+    "admission_consumed_exactly_once": true,
+    "recovery_consumption_file_sha256": "99a162cba5e387d59e7cb627f15f042e488554d709b8d32a3aa7a9b34183859c",
+    "total_root_consumption_count": 3
+  },
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "tournament_authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_count": 3616,
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+    "unchanged": true
+  },
+  "corrected_recovery_evidence": {
+    "incident_file": "D:\\ChengboRemote\\staging\\cn_program_optimizer_checkpoint_recovery_incident_stage01_root_20260814.json",
+    "incident_file_sha256": "223c0c42b2b2a4966068a44624916bc2213e679089558bfe1c60943ea742d01a",
+    "incident_payload_sha256": "a118bcf24a6143e764ef618c8b72ffa33a291e3d7d16e69c419b2c487e85a893",
+    "diagnostic_file": "D:\\ChengboRemote\\staging\\cn_program_optimizer_checkpoint_recovery_diagnostic_audit_stage01_root_20260814.json",
+    "diagnostic_file_sha256": "65ed66db8678553022be000fcd0bf837b062b99672f23dd46fabc22e99db7181",
+    "diagnostic_payload_sha256": "ac908afb540f8dc08724c7249ce17709bd4ce793a2852b0856e8b25fda24a9da",
+    "phase_c_runtime_root_bound_exactly": true,
+    "tournament_output_root_retained_separately": true,
+    "historical_originals_modified": false
+  },
+  "pre_admission": {
+    "source_binding_checker": "PASS",
+    "frozen_checker": "PASS",
+    "path_checker": "PASS",
+    "execution_surface_import_smoke": "PASS",
+    "execution_node_cleanliness": "PASS",
+    "financial_reads": 0,
+    "abnormal_or_stale_processes": 0,
+    "pagefile_sane": true,
+    "paging_in_bytes": 0,
+    "paging_out_bytes": 0
+  },
+  "checkpoint_recovery": {
+    "binding_file_sha256": "abe066617caa7ef01818301f4e2cbace664a64df74a9caf8be7dddac243fe57f",
+    "binding_payload_sha256": "22f9e4e03e02a5940708587733cc40d786c1f4a98d40fdd9b5825510a79d324e",
+    "checkpoint_003": {
+      "status": "BATCH_CLOSED_IMMUTABLE",
+      "manifest_sha256": "aeb915d6d4fa581c7c3d28540122418108c1e580de4f279bcf6df5e5be85ec06",
+      "effective_concurrent_workers": 1,
+      "max_tasks_per_child": 1,
+      "executor_mode": "RECOVERY_ISOLATED_FIRST_CHECKPOINT",
+      "full_recomputation": true,
+      "quarantine_results_reused": false,
+      "financial_results_reused": false
+    },
+    "checkpoint_004_onward": {
+      "executor_mode": "NORMAL_ADAPTIVE_AFTER_RECOVERY_ISOLATION",
+      "effective_concurrent_workers": 8,
+      "last_closed_checkpoint": 11
+    }
+  },
+  "formal_closed_boundary": {
+    "closed_checkpoint_count": 11,
+    "closed_record_count": 88,
+    "closed_record_ordinals": "0..87",
+    "last_closed_checkpoint_manifest_sha256": "05b4569cf1045aa4e009214006bbe62031f5afaf5a138a74406054f38ad41c75",
+    "checkpoint_012_status": "INFLIGHT_EXCLUDED_NOT_ATOMICALLY_CLOSED",
+    "checkpoint_012_record_count": 8,
+    "checkpoint_012_record_ordinals": "88..95",
+    "checkpoint_012_generation_arm": "HYBRID_TPE_PROGRAM",
+    "checkpoint_012_replay_complete": 7,
+    "checkpoint_012_replay_blocked": 1,
+    "checkpoint_012_productive": 3,
+    "checkpoint_012_null_conditional_objective": 1,
+    "checkpoint_012_records_counted_in_formal_result": 0
+  },
+  "arm_results": {
+    "UNIFORM_CONTROL": {
+      "scope": "PARTIAL_STAGE01_ONLY_NOT_TOURNAMENT_COMPARABLE",
+      "asked": 88,
+      "closed_evaluated_records": 88,
+      "replay_complete": 86,
+      "replay_blocked": 2,
+      "base_parity_records": 32,
+      "absolute_head_eligible": 56,
+      "conditional_head_eligible": 56,
+      "productive_positive_conditional_uplift": 40,
+      "optimizer_economic_told_trials": 56,
+      "per_template_support": {
+        "BASE": 32,
+        "BASE_TEMPORAL": 8,
+        "BASE_MARKET": 8,
+        "BASE_EVENT": 8,
+        "BASE_TEMPORAL_MARKET": 8,
+        "BASE_TEMPORAL_EVENT": 8,
+        "BASE_MARKET_EVENT": 8,
+        "BASE_TEMPORAL_MARKET_EVENT": 8
+      },
+      "partial_productive_efficiency": 0.45454545454545453,
+      "terminal_absolute_metrics": null,
+      "terminal_conditional_metrics": null
+    },
+    "HYBRID_TPE_PROGRAM": {
+      "asked_in_inflight_checkpoint": 8,
+      "closed_evaluated_records": 0,
+      "economic_told_trials": 0,
+      "inflight_records_excluded": 8,
+      "runtime_projection_statistics": "NOT_DURABLY_PERSISTED_BECAUSE_CHECKPOINT_012_FAILED_BEFORE_ATOMIC_CLOSE",
+      "global_fallback_runtime_result": "NO_CLOSED_RUNTIME_EVIDENCE",
+      "static_no_global_fallback_path_checker": "PASS"
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "asked": 0,
+      "closed_evaluated_records": 0,
+      "eligible_compared_count": 0,
+      "full_eligible_scoring": "NOT_REACHED",
+      "acquisition_evidence": "NOT_REACHED",
+      "snapshot_restore_continuity": "NOT_REACHED"
+    }
+  },
+  "failure": {
+    "phase": "CHECKPOINT_012_FEEDBACK_UPDATE_BEFORE_ATOMIC_CLOSE",
+    "call_path": "Tournament._feedback_update -> bandit.tell -> HybridTPEProgramSearchAdapter.tell -> ProgramSearchObservation.conditional_objective",
+    "exception_type": "TypeError",
+    "exception_message": "float() argument must be a string or a real number, not 'NoneType'",
+    "root_cause": "One evaluated checkpoint_012 observation carried a null matched conditional objective; the feedback adapter attempted float(null) before the checkpoint could be atomically closed.",
+    "traceback_complete": true,
+    "terminal_closure_written": false,
+    "stage1_racing_decision": "NOT_REACHED",
+    "stage2_active_arms": []
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "economic_conclusion": "INCONCLUSIVE_TOURNAMENT_DID_NOT_REACH_ARM_COMPARISON_OR_RACING",
+  "economic_winner": "NONE",
+  "oos_grade": "NONE",
+  "automatic_successor": false,
+  "further_retry_or_recovery": false,
+  "promotion": false,
+  "terminal_status": "TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "outcome_payload_sha256": "47d64803637266bd9b227ee37dd1cd4030cf2d96eb02f6391a999053e7ff0abd"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_checkpoint_recovery_stage01_root_resume_evidence_note_v1",
+  "recorded_date": "2026-08-15",
+  "experiment_date": "2026-08-14",
+  "status": "TERMINAL_INCOMPLETE_FAILURE_EVIDENCE_PRESERVED",
+  "execution_workspace": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_recovery_adaptive_6b428c9_20260814",
+    "head": "6b428c9532934ac4c0c36aaa2b3a44fa07af1ea6",
+    "host": "DESKTOP-77OPJ6F",
+    "clean_after_failure": true
+  },
+  "project_control": {
+    "authority_run_root": "D:\\ChengboRemote\\runtime\\cn_project_control_authority_store\\cn-execution-05ebdc7d9b8defd575b8066b\\b0629b16-0217-4eaf-adab-6ddc03d04abe",
+    "request_payload_sha256": "05ebdc7d9b8defd575b8066bc933535c9b3f0c6f63eb21d13c609ebb56b87db2",
+    "preflight_receipt_sha256": "25e446452575c4afd9a9ef262e9e8d60c5d01451e2ca120f9acf1fc558dff721",
+    "admission_file_sha256": "02320cae52d7052effefe220218f936d886b44253bf524dbe0f86ac55a41307f",
+    "admission_payload_sha256": "6edb219b0077521355ebfba186f073802002cd68064425e007cdc77e02d26c06",
+    "recovery_consumption_file_sha256": "99a162cba5e387d59e7cb627f15f042e488554d709b8d32a3aa7a9b34183859c"
+  },
+  "corrected_recovery_evidence": {
+    "incident_file_sha256": "223c0c42b2b2a4966068a44624916bc2213e679089558bfe1c60943ea742d01a",
+    "incident_payload_sha256": "a118bcf24a6143e764ef618c8b72ffa33a291e3d7d16e69c419b2c487e85a893",
+    "diagnostic_file_sha256": "65ed66db8678553022be000fcd0bf837b062b99672f23dd46fabc22e99db7181",
+    "diagnostic_payload_sha256": "ac908afb540f8dc08724c7249ce17709bd4ce793a2852b0856e8b25fda24a9da",
+    "deployment_file_sha256": "764e56735b5583e86c76ef87d007eb8beb0eb5b77174ece20400318caa6d392d"
+  },
+  "remote_terminal_evidence": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "terminal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_terminal_logs\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e_02320cae52d7",
+    "detached_job_status_sha256": "82e54e05f885d2e15575987962bbe034e714e49ce91f629f31151f3c6467840c",
+    "detached_job_log_sha256": "2808b696b1651e6b7f17c83857f760241e6d25aa3a4255889c77dfeb05871b04",
+    "terminal_receipt_sha256": "0ecd49bc5fe2b19d108fa107df82f52c2d2f9be5dc27709261f798b4a4b04981",
+    "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner_stderr_sha256": "1b22707090e531c5ea2e66eaf9ef15c811aba87baf875eb8380b5b1f0d675df7",
+    "execution_node_cleanliness_sha256": "587dfd1fcab38c314032790818cc305a6ac2431a24ab8670f6bfb9f1aa7a4fd5",
+    "execution_identity_sha256": "4976c297902ed9eeba87516a1b373711223cf6ae6581aab4c5e35919a2a84648",
+    "checkpoint_recovery_binding_file_sha256": "abe066617caa7ef01818301f4e2cbace664a64df74a9caf8be7dddac243fe57f",
+    "checkpoint_recovery_binding_payload_sha256": "22f9e4e03e02a5940708587733cc40d786c1f4a98d40fdd9b5825510a79d324e",
+    "last_closed_checkpoint_manifest_sha256": "05b4569cf1045aa4e009214006bbe62031f5afaf5a138a74406054f38ad41c75"
+  },
+  "independent_audit": {
+    "mode": "READ_ONLY_POST_FAILURE_DURABLE_ARTIFACTS_ONLY",
+    "result": "PASS_INCOMPLETE_FAIL_CLOSED",
+    "financial_source_reads_performed": 0,
+    "closed_checkpoint_count": 11,
+    "closed_record_count": 88,
+    "checkpoint_012_inflight_records_excluded": 8,
+    "restricted_reads_zero": true
+  },
+  "continuation_boundary": {
+    "automatic_successor": false,
+    "further_retry_or_recovery": false,
+    "replacement": false,
+    "validation": false,
+    "forward_b": false,
+    "promotion": false
+  },
+  "outcome_file_sha256": "fb4af99f1733eac1a71e27b86d09174a25946559550565abe9297f6d18e17d46",
+  "independent_audit_file_sha256": "89326f68d7acfd4411e792967e983c265968a7a84239f28e66a4bcb24e1650c4",
+  "evidence_payload_sha256": "96a433d978ea36cda79f4c1396376af4f78bd1f5141d6b1159e864deceddbd37"
+}
