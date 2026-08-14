@@ -1,44 +1,115 @@
 {
   "schema_version": "cn_program_optimizer_tournament_fourth_retry_independent_audit_v1",
   "recorded_date": "2026-08-14",
-  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED_ZERO_EXECUTION",
-  "authorized_identity": {
-    "branch": "feature/a-share-tradability-authority-repair",
-    "repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
-    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
-    "program_space_count": 3616,
-    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
-    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+  "audit_mode": "READ_ONLY_POST_TERMINAL_OUTPUT_ARTIFACTS_ONLY",
+  "audit_result": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "producer_audit_consistent": true,
+  "financial_source_reads_performed_by_audit": 0,
+  "checks": {
+    "execution_sha": {
+      "expected": "517b66eab86a233549b90aeca45ddbef312d37ff",
+      "observed": "517b66eab86a233549b90aeca45ddbef312d37ff",
+      "worktree_clean": true,
+      "result": "PASS"
+    },
+    "frozen_identities": {
+      "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+      "authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
+      "authorization_self_hash_valid": true,
+      "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+      "program_space_count": 3616,
+      "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+      "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813",
+      "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
+      "source_binding_self_hash_valid": true,
+      "result": "PASS"
+    },
+    "pre_admission": {
+      "source_binding_checker": "PASS",
+      "frozen_checker": "PASS",
+      "path_checker": "PASS",
+      "canonical_execution_surface_import_smoke": "PASS",
+      "preflight_result_file_sha256": "eb03fcf87d2f44ed3cecbaedd6b568d2fc8545e8fc5baca9cbfdf364e59a3d0e",
+      "financial_reads": 0,
+      "result": "PASS"
+    },
+    "project_control": {
+      "task_id": "cn-execution-3f334e1283a3bf93a8aba66d",
+      "run_id": "12c77b82-83fc-4806-98e6-379c47014a2a",
+      "request_payload_sha256": "3f334e1283a3bf93a8aba66ddeb03362853ac778b0f52595e34b65037e0ffd8c",
+      "admission_file_sha256": "0da2d1066ed43415e9d76c7d7a2d3032a254569ba46f91ff13a87ae98ad22f2d",
+      "admission_payload_sha256": "a77ace83a5d0bec2f95bc16e5f08d6cd306d3cf9123ca2efb433eba0ea54c3a4",
+      "admission_self_hash_valid": true,
+      "consumption_receipt_count": 1,
+      "consumption_file_sha256": "0dfcdf59af60cae3f79792bf744bd350c47858d6ce83575bdb77c46000cb27ed",
+      "target_identity_match": true,
+      "result": "PASS"
+    },
+    "checkpoint_integrity": {
+      "closed_checkpoint_count": 2,
+      "closed_record_count": 16,
+      "closed_record_ordinals": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "checkpoint_001_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+      "checkpoint_002_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d",
+      "all_checkpoint_artifacts_match_manifests": true,
+      "all_checkpoint_and_record_self_hashes_valid": true,
+      "checkpoint_chain_valid": true,
+      "inflight_checkpoint": "checkpoint_003",
+      "inflight_record_ordinals_excluded": [16, 17, 18, 19, 20, 21, 22, 23],
+      "result": "PASS_INCOMPLETE_CONFIRMED"
+    },
+    "ask_tell_coverage": {
+      "UNIFORM_CONTROL": {
+        "asks": 16,
+        "closed_records": 16,
+        "matched_replay_complete": 15,
+        "replay_blocked": 1,
+        "optimizer_economic_tells": 0,
+        "feedback_reason": "BASE_PARITY_NOT_PROGRAM_OPTIMIZER_ELIGIBLE"
+      },
+      "HYBRID_TPE_PROGRAM": {"asks": 0, "closed_records": 0, "optimizer_economic_tells": 0},
+      "STRUCTURED_SURROGATE_PROGRAM": {"asks": 0, "closed_records": 0, "optimizer_economic_tells": 0},
+      "result": "INCOMPLETE_BASE_PARITY_ONLY"
+    },
+    "tpe_projection_statistics": {
+      "direct_exact_hits": 0,
+      "legal_projections": 0,
+      "global_fallback": 0,
+      "economic_told_trials": 0,
+      "result": "NOT_REACHED"
+    },
+    "surrogate_full_space_comparison": {
+      "eligible_compared_count": 0,
+      "full_eligible_scoring": "NOT_REACHED",
+      "result": "NOT_REACHED"
+    },
+    "racing_and_stage2": {
+      "stage1_racing_decision_exists": false,
+      "stage2_run_exists": false,
+      "terminal_closure_exists": false,
+      "result": "NOT_REACHED"
+    },
+    "restricted_reads": {
+      "scope": "ALL_16_CLOSED_PLUS_8_INFLIGHT_RECORD_ARTIFACTS",
+      "validation_reads": 0,
+      "holdout_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0,
+      "result": "PASS"
+    },
+    "terminal_stop": {
+      "detached_exit_code": 1,
+      "active_target_process_count": 0,
+      "complete_traceback_preserved": true,
+      "exception_type": "RuntimeError",
+      "exception_message": "Phase C runtime memory gate failed",
+      "automatic_successor": false,
+      "fifth_retry": false,
+      "promotion": false,
+      "result": "PASS"
+    }
   },
-  "findings": {
-    "source_binding_checker": "PASS",
-    "frozen_checker": "PASS",
-    "path_checker": "PASS",
-    "execution_surface_import_smoke": "FAIL",
-    "mandatory_fail_closed_applied": true,
-    "project_control_run_created": false,
-    "admission_created": false,
-    "admission_consumed": false,
-    "canonical_wrapper_invoked": false,
-    "app_route_invoked": false,
-    "execution_output_root_created": false,
-    "target_process_present": false,
-    "economic_records": 0,
-    "closed_checkpoints": 0,
-    "restricted_reads": 0,
-    "unauthorized_continuation": false,
-    "promotion": false
-  },
-  "authority_store_observation": {
-    "directory_count": 8,
-    "new_project_control_run_detected": false,
-    "latest_existing_run_directories": [
-      "cn-execution-1b359871011a916578fecd2d",
-      "cn-execution-899c0d536c1217de598db7a5",
-      "cn-execution-fae9f3f17e26128ef3cc3b1d"
-    ]
-  },
-  "audit_conclusion": "The fourth technical retry stopped at the mandatory pre-admission gate. No Project Control identity or admission was created or consumed, no Tournament route ran, no economic record or checkpoint exists, and all restricted-read counters remain zero.",
-  "audit_payload_sha256": "0ef725dc76a536cd06b3d71347aefcbdee1e7f61092c763e11ec9366bcd5e712"
+  "audit_conclusion": "The fourth technical RETRY consumed exactly one target-bound admission, closed two immutable BASE-parity checkpoints containing 16 records, then failed closed at the frozen Phase C memory gate after eight checkpoint_003 records had been written only to inflight. The inflight checkpoint is excluded, Stage 1 racing and Stage 2 were never reached, no optimizer-comparable arm evidence or winner exists, all restricted-read counters are zero, and no continuation or promotion occurred.",
+  "audit_payload_sha256": "02635dfd93903bb0aa2fb077251f53c744f90522d75de16f27805306c3ddf8c7"
 }

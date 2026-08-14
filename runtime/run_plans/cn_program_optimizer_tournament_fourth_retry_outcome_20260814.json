@@ -1,73 +1,179 @@
 {
   "schema_version": "cn_program_optimizer_tournament_fourth_retry_outcome_v1",
   "recorded_date": "2026-08-14",
-  "status": "TOURNAMENT_INCOMPLETE_STOPPED_PRE_ADMISSION",
-  "external_authorization": "AUTHORIZE_ONE_FOURTH_TECHNICAL_RETRY_PROGRAM_OPTIMIZER_TOURNAMENT",
+  "status": "TOURNAMENT_INCOMPLETE_FAIL_CLOSED",
+  "external_authorization": "RESUME_UNCONSUMED_FOURTH_TECHNICAL_RETRY_EXECUTION_ONLY",
   "execution": {
+    "host": "DESKTOP-77OPJ6F",
     "branch": "feature/a-share-tradability-authority-repair",
-    "authorized_repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "execution_host": "DESKTOP-77OPJ6F",
-    "project_control_run_id": "NOT_CREATED",
-    "project_control_admission": "NOT_CREATED",
-    "project_control_admission_payload_sha256": "NOT_CREATED",
-    "target_run_id": "NOT_CREATED",
-    "output_root": "NOT_CREATED",
-    "canonical_wrapper_invoked": false,
-    "app_route_invoked": false,
-    "tournament_invoked": false
+    "repo_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "canonical_wrapper": "scripts/run_cn_program_optimizer_tournament_77o.ps1",
+    "canonical_route": "app.py cn-program-optimizer-tournament-v1",
+    "project_control_task_id": "cn-execution-3f334e1283a3bf93a8aba66d",
+    "project_control_run_id": "12c77b82-83fc-4806-98e6-379c47014a2a",
+    "project_control_request_payload_sha256": "3f334e1283a3bf93a8aba66ddeb03362853ac778b0f52595e34b65037e0ffd8c",
+    "requested_action": "RETRY",
+    "target_run_id": "cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "admission_file_sha256": "0da2d1066ed43415e9d76c7d7a2d3032a254569ba46f91ff13a87ae98ad22f2d",
+    "admission_payload_sha256": "a77ace83a5d0bec2f95bc16e5f08d6cd306d3cf9123ca2efb433eba0ea54c3a4",
+    "admission_consumed_exactly_once": true,
+    "admission_consumption_file_sha256": "0dfcdf59af60cae3f79792bf744bd350c47858d6ce83575bdb77c46000cb27ed",
+    "detached_task_id": "lanjob_20260814_155656_36bd1d",
+    "started_at": "2026-08-14T15:57:02+08:00",
+    "ended_at": "2026-08-14T16:10:32+08:00",
+    "exit_code": 1
   },
-  "frozen_identity": {
-    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+  "frozen_identities": {
+    "tournament_authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "tournament_authorization_file_sha256": "46c8cefffbf9c690dba8038ba522e447ddb6cec7b6c289c8e19716690ce8367f",
     "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
     "program_space_count": 3616,
     "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
-    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94",
-    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813"
-  },
-  "git_preflight": {
-    "local_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "tracking_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "remote_sha": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "worktree_clean": true
+    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813",
+    "source_binding_payload_sha256": "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
   },
   "pre_admission_checks": {
+    "execution_head": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "execution_worktree_clean": true,
     "source_binding_checker": "PASS",
     "frozen_checker": "PASS",
     "path_checker": "PASS",
-    "execution_surface_import_smoke": "FAIL",
-    "failure_type": "ModuleNotFoundError",
-    "failure_detail": "The operator-created temporary smoke script contained a UTF-8 BOM and ran outside the repository, so import app failed before the canonical wrapper path was exercised.",
-    "production_code_defect_claimed": false,
-    "checker_rerun": false,
-    "hard_gate_decision": "STOP_NO_EXECUTION"
+    "canonical_execution_surface_import_smoke": "PASS",
+    "preflight_result_file_sha256": "eb03fcf87d2f44ed3cecbaedd6b568d2fc8545e8fc5baca9cbfdf364e59a3d0e",
+    "financial_reads": 0
   },
-  "runtime_result": {
-    "stage_0_records": 0,
-    "stage_1_records": 0,
-    "stage_2_records": 0,
-    "total_records": 0,
-    "closed_checkpoints": 0,
-    "racing_decision": "NOT_REACHED",
-    "stage_2_active_arms": [],
-    "economic_winner": "INCONCLUSIVE_NO_EXECUTION",
-    "oos_grade": "NONE"
+  "operational_recovery": {
+    "production_bytes_changed": false,
+    "frozen_identities_changed": false,
+    "pre_admission_financial_reads": 0,
+    "attempts": [
+      {
+        "class": "CHECKOUT_EOL_AND_LONG_PATH",
+        "failed_attempts": 2,
+        "resolution": "A third clean 77o checkout used the repository's Windows text normalization plus core.longpaths and exact accepted source-binding working bytes."
+      },
+      {
+        "class": "SSH_AND_TEMPORARY_HELPER_STAGING",
+        "failed_attempts": 5,
+        "reasons": [
+          "Windows SSH command-line length",
+          "non-interactive PATH omitted PortableGit",
+          "request builder wrapper shape",
+          "request builder non-overwrite behavior",
+          "Harness package relative layout"
+        ],
+        "resolution": "The unchanged Harness ran from its original scripts plus agent-control-plane layout on 77o."
+      },
+      {
+        "class": "ADMISSION_MATERIALIZATION_ARGUMENTS",
+        "failed_attempts": 2,
+        "reasons": [
+          "incorrect trust-config pathname",
+          "run-record file hash supplied instead of the canonical Project Control receipt binding hash"
+        ],
+        "resolution": "The third materialization call used the frozen trust config and canonical PREFLIGHT receipt SHA; no admission file existed before that successful call."
+      }
+    ]
+  },
+  "terminal_progress": {
+    "stage01_prefinancial_freeze_status": "PROGRAM_OPTIMIZER_TOURNAMENT_PHASE_FROZEN",
+    "stage01_planned_records": 368,
+    "stage01_planned_checkpoints": 46,
+    "stage01_closed_records": 16,
+    "stage01_closed_checkpoints": 2,
+    "stage01_inflight_records_excluded": 8,
+    "stage01_inflight_checkpoint": "checkpoint_003",
+    "stage1_racing_decision": "NOT_REACHED",
+    "stage2_active_arms": [],
+    "stage2_records": 0,
+    "final_closed_records": 16,
+    "final_closed_checkpoints": 2,
+    "terminal_closure_written": false
+  },
+  "failure": {
+    "phase": "STAGE01_INFLIGHT_CHECKPOINT_003_POST_EVALUATION_MEMORY_GATE_BEFORE_ATOMIC_CLOSE",
+    "exception_type": "RuntimeError",
+    "exception_message": "Phase C runtime memory gate failed",
+    "frozen_minimum_free_memory_bytes": 25769803776,
+    "observed_failure_value_persisted": false,
+    "traceback_complete": true,
+    "stderr_sha256": "711b0f8db3c655dd84a5fa6c7ebea23d013c14c69ffe43eea11af3a4f2065a01",
+    "terminal_receipt_sha256": "ceb94522113a8969ac1431c135e7a2341b251720399d96382341cb46faeefe83"
   },
   "arm_results": {
-    "UNIFORM_CONTROL": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0},
-    "HYBRID_TPE_PROGRAM": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0, "global_fallback": 0},
-    "STRUCTURED_SURROGATE_PROGRAM": {"asked": 0, "evaluated": 0, "admitted": 0, "positive_conditional_uplift": 0, "eligible_compared_count": 0}
+    "UNIFORM_CONTROL": {
+      "asked": 16,
+      "closed_evaluated_records": 16,
+      "matched_full_base_complete": 15,
+      "replay_blocked": 1,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "productive": 4,
+      "optimizer_economic_told_trials": 0,
+      "per_template_support": {"BASE": 16},
+      "absolute_metrics": {
+        "scope": "BASE_PARITY_ONLY_NOT_ARM_COMPARABLE",
+        "admission_rate": 0.0,
+        "primary_return_positive_count": 9,
+        "primary_reward_positive_count": 9,
+        "all_development_subwindows_return_positive_count": 1,
+        "blocker_rate": 0.1875,
+        "mean_primary_return": -0.005334194750015828,
+        "mean_primary_reward": 0.2425321551844904,
+        "mean_one_way_turnover": 0.1840357607207265,
+        "mean_return_per_turnover": 7.700965391985385
+      },
+      "conditional_metrics": null,
+      "search_efficiency": 0.0
+    },
+    "HYBRID_TPE_PROGRAM": {
+      "asked": 0,
+      "closed_evaluated_records": 0,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "per_template_support": {},
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "raw_tpe_asks": 0,
+      "direct_exact_hits": 0,
+      "legal_projections": 0,
+      "duplicate_replacements": 0,
+      "eligibility_projections": 0,
+      "global_fallback": 0,
+      "economic_told_trials": 0,
+      "status": "NOT_REACHED"
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "asked": 0,
+      "closed_evaluated_records": 0,
+      "admitted": 0,
+      "positive_conditional_uplift": 0,
+      "per_template_support": {},
+      "absolute_metrics": null,
+      "conditional_metrics": null,
+      "search_efficiency": null,
+      "eligible_compared_count": 0,
+      "full_eligible_scoring": "NOT_REACHED",
+      "acquisition_evidence": "NOT_REACHED",
+      "snapshot_restore_continuity": "INITIAL_STATE_RESTORED_STAGE01_SMART_ARM_NOT_REACHED"
+    }
   },
   "restricted_reads": {
+    "scope": "ALL_16_CLOSED_PLUS_8_INFLIGHT_RECORD_ARTIFACTS",
     "validation_reads": 0,
     "holdout_reads": 0,
     "historical_2023_reads": 0,
     "forward_b_reads": 0,
     "forward_2026_reads": 0
   },
-  "continuation": {
-    "automatic_successor": false,
-    "further_retry": false,
-    "promotion": false
-  },
-  "outcome_payload_sha256": "c093a8dc438b5e83036e7f98a92b07730fa95637259fb28515a31b572ab2be49"
+  "economic_conclusion": "INCONCLUSIVE_STAGE01_MEMORY_GATE_BEFORE_ARM_COMPARISON",
+  "economic_winner": "NONE",
+  "oos_grade": "NONE",
+  "automatic_successor": false,
+  "fifth_retry": false,
+  "promotion": false,
+  "terminal_status": "TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "outcome_payload_sha256": "134567e086174fe1f3dd5695fc29198b55295a5dd70b46ca5fb34cf7e7223db4"
 }

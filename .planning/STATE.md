@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-Current state: `PROGRAM_OPTIMIZER_FOURTH_TECHNICAL_RETRY_STOPPED_PRE_ADMISSION_ZERO_PROJECT_CONTROL_ZERO_ECONOMIC_RECORDS_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_FOURTH_TECHNICAL_RETRY_INCOMPLETE_MEMORY_GATE_16_CLOSED_RECORDS_2_CLOSED_CHECKPOINTS_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,34 +16,40 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Program optimizer fourth technical RETRY stopped pre-admission; zero execution (2026-08-14)
+### Program optimizer fourth technical RETRY incomplete at memory gate; 16 closed records (2026-08-14)
 
-- The authorized fourth technical `RETRY` was staged on `DESKTOP-77OPJ6F`
-  from exact clean execution SHA
-  `517b66eab86a233549b90aeca45ddbef312d37ff`; local, tracking and remote
-  branch identities matched. The frozen authorization, ask plan, 3,616-entry
-  Program space and exact-source binding remained unchanged. Source-binding,
-  frozen-contract and execution-path checkers passed before any Project
-  Control request.
-- The mandatory execution-surface import smoke failed because the operator-
-  created temporary helper had a UTF-8 BOM and ran outside the repository, so
-  `import app` raised `ModuleNotFoundError`. This does not establish a
-  production-code defect. The external execution contract nevertheless says
-  any failed pre-admission check must stop without a rerun, so the checker was
-  not repeated and no admission was requested.
-- Project Control run, admission, target run and execution output root are all
-  absent. The canonical wrapper and `app.py` route were not invoked; economic
-  records, closed checkpoints, optimizer asks/tells and every restricted read
-  are zero. There is no racing decision, Stage 2 arm or economic winner; OOS
-  remains `NONE`.
-- Outcome, evidence and read-only independent audit are recorded in
-  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_outcome_20260814.json`,
-  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_evidence_note_20260814.json`
-  and
-  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_independent_audit_20260814.json`.
-  The Tournament remains experimental; the formal Hybrid TPE authority and
-  the completed negative Search V2 result are unchanged. No further retry,
-  successor, promotion or authority transition is authorized.
+- The previously unconsumed fourth technical `RETRY` executed on
+  `DESKTOP-77OPJ6F` from exact clean implementation SHA
+  `517b66eab86a233549b90aeca45ddbef312d37ff`. Source-binding, frozen-contract,
+  path and canonical execution-surface import checks all passed. The frozen
+  authorization, maximum ask plan, 3,616-entry Program space and exact-source
+  binding remained unchanged; pre-admission financial reads were zero.
+- Project Control run `12c77b82-83fc-4806-98e6-379c47014a2a` materialized one
+  target-bound `RETRY` admission with payload
+  `a77ace83a5d0bec2f95bc16e5f08d6cd306d3cf9123ca2efb433eba0ea54c3a4`.
+  The canonical 77o wrapper and `app.py cn-program-optimizer-tournament-v1`
+  consumed it exactly once for target run
+  `cn_program_optimizer_tournament_fourth_retry_20260814_517b66e`.
+- Stage 0/1 closed `checkpoint_001` and `checkpoint_002` as immutable batches:
+  16 BASE-parity records under `UNIFORM_CONTROL`, including 15 complete matched
+  replays and one replay-blocked record. These BASE records are not
+  optimizer-comparable observations; optimizer economic tells are zero,
+  Hybrid TPE and Structured Surrogate were not reached, and no winner can be
+  inferred.
+- During `checkpoint_003`, all eight record files were written only under
+  `inflight`, then the frozen 24-GiB Phase C runtime memory gate raised
+  `RuntimeError: Phase C runtime memory gate failed` before atomic close. Those
+  records are excluded. Stage 1 racing, Stage 2 and terminal tournament closure
+  were never reached. All restricted-read counters across the 16 closed and 8
+  inflight record artifacts are zero; OOS remains `NONE`.
+- Read-only independent audit verified the admission identity and exactly-once
+  receipt, every closed artifact hash/self-hash, the checkpoint chain, terminal
+  traceback and zero active target processes. Outcome, evidence and audit are
+  recorded in the three
+  `runtime/run_plans/cn_program_optimizer_tournament_fourth_retry_*_20260814.json`
+  files. No recovery, fifth retry, successor, validation, Forward-B access,
+  promotion or authority transition is authorized. The Tournament remains
+  experimental and the formal Hybrid TPE authority is unchanged.
 
 ### Program optimizer derived execution ask schema repaired; full pre-evaluator rehearsal complete; no fourth retry (2026-08-14)
 

@@ -1,55 +1,73 @@
 {
   "schema_version": "cn_program_optimizer_tournament_fourth_retry_evidence_note_v1",
   "recorded_date": "2026-08-14",
-  "deployment": {
-    "local_bundle_path": "G:\\Chengbo\\runtime\\cn_program_optimizer_fourth_retry_517b66e_20260814.bundle",
-    "bundle_sha256": "abe4601a069ff861a3ecffa25493a1776893e22d97366228ddcd41d361aa97a0",
-    "bundle_size_bytes": 4981,
-    "remote_bundle_path": "D:\\ChengboRemote\\staging\\cn_program_optimizer_fourth_retry_517b66e_20260814.bundle",
-    "remote_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_fourth_retry_517b66e_20260814",
-    "remote_branch": "feature/a-share-tradability-authority-repair",
-    "remote_head": "517b66eab86a233549b90aeca45ddbef312d37ff",
-    "remote_worktree_clean": true,
-    "source_binding_file_sha256": "a1ad2473199403a4d099824141885410e2cdc09e8f1e761cc189ba4ed590b813"
+  "status": "TERMINAL_FAILURE_EVIDENCE_PRESERVED",
+  "execution_workspace": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_fourth_retry_resume_517b66e_20260814_v3",
+    "head": "517b66eab86a233549b90aeca45ddbef312d37ff",
+    "worktree_clean_after_terminal": true,
+    "host": "DESKTOP-77OPJ6F"
   },
-  "preflight_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_preflight_20260814_517b66e",
-  "checker_receipts": {
-    "source_stdout_sha256": "e4b40b84354b54f645323cf7ffaea7bcde6836e11cf3fe1b58bdccc3d3416b3a",
+  "preflight": {
+    "root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_resume_preflight_20260814_517b66e_v3",
+    "result_file_sha256": "eb03fcf87d2f44ed3cecbaedd6b568d2fc8545e8fc5baca9cbfdf364e59a3d0e",
+    "source_stdout_sha256": "9d88c8589b17acc2a0206bdbe00c4ee67ac6a2b356bfc30290299775eefb4338",
     "source_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "freeze_stdout_sha256": "aa77dfb0e3a89d3582eabf61153a460785b3458d9e4923f05354cf05b8628d12",
+    "freeze_stdout_sha256": "f78c3c012671ff143cceb63a4033ea1640709dbc12de5aa39c9b546f96e58a55",
     "freeze_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "path_stdout_sha256": "08ee6404924488457ff971f7c49be012edb139a0635718d615461d6a3f0581e5",
+    "path_stdout_sha256": "79b04d80afe5632723c0c2e05ab1dcfb71cd60440feb8afd32add7843fafc5bb",
     "path_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "import_smoke_script_sha256": "ad86efeea2364728478f0f9faa626f318cb0b6ef9204cc013a8f434ccb4e558b",
-    "import_smoke_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "import_smoke_stderr_sha256": "0cb7a3574e8c1ee183abda5948f6d5cfe4cd92100513cbdef0e59c42dc4806ce"
+    "import_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "import_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
-  "network_observation": {
-    "device": "DESKTOP-77OPJ6F",
-    "address": "192.168.3.93",
-    "uuyc_online": true,
-    "wlan_state": "Up",
-    "sshd_state": "Running",
-    "tcp_22_state": "INTERMITTENT_THEN_RECOVERED",
-    "configuration_changes_applied": false
+  "project_control": {
+    "authority_run_root": "D:\\ChengboRemote\\runtime\\cn_project_control_authority_store\\cn-execution-3f334e1283a3bf93a8aba66d\\12c77b82-83fc-4806-98e6-379c47014a2a",
+    "request_payload_sha256": "3f334e1283a3bf93a8aba66ddeb03362853ac778b0f52595e34b65037e0ffd8c",
+    "preflight_receipt_sha256": "4ccfb394fee2810553ad610c6a2ba99f20cf7456fb09ebbb7540e6aa4cdde0e7",
+    "run_record_sha256": "a30d970cda830884ca7038652604c485274ecbb3811ce32c3672edea0e6ed6cd",
+    "task_spec_sha256": "6f63468b3aeec74fda1fd33c074a407714933584e4b95bef6a2207c8d1c22bd4",
+    "project_profile_sha256": "e82efc631cd7d3950c38f2a503f6c7365862ac1f39a03065ee556a8b67657e14",
+    "execution_context_sha256": "8d1e103bb279520a1541636cbfbc4e873c25607db794a8250f968190734e85d9",
+    "admission_file_sha256": "0da2d1066ed43415e9d76c7d7a2d3032a254569ba46f91ff13a87ae98ad22f2d",
+    "admission_payload_sha256": "a77ace83a5d0bec2f95bc16e5f08d6cd306d3cf9123ca2efb433eba0ea54c3a4"
   },
-  "terminal_audit": {
-    "project_control_authority_store_directory_count": 8,
-    "new_project_control_run": false,
-    "admission_created_or_consumed": false,
-    "target_process_present": false,
-    "execution_output_root_present": false,
-    "economic_records": 0,
-    "closed_checkpoints": 0,
-    "restricted_reads": 0
+  "remote_terminal_evidence": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "terminal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_terminal_logs\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "job_status_sha256": "938dd717815bb2903867cac1d9909109fee82c5b66bdd00d6ed25089ff51f0a9",
+    "job_log_sha256": "b3c1117e703807c6a435f6459d46cd05c077e8f49af7b72923f6358597571c22",
+    "terminal_receipt_sha256": "ceb94522113a8969ac1431c135e7a2341b251720399d96382341cb46faeefe83",
+    "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner_stderr_sha256": "711b0f8db3c655dd84a5fa6c7ebea23d013c14c69ffe43eea11af3a4f2065a01",
+    "execution_identity_sha256": "4976c297902ed9eeba87516a1b373711223cf6ae6581aab4c5e35919a2a84648",
+    "admission_consumption_sha256": "0dfcdf59af60cae3f79792bf744bd350c47858d6ce83575bdb77c46000cb27ed",
+    "stage01_freeze_closure_sha256": "fbdfb4429e11738d7e5e454dc1b6544aa9c324ea0be12f5e400f3dceb924172d",
+    "stage01_freeze_artifact_manifest_sha256": "f1c7a220a901ada28037f8d1a95eb8ccb1c9a3d7d2f57aee7ed53bb0163f14bd",
+    "stage01_initial_bandit_state_sha256": "a8d235cfd637c412e557938a1109dc8317d26bcd340bc073cbd374df7fdfed6d",
+    "stage01_run_contract_sha256": "7bbcb32c38d9cfdccda71c71b70a79e41f8e172579976f79e850c784eda9f584",
+    "checkpoint_001_manifest_sha256": "329cb0b3e3784bcb62db94cd63070401b7fb5f6673a5ae35c2955f65ba1b5cf3",
+    "checkpoint_002_manifest_sha256": "7fc6d499705e60cf2bf33ec9bd684392712a877c7113d0fd293542f6b4d15d3d"
   },
-  "continuation": {
-    "checker_rerun": false,
-    "project_control_request": false,
-    "tournament_execution": false,
+  "independent_audit": {
+    "mode": "READ_ONLY_POST_TERMINAL_OUTPUT_ARTIFACTS_ONLY",
+    "all_checkpoint_artifacts_match_manifests": true,
+    "all_checkpoint_and_record_self_hashes_valid": true,
+    "checkpoint_chain_valid": true,
+    "closed_checkpoints": 2,
+    "closed_records": 16,
+    "inflight_records_excluded": 8,
+    "all_closed_and_inflight_record_restricted_reads_zero": true,
+    "active_target_process_count": 0,
+    "financial_source_reads_performed_by_audit": 0
+  },
+  "continuation_boundary": {
     "automatic_successor": false,
-    "further_retry": false,
+    "fifth_retry": false,
+    "recovery": false,
+    "replacement": false,
+    "validation": false,
+    "forward_b": false,
     "promotion": false
   },
-  "evidence_payload_sha256": "6a4dd2b5c2de6f5a175145791b635c37f626f4aa232042b29ae322209b5be19b"
+  "evidence_payload_sha256": "d0967659aa0e6f4b9373f62a32976380fe0ecdb9694cb66e94d0c5cc64eeb32e"
 }
