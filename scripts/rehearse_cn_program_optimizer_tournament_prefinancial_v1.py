@@ -45,13 +45,25 @@ from scripts import run_cn_program_optimizer_tournament_v1 as tournament_runner
 EXPECTED_INITIAL_STATE_SHA256 = (
     "2ed3b5971622949d5f90633b20b65db5aebacc24f580a0081b15fd93ae0ac1b3"
 )
+EXPECTED_AUTHORIZATION_SHA256 = (
+    "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd"
+)
+EXPECTED_MAXIMUM_ASK_PLAN_SHA256 = (
+    "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b"
+)
+EXPECTED_PROGRAM_SPACE_SHA256 = (
+    "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0"
+)
+EXPECTED_SOURCE_BINDING_SHA256 = (
+    "d9cdcc4459590dc769aa9b1f724530cb0d1d18f2ba999e3d790a4707b07d6d94"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def _first_checkpoint_by_arm(
+def _first_enhanced_checkpoint_by_arm(
     asks: Sequence[Mapping[str, Any]],
 ) -> dict[str, list[dict[str, Any]]]:
     output: dict[str, list[dict[str, Any]]] = {}
@@ -60,6 +72,7 @@ def _first_checkpoint_by_arm(
             int(row["checkpoint_ordinal"])
             for row in asks
             if str(row["generation_arm"]) == arm
+            and str(row["template_id"]) != "BASE"
         )
         output[arm] = [
             dict(row)
@@ -90,6 +103,20 @@ def _arm_rehearsal(
     )
     if len(schedules) != len(asks) or len(decisions) != len(asks):
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_CARDINALITY_DRIFT")
+    if [int(row["template_record_ordinal"]) for row in schedules] != [
+        int(row["template_record_ordinal"]) for row in asks
+    ] or any(
+        row["schedule_record_sha256"]
+        != stable_hash(
+            {
+                key: value
+                for key, value in row.items()
+                if key != "schedule_record_sha256"
+            }
+        )
+        for row in schedules
+    ):
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_SCHEDULE_DRIFT")
     optimizer_asks = [dict(row["optimizer_ask"]) for row in schedules]
     exact_identities = [str(row["exact_identity"]) for row in optimizer_asks]
     legal = {entry.exact_identity for entry in bandit.entries_by_arm[arm]}
@@ -107,12 +134,16 @@ def _arm_rehearsal(
         "decision_count": len(decisions),
         "exact_identity_count": len(set(exact_identities)),
         "all_exact_identities_legal": True,
+        "template_record_ordinals": [
+            int(row["template_record_ordinal"]) for row in schedules
+        ],
     }
     if arm == HYBRID_TPE_PROGRAM:
         projections = [
             dict(dict(row["acquisition"])["projection"])
             for row in optimizer_asks
         ]
+        projection_statistics = bandit.adapters[arm].projection_statistics()
         result.update(
             {
                 "official_optuna_ask": all(
@@ -121,6 +152,14 @@ def _arm_rehearsal(
                     for row in optimizer_asks
                 ),
                 "trial_numbers": [int(row["trial_number"]) for row in optimizer_asks],
+                "raw_exact_identities": [
+                    str(row["raw_exact_identity"]) for row in projections
+                ],
+                "actual_exact_identities": [
+                    str(row["actual_exact_identity"]) for row in projections
+                ],
+                "projection_modes": [str(row["mode"]) for row in projections],
+                "projection_statistics": projection_statistics,
                 "global_fallback_count": sum(
                     bool(row["global_fallback"]) for row in projections
                 ),
@@ -131,11 +170,13 @@ def _arm_rehearsal(
             int(dict(row["acquisition"])["eligible_compared_count"])
             for row in optimizer_asks
         ]
+        eligible_count = len(schedules[0]["optimizer_eligible_exact_identities"])
         result.update(
             {
                 "eligible_compared_counts": compared,
+                "eligible_exact_identity_count": eligible_count,
                 "full_eligible_set_scored": len(set(compared)) == 1
-                and compared[0] >= len(optimizer_asks),
+                and compared[0] == eligible_count,
                 "cold_start": all(
                     bool(dict(row["acquisition"])["cold_start"])
                     for row in optimizer_asks
@@ -162,6 +203,20 @@ def main() -> int:
     ).strip()
     if actual_repo_sha != args.repo_sha:
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_REPO_SHA_DRIFT")
+
+    evaluator_guard_attempts = 0
+
+    def _forbid_evaluator(*_args: Any, **_kwargs: Any) -> None:
+        nonlocal evaluator_guard_attempts
+        evaluator_guard_attempts += 1
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_EVALUATOR_FORBIDDEN")
+
+    engine._initialize_worker = _forbid_evaluator
+    engine._evaluate_record = _forbid_evaluator
+    engine.phase_b._load_context = _forbid_evaluator
+    engine.phase_b._initialize_worker = _forbid_evaluator
+    engine.phase_b._evaluate_record = _forbid_evaluator
+
     source = verify_source_binding_v1(
         args.source_binding, repository_root=ROOT
     )
@@ -228,24 +283,81 @@ def main() -> int:
     adapter = engine.CandidateProgramProposalAdapterV0(registry)
     compiler = engine.ProgramCompilerV1(registry)
     asks = engine._read_jsonl(args.output_root / "phase_c_ask_plan.jsonl")
-    arm_asks = _first_checkpoint_by_arm(asks)
+    checkpoint_zero_asks = [
+        dict(row) for row in asks if int(row["checkpoint_ordinal"]) == 0
+    ]
+    checkpoint_zero_bandit = ProgramOptimizerTournamentV1.restore(
+        initial_state,
+        entries_by_arm=entries_by_arm,
+        expected_campaign_id=str(initial_state["campaign_id"]),
+    )
+    checkpoint_zero = _arm_rehearsal(
+        arm=UNIFORM_CONTROL,
+        asks=checkpoint_zero_asks,
+        catalog=catalog,
+        bandit=checkpoint_zero_bandit,
+        components_by_id=components_by_id,
+        adapter=adapter,
+        compiler=compiler,
+    )
+    arm_asks = _first_enhanced_checkpoint_by_arm(asks)
     arm_rehearsals = {
         arm: _arm_rehearsal(
             arm=arm,
             asks=arm_asks[arm],
             catalog=catalog,
-            bandit=restored,
+            bandit=ProgramOptimizerTournamentV1.restore(
+                initial_state,
+                entries_by_arm=entries_by_arm,
+                expected_campaign_id=str(initial_state["campaign_id"]),
+            ),
             components_by_id=components_by_id,
             adapter=adapter,
             compiler=compiler,
         )
         for arm in PROGRAM_OPTIMIZER_ARMS
     }
-    if arm_rehearsals[UNIFORM_CONTROL]["checkpoint_ordinal"] != 0:
+    if (
+        checkpoint_zero["checkpoint_ordinal"] != 0
+        or checkpoint_zero["template_id"] != "BASE"
+        or checkpoint_zero["schedule_count"] != 8
+    ):
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_FIRST_CHECKPOINT_DRIFT")
+    if any(
+        row["template_id"] == "BASE" or row["schedule_count"] != 8
+        for row in arm_rehearsals.values()
+    ):
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_ENHANCED_ARM_DRIFT")
+    if arm_rehearsals[HYBRID_TPE_PROGRAM]["global_fallback_count"] != 0:
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_GLOBAL_FALLBACK")
     authorization = authorization_payload_v1()
     maximum_ask_plan_sha256 = stable_hash(list(build_maximum_ask_plan_v1()))
     source_payload = dict(source["payload"])
+    if (
+        str(authorization["authorization_payload_sha256"])
+        != EXPECTED_AUTHORIZATION_SHA256
+        or maximum_ask_plan_sha256 != EXPECTED_MAXIMUM_ASK_PLAN_SHA256
+        or len(source["program_entries"]) != 3616
+        or str(source["program_space_sha256"]) != EXPECTED_PROGRAM_SPACE_SHA256
+        or str(source_payload["source_binding_payload_sha256"])
+        != EXPECTED_SOURCE_BINDING_SHA256
+    ):
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_FROZEN_IDENTITY_DRIFT")
+    optimizer_economic_observations = int(contract["development_observation_count"])
+    restricted_reads = {
+        "validation": int(closure["validation_reads"]),
+        "holdout": int(closure["holdout_reads"]),
+        "historical_2023": int(closure["historical_2023_reads"]),
+        "forward_b": int(closure["forward_b_reads"]),
+        "forward_2026": int(closure["forward_2026_reads"]),
+    }
+    if (
+        evaluator_guard_attempts
+        or optimizer_economic_observations
+        or bool(closure["financial_evaluation_executed"])
+        or any(restricted_reads.values())
+    ):
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_READ_BOUNDARY_DRIFT")
     result = {
         "status": "EXECUTION_BOUNDARY_REHEARSAL_COMPLETE",
         "repo_sha": actual_repo_sha,
@@ -286,20 +398,16 @@ def main() -> int:
         ),
         "stage01_ask_count": int(closure["main_record_count"]),
         "catalog_preflight_sha256": str(catalog_report["catalog_preflight_sha256"]),
-        "first_checkpoint_schedule_instantiated": True,
+        "checkpoint_zero_rehearsal": checkpoint_zero,
         "arm_rehearsals": arm_rehearsals,
-        "optimizer_economic_observations": int(
-            contract["development_observation_count"]
-        ),
+        "optimizer_economic_observations": optimizer_economic_observations,
         "financial_evaluation_executed": bool(
             closure["financial_evaluation_executed"]
         ),
-        "validation_reads": int(closure["validation_reads"]),
-        "holdout_reads": int(closure["holdout_reads"]),
-        "historical_2023_reads": int(closure["historical_2023_reads"]),
-        "forward_b_reads": int(closure["forward_b_reads"]),
-        "forward_2026_reads": int(closure["forward_2026_reads"]),
-        "market_price_rows": 0,
+        "evaluator_guard": "INSTALLED_AND_NOT_TRIGGERED",
+        "evaluator_guard_attempts": evaluator_guard_attempts,
+        "market_price_rows_read": 0,
+        "restricted_reads": restricted_reads,
         "project_control": "NOT_REQUESTED",
         "project_control_admission": "NOT_REQUESTED",
         "app_high_cost_route": "NOT_CALLED",

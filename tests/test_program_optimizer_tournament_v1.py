@@ -444,6 +444,9 @@ def test_frozen_plan_has_three_arms_uniform_support_and_no_runtime_authority() -
     asks = build_maximum_ask_plan_v1()
     authorization = authorization_payload_v1()
     assert len(asks) == MAXIMUM_TOTAL_RECORDS
+    assert freeze.stable_hash(list(asks)) == (
+        "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b"
+    )
     assert authorization["status"] == AUTHORIZATION_STATUS
     assert authorization["execution_authorized"] is True
     assert authorization["tournament_status"] == "FROZEN_NOT_RUN"
@@ -483,23 +486,77 @@ def test_tournament_shared_space_snapshot_restore_and_real_tpe_trial() -> None:
     assert all(row["optimizer_ask_identity"] for row in asked)
 
 
-def test_staged_racing_plans_are_checkpoint_stratified_and_keep_uniform() -> None:
+def test_stage01_execution_asks_derive_phase_local_template_ordinals() -> None:
     stage01 = stage01_asks_v1()
-    stage2 = stage2_asks_v1(
-        (UNIFORM_CONTROL, STRUCTURED_SURROGATE_PROGRAM)
-    )
     assert len(stage01) == 368
-    assert len(stage2) == 112
-    for rows in (stage01, stage2):
-        assert len(rows) % 8 == 0
-        for start in range(0, len(rows), 8):
-            checkpoint = rows[start : start + 8]
-            assert len({row["optimizer_arm"] for row in checkpoint}) == 1
-            assert len({row["template_id"] for row in checkpoint}) == 1
-    assert {row["optimizer_arm"] for row in stage2} == {
-        UNIFORM_CONTROL,
-        STRUCTURED_SURROGATE_PROGRAM,
-    }
+    assert len(stage01) // 8 == 46
+    frozen_source = [
+        row for row in build_maximum_ask_plan_v1() if int(row["stage"]) <= 1
+    ]
+    assert [row["template_stage_ordinal"] for row in stage01] == [
+        row["template_stage_ordinal"] for row in frozen_source
+    ]
+    assert all(
+        row["ask_record_sha256"]
+        == freeze.stable_hash(
+            {key: value for key, value in row.items() if key != "ask_record_sha256"}
+        )
+        for row in stage01
+    )
+    for template_id in {str(row["template_id"]) for row in stage01}:
+        ordinals = [
+            int(row["template_record_ordinal"])
+            for row in stage01
+            if str(row["template_id"]) == template_id
+        ]
+        expected_count = 32 if template_id == "BASE" else 48
+        assert ordinals == list(range(expected_count))
+    for start in range(0, len(stage01), 8):
+        checkpoint = stage01[start : start + 8]
+        assert len({row["optimizer_arm"] for row in checkpoint}) == 1
+        assert len({row["template_id"] for row in checkpoint}) == 1
+
+
+@pytest.mark.parametrize(
+    "active_arms",
+    (
+        (UNIFORM_CONTROL,),
+        (UNIFORM_CONTROL, HYBRID_TPE_PROGRAM),
+        (UNIFORM_CONTROL, STRUCTURED_SURROGATE_PROGRAM),
+        PROGRAM_OPTIMIZER_ARMS,
+    ),
+)
+def test_stage2_execution_asks_derive_contiguous_phase_local_template_ordinals(
+    active_arms,
+) -> None:
+    stage2 = stage2_asks_v1(active_arms)
+    frozen_source = [
+        row
+        for row in build_maximum_ask_plan_v1()
+        if int(row["stage"]) == 2 and str(row["optimizer_arm"]) in active_arms
+    ]
+    assert [row["template_stage_ordinal"] for row in stage2] == [
+        row["template_stage_ordinal"] for row in frozen_source
+    ]
+    assert all("template_record_ordinal" in row for row in stage2)
+    assert all(
+        row["ask_record_sha256"]
+        == freeze.stable_hash(
+            {key: value for key, value in row.items() if key != "ask_record_sha256"}
+        )
+        for row in stage2
+    )
+    for template_id in {str(row["template_id"]) for row in stage2}:
+        ordinals = [
+            int(row["template_record_ordinal"])
+            for row in stage2
+            if str(row["template_id"]) == template_id
+        ]
+        assert ordinals == list(range(len(ordinals)))
+    for start in range(0, len(stage2), 8):
+        checkpoint = stage2[start : start + 8]
+        assert len({row["optimizer_arm"] for row in checkpoint}) == 1
+        assert len({row["template_id"] for row in checkpoint}) == 1
 
 
 def _feedback(arm: str, *, admitted: int, productive: int) -> list[dict]:

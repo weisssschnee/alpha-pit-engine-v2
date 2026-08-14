@@ -435,11 +435,15 @@ def _optimizer_config() -> tuple[dict[str, Any], dict[str, Any]]:
 
 def _renumber(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     output = []
+    template_counter: dict[str, int] = {}
     for ordinal, source in enumerate(rows):
         row = dict(source)
         row.pop("ask_record_sha256", None)
+        template_id = str(row["template_id"])
         row["main_record_ordinal"] = ordinal
         row["checkpoint_ordinal"] = ordinal // RECORDS_PER_CHECKPOINT
+        row["template_record_ordinal"] = template_counter.get(template_id, 0)
+        template_counter[template_id] = row["template_record_ordinal"] + 1
         row["generation_arm"] = str(row["optimizer_arm"])
         row["canary_profile"] = CAMPAIGN_PROFILE
         row["ask_record_sha256"] = stable_hash(row)
