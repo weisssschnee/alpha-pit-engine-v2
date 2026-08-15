@@ -1,0 +1,60 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_execution_evidence_note_v1",
+  "status": "COMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "old_invalid_branch": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_fourth_retry_20260814_517b66e",
+    "retained_unchanged": true,
+    "diagnostic_path": "D:\\ChengboRemote\\staging\\cn_program_optimizer_batch_diversity_20260815\\old_46_checkpoint_batch_diversity_diagnostic.json",
+    "diagnostic_file_sha256": "0b9508d06328ff4bc5b8e805f7569a09f4b0307c01ebba3a4a0fd91e04a4fc04",
+    "diagnostic_payload_sha256": "7022cda6bb074ad2b320eb095d7713f4711c4607c915d2c097bdbcb321a1f9ce",
+    "earliest_sequential_divergence": "checkpoint_005 ordinal_35 BASE_TEMPORAL UNIFORM_CONTROL",
+    "earliest_capacity_violation": "checkpoint_044 ordinal_345 BASE_TEMPORAL_EVENT STRUCTURED_SURROGATE_PROGRAM"
+  },
+  "repair_evidence": {
+    "base_sha": "d794c4ba50cfc4c82aaf48ff2a38dc9280dff5b2",
+    "implementation_sha": "fe7df622810e76819c4998b43d1eb5794960c29e",
+    "execution_sha": "11c5d08e32535916aa0326920b14e9cc3ea058ff",
+    "focused_tests_passed": 76,
+    "prefinancial_rehearsal_file_sha256": "e2b10f0db8382b7892027eca488ca4f0ea32bd211fbacab94443aa2ffbd08335",
+    "prefinancial_rehearsal_payload_sha256": "2f928ab449f700c95101ea81be2783a1281e0c80cff7fc5521bbfc3aaa8a66bb",
+    "prefinancial_rehearsal_audit_payload_sha256": "4cba8b08062be2153df38654f16d09ca84b4744c5d8acc0e4bb012dd6bd5d80a"
+  },
+  "execution_identity": {
+    "host": "DESKTOP-77OPJ6F",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_program_optimizer_batch_feasibility_11c5d08_20260815",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_batch_feasibility_retry_20260815_11c5d08",
+    "scheduled_job": "lanjob_20260815_130500_batchfeas11c5",
+    "ended_at": "2026-08-15T16:06:01+08:00",
+    "exit_code": 0,
+    "project_control_task_id": "cn-execution-e896cdf396c08b119746e111",
+    "project_control_run_id": "2e9eb1c7-0749-49b8-a484-979afcff11d4",
+    "project_control_admission_payload_sha256": "4e214cfecec96ae6302dab8decf45a44fe46ce32ff0b054c2bcb8709ad85841b",
+    "project_control_consumption_count": 1
+  },
+  "producer_closure": {
+    "root_file_sha256": "e259c8b8cebeab8194eef6e991caa784eb27295c3d4cb769c5a2c25a4a0c3122",
+    "root_payload_sha256": "378db3e512ee88296b0a872f36d2d612f6a5e421a2dd54a8ba985baeabe791ef",
+    "stage01_file_sha256": "af8d6f95e0d9acc83d913632ede1094aee29fa3452667b6837f21a64f91ac7a9",
+    "stage01_payload_sha256": "2546ba7e38cf6f6f39fefe21bc74e44e320b6cca19793ea608b36baf17f0509a",
+    "racing_decision_sha256": "bff5553c4192f42eab411789cf413e1be9e1338e8bb25999a83b448e81add0a0",
+    "stage02_file_sha256": "9785c4791e31bb3ae9b729327c779ce46ca81eb49633831fa6a1364bd7cbdff7",
+    "stage02_payload_sha256": "6a4975988a74abc0db816e93628272ca6597164e64ee283af12b428696707fea"
+  },
+  "independent_audit": {
+    "path": "runtime/run_plans/cn_program_optimizer_tournament_batch_feasibility_retry_independent_audit_20260815.json",
+    "file_sha256": "4a061a65fa4f0cc9a7b4b15b27cf5684ff7119f9e1f1c322481f8de558389889",
+    "payload_sha256": "db377a07c906079780c9bbb7b87d619357de301a9a7f0fa05bc0a196db21f212",
+    "status": "PASS",
+    "producer_agreement": true
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "automatic_successor": false,
+  "promotion": false,
+  "evidence_payload_sha256": "23e3ec52f406c98ac827768afb41dd8444e33baa2ae6568aa48ecce27a8cb87c"
+}

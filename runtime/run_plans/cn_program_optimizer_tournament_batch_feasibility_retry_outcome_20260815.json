@@ -1,0 +1,206 @@
+{
+  "schema_version": "cn_program_optimizer_tournament_outcome_v1",
+  "status": "CN_PROGRAM_OPTIMIZER_TOURNAMENT_COMPLETE",
+  "terminal_state": "TOURNAMENT_COMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "execution_host": "DESKTOP-77OPJ6F",
+  "execution_output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_batch_feasibility_retry_20260815_11c5d08",
+  "execution_repo_sha": "11c5d08e32535916aa0326920b14e9cc3ea058ff",
+  "implementation_lineage": {
+    "repair_base_sha": "d794c4ba50cfc4c82aaf48ff2a38dc9280dff5b2",
+    "batch_feasibility_implementation_sha": "fe7df622810e76819c4998b43d1eb5794960c29e",
+    "execution_sha": "11c5d08e32535916aa0326920b14e9cc3ea058ff"
+  },
+  "frozen_identity": {
+    "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
+    "maximum_ask_plan_sha256": "eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b",
+    "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "program_space_count": 3616,
+    "maximum_records": 536
+  },
+  "project_control": {
+    "task_id": "cn-execution-e896cdf396c08b119746e111",
+    "run_id": "2e9eb1c7-0749-49b8-a484-979afcff11d4",
+    "target_run_id": "cn_program_optimizer_tournament_batch_feasibility_retry_20260815_11c5d08",
+    "action": "RETRY",
+    "admission_file_sha256": "9617b1925e4e66126fe1b894caa47d70b04b7824e34e7dabb63580ea764d3c67",
+    "admission_payload_sha256": "4e214cfecec96ae6302dab8decf45a44fe46ce32ff0b054c2bcb8709ad85841b",
+    "consumption_count": 1
+  },
+  "execution_cardinality": {
+    "records": 536,
+    "checkpoints": 67,
+    "stage01_records": 368,
+    "stage01_checkpoints": 46,
+    "stage02_records": 168,
+    "stage02_checkpoints": 21
+  },
+  "stage01_racing": {
+    "decision_sha256": "bff5553c4192f42eab411789cf413e1be9e1338e8bb25999a83b448e81add0a0",
+    "HYBRID_TPE_PROGRAM": {
+      "evaluated": 112,
+      "admitted": 69,
+      "productive_positive_uplift": 46,
+      "admission_rate": 0.6160714285714286,
+      "search_efficiency": 0.4107142857142857,
+      "support_met": true,
+      "futile": false
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "evaluated": 112,
+      "admitted": 66,
+      "productive_positive_uplift": 36,
+      "admission_rate": 0.5892857142857143,
+      "search_efficiency": 0.32142857142857145,
+      "support_met": true,
+      "futile": false
+    },
+    "UNIFORM_CONTROL": {
+      "evaluated": 112,
+      "admitted": 66,
+      "productive_positive_uplift": 43,
+      "admission_rate": 0.5892857142857143,
+      "search_efficiency": 0.38392857142857145,
+      "stage2_floor": true
+    },
+    "stage2_active_arms": [
+      "UNIFORM_CONTROL",
+      "HYBRID_TPE_PROGRAM",
+      "STRUCTURED_SURROGATE_PROGRAM"
+    ]
+  },
+  "final_arm_metrics": {
+    "UNIFORM_CONTROL": {
+      "asked": 168,
+      "evaluated": 168,
+      "admitted": 102,
+      "positive_conditional_uplift": 65,
+      "search_efficiency": 0.3869047619047619,
+      "absolute": {
+        "admission_rate": 0.6071428571428571,
+        "primary_return_positive_rate": 0.6726190476190477,
+        "primary_reward_positive_rate": 0.7321428571428571,
+        "stable_two_of_three_rate": 0.6964285714285714,
+        "blocker_rate": 0.39285714285714285,
+        "median_return_per_turnover": 0.6880803442053023
+      },
+      "conditional_admitted_only": {
+        "matched_return_increment_mean": 0.18473000375014195,
+        "matched_return_increment_median": 0.15022447036546216,
+        "matched_reward_increment_mean": 1.0860507339073453,
+        "matched_reward_increment_median": 1.0815399161375234,
+        "cross_window_consistency_mean": 0.5947712418300654,
+        "robust_median_window_return_increment_mean": 0.06052002004104832,
+        "lower_tail_window_return_increment_mean": -0.19438806881544915,
+        "template_breadth_with_productive_uplift": 7
+      }
+    },
+    "HYBRID_TPE_PROGRAM": {
+      "asked": 168,
+      "evaluated": 168,
+      "admitted": 103,
+      "positive_conditional_uplift": 67,
+      "search_efficiency": 0.39880952380952384,
+      "absolute": {
+        "admission_rate": 0.6130952380952381,
+        "primary_return_positive_rate": 0.6428571428571429,
+        "primary_reward_positive_rate": 0.7261904761904762,
+        "stable_two_of_three_rate": 0.7142857142857143,
+        "blocker_rate": 0.3869047619047619,
+        "median_return_per_turnover": 0.75606115829
+      },
+      "conditional_admitted_only": {
+        "matched_return_increment_mean": 0.19730382091945098,
+        "matched_return_increment_median": 0.1425816837816909,
+        "matched_reward_increment_mean": 1.1665469535553834,
+        "matched_reward_increment_median": 1.0615481715471058,
+        "cross_window_consistency_mean": 0.5889967637540453,
+        "robust_median_window_return_increment_mean": 0.06059381982835879,
+        "lower_tail_window_return_increment_mean": -0.2048430255103598,
+        "template_breadth_with_productive_uplift": 7
+      }
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "asked": 168,
+      "evaluated": 168,
+      "admitted": 111,
+      "positive_conditional_uplift": 64,
+      "search_efficiency": 0.38095238095238093,
+      "absolute": {
+        "admission_rate": 0.6607142857142857,
+        "primary_return_positive_rate": 0.6904761904761905,
+        "primary_reward_positive_rate": 0.7261904761904762,
+        "stable_two_of_three_rate": 0.7083333333333334,
+        "blocker_rate": 0.3392857142857143,
+        "median_return_per_turnover": 0.7866897391104444
+      },
+      "conditional_admitted_only": {
+        "matched_return_increment_mean": 0.15804078219642184,
+        "matched_return_increment_median": 0.15010199803620672,
+        "matched_reward_increment_mean": 1.0032819933396395,
+        "matched_reward_increment_median": 1.1981244677887666,
+        "cross_window_consistency_mean": 0.5075075075075075,
+        "robust_median_window_return_increment_mean": 0.040094291349952245,
+        "lower_tail_window_return_increment_mean": -0.1777545963735066,
+        "template_breadth_with_productive_uplift": 6
+      }
+    }
+  },
+  "optimizer_runtime_evidence": {
+    "HYBRID_TPE_PROGRAM": {
+      "raw_tpe_asks": 168,
+      "direct_exact_hits": 126,
+      "legal_projections": 42,
+      "duplicate_replacements": 7,
+      "eligibility_projections": 35,
+      "global_fallback": 0,
+      "actual_economic_told_trials": 168,
+      "projection_rate": 0.25
+    },
+    "STRUCTURED_SURROGATE_PROGRAM": {
+      "full_eligible_scoring": true,
+      "eligible_compared_count_min": 448,
+      "eligible_compared_count_max": 496,
+      "cold_start_asks": 24,
+      "modeled_acquisition_asks": 144,
+      "terminal_snapshot_restore_exact": true
+    },
+    "UNIFORM_CONTROL": {
+      "economic_feedback_retained": 0
+    }
+  },
+  "resource_summary": {
+    "stage01_wall_seconds": 6580.082888499921,
+    "stage02_wall_seconds": 2850.8085773001076,
+    "stage01_records_per_hour": 201.3348497957931,
+    "stage02_records_per_hour": 212.15033686084354,
+    "maximum_effective_workers_per_checkpoint": 8,
+    "maximum_process_tree_rss_bytes": 14980472832,
+    "minimum_commit_headroom_bytes": 142392733696,
+    "orphan_worker_pids": []
+  },
+  "restricted_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "economic_result": {
+    "winner": "HYBRID_TPE_PROGRAM",
+    "non_winners": [
+      "UNIFORM_CONTROL",
+      "STRUCTURED_SURROGATE_PROGRAM"
+    ],
+    "basis": "highest admitted plus positive conditional-uplift per evaluated Program",
+    "oos_grade": "NONE"
+  },
+  "independent_audit": {
+    "status": "PASS",
+    "path": "runtime/run_plans/cn_program_optimizer_tournament_batch_feasibility_retry_independent_audit_20260815.json",
+    "file_sha256": "4a061a65fa4f0cc9a7b4b15b27cf5684ff7119f9e1f1c322481f8de558389889",
+    "payload_sha256": "db377a07c906079780c9bbb7b87d619357de301a9a7f0fa05bc0a196db21f212"
+  },
+  "automatic_successor": false,
+  "promotion": false,
+  "outcome_payload_sha256": "fbd4689a165d086918020a5ef7b77ecd450112d2081c5ce4610c73b247041abd"
+}

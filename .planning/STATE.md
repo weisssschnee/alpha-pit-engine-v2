@@ -2,7 +2,7 @@
 
 Updated: 2026-08-15
 
-Current state: `PROGRAM_OPTIMIZER_HEAD_B_OBJECTIVE_AND_GENERIC_APPEND_ONLY_RECOVERY_IMPLEMENTED_CHECKPOINT012_ISOLATED_RECOMPUTE_CLOSED_96_RECORDS_CHECKPOINT013_PREVIEW_COMMIT_DRIFT_FAIL_CLOSED_8_INFLIGHT_EXCLUDED_NO_RACING_NO_STAGE2_RESTRICTED_READS_ZERO_NO_FURTHER_RETRY_OR_RECOVERY_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_BATCH_FEASIBILITY_RETRY_COMPLETE_536_RECORDS_67_CHECKPOINTS_ALL_ARMS_STAGE2_HYBRID_TPE_SEARCH_EFFICIENCY_WINNER_RESTRICTED_READS_ZERO_AUDIT_PASS_NO_SUCCESSOR_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_STOPPED_FOR_EXTERNAL_REVIEW`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,47 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Program optimizer frozen prospective tournament complete; Hybrid TPE leads development search efficiency (2026-08-15)
+
+- The single authorized batch-feasibility technical `RETRY` completed on
+  `DESKTOP-77OPJ6F` at clean execution SHA
+  `11c5d08e32535916aa0326920b14e9cc3ea058ff`. Project Control task
+  `cn-execution-e896cdf396c08b119746e111`, run
+  `2e9eb1c7-0749-49b8-a484-979afcff11d4`, consumed its target-bound admission
+  exactly once; no additional retry, recovery, replacement or successor was
+  created.
+- Frozen identities remained exact: authorization payload
+  `99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd`,
+  maximum ask plan
+  `eb66b7b374f7e2550db5bf5d7cee98fd66a8526dabadfbda14af1ecd6cf3dc4b`,
+  and 3,616-Program space
+  `86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0`.
+  Stage 0/1 closed 368 records / 46 checkpoints; frozen Wilson racing kept all
+  three arms non-futile; Stage 2 closed 168 records / 21 checkpoints, for the
+  authorized maximum 536 records / 67 checkpoints.
+- Frozen search efficiency (`admitted + positive conditional uplift` per
+  evaluated Program) was `65/168 = 0.3869047619` for Uniform,
+  `67/168 = 0.3988095238` for Hybrid TPE, and
+  `64/168 = 0.3809523810` for Structured Surrogate. Hybrid TPE is therefore
+  the development-only economic winner of this tournament; OOS grade remains
+  `NONE` and this result does not replace the formal Hybrid TPE plus
+  Availability authority.
+- Hybrid TPE recorded 168 raw asks, 126 direct exact hits, 42 legal
+  projections, 7 duplicate replacements, 35 eligibility projections, 168
+  economic tells, a 0.25 projection rate and zero global fallback. Structured
+  Surrogate recorded 24 cold-start and 144 modeled asks, compared the full
+  eligible universe on every modeled ask (448..496 Programs), and passed exact
+  snapshot/restore continuity. Uniform absorbed zero optimizer economic
+  feedback.
+- Independent read-only replay verified every checkpoint link, artifact hash,
+  optimizer ask/tell state, racing decision, terminal closure and Project
+  Control consumption. Validation, holdout, spent-2023, Forward-B and
+  Forward-2026 reads were all zero. Canonical outcome, independent audit and
+  evidence note are the three
+  `cn_program_optimizer_tournament_batch_feasibility_retry_*_20260815.json`
+  files. The audit result is `PASS`; automatic successor and promotion are
+  false, and execution is stopped for external review.
 
 ### Program optimizer Head-B repair closed checkpoint 012; checkpoint 013 failed closed on preview/commit drift (2026-08-15)
 
