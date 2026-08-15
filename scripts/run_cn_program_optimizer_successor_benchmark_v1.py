@@ -282,13 +282,19 @@ def _load_authority(
     ordered_slots = tuple(entries[0].genes)
     catalog_by_exact: dict[str, dict[str, Any]] = {}
     group_by_exact: dict[str, str] = {}
+    catalog_source_rows = 0
+    catalog_alias_collapses = 0
     for template_id in sorted(catalog):
         for source in catalog[template_id]:
+            catalog_source_rows += 1
             exact = normalized_program_gene_identity_v1(
                 dict(source["program_genes"]), ordered_slots=ordered_slots
             )
             if exact in catalog_by_exact:
-                raise RuntimeError("SUCCESSOR_CATALOG_EXACT_DUPLICATE")
+                catalog_alias_collapses += 1
+            # Mirror the V1 exact-space builder: normalized Program identity is
+            # authoritative and later source aliases deterministically replace
+            # earlier aliases in catalog order.
             catalog_by_exact[exact] = dict(source)
             group_by_exact[exact] = str(source["base_component_id"])
     if set(catalog_by_exact) != entry_ids:
@@ -322,6 +328,8 @@ def _load_authority(
             "source_run_contract_file_sha256": SOURCE_RUN_CONTRACT_FILE_SHA256,
             "source_run_contract_payload_sha256": SOURCE_RUN_CONTRACT_PAYLOAD_SHA256,
             "program_space_sha256": program_space_hash,
+            "catalog_source_row_count": catalog_source_rows,
+            "catalog_exact_alias_collapse_count": catalog_alias_collapses,
             "execution_contract_sha256": SOURCE_EXECUTION_CONTRACT_SHA256,
             "registry_sha256": SOURCE_REGISTRY_SHA256,
             "node_capacity_sha256": SOURCE_NODE_CAPACITY_SHA256,
@@ -348,6 +356,8 @@ def _load_authority(
         "contract": contract,
         "catalog": catalog,
         "catalog_report": catalog_report,
+        "catalog_source_row_count": catalog_source_rows,
+        "catalog_exact_alias_collapse_count": catalog_alias_collapses,
         "catalog_by_exact": catalog_by_exact,
         "group_by_exact": group_by_exact,
         "entries": entries,
@@ -713,6 +723,10 @@ def _run_prefinancial(
     return {
         "status": "SUCCESSOR_PREFINANCIAL_READY",
         "program_space_count": len(authority["entries"]),
+        "catalog_source_row_count": authority["catalog_source_row_count"],
+        "catalog_exact_alias_collapse_count": (
+            authority["catalog_exact_alias_collapse_count"]
+        ),
         "prior_exact_count": len(authority["prior_ids"]),
         "base_program_count": FROZEN_BASE_PROGRAM_COUNT,
         "enhanced_program_count": FROZEN_ENHANCED_PROGRAM_COUNT,
