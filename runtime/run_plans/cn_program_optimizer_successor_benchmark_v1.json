@@ -1,0 +1,139 @@
+{
+  "ask_level_evidence_required": true,
+  "authorization_payload_sha256": "14cf87ae3c33c1820cde48fc99e390adbed265f0f29184f7acd4cb2a7322d6fc",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "automatic_successor_authorized": false,
+  "base_diversity": {
+    "maximum_variants_per_base_component_id_per_template": 4,
+    "minimum_distinct_base_component_ids_per_template": 16
+  },
+  "campaign_id": "CN_PROGRAM_OPTIMIZER_SUCCESSOR_BENCHMARK_V1",
+  "campaign_profile": "cn_program_optimizer_successor_benchmark_v1",
+  "d1": {
+    "bootstrap_observations": 28,
+    "bootstrap_selector": "COMMON_TPE_PLUS_COMMON_UNIFORM_FLOOR",
+    "handoff_before_observation": 29,
+    "post_handoff_selector": "STRUCTURED_SURROGATE_FULL_ACQUISITION"
+  },
+  "d2": {
+    "bootstrap_observations": 28,
+    "feasibility_head_only": true,
+    "gate_fraction": 0.5,
+    "gate_outside_action": "NON_ECONOMIC_TPE_FAIL_AND_REASK",
+    "gate_ranking": "P_ADMISSION_DESC_EXACT_IDENTITY_ASC",
+    "global_fallback": false,
+    "max_gate_raw_attempts_per_economic_ask": 32,
+    "ordinary_projection_after_gate": true
+  },
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "logical_design": {
+    "adaptive_budget_reallocation": false,
+    "bootstrap_waves": 4,
+    "cross_policy_virtual_depletion": false,
+    "logical_records_per_policy": 140,
+    "physical_exact_deduplication": true,
+    "policies_per_wave": 4,
+    "policy_specific_optimized_denominator": 84,
+    "post_bootstrap_denominator": 112,
+    "racing": false,
+    "result_visibility_before_logical_selection_freeze": false,
+    "template_serialization": "DETERMINISTIC_ONE_POSITION_ROTATION_PER_WAVE",
+    "templates_per_wave": 7,
+    "total_logical_records": 560,
+    "uniform_floor_waves": [
+      0,
+      4,
+      7,
+      10,
+      13
+    ],
+    "wave_semantics": "BLIND_SELECT_ALL_POLICIES_AND_TEMPLATES_THEN_PHYSICAL_UNION_THEN_TELL",
+    "waves": 20
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "policies": [
+    "UNIFORM",
+    "TPE_CONTROL",
+    "TPE_TO_SURROGATE",
+    "FEASIBILITY_GATED_TPE"
+  ],
+  "prior_freeze_summary": {
+    "per_arm": {
+      "HYBRID_TPE_PROGRAM": 168,
+      "STRUCTURED_SURROGATE_PROGRAM": 168,
+      "UNIFORM_CONTROL": 168
+    },
+    "per_template": {
+      "BASE_EVENT": 72,
+      "BASE_MARKET": 72,
+      "BASE_MARKET_EVENT": 72,
+      "BASE_TEMPORAL": 72,
+      "BASE_TEMPORAL_EVENT": 72,
+      "BASE_TEMPORAL_MARKET": 72,
+      "BASE_TEMPORAL_MARKET_EVENT": 72
+    }
+  },
+  "program_space": {
+    "base_count": 32,
+    "enhanced_count": 3584,
+    "full_count": 3616,
+    "full_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "prior_exact_count": 504,
+    "prior_exact_identities_sha256": "b85b216dce6476cb1601ab37b5e2503847450b8f7f18ed285eb217262b642424",
+    "prior_freeze_payload_sha256": "55814a1d20de121f6548f458f1c80c9e667b2df4df1ddca715f88f750c8ce406",
+    "prior_freeze_relative_path": "runtime/run_plans/cn_program_optimizer_successor_v1_prior_exact_freeze_20260816.json",
+    "prior_results_imported_as_optimizer_feedback": false,
+    "prospective_enhanced_available_count": 3080
+  },
+  "project_control_route_id": "cn-program-optimizer-successor-benchmark-v1",
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_optimizer_successor_benchmark_authorization_v1",
+  "seeds": {
+    "FEASIBILITY_GATED_TPE": 826019,
+    "TPE_CONTROL": 826013,
+    "TPE_TO_SURROGATE": 826017,
+    "UNIFORM": 826001
+  },
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\run_plans\\cn_alpha_node_resource_profiles_v1.json",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure": "PROGRAM_OPTIMIZER_TOURNAMENT_PREFINANCIAL_FREEZE_COMPLETE.json",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_freeze_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_batch_feasibility_retry_20260815_11c5d08\\prefinancial_freeze_stage01",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282",
+    "train_field_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88\\prefinancial_freeze\\materialized_session_sidecar",
+    "train_price_root": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\train_session_fields"
+  },
+  "status": "PROGRAM_OPTIMIZER_SUCCESSOR_BENCHMARK_FROZEN_NOT_RUN",
+  "surrogate_config": {
+    "candidate_pool_size": 256,
+    "cold_start_asks": 24,
+    "exploration_beta": 1.0,
+    "min_samples_leaf": 2,
+    "n_estimators": 256
+  },
+  "tpe_config": {
+    "n_ei_candidates": 64,
+    "n_startup_trials": 24
+  }
+}

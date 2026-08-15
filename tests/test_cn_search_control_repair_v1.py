@@ -1027,6 +1027,7 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         "cn-fixed-stratified-production-v0",
         "cn-joint-program-search-v2-canary",
         "cn-program-optimizer-tournament-v1",
+        "cn-program-optimizer-successor-benchmark-v1",
     }
     assert repo_app.HIGH_COST_ROUTE_ACTIONS["phase3cf-large-search-prelaunch"] == {
         ACTION_FREEZE

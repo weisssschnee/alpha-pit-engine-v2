@@ -481,6 +481,7 @@ def test_d2_gate_rejects_outside_top_half_without_projection(monkeypatch: pytest
         "economic_ask_count": 0,
         "ordinary_projection_count": 0,
     }
+    gate_rejections = []
     # Restrict the helper to one template for this unit-level gate test.
     old_templates = benchmark.template_ids
     benchmark.template_ids = (TEMPLATES[0],)
@@ -491,6 +492,7 @@ def test_d2_gate_rejects_outside_top_half_without_projection(monkeypatch: pytest
             wave_index=benchmark.wave_index,
             feasibility_model=model,
             gate_statistics=stats,
+            gate_rejections=gate_rejections,
         )
     finally:
         benchmark.template_ids = old_templates
@@ -501,6 +503,11 @@ def test_d2_gate_rejects_outside_top_half_without_projection(monkeypatch: pytest
     assert stats["ordinary_projection_count"] == 0
     rejected = list(adapter._tpe_internal_observations.values())
     assert any(row["outcome_class"] == "SURROGATE_FEASIBILITY_REJECTED" for row in rejected)
+    assert len(gate_rejections) == 1
+    assert gate_rejections[0]["outcome_class"] == "SURROGATE_FEASIBILITY_REJECTED"
+    assert gate_rejections[0]["raw_exact_identity"]
+    assert gate_rejections[0]["trial_number"] >= 0
+    assert 0.0 <= gate_rejections[0]["feasibility_probability"] <= 1.0
 
 
 def test_d2_in_gate_base_conflict_uses_ordinary_projection(
@@ -555,6 +562,7 @@ def test_d2_in_gate_base_conflict_uses_ordinary_projection(
         "economic_ask_count": 0,
         "ordinary_projection_count": 0,
     }
+    gate_rejections = []
     try:
         asks = benchmark._ask_tpe_wave(
             adapter=adapter,
@@ -562,6 +570,7 @@ def test_d2_in_gate_base_conflict_uses_ordinary_projection(
             wave_index=benchmark.wave_index,
             feasibility_model=model,
             gate_statistics=stats,
+            gate_rejections=gate_rejections,
         )
     finally:
         benchmark.template_ids = old_templates
@@ -634,6 +643,7 @@ def test_d2_attempt_exhaustion_is_prefinancial_and_does_not_mutate_durable_state
                     "economic_ask_count": 0,
                     "ordinary_projection_count": 0,
                 },
+                gate_rejections=[],
             )
     finally:
         benchmark.template_ids = old_templates

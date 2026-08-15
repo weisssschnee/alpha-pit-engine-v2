@@ -128,6 +128,7 @@ class PreparedSuccessorWaveV1:
     asks: tuple[LogicalProgramAskV1, ...]
     working: dict[str, Any]
     gate_statistics: dict[str, int]
+    gate_rejections: tuple[dict[str, Any], ...]
 
     @property
     def physical_exact_identities(self) -> tuple[str, ...]:
@@ -188,10 +189,15 @@ class ProgramOptimizerSuccessorBenchmarkV1:
         self._entry_by_exact = {
             entry.exact_identity: entry for entry in self.entries
         }
+        self._available_entries = tuple(
+            entry
+            for entry in self.entries
+            if entry.exact_identity not in set(self.prior_exact_identities)
+        )
         self._entries_by_template = {
             template_id: tuple(
                 entry
-                for entry in self.entries
+                for entry in self._available_entries
                 if str(entry.genes["program_template_id"]) == template_id
             )
             for template_id in self.template_ids
@@ -213,21 +219,21 @@ class ProgramOptimizerSuccessorBenchmarkV1:
         }
         self._completed_rows = {policy: [] for policy in POLICIES}
 
-        initial_tpe = self._new_tpe(seen=self.prior_exact_identities)
+        initial_tpe = self._new_tpe(seen=())
         self._tpe_snapshots = {
             POLICY_TPE: initial_tpe.snapshot(),
             POLICY_D2: initial_tpe.snapshot(),
         }
         self._d1_surrogate_snapshot = self._new_surrogate(
-            seed=self.d1_surrogate_seed, seen=self.prior_exact_identities
+            seed=self.d1_surrogate_seed, seen=()
         ).snapshot()
         self._d2_surrogate_snapshot = self._new_surrogate(
-            seed=self.d2_surrogate_seed, seen=self.prior_exact_identities
+            seed=self.d2_surrogate_seed, seen=()
         ).snapshot()
 
     def _new_tpe(self, *, seen: Sequence[str]) -> HybridTPEProgramSearchAdapter:
         return HybridTPEProgramSearchAdapter(
-            entries=self.entries,
+            entries=self._available_entries,
             seen_exact_identities=tuple(seen),
             seed=self.tpe_seed,
             **self.tpe_config,
@@ -238,8 +244,8 @@ class ProgramOptimizerSuccessorBenchmarkV1:
     ) -> HybridTPEProgramSearchAdapter:
         return HybridTPEProgramSearchAdapter.restore(
             snapshot=dict(snapshot),
-            entries=self.entries,
-            seen_exact_identities=self.prior_exact_identities,
+            entries=self._available_entries,
+            seen_exact_identities=(),
             seed=self.tpe_seed,
             **self.tpe_config,
         )
@@ -248,7 +254,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
         self, *, seed: int, seen: Sequence[str]
     ) -> StructuredSurrogateProgramSearchAdapter:
         return StructuredSurrogateProgramSearchAdapter(
-            entries=self.entries,
+            entries=self._available_entries,
             seen_exact_identities=tuple(seen),
             seed=int(seed),
             **self.surrogate_config,
@@ -269,12 +275,10 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                 for row in self._completed_rows[policy][: 7 * BOOTSTRAP_WAVES]
             )
         )
-        historical_seen = tuple(
-            dict.fromkeys((*self.prior_exact_identities, *bootstrap_seen))
-        )
+        historical_seen = tuple(dict.fromkeys(bootstrap_seen))
         return StructuredSurrogateProgramSearchAdapter.restore(
             snapshot=dict(snapshot),
-            entries=self.entries,
+            entries=self._available_entries,
             seen_exact_identities=historical_seen,
             seed=int(seed),
             **self.surrogate_config,
@@ -573,6 +577,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
         wave_index: int,
         feasibility_model: StructuredSurrogateProgramSearchAdapter | None,
         gate_statistics: dict[str, int],
+        gate_rejections: list[dict[str, Any]],
     ) -> list[LogicalProgramAskV1]:
         asks = []
         checkpoint_id = f"successor_wave_{wave_index:03d}"
@@ -581,6 +586,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
             self._wave_template_order(wave_index)
         ):
             gate_set: frozenset[str] | None = None
+            gate_probability_by_identity: dict[str, float] = {}
             if feasibility_model is not None:
                 gate_candidates = self._available_for_policy(
                     policy=policy,
@@ -601,6 +607,10 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                         item[0].exact_identity,
                     ),
                 )
+                gate_probability_by_identity = {
+                    row[0].exact_identity: float(row[1]["feasibility_probability"])
+                    for row in ranked
+                }
                 gate_set = frozenset(
                     row[0].exact_identity for row in ranked[: math.ceil(len(ranked) / 2)]
                 )
@@ -626,8 +636,26 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                 source_entry = adapter._entry_by_exact.get(raw_exact)
                 if source_entry is None:
                     raise RuntimeError("SUCCESSOR_TPE_RAW_EXACT_OUTSIDE_SPACE")
-                if gate_set is not None and raw_exact not in gate_set:
+                if (
+                    gate_set is not None
+                    and raw_exact in gate_probability_by_identity
+                    and raw_exact not in gate_set
+                ):
                     gate_statistics["gate_rejection_count"] += 1
+                    gate_rejections.append(
+                        {
+                            "wave_index": int(wave_index),
+                            "template_id": str(template),
+                            "raw_attempt_ordinal": int(attempts - 1),
+                            "proposal_id": str(native["proposal_id"]),
+                            "trial_number": int(native["trial_number"]),
+                            "raw_exact_identity": raw_exact,
+                            "feasibility_probability": float(
+                                gate_probability_by_identity[raw_exact]
+                            ),
+                            "outcome_class": "SURROGATE_FEASIBILITY_REJECTED",
+                        }
+                    )
                     adapter._tpe_internal_observations[str(native["proposal_id"])] = {
                         "proposal_id": str(native["proposal_id"]),
                         "outcome_class": "SURROGATE_FEASIBILITY_REJECTED",
@@ -800,6 +828,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
             "economic_ask_count": 0,
             "ordinary_projection_count": 0,
         }
+        gate_rejections: list[dict[str, Any]] = []
         asks: list[LogicalProgramAskV1] = []
         for template in self.template_ids:
             exact = self._uniform_schedule[wave][template]
@@ -872,6 +901,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                 wave_index=wave,
                 feasibility_model=None,
                 gate_statistics=gate_stats,
+                gate_rejections=gate_rejections,
             )
             asks.extend(common)
             for source in common:
@@ -894,6 +924,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                     wave_index=wave,
                     feasibility_model=None,
                     gate_statistics=gate_stats,
+                    gate_rejections=gate_rejections,
                 )
             )
             asks.extend(
@@ -910,6 +941,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                     wave_index=wave,
                     feasibility_model=d2_surrogate,
                     gate_statistics=gate_stats,
+                    gate_rejections=gate_rejections,
                 )
             )
         if len(asks) != len(POLICIES) * len(self.template_ids):
@@ -919,6 +951,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
             asks=tuple(asks),
             working=working,
             gate_statistics=gate_stats,
+            gate_rejections=tuple(copy.deepcopy(gate_rejections)),
         )
 
     def commit_wave(
@@ -991,10 +1024,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                 seed=self.d1_surrogate_seed,
                 seen=tuple(
                     dict.fromkeys(
-                        (
-                            *self.prior_exact_identities,
-                            *(row["exact_identity"] for row in completed[POLICY_D1]),
-                        )
+                        row["exact_identity"] for row in completed[POLICY_D1]
                     )
                 ),
             )
@@ -1002,10 +1032,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                 seed=self.d2_surrogate_seed,
                 seen=tuple(
                     dict.fromkeys(
-                        (
-                            *self.prior_exact_identities,
-                            *(row["exact_identity"] for row in completed[POLICY_D2]),
-                        )
+                        row["exact_identity"] for row in completed[POLICY_D2]
                     )
                 ),
             )
@@ -1080,6 +1107,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
             "logical_ask_count": len(prepared.asks),
             "physical_unique_count": len(expected),
             "overlap_map": prepared.overlap_map(),
+            "gate_rejections": copy.deepcopy(list(prepared.gate_rejections)),
             "gate_statistics": {
                 **prepared.gate_statistics,
                 "gate_acceptance_rate": (
@@ -1126,7 +1154,7 @@ class ProgramOptimizerSuccessorBenchmarkV1:
                     POLICY_SPECIFIC_OPTIMIZED_EFFICIENCY_DENOMINATOR
                 ),
             },
-            "financial_evaluation_executed": False,
+            "financial_evaluation_owned_by_runner": True,
             "validation_reads": 0,
             "holdout_reads": 0,
             "historical_2023_reads": 0,
