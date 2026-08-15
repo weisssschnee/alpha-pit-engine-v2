@@ -485,3 +485,33 @@ def test_real_space_rehearsal_covers_every_arm_by_enhanced_template() -> None:
     for arm_rows in matrix.values():
         assert set(arm_rows) == set(phase_c_runner.ENHANCED_TEMPLATE_ORDER)
         assert all(len(checkpoint) == 8 for checkpoint in arm_rows.values())
+
+
+def test_rehearsal_tpe_statistics_come_from_projection_receipts() -> None:
+    projections = [
+        {
+            "raw_legality": "LEGAL_FROZEN_EXACT",
+            "availability_replacement_applied": False,
+            "availability_replacement_reason": None,
+            "same_bucket": True,
+            "intent_preserved": True,
+            "global_fallback": False,
+        },
+        {
+            "raw_legality": "LEGAL_FROZEN_EXACT",
+            "availability_replacement_applied": True,
+            "availability_replacement_reason": (
+                "BASE_GROUP_DIVERSITY_OR_CAPACITY_CONSTRAINT"
+            ),
+            "same_bucket": False,
+            "intent_preserved": True,
+            "global_fallback": False,
+        },
+    ]
+    stats = rehearsal._tpe_projection_statistics_v1(projections)
+    assert stats["tpe_raw_ask_count"] == 2
+    assert stats["direct_exact_hit_count"] == 1
+    assert stats["legal_projection_count"] == 1
+    assert stats["batch_group_constraint_replacement_count"] == 1
+    assert stats["global_fallback_count"] == 0
+    assert stats["legal_projection_rate"] == 0.5

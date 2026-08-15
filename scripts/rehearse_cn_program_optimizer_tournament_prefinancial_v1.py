@@ -84,6 +84,71 @@ def _first_enhanced_checkpoint_by_arm_template(
     return output
 
 
+def _tpe_projection_statistics_v1(
+    projections: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    raw_count = len(projections)
+    projected = [
+        row
+        for row in projections
+        if bool(row["availability_replacement_applied"])
+    ]
+    same_bucket = sum(bool(row["same_bucket"]) for row in projected)
+    intent_preserved = sum(bool(row["intent_preserved"]) for row in projections)
+    global_fallback = sum(bool(row["global_fallback"]) for row in projections)
+    stats = {
+        "tpe_raw_ask_count": raw_count,
+        "raw_legal_exact_count": sum(
+            str(row["raw_legality"]) == "LEGAL_FROZEN_EXACT"
+            for row in projections
+        ),
+        "direct_exact_hit_count": raw_count - len(projected),
+        "legal_projection_count": len(projected),
+        "availability_replacement_count": len(projected),
+        "duplicate_replacement_count": sum(
+            str(row["availability_replacement_reason"]) == "EXACT_ALREADY_SEEN"
+            for row in projected
+        ),
+        "eligibility_projection_count": sum(
+            str(row["availability_replacement_reason"]) != "EXACT_ALREADY_SEEN"
+            for row in projected
+        ),
+        "batch_group_constraint_replacement_count": sum(
+            str(row["availability_replacement_reason"])
+            == "BASE_GROUP_DIVERSITY_OR_CAPACITY_CONSTRAINT"
+            for row in projected
+        ),
+        "same_bucket_projection_count": same_bucket,
+        "cross_bucket_projection_count": len(projected) - same_bucket,
+        "reask_count": 0,
+        "global_fallback_count": global_fallback,
+        "intent_preserved_count": intent_preserved,
+        "actual_evaluated_ask_count": raw_count,
+    }
+    stats.update(
+        {
+            "direct_exact_hit_rate": (
+                stats["direct_exact_hit_count"] / raw_count if raw_count else 0.0
+            ),
+            "legal_projection_rate": (
+                stats["legal_projection_count"] / raw_count if raw_count else 0.0
+            ),
+            "same_bucket_projection_rate": (
+                stats["same_bucket_projection_count"] / raw_count
+                if raw_count
+                else 0.0
+            ),
+            "intent_preserved_rate": (
+                intent_preserved / raw_count if raw_count else 0.0
+            ),
+            "global_fallback_rate": (
+                global_fallback / raw_count if raw_count else 0.0
+            ),
+        }
+    )
+    return stats
+
+
 def _arm_rehearsal(
     *,
     arm: str,
@@ -160,7 +225,7 @@ def _arm_rehearsal(
             dict(dict(row["acquisition"])["projection"])
             for row in optimizer_asks
         ]
-        projection_statistics = bandit.adapters[arm].projection_statistics()
+        projection_statistics = _tpe_projection_statistics_v1(projections)
         result.update(
             {
                 "official_optuna_ask": all(
@@ -441,6 +506,15 @@ def main() -> int:
         "promotion": False,
         "automatic_successor": False,
     }
+    result["rehearsal_payload_sha256"] = stable_hash(result)
+    report_path = (
+        args.output_root
+        / "PROGRAM_OPTIMIZER_PREFINANCIAL_REHEARSAL_COMPLETE.json"
+    )
+    report_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
 
