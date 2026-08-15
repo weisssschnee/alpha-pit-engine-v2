@@ -1306,6 +1306,51 @@ def _verify_base_parity_root_gate(
     return parity_pass, replay_blocked
 
 
+def _base_diversity_summary(
+    schedules: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    summary: dict[str, dict[str, Any]] = {}
+    for template_id in ENHANCED_TEMPLATE_ORDER:
+        counts = Counter(
+            str(row["components"]["base"]["component_id"])
+            for row in schedules
+            if str(row["template_id"]) == template_id
+        )
+        distinct = len(counts)
+        maximum_reuse = max(counts.values(), default=0)
+        summary[template_id] = {
+            "distinct_base_component_id_count": distinct,
+            "maximum_programs_sharing_one_base": maximum_reuse,
+            "minimum_distinct_groups": MIN_BASE_IDENTITIES_PER_TEMPLATE,
+            "maximum_per_group": MAX_VARIANTS_PER_BASE_PER_TEMPLATE,
+            "minimum_distinct_groups_pass": (
+                distinct >= MIN_BASE_IDENTITIES_PER_TEMPLATE
+            ),
+            "maximum_per_group_pass": (
+                maximum_reuse <= MAX_VARIANTS_PER_BASE_PER_TEMPLATE
+            ),
+        }
+    return summary
+
+
+def _verify_base_diversity_root_gate(
+    schedules: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    summary = _base_diversity_summary(schedules)
+    failures = {
+        template_id: row
+        for template_id, row in summary.items()
+        if not row["minimum_distinct_groups_pass"]
+        or not row["maximum_per_group_pass"]
+    }
+    if failures:
+        raise RuntimeError(
+            "Phase C base-diversity gate failed: "
+            + json.dumps(failures, sort_keys=True)
+        )
+    return summary
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(
@@ -2316,19 +2361,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if len(records) != EXPECTED_RECORDS or len(schedules) != EXPECTED_RECORDS:
         raise RuntimeError("Phase C root result count drift")
     base_parity_pass, base_parity_blocked = _verify_base_parity_root_gate(records)
-    for template_id in ENHANCED_TEMPLATE_ORDER:
-        template_schedules = [
-            row for row in schedules if str(row["template_id"]) == template_id
-        ]
-        counts = Counter(
-            str(row["components"]["base"]["component_id"])
-            for row in template_schedules
-        )
-        if (
-            len(counts) < MIN_BASE_IDENTITIES_PER_TEMPLATE
-            or max(counts.values()) > MAX_VARIANTS_PER_BASE_PER_TEMPLATE
-        ):
-            raise RuntimeError(f"Phase C base-diversity gate failed: {template_id}")
+    base_diversity = _verify_base_diversity_root_gate(schedules)
 
     result_path = _write_jsonl(root / "phase_c_record_results.jsonl", records)
     schedule_path = _write_jsonl(root / "phase_c_selected_schedule.jsonl", schedules)
@@ -2588,6 +2621,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "checkpoint_count": len(checkpoint_manifests),
             "base_parity_pass": base_parity_pass,
             "base_parity_blocked": base_parity_blocked,
+            "base_diversity": base_diversity,
             "enhanced_replay_complete": sum(
                 str(row["record_kind"]) == "ENHANCED_FULL_BASE_PAIR"
                 and phase_b._record_replay_complete(row)

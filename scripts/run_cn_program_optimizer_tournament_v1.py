@@ -39,6 +39,7 @@ from our_system_phase2.services.program_search_optimizer_v1 import (
     UNIFORM_CONTROL,
     normalized_program_gene_identity_v1,
     program_availability_entries_v1,
+    verify_program_batch_group_selection_v1,
 )
 from our_system_phase2.services.search_v2_admission import (
     AbsoluteEconomicAdmission,
@@ -187,23 +188,7 @@ def _eligible_entries(
             template_id == "BASE"
             or str(entry["program_id"]) not in state["program_ids"]
         )
-        and int(state["base_counts"][(template_id, str(entry["base_component_id"]))])
-        < engine.MAX_VARIANTS_PER_BASE_PER_TEMPLATE
     ]
-    existing_bases = {
-        base_id
-        for (candidate_template, base_id), count in state["base_counts"].items()
-        if candidate_template == template_id and int(count) > 0
-    }
-    if (
-        template_id != "BASE"
-        and len(existing_bases) < engine.MIN_BASE_IDENTITIES_PER_TEMPLATE
-    ):
-        candidates = [
-            entry
-            for entry in candidates
-            if str(entry["base_component_id"]) not in existing_bases
-        ]
     if not candidates:
         raise RuntimeError(
             f"Program tournament selection supply exhausted: {template_id}"
@@ -215,6 +200,33 @@ def _eligible_entries(
         for entry in candidates
     ]
     return candidates, eligible
+
+
+def _batch_group_constraint(
+    *,
+    template_id: str,
+    candidates: Sequence[Mapping[str, Any]],
+    state: Mapping[str, Any],
+    program_gene_slots: Sequence[str],
+) -> dict[str, Any]:
+    return {
+        "schema_version": "cn_program_batch_group_constraint_v1",
+        "group_by_exact_identity": {
+            normalized_program_gene_identity_v1(
+                dict(entry["program_genes"]), ordered_slots=program_gene_slots
+            ): str(entry["base_component_id"])
+            for entry in candidates
+        },
+        "current_group_counts": {
+            str(base_id): int(count)
+            for (candidate_template, base_id), count in state["base_counts"].items()
+            if str(candidate_template) == template_id and int(count) > 0
+        },
+        "minimum_distinct_groups": (
+            0 if template_id == "BASE" else engine.MIN_BASE_IDENTITIES_PER_TEMPLATE
+        ),
+        "maximum_per_group": engine.MAX_VARIANTS_PER_BASE_PER_TEMPLATE,
+    }
 
 
 def _select_checkpoint(
@@ -240,6 +252,12 @@ def _select_checkpoint(
         state=state,
         program_gene_slots=program_gene_slots,
     )
+    constraint = _batch_group_constraint(
+        template_id=template_id,
+        candidates=candidates,
+        state=state,
+        program_gene_slots=program_gene_slots,
+    )
     checkpoint_id = f"checkpoint_{int(asks[0]['checkpoint_ordinal']) + 1:03d}"
     optimizer_asks = bandit.ask(
         arm=arm,
@@ -247,6 +265,7 @@ def _select_checkpoint(
         count=len(asks),
         required_program_template_id=template_id,
         eligible_exact_identities=eligible,
+        batch_group_constraint=constraint,
     )
     if len(optimizer_asks) != len(asks):
         raise RuntimeError("PROGRAM_TOURNAMENT_CHECKPOINT_SUPPLY_EXHAUSTED")
@@ -256,13 +275,15 @@ def _select_checkpoint(
         ): entry
         for entry in candidates
     }
-    schedules: list[dict[str, Any]] = []
-    decisions: list[dict[str, Any]] = []
-    for index, (ask, optimizer_ask) in enumerate(
-        zip(asks, optimizer_asks, strict=True)
-    ):
-        exact_identity = str(optimizer_ask["exact_identity"])
-        selected = dict(by_exact[exact_identity])
+    selected_batch = [
+        dict(by_exact[str(optimizer_ask["exact_identity"])])
+        for optimizer_ask in optimizer_asks
+    ]
+    feasibility_receipt = verify_program_batch_group_selection_v1(
+        [str(row["exact_identity"]) for row in optimizer_asks],
+        constraint=constraint,
+    )
+    for selected in selected_batch:
         state["program_ids"].add(str(selected["program_id"]))
         state["reservoir_ids"].add(
             str(selected["reservoir"]["reservoir_record_sha256"])
@@ -270,6 +291,18 @@ def _select_checkpoint(
         state["base_counts"][(template_id, str(selected["base_component_id"]))] += 1
         state["component_ids"].update(selected["component_ids"])
         state["combination_ids"].add(str(selected["combination_id"]))
+    actual_group_counts = {
+        str(base_id): int(count)
+        for (candidate_template, base_id), count in state["base_counts"].items()
+        if str(candidate_template) == template_id and int(count) > 0
+    }
+    if actual_group_counts != feasibility_receipt["group_counts_after"]:
+        raise RuntimeError("PROGRAM_TOURNAMENT_BATCH_GROUP_STATE_DRIFT")
+    schedules: list[dict[str, Any]] = []
+    decisions: list[dict[str, Any]] = []
+    for index, (ask, optimizer_ask, selected) in enumerate(
+        zip(asks, optimizer_asks, selected_batch, strict=True)
+    ):
         decision = engine._self_hashed(
             {
                 "schema_version": "cn_program_optimizer_tournament_selection_v1",
@@ -286,6 +319,9 @@ def _select_checkpoint(
                 "program_id": str(selected["program_id"]),
                 "base_component_id": str(selected["base_component_id"]),
                 "optimizer_ask": dict(optimizer_ask),
+                "batch_group_feasibility_receipt": (
+                    feasibility_receipt if index == 0 else {}
+                ),
                 "bandit_state_before_selection_sha256": str(
                     bandit.snapshot()["bandit_state_sha256"]
                 ),
@@ -306,6 +342,9 @@ def _select_checkpoint(
         schedule["optimizer_ask"] = dict(optimizer_ask)
         schedule["optimizer_eligible_exact_identities"] = (
             list(eligible) if index == 0 else []
+        )
+        schedule["optimizer_batch_group_constraint"] = (
+            constraint if index == 0 else {}
         )
         schedule["schedule_record_sha256"] = stable_hash(
             {key: value for key, value in schedule.items() if key != "schedule_record_sha256"}
@@ -383,12 +422,16 @@ def _feedback_update(
         checkpoint_id = str(schedules[0]["optimizer_ask"]["checkpoint_id"])
         template_id = str(schedules[0]["template_id"])
         eligible = list(schedules[0]["optimizer_eligible_exact_identities"])
+        batch_group_constraint = dict(
+            schedules[0]["optimizer_batch_group_constraint"]
+        )
         bandit.commit_ask(
             arm=arm,
             checkpoint_id=checkpoint_id,
             count=len(observations),
             required_program_template_id=template_id,
             eligible_exact_identities=eligible,
+            batch_group_constraint=batch_group_constraint,
             expected_asks=[row["optimizer_ask"] for row in schedules],
         )
         tell_receipt = bandit.tell(arm=arm, observations=observations)
@@ -402,6 +445,9 @@ def _feedback_update(
             eligible_exact_identities=[
                 *schedules[0]["optimizer_eligible_exact_identities"]
             ],
+            batch_group_constraint=dict(
+                schedules[0]["optimizer_batch_group_constraint"]
+            ),
             expected_asks=[row["optimizer_ask"] for row in schedules],
         )
         tell_receipt = bandit.discard_nonlearning_pending(
@@ -547,6 +593,9 @@ def _verify_freeze(root: Path) -> dict[str, Any]:
     engine.CHECKPOINT_COUNT = int(contract["checkpoint_count"])
     engine.MIN_BASE_IDENTITIES_PER_TEMPLATE = int(
         contract["minimum_base_identities_per_template"]
+    )
+    engine.MAX_VARIANTS_PER_BASE_PER_TEMPLATE = int(
+        contract["maximum_variants_per_base_per_template"]
     )
     return closure
 

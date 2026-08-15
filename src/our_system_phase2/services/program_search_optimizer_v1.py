@@ -72,6 +72,152 @@ PROGRAM_CLOCK_KEYS = (
 )
 
 
+def normalize_program_batch_group_constraint_v1(
+    constraint: Mapping[str, Any] | None,
+) -> dict[str, Any] | None:
+    if constraint is None:
+        return None
+    if str(constraint.get("schema_version")) != "cn_program_batch_group_constraint_v1":
+        raise ValueError("PROGRAM_BATCH_GROUP_CONSTRAINT_SCHEMA_DRIFT")
+    raw_counts = dict(constraint["current_group_counts"])
+    if any(int(count) < 0 for count in raw_counts.values()):
+        raise ValueError("PROGRAM_BATCH_GROUP_CONSTRAINT_INVALID")
+    normalized = {
+        "schema_version": "cn_program_batch_group_constraint_v1",
+        "group_by_exact_identity": {
+            str(exact_identity): str(group_identity)
+            for exact_identity, group_identity in dict(
+                constraint["group_by_exact_identity"]
+            ).items()
+        },
+        "current_group_counts": {
+            str(group_identity): int(count)
+            for group_identity, count in raw_counts.items()
+            if int(count) > 0
+        },
+        "minimum_distinct_groups": int(constraint["minimum_distinct_groups"]),
+        "maximum_per_group": int(constraint["maximum_per_group"]),
+    }
+    if normalized["minimum_distinct_groups"] < 0 or normalized["maximum_per_group"] < 1:
+        raise ValueError("PROGRAM_BATCH_GROUP_CONSTRAINT_INVALID")
+    if any(
+        count > normalized["maximum_per_group"]
+        for count in normalized["current_group_counts"].values()
+    ):
+        raise ValueError("PROGRAM_BATCH_GROUP_CONSTRAINT_PREEXISTING_CAPACITY_DRIFT")
+    return normalized
+
+
+def _batch_group_counts(
+    constraint: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any] | None, dict[str, int]]:
+    normalized = normalize_program_batch_group_constraint_v1(constraint)
+    return (
+        normalized,
+        {} if normalized is None else dict(normalized["current_group_counts"]),
+    )
+
+
+def _batch_group_feasible(
+    exact_identity: str,
+    *,
+    constraint: Mapping[str, Any] | None,
+    group_counts: Mapping[str, int],
+) -> bool:
+    if constraint is None:
+        return True
+    group_identity = constraint["group_by_exact_identity"].get(str(exact_identity))
+    if group_identity is None:
+        raise ValueError("PROGRAM_BATCH_GROUP_IDENTITY_MISSING")
+    count = int(group_counts.get(str(group_identity), 0))
+    if count >= int(constraint["maximum_per_group"]):
+        return False
+    distinct = sum(int(value) > 0 for value in group_counts.values())
+    return not (
+        distinct < int(constraint["minimum_distinct_groups"])
+        and count > 0
+    )
+
+
+def _batch_feasible_entries(
+    entries: Sequence[AvailabilityEntry],
+    *,
+    constraint: Mapping[str, Any] | None,
+    group_counts: Mapping[str, int],
+) -> tuple[AvailabilityEntry, ...]:
+    return tuple(
+        entry
+        for entry in entries
+        if _batch_group_feasible(
+            entry.exact_identity,
+            constraint=constraint,
+            group_counts=group_counts,
+        )
+    )
+
+
+def _record_batch_group_selection(
+    exact_identity: str,
+    *,
+    constraint: Mapping[str, Any] | None,
+    group_counts: dict[str, int],
+) -> dict[str, Any]:
+    if constraint is None:
+        return {}
+    if not _batch_group_feasible(
+        exact_identity, constraint=constraint, group_counts=group_counts
+    ):
+        raise RuntimeError("PROGRAM_BATCH_GROUP_CONSTRAINT_VIOLATION")
+    group_identity = str(constraint["group_by_exact_identity"][str(exact_identity)])
+    distinct_before = sum(int(value) > 0 for value in group_counts.values())
+    count_before = int(group_counts.get(group_identity, 0))
+    group_counts[group_identity] = count_before + 1
+    return {
+        "group_identity": group_identity,
+        "group_count_before": count_before,
+        "group_count_after": count_before + 1,
+        "distinct_group_count_before": distinct_before,
+        "distinct_group_count_after": sum(
+            int(value) > 0 for value in group_counts.values()
+        ),
+    }
+
+
+def verify_program_batch_group_selection_v1(
+    selected_exact_identities: Sequence[str],
+    *,
+    constraint: Mapping[str, Any],
+) -> dict[str, Any]:
+    normalized, counts = _batch_group_counts(constraint)
+    if normalized is None:  # pragma: no cover - public contract requires one.
+        raise ValueError("PROGRAM_BATCH_GROUP_CONSTRAINT_MISSING")
+    counts_before = dict(counts)
+    selections = []
+    for ordinal, exact_identity in enumerate(selected_exact_identities):
+        selections.append(
+            {
+                "ask_ordinal": ordinal,
+                "exact_identity": str(exact_identity),
+                **_record_batch_group_selection(
+                    str(exact_identity),
+                    constraint=normalized,
+                    group_counts=counts,
+                ),
+            }
+        )
+    receipt = {
+        "schema_version": "cn_program_batch_group_feasibility_receipt_v1",
+        "status": "PASS",
+        "minimum_distinct_groups": int(normalized["minimum_distinct_groups"]),
+        "maximum_per_group": int(normalized["maximum_per_group"]),
+        "group_counts_before": dict(sorted(counts_before.items())),
+        "group_counts_after": dict(sorted(counts.items())),
+        "selections": selections,
+    }
+    receipt["batch_group_feasibility_receipt_sha256"] = stable_hash(receipt)
+    return receipt
+
+
 def _normalized(value: Any) -> Any:
     if isinstance(value, Mapping):
         return {
@@ -259,6 +405,7 @@ class ProgramSearchOptimizerAdapter(ABC):
         count: int,
         required_program_template_id: str | None = None,
         eligible_exact_identities: Sequence[str] | None = None,
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         raise NotImplementedError
 
@@ -360,6 +507,7 @@ class _AvailabilityProgramOptimizer(ProgramSearchOptimizerAdapter):
         trial_number: int | None,
         optimizer_ask_identity: str,
         acquisition: Mapping[str, Any] | None = None,
+        batch_group_feasibility: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         return {
             "schema_version": "cn_program_optimizer_ask_v1",
@@ -376,6 +524,7 @@ class _AvailabilityProgramOptimizer(ProgramSearchOptimizerAdapter):
             "program_space_id": PROGRAM_SPACE_ID,
             "availability": emission.to_dict(),
             "acquisition": dict(acquisition or {}),
+            "batch_group_feasibility": dict(batch_group_feasibility or {}),
         }
 
     def snapshot(self) -> dict[str, Any]:
@@ -407,13 +556,19 @@ class UniformProgramSearchAdapter(_AvailabilityProgramOptimizer):
         count: int,
         required_program_template_id: str | None = None,
         eligible_exact_identities: Sequence[str] | None = None,
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         if self._pending:
             raise RuntimeError("PROGRAM_OPTIMIZER_PENDING_NOT_TOLD")
+        constraint, group_counts = _batch_group_counts(batch_group_constraint)
         asked = []
         for ordinal in range(int(count)):
-            remaining = self._remaining_entries(
-                required_program_template_id, eligible_exact_identities
+            remaining = _batch_feasible_entries(
+                self._remaining_entries(
+                    required_program_template_id, eligible_exact_identities
+                ),
+                constraint=constraint,
+                group_counts=group_counts,
             )
             if not remaining:
                 break
@@ -435,6 +590,12 @@ class UniformProgramSearchAdapter(_AvailabilityProgramOptimizer):
             )
             if emission is None:
                 break
+            feasibility = _record_batch_group_selection(
+                emission.exact_identity,
+                constraint=constraint,
+                group_counts=group_counts,
+            )
+            feasibility["batch_feasible_count_at_selection"] = len(remaining)
             proposal_id = stable_hash(
                 {
                     "arm": self.arm,
@@ -450,6 +611,7 @@ class UniformProgramSearchAdapter(_AvailabilityProgramOptimizer):
                 proposal_id=proposal_id,
                 trial_number=None,
                 optimizer_ask_identity=proposal_id,
+                batch_group_feasibility=feasibility,
             )
             asked.append(row)
             self._pending[proposal_id] = row
@@ -609,13 +771,20 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
         count: int,
         required_program_template_id: str | None = None,
         eligible_exact_identities: Sequence[str] | None = None,
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         if self._pending:
             raise RuntimeError("PROGRAM_OPTIMIZER_PENDING_NOT_TOLD")
+        constraint, group_counts = _batch_group_counts(batch_group_constraint)
         asked: list[dict[str, Any]] = []
         for ordinal in range(int(count)):
-            remaining = self._remaining_entries(
+            structural_remaining = self._remaining_entries(
                 required_program_template_id, eligible_exact_identities
+            )
+            remaining = _batch_feasible_entries(
+                structural_remaining,
+                constraint=constraint,
+                group_counts=group_counts,
             )
             if not remaining:
                 break
@@ -647,6 +816,9 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
             }
             remaining_by_identity = {
                 entry.exact_identity for entry in remaining
+            }
+            structural_remaining_identities = {
+                entry.exact_identity for entry in structural_remaining
             }
             emission = (
                 self.controller.reserve_exact(
@@ -680,7 +852,10 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
                     source_entry, remaining
                 )
                 replacement_reason = (
-                    "EXACT_ALREADY_SEEN"
+                    "BASE_GROUP_DIVERSITY_OR_CAPACITY_CONSTRAINT"
+                    if raw_exact_identity in structural_remaining_identities
+                    and raw_exact_identity not in remaining_by_identity
+                    else "EXACT_ALREADY_SEEN"
                     if raw_exact_identity not in all_remaining_identities
                     else "EXACT_OUTSIDE_CURRENT_ELIGIBLE_SET"
                 )
@@ -689,7 +864,7 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
                     "proposal_id": str(native["proposal_id"]),
                     "outcome_class": "AVAILABILITY_REPLACED",
                     "optimizer_reward": None,
-                    "outcome_reason": "PROGRAM_EXACT_UNAVAILABLE_OR_INELIGIBLE",
+                    "outcome_reason": replacement_reason,
                 }
                 native = self.tpe.enqueue_fixed_trial(
                     checkpoint_id=checkpoint_id,
@@ -742,6 +917,12 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
                 }
             if emission is None:  # pragma: no cover - reserved above.
                 raise RuntimeError("PROGRAM_TPE_AVAILABILITY_RESERVATION_FAILED")
+            feasibility = _record_batch_group_selection(
+                emission.exact_identity,
+                constraint=constraint,
+                group_counts=group_counts,
+            )
+            feasibility["batch_feasible_count_at_selection"] = len(remaining)
             self._projection_stats["intent_preserved_count"] += 1
             self._projection_stats["actual_evaluated_ask_count"] += 1
             row = self._ask_row(
@@ -758,6 +939,7 @@ class HybridTPEProgramSearchAdapter(_AvailabilityProgramOptimizer):
                     ),
                     "projection": projection,
                 },
+                batch_group_feasibility=feasibility,
             )
             self.tpe.annotate_pending_trial(
                 row["proposal_id"],
@@ -1048,9 +1230,11 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
         count: int,
         required_program_template_id: str | None = None,
         eligible_exact_identities: Sequence[str] | None = None,
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         if self._pending:
             raise RuntimeError("PROGRAM_OPTIMIZER_PENDING_NOT_TOLD")
+        constraint, group_counts = _batch_group_counts(batch_group_constraint)
         remaining = self._remaining_entries(
             required_program_template_id, eligible_exact_identities
         )
@@ -1065,7 +1249,22 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
             )
         )
         asked: list[dict[str, Any]] = []
-        for ordinal, score in enumerate(scored[: int(count)]):
+        unselected = list(scored)
+        while len(asked) < int(count):
+            feasible = [
+                score
+                for score in unselected
+                if _batch_group_feasible(
+                    score["entry"].exact_identity,
+                    constraint=constraint,
+                    group_counts=group_counts,
+                )
+            ]
+            if not feasible:
+                break
+            score = feasible[0]
+            unselected.remove(score)
+            ordinal = len(asked)
             entry = score["entry"]
             emission = self.controller.reserve_exact(
                 route_id=PROGRAM_ROUTE_ID,
@@ -1077,6 +1276,17 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
             )
             if emission is None:
                 continue
+            feasibility = _record_batch_group_selection(
+                emission.exact_identity,
+                constraint=constraint,
+                group_counts=group_counts,
+            )
+            feasibility.update(
+                {
+                    "initial_eligible_scored_count": len(remaining),
+                    "batch_feasible_count_at_selection": len(feasible),
+                }
+            )
             proposal_id = stable_hash(
                 {
                     "arm": self.arm,
@@ -1096,6 +1306,7 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
                 acquisition={
                     key: value for key, value in score.items() if key != "entry"
                 },
+                batch_group_feasibility=feasibility,
             )
             asked.append(row)
             self._pending[proposal_id] = row

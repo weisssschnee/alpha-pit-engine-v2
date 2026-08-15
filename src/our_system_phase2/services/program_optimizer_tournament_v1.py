@@ -183,6 +183,7 @@ class ProgramOptimizerTournamentV1:
         count: int,
         required_program_template_id: str,
         eligible_exact_identities: Sequence[str],
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         preview = type(self).restore(
             self.snapshot(),
@@ -195,6 +196,7 @@ class ProgramOptimizerTournamentV1:
             count=count,
             required_program_template_id=required_program_template_id,
             eligible_exact_identities=eligible_exact_identities,
+            batch_group_constraint=batch_group_constraint,
         )
 
     def _ask_live(
@@ -205,6 +207,7 @@ class ProgramOptimizerTournamentV1:
         count: int,
         required_program_template_id: str,
         eligible_exact_identities: Sequence[str],
+        batch_group_constraint: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         adapter = self.adapters.get(str(arm))
         if adapter is None:
@@ -214,6 +217,7 @@ class ProgramOptimizerTournamentV1:
             count=int(count),
             required_program_template_id=required_program_template_id,
             eligible_exact_identities=eligible_exact_identities,
+            batch_group_constraint=batch_group_constraint,
         )
 
     def commit_ask(
@@ -224,6 +228,7 @@ class ProgramOptimizerTournamentV1:
         count: int,
         required_program_template_id: str,
         eligible_exact_identities: Sequence[str],
+        batch_group_constraint: Mapping[str, Any] | None = None,
         expected_asks: Sequence[Mapping[str, Any]],
     ) -> None:
         committed = self._ask_live(
@@ -232,6 +237,7 @@ class ProgramOptimizerTournamentV1:
             count=count,
             required_program_template_id=required_program_template_id,
             eligible_exact_identities=eligible_exact_identities,
+            batch_group_constraint=batch_group_constraint,
         )
         if committed != [dict(row) for row in expected_asks]:
             raise RuntimeError("PROGRAM_TOURNAMENT_PREVIEW_COMMIT_DRIFT")

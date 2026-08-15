@@ -63,22 +63,24 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def _first_enhanced_checkpoint_by_arm(
+def _first_enhanced_checkpoint_by_arm_template(
     asks: Sequence[Mapping[str, Any]],
-) -> dict[str, list[dict[str, Any]]]:
-    output: dict[str, list[dict[str, Any]]] = {}
+) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    output: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for arm in PROGRAM_OPTIMIZER_ARMS:
-        first = next(
-            int(row["checkpoint_ordinal"])
-            for row in asks
-            if str(row["generation_arm"]) == arm
-            and str(row["template_id"]) != "BASE"
-        )
-        output[arm] = [
-            dict(row)
-            for row in asks
-            if int(row["checkpoint_ordinal"]) == first
-        ]
+        output[arm] = {}
+        for template_id in engine.ENHANCED_TEMPLATE_ORDER:
+            first = next(
+                int(row["checkpoint_ordinal"])
+                for row in asks
+                if str(row["generation_arm"]) == arm
+                and str(row["template_id"]) == template_id
+            )
+            output[arm][template_id] = [
+                dict(row)
+                for row in asks
+                if int(row["checkpoint_ordinal"]) == first
+            ]
     return output
 
 
@@ -124,6 +126,14 @@ def _arm_rehearsal(
         exact_identities
     ).issubset(legal):
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_LEGALITY_DRIFT")
+    feasibility = dict(decisions[0]["batch_group_feasibility_receipt"])
+    if (
+        str(feasibility.get("status")) != "PASS"
+        or len(feasibility.get("selections", [])) != len(asks)
+        or max(feasibility.get("group_counts_after", {}).values(), default=0)
+        > int(feasibility["maximum_per_group"])
+    ):
+        raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_BATCH_FEASIBILITY_DRIFT")
     result = {
         "optimizer_arm": arm,
         "checkpoint_ordinal": int(asks[0]["checkpoint_ordinal"]),
@@ -134,6 +144,13 @@ def _arm_rehearsal(
         "decision_count": len(decisions),
         "exact_identity_count": len(set(exact_identities)),
         "all_exact_identities_legal": True,
+        "batch_group_feasibility_receipt_sha256": str(
+            feasibility["batch_group_feasibility_receipt_sha256"]
+        ),
+        "distinct_base_count_after": len(feasibility["group_counts_after"]),
+        "maximum_base_reuse_after": max(
+            feasibility["group_counts_after"].values(), default=0
+        ),
         "template_record_ordinals": [
             int(row["template_record_ordinal"]) for row in schedules
         ],
@@ -300,21 +317,24 @@ def main() -> int:
         adapter=adapter,
         compiler=compiler,
     )
-    arm_asks = _first_enhanced_checkpoint_by_arm(asks)
+    arm_asks = _first_enhanced_checkpoint_by_arm_template(asks)
     arm_rehearsals = {
-        arm: _arm_rehearsal(
-            arm=arm,
-            asks=arm_asks[arm],
-            catalog=catalog,
-            bandit=ProgramOptimizerTournamentV1.restore(
-                initial_state,
-                entries_by_arm=entries_by_arm,
-                expected_campaign_id=str(initial_state["campaign_id"]),
-            ),
-            components_by_id=components_by_id,
-            adapter=adapter,
-            compiler=compiler,
-        )
+        arm: {
+            template_id: _arm_rehearsal(
+                arm=arm,
+                asks=arm_asks[arm][template_id],
+                catalog=catalog,
+                bandit=ProgramOptimizerTournamentV1.restore(
+                    initial_state,
+                    entries_by_arm=entries_by_arm,
+                    expected_campaign_id=str(initial_state["campaign_id"]),
+                ),
+                components_by_id=components_by_id,
+                adapter=adapter,
+                compiler=compiler,
+            )
+            for template_id in engine.ENHANCED_TEMPLATE_ORDER
+        }
         for arm in PROGRAM_OPTIMIZER_ARMS
     }
     if (
@@ -325,10 +345,14 @@ def main() -> int:
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_FIRST_CHECKPOINT_DRIFT")
     if any(
         row["template_id"] == "BASE" or row["schedule_count"] != 8
-        for row in arm_rehearsals.values()
+        for arm_rows in arm_rehearsals.values()
+        for row in arm_rows.values()
     ):
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_ENHANCED_ARM_DRIFT")
-    if arm_rehearsals[HYBRID_TPE_PROGRAM]["global_fallback_count"] != 0:
+    if any(
+        row["global_fallback_count"] != 0
+        for row in arm_rehearsals[HYBRID_TPE_PROGRAM].values()
+    ):
         raise RuntimeError("PROGRAM_TOURNAMENT_REHEARSAL_GLOBAL_FALLBACK")
     authorization = authorization_payload_v1()
     maximum_ask_plan_sha256 = stable_hash(list(build_maximum_ask_plan_v1()))
