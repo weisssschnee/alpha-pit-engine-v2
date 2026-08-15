@@ -1110,21 +1110,31 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
         )
         return predictions.mean(axis=0), predictions.std(axis=0)
 
-    def _fit_models(self) -> tuple[Any, Any | None]:
-        from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+    def _fit_admission_model(self, rows: np.ndarray | None = None) -> Any:
+        from sklearn.ensemble import ExtraTreesClassifier
 
-        rows = np.vstack([self._encode(row["genes"]) for row in self._observations])
+        matrix = (
+            np.vstack([self._encode(row["genes"]) for row in self._observations])
+            if rows is None
+            else rows
+        )
         admission = np.asarray(
             [bool(row["admitted"]) for row in self._observations], dtype=int
         )
-        admission_model = ExtraTreesClassifier(
+        return ExtraTreesClassifier(
             n_estimators=self.n_estimators,
             min_samples_leaf=self.min_samples_leaf,
             max_features="sqrt",
             class_weight="balanced",
             random_state=self.controller.emitter_seed,
             n_jobs=1,
-        ).fit(rows, admission)
+        ).fit(matrix, admission)
+
+    def _fit_models(self) -> tuple[Any, Any | None]:
+        from sklearn.ensemble import ExtraTreesRegressor
+
+        rows = np.vstack([self._encode(row["genes"]) for row in self._observations])
+        admission_model = self._fit_admission_model(rows)
         eligible = [
             index
             for index, row in enumerate(self._observations)
@@ -1222,6 +1232,81 @@ class StructuredSurrogateProgramSearchAdapter(_AvailabilityProgramOptimizer):
             {key: value for key, value in row.items() if key != "entry"}
             for row in self._acquisition_rows(entries)
         ]
+
+    def predict_feasibility(
+        self, genes_rows: Sequence[Mapping[str, Any]]
+    ) -> list[dict[str, Any]]:
+        if len(self._observations) < self.cold_start_asks:
+            return [
+                {"cold_start": True, "feasibility_probability": 0.5}
+                for _ in genes_rows
+            ]
+        model = self._fit_admission_model()
+        classes = tuple(int(value) for value in model.classes_)
+        matrix = np.vstack([self._encode(genes) for genes in genes_rows])
+        probabilities = model.predict_proba(matrix)
+        feasible = (
+            probabilities[:, classes.index(1)]
+            if 1 in classes
+            else np.ones(len(genes_rows), dtype=float)
+            if classes == (1,)
+            else np.zeros(len(genes_rows), dtype=float)
+        )
+        return [
+            {
+                "cold_start": False,
+                "feasibility_probability": float(probability),
+            }
+            for probability in feasible
+        ]
+
+    def ingest_completed_observations(
+        self, rows: Sequence[Mapping[str, Any]]
+    ) -> dict[str, Any]:
+        if self._pending:
+            raise RuntimeError("PROGRAM_SURROGATE_INGEST_WITH_PENDING")
+        entry_by_exact = {entry.exact_identity: entry for entry in self.entries}
+        normalized = []
+        for source in rows:
+            exact_identity = str(source["exact_identity"])
+            entry = entry_by_exact.get(exact_identity)
+            if entry is None:
+                raise ValueError("PROGRAM_SURROGATE_INGEST_EXACT_OUTSIDE_SPACE")
+            admitted = bool(source["admitted"])
+            uplift = source.get("uplift")
+            if admitted != (uplift is not None):
+                raise ValueError("PROGRAM_SURROGATE_INGEST_DUAL_HEAD_DOMAIN_DRIFT")
+            normalized.append(
+                {
+                    "proposal_id": str(source["proposal_id"]),
+                    "exact_identity": exact_identity,
+                    "genes": dict(entry.genes),
+                    "admitted": admitted,
+                    "uplift": None if uplift is None else float(uplift),
+                    "admission_record": copy.deepcopy(
+                        dict(source.get("admission_record") or {})
+                    ),
+                    "uplift_record": copy.deepcopy(source.get("uplift_record")),
+                    "program_level_credit_only": True,
+                    "component_attribution": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+                }
+            )
+        self._observations.extend(copy.deepcopy(normalized))
+        receipt = {
+            "schema_version": "cn_structured_surrogate_external_observation_receipt_v1",
+            "optimizer_arm": self.arm,
+            "asked_count": len(normalized),
+            "admission_head_observation_count": len(normalized),
+            "conditional_head_observation_count": sum(
+                row["uplift"] is not None for row in normalized
+            ),
+            "observation_digest": stable_hash(normalized),
+            "observation_source": "SAME_POLICY_COMPLETED_LOGICAL_SELECTION",
+            "program_level_credit_only": True,
+            "component_attribution": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        }
+        self._history.append(receipt)
+        return receipt
 
     def ask(
         self,
