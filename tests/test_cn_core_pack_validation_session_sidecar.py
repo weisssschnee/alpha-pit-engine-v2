@@ -4,6 +4,7 @@ import pytest
 
 from scripts.build_cn_core_pack_validation_session_sidecar import (
     _assert_positive_pit_coverage,
+    _direct_session_fields,
     _resolve_fundamental_partition_root,
 )
 
@@ -55,3 +56,12 @@ def test_accepts_positive_coverage_in_any_shard() -> None:
         "fund_a": 0.5,
         "fund_b": 0.75,
     }
+
+
+def test_direct_session_fields_exclude_dedicated_open_close_columns() -> None:
+    direct = _direct_session_fields(
+        required_fields=("open", "close", "amount", "pct_chg", "fund_x"),
+        chip_fields=(),
+        source_schema={"code", "trade_time", "open", "close", "amount", "pct_chg"},
+    )
+    assert direct == ["amount", "pct_chg"]

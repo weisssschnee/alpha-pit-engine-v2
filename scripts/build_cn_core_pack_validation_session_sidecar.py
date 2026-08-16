@@ -38,6 +38,30 @@ STABLE_KEY = (
     "source_row_identity",
     "duplicate_ordinal",
 )
+CORE_SESSION_COLUMNS = frozenset({"code", "trade_time", "open", "close"})
+
+
+def _direct_session_fields(
+    *,
+    required_fields: tuple[str, ...],
+    chip_fields: tuple[str, ...],
+    source_schema: set[str],
+) -> list[str]:
+    """Return direct source fields excluding columns with dedicated aggregation.
+
+    ``open`` and ``close`` are always selected explicitly and use first/last
+    session aggregation.  Treating them as generic direct fields would project
+    and aggregate the same output name twice when a compiled Program requires
+    either field.
+    """
+
+    return sorted(
+        (
+            (set(required_fields) - set(chip_fields))
+            & set(source_schema)
+        )
+        - CORE_SESSION_COLUMNS
+    )
 
 
 def _sha256(path: Path) -> str:
@@ -233,8 +257,10 @@ def main() -> int:
     started = time.perf_counter()
     for shard, source in enumerate(sources):
         source_schema = set(pq.ParquetFile(source).schema_arrow.names)
-        direct_fields = sorted(
-            (set(required_fields) - set(chip_fields)) & source_schema
+        direct_fields = _direct_session_fields(
+            required_fields=required_fields,
+            chip_fields=chip_fields,
+            source_schema=source_schema,
         )
         missing = sorted(
             set(required_fields)
