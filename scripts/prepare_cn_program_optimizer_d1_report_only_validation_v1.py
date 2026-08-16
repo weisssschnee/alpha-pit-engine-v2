@@ -36,7 +36,7 @@ EXPECTED_CANDIDATE_EXACT_SHA256 = (
     "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687"
 )
 EXPECTED_FREEZE_PAYLOAD_SHA256 = (
-    "0ee0f43f4cc6a83b46faa000665958243ac826b7c8cb88a0b50c3e2e39bc8044"
+    "ddde0c64667bef8a12e6261dab8a3998e5591085bf0fb1f0851fd0cfa0f85a8a"
 )
 EXPECTED_MEMBERS_FILE_SHA256 = (
     "4f0befede84762a81b1a458178c7e9a294821c3cb8a61f512e7a3bf990ef19da"
@@ -132,32 +132,43 @@ def _schedule_path(source_root: Path, wave: int) -> Path:
     return source_root / f"wave_{wave:03d}" / "physical_schedules.jsonl"
 
 
+def _physical_schedule_index(source_root: Path) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    index: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for wave in range(20):
+        path = _schedule_path(source_root, wave)
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        for row in _read_jsonl(path):
+            exact = str(row.get("d1_exact_identity") or row.get("successor_exact_identity") or "")
+            schedule_sha = str(row.get("schedule_record_sha256") or "")
+            if not exact or not schedule_sha:
+                raise RuntimeError("D1 validation physical schedule lacks exact/hash identity")
+            index.setdefault((exact, schedule_sha), []).append(dict(row))
+    return index
+
+
 def _resolve_schedules(members: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    cached: dict[tuple[str, int], list[dict[str, Any]]] = {}
+    schedule_indexes: dict[str, dict[tuple[str, str], list[dict[str, Any]]]] = {}
     resolved: list[dict[str, Any]] = []
     for member in members:
         root = Path(str(member["source_root"])).resolve()
-        wave = int(member["source_wave"])
-        manifest_path = root / f"wave_{wave:03d}" / "wave_manifest.json"
-        if _sha256(manifest_path) != str(member["source_wave_manifest_sha256"]):
-            raise RuntimeError("D1 validation source wave manifest drift")
-        key = (str(root), wave)
-        if key not in cached:
-            cached[key] = _read_jsonl(_schedule_path(root, wave))
+        logical_wave = int(member["source_wave"])
+        logical_manifest_path = root / f"wave_{logical_wave:03d}" / "wave_manifest.json"
+        if _sha256(logical_manifest_path) != str(member["source_wave_manifest_sha256"]):
+            raise RuntimeError("D1 validation logical source wave manifest drift")
+        root_key = str(root)
+        if root_key not in schedule_indexes:
+            schedule_indexes[root_key] = _physical_schedule_index(root)
         exact = str(member["exact_identity"])
-        matches = [
-            row
-            for row in cached[key]
-            if str(row.get("d1_exact_identity") or row.get("successor_exact_identity") or "")
-            == exact
-            and str(row.get("schedule_record_sha256") or "")
-            == str(member["schedule_record_sha256"])
-        ]
+        schedule_sha = str(member["schedule_record_sha256"])
+        matches = schedule_indexes[root_key].get((exact, schedule_sha), [])
         if len(matches) != 1:
-            raise RuntimeError(f"D1 validation frozen schedule cardinality drift: {exact}")
+            raise RuntimeError(
+                f"D1 validation frozen physical schedule cardinality drift: {exact}:{schedule_sha}"
+            )
         schedule = dict(matches[0])
         body = {key: value for key, value in schedule.items() if key != "schedule_record_sha256"}
-        if stable_hash(body) != str(schedule["schedule_record_sha256"]):
+        if stable_hash(body) != schedule_sha:
             raise RuntimeError(f"D1 validation source schedule self-hash drift: {exact}")
         resolved.append(schedule)
     if len(resolved) != EXPECTED_CANDIDATE_COUNT:

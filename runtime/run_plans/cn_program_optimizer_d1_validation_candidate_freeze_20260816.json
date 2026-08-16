@@ -5,7 +5,7 @@
     "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_candidate_members_20260816.jsonl"
   },
   "forward_2026_reads": 0,
-  "freeze_payload_sha256": "0ee0f43f4cc6a83b46faa000665958243ac826b7c8cb88a0b50c3e2e39bc8044",
+  "freeze_payload_sha256": "ddde0c64667bef8a12e6261dab8a3998e5591085bf0fb1f0851fd0cfa0f85a8a",
   "frozen_candidate_count": 120,
   "frozen_candidate_exact_identities_sha256": "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687",
   "holdout_reads": 0,
@@ -32,15 +32,21 @@
     "BASE_TEMPORAL_MARKET_EVENT": 14
   },
   "schedule_resolution_contract": {
-    "locator_fields": [
+    "cross_wave_physical_cache_aware": true,
+    "logical_selection_binding": [
       "source_root",
       "source_wave",
+      "source_wave_manifest_sha256",
       "exact_identity"
     ],
-    "required_schedule_binding": "schedule_record_sha256",
-    "schedule_copy_committed_to_repo": false,
-    "source": "IMMUTABLE_SOURCE_WAVE_PHYSICAL_SCHEDULES",
-    "source_wave_binding": "source_wave_manifest_sha256"
+    "physical_schedule_locator_fields": [
+      "source_root",
+      "exact_identity",
+      "schedule_record_sha256"
+    ],
+    "physical_schedule_search_scope": "ALL_20_CLOSED_SOURCE_WAVES",
+    "physical_schedule_source": "IMMUTABLE_SOURCE_WAVE_PHYSICAL_SCHEDULES",
+    "schedule_copy_committed_to_repo": false
   },
   "schema_version": "cn_program_optimizer_d1_report_only_validation_compact_freeze_v1",
   "selection_rule": {
