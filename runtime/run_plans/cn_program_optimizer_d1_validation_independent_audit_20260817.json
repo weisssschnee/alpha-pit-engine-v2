@@ -1,0 +1,128 @@
+{
+  "archive_write": "FORBIDDEN",
+  "audit_errors": [],
+  "audit_payload_sha256": "20a0c0d206c019c69df19c15b9ab1b4c4e20b49446f0a9baf6e93b48b06a80bd",
+  "audit_status": "PASS",
+  "candidate_count": 120,
+  "candidate_exact_identities_sha256": "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687",
+  "candidate_freeze_file_sha256": "bca2ff88da483da519099df7cd8c23fb7119b567ca20b91762c982b00c843cf0",
+  "candidate_members_file_sha256": "4f0befede84762a81b1a458178c7e9a294821c3cb8a61f512e7a3bf990ef19da",
+  "closure_file_sha256": "c67038420c099f069e902dfd661e82bdc2316fe5608a90f2681d220ad5d46d5c",
+  "closure_payload_sha256": "683284b552022376fe1b76ac59f250d7d6ff7edb73b5b748f81cb5fb0d6f5223",
+  "execution_repo_sha": "53b7c104d910c1db54605c3acbc3aabc45e6eba9",
+  "formal_retry_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_report_only_validation_v1_retry_20260817_53b7c10",
+  "independent_audit": {
+    "candidate_count": 120,
+    "candidate_exact_sha256": "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687",
+    "closure_file_sha256": "c67038420c099f069e902dfd661e82bdc2316fe5608a90f2681d220ad5d46d5c",
+    "closure_payload_sha256": "683284b552022376fe1b76ac59f250d7d6ff7edb73b5b748f81cb5fb0d6f5223",
+    "errors": [],
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "metric_total": {
+      "admission_rate": 0.7583333333333333,
+      "admitted": 91,
+      "evaluated": 120,
+      "productive": 30,
+      "productive_transfer_rate": 0.25
+    },
+    "optimizer_feedback_write": "FORBIDDEN",
+    "per_source": {
+      "D1_FRESH": {
+        "admission_rate": 0.75,
+        "admitted": 48,
+        "evaluated": 64,
+        "productive": 16,
+        "productive_transfer_rate": 0.25
+      },
+      "SUCCESSOR_D1": {
+        "admission_rate": 0.7678571428571429,
+        "admitted": 43,
+        "evaluated": 56,
+        "productive": 14,
+        "productive_transfer_rate": 0.25
+      }
+    },
+    "per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.46153846153846156,
+        "admitted": 6,
+        "evaluated": 13,
+        "productive": 2,
+        "productive_transfer_rate": 0.15384615384615385
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5714285714285714,
+        "admitted": 8,
+        "evaluated": 14,
+        "productive": 0,
+        "productive_transfer_rate": 0.0
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.8461538461538461,
+        "admitted": 22,
+        "evaluated": 26,
+        "productive": 6,
+        "productive_transfer_rate": 0.23076923076923078
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 12,
+        "evaluated": 14,
+        "productive": 6,
+        "productive_transfer_rate": 0.42857142857142855
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 30,
+        "evaluated": 35,
+        "productive": 13,
+        "productive_transfer_rate": 0.37142857142857144
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.0,
+        "admitted": 0,
+        "evaluated": 4,
+        "productive": 0,
+        "productive_transfer_rate": 0.0
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.9285714285714286,
+        "admitted": 13,
+        "evaluated": 14,
+        "productive": 3,
+        "productive_transfer_rate": 0.21428571428571427
+      }
+    },
+    "promotion_authorized": false,
+    "status": "PASS"
+  },
+  "optimizer_feedback_write": "FORBIDDEN",
+  "prefinancial_binding_file_sha256": "2fdef8b751810b0f3812651df700273064dd875aa5f8ddae62eff0c1461675a9",
+  "prefinancial_binding_payload_sha256": "44fae2d49caf1e377d7816886ec475136fdfb0e571f8be26f5fcc71731247917",
+  "project_control": {
+    "admission_file_sha256": "7c14617a41f80f07821081283e85cb347aef85570e1a6d4929ff8594d02b98a8",
+    "admission_payload_sha256": "46ca51a42dc3bbb45884d04aacec3e5bcc55238c39cb5a804c01a5768b3ac6f2",
+    "consumption_count": 1,
+    "first_failed_candidate_record_count": 0,
+    "first_failed_run_id": "77f4add2-db65-43e2-b0c4-79c075f15190",
+    "first_failed_task_id": "cn-execution-6153a41868ce370a517c07c0",
+    "first_failed_terminal_receipt_sha256": "da6addc148322f6dc2efe80e7625d0ddcb12d48bb6f43a2ef28250d1c8b1f85e",
+    "requested_action": "RETRY",
+    "retry_run_id": "28e64134-9f94-4fdd-83cf-b97e4e3f6b71",
+    "retry_task_id": "cn-execution-bda231a9abfe596aa1ad220d"
+  },
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "holdout": 0
+  },
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_validation_evidence_v1",
+  "status": "D1_REPORT_ONLY_VALIDATION_COMPLETE_INDEPENDENT_AUDIT_PASS",
+  "validation_authorization_file_sha256": "d258e9b060c356a0e11e2f8a112df44586c294d7895b96f2ab277fc4e95cc64a",
+  "validation_authorization_payload_sha256": "6a0849da98c6b257b64eb3bee8db1a033eaab1da9c542c7386454656ed614fc9",
+  "validation_field_manifest_sha256": "699a0c514ad19e94a91ae0d2edf38bdd567f2cc55cba10600fcc32d97b2e1a15",
+  "validation_session_authority_audit_sha256": "38cdcb8484b38a9951c72f520d0e2214f8c62266c3abad4219f275616386b950",
+  "validation_session_authority_manifest_sha256": "da914053dfd4210913904335e83fc91cafb01f77ba1d580cee4d335a261abdcc"
+}
