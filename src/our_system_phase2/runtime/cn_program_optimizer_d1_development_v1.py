@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -56,14 +57,23 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 ROUTE_ID = "cn-program-optimizer-d1-development-v1"
 CAMPAIGN_ID = "CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_V1"
 CAMPAIGN_PROFILE = "cn_program_optimizer_d1_development_v1"
+CAMPAIGN_ID_CONTINUATION = (
+    "CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_CONTINUATION_V1"
+)
 AUTHORIZATION_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_d1_development_cohort_v1.json"
+)
+AUTHORIZATION_RELATIVE_PATH_CONTINUATION = Path(
+    "runtime/run_plans/cn_program_optimizer_d1_development_continuation_cohort_v1.json"
 )
 POLICY_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_d1_development_policy_v1.json"
 )
 PRIOR_FREEZE_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_d1_next_prior_exact_freeze_20260816.json"
+)
+PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION = Path(
+    "runtime/run_plans/cn_program_optimizer_d1_postrun_prior_exact_freeze_20260816.json"
 )
 POLICY_PAYLOAD_SHA256 = (
     "3f2360953ae460d2c5078b049cbfb46b9da02ae0252aaa26bffee541b6bb107b"
@@ -76,6 +86,69 @@ PRIOR_FREEZE_PAYLOAD_SHA256 = (
     "2366701df20d2620371f85fe509418c7da53e5578a302c1f84879ddfaf591097"
 )
 REMAINING_PROSPECTIVE_ENHANCED = 2694
+CONTINUATION_CAMPAIGN_PROFILE = (
+    "cn_program_optimizer_d1_development_continuation_v1"
+)
+CONTINUATION_PRIOR_EXACT_COUNT = 1030
+CONTINUATION_PRIOR_EXACT_IDENTITIES_SHA256 = (
+    "1adc01934b8c9b11459cca4b40c2bb6926d7a35b2fe90bccf35a7a39f78cfec2"
+)
+CONTINUATION_PRIOR_FREEZE_PAYLOAD_SHA256 = (
+    "a5431c84da70ae6151b70c3f4796a033fa798a5180856ed6efc886180329268d"
+)
+CONTINUATION_REMAINING_PROSPECTIVE_ENHANCED = 2554
+
+
+@dataclass(frozen=True)
+class _D1CampaignBinding:
+    campaign_id: str
+    campaign_profile: str
+    authorization_relative_path: Path
+    policy_relative_path: Path
+    policy_payload_sha256: str
+    prior_exact_count: int
+    prior_exact_identities_sha256: str
+    prior_freeze_relative_path: Path
+    prior_freeze_payload_sha256: str
+    remaining_prospective_enhanced_exact_count: int
+    enforce_policy_prior_counts: bool = False
+
+
+_CAMPAIGN_BINDINGS = {
+    CAMPAIGN_ID: _D1CampaignBinding(
+        campaign_id=CAMPAIGN_ID,
+        campaign_profile=CAMPAIGN_PROFILE,
+        authorization_relative_path=AUTHORIZATION_RELATIVE_PATH,
+        policy_relative_path=POLICY_RELATIVE_PATH,
+        policy_payload_sha256=POLICY_PAYLOAD_SHA256,
+        prior_exact_count=PRIOR_EXACT_COUNT,
+        prior_exact_identities_sha256=PRIOR_EXACT_IDENTITIES_SHA256,
+        prior_freeze_relative_path=PRIOR_FREEZE_RELATIVE_PATH,
+        prior_freeze_payload_sha256=PRIOR_FREEZE_PAYLOAD_SHA256,
+        remaining_prospective_enhanced_exact_count=REMAINING_PROSPECTIVE_ENHANCED,
+        enforce_policy_prior_counts=True,
+    ),
+    CAMPAIGN_ID_CONTINUATION: _D1CampaignBinding(
+        campaign_id=CAMPAIGN_ID_CONTINUATION,
+        campaign_profile=CONTINUATION_CAMPAIGN_PROFILE,
+        authorization_relative_path=AUTHORIZATION_RELATIVE_PATH_CONTINUATION,
+        policy_relative_path=POLICY_RELATIVE_PATH,
+        policy_payload_sha256=POLICY_PAYLOAD_SHA256,
+        prior_exact_count=CONTINUATION_PRIOR_EXACT_COUNT,
+        prior_exact_identities_sha256=CONTINUATION_PRIOR_EXACT_IDENTITIES_SHA256,
+        prior_freeze_relative_path=PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION,
+        prior_freeze_payload_sha256=CONTINUATION_PRIOR_FREEZE_PAYLOAD_SHA256,
+        remaining_prospective_enhanced_exact_count=CONTINUATION_REMAINING_PROSPECTIVE_ENHANCED,
+    ),
+}
+
+
+def _resolve_campaign_binding(campaign_id: str | None = None) -> _D1CampaignBinding:
+    target = str(campaign_id or CAMPAIGN_ID)
+    try:
+        return _CAMPAIGN_BINDINGS[target]
+    except KeyError as exc:
+        raise ValueError("D1 authorization campaign not configured") from exc
 
 
 def _read_self_hashed(path: Path, field: str, expected: str, label: str) -> dict[str, Any]:
@@ -87,11 +160,11 @@ def _read_self_hashed(path: Path, field: str, expected: str, label: str) -> dict
     return payload
 
 
-def _load_policy(repo_root: Path) -> dict[str, Any]:
+def _load_policy(repo_root: Path, *, binding: _D1CampaignBinding) -> dict[str, Any]:
     policy = _read_self_hashed(
-        repo_root / POLICY_RELATIVE_PATH,
+        repo_root / binding.policy_relative_path,
         "policy_payload_sha256",
-        POLICY_PAYLOAD_SHA256,
+        binding.policy_payload_sha256,
         "D1 policy",
     )
     design = dict(policy.get("fixed_cohort_design") or {})
@@ -108,32 +181,40 @@ def _load_policy(repo_root: Path) -> dict[str, Any]:
         or bool(design.get("template_routing"))
         or bool(design.get("dynamic_handoff"))
         or bool(design.get("dynamic_budget_reallocation"))
-        or int(universe.get("prior_exclusion_count") or 0) != PRIOR_EXACT_COUNT
-        or str(universe.get("prior_exclusion_exact_identities_sha256") or "")
-        != PRIOR_EXACT_IDENTITIES_SHA256
-        or int(universe.get("remaining_prospective_enhanced_exact_count") or 0)
-        != REMAINING_PROSPECTIVE_ENHANCED
+        or int(design.get("waves") or 0) != 20
         or str(policy.get("oos_authority") or "") != "NONE"
         or bool(policy.get("promotion_authorized"))
     ):
         raise ValueError("D1 policy contract drift")
+    if binding.enforce_policy_prior_counts:
+        if (
+            int(universe.get("prior_exclusion_count") or 0)
+            != binding.prior_exact_count
+            or str(universe.get("prior_exclusion_exact_identities_sha256") or "")
+            != binding.prior_exact_identities_sha256
+            or int(universe.get("remaining_prospective_enhanced_exact_count") or 0)
+            != binding.remaining_prospective_enhanced_exact_count
+        ):
+            raise ValueError("D1 policy contract drift")
     return policy
 
 
-def _load_prior(repo_root: Path) -> dict[str, Any]:
+def _load_prior(
+    repo_root: Path, *, binding: _D1CampaignBinding
+) -> dict[str, Any]:
     prior = _read_self_hashed(
-        repo_root / PRIOR_FREEZE_RELATIVE_PATH,
+        repo_root / binding.prior_freeze_relative_path,
         "freeze_payload_sha256",
-        PRIOR_FREEZE_PAYLOAD_SHA256,
+        binding.prior_freeze_payload_sha256,
         "D1 prior freeze",
     )
     ids = tuple(map(str, prior.get("combined_prior_exact_identities") or ()))
     if (
-        len(ids) != PRIOR_EXACT_COUNT
-        or len(set(ids)) != PRIOR_EXACT_COUNT
-        or stable_hash(list(ids)) != PRIOR_EXACT_IDENTITIES_SHA256
+        len(ids) != binding.prior_exact_count
+        or len(set(ids)) != binding.prior_exact_count
+        or stable_hash(list(ids)) != binding.prior_exact_identities_sha256
         or int(prior.get("remaining_enhanced_program_count") or 0)
-        != REMAINING_PROSPECTIVE_ENHANCED
+        != binding.remaining_prospective_enhanced_exact_count
     ):
         raise ValueError("D1 prior exact contract drift")
     # The generic development authority loader expects the canonical key name.
@@ -141,15 +222,18 @@ def _load_prior(repo_root: Path) -> dict[str, Any]:
     return prior
 
 
-def authorization_payload_v1(repo_root: Path | None = None) -> dict[str, Any]:
+def authorization_payload_v1(
+    repo_root: Path | None = None, *, campaign_id: str | None = None
+) -> dict[str, Any]:
     root = Path(repo_root or Path(__file__).resolve().parents[3]).resolve()
-    policy = _load_policy(root)
-    _load_prior(root)
+    binding = _resolve_campaign_binding(campaign_id)
+    policy = _load_policy(root, binding=binding)
+    _load_prior(root, binding=binding)
     payload = {
         "schema_version": "cn_program_optimizer_d1_development_authorization_v1",
         "status": "CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_FROZEN_NOT_RUN",
-        "campaign_id": CAMPAIGN_ID,
-        "campaign_profile": CAMPAIGN_PROFILE,
+        "campaign_id": binding.campaign_id,
+        "campaign_profile": binding.campaign_profile,
         "project_control_route_id": ROUTE_ID,
         "execution_authorized": True,
         "permitted_project_control_actions": [ACTION_LAUNCH, ACTION_RETRY],
@@ -158,7 +242,7 @@ def authorization_payload_v1(repo_root: Path | None = None) -> dict[str, Any]:
         "policy_binding": {
             "policy_id": D1_POLICY_ID,
             "policy_relative_path": str(POLICY_RELATIVE_PATH).replace("\\", "/"),
-            "policy_payload_sha256": POLICY_PAYLOAD_SHA256,
+            "policy_payload_sha256": binding.policy_payload_sha256,
             "evidence_grade": str(
                 dict(policy.get("evidence_binding") or {}).get("evidence_grade") or ""
             ),
@@ -176,11 +260,13 @@ def authorization_payload_v1(repo_root: Path | None = None) -> dict[str, Any]:
             "base_count": FROZEN_BASE_PROGRAM_COUNT,
             "enhanced_count": FROZEN_ENHANCED_PROGRAM_COUNT,
             "full_sha256": FROZEN_PROGRAM_SPACE_SHA256,
-            "prior_exact_count": PRIOR_EXACT_COUNT,
-            "prior_exact_identities_sha256": PRIOR_EXACT_IDENTITIES_SHA256,
-            "prior_freeze_relative_path": str(PRIOR_FREEZE_RELATIVE_PATH).replace("\\", "/"),
-            "prior_freeze_payload_sha256": PRIOR_FREEZE_PAYLOAD_SHA256,
-            "remaining_prospective_enhanced_exact_count": REMAINING_PROSPECTIVE_ENHANCED,
+            "prior_exact_count": binding.prior_exact_count,
+            "prior_exact_identities_sha256": binding.prior_exact_identities_sha256,
+            "prior_freeze_relative_path": str(
+                binding.prior_freeze_relative_path
+            ).replace("\\", "/"),
+            "prior_freeze_payload_sha256": binding.prior_freeze_payload_sha256,
+            "remaining_prospective_enhanced_exact_count": binding.remaining_prospective_enhanced_exact_count,
             "prior_results_imported_as_optimizer_feedback": False,
         },
         "seeds": {
@@ -234,7 +320,8 @@ def verify_authorization(path: Path) -> dict[str, Any]:
     claimed = str(body.pop("authorization_payload_sha256", ""))
     if claimed != stable_hash(body):
         raise ValueError("D1 development authorization self-hash drift")
-    if payload != authorization_payload_v1():
+    campaign_id = str(payload.get("campaign_id") or "")
+    if payload != authorization_payload_v1(campaign_id=campaign_id):
         raise ValueError("D1 development authorization contract drift")
     return payload
 

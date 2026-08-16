@@ -64,15 +64,27 @@ def _load_authority(
     authorization: Mapping[str, Any],
     repo_sha: str,
 ) -> dict[str, Any]:
+    campaign_id = str(authorization.get("campaign_id") or CAMPAIGN_ID)
+    campaign_profile = str(authorization.get("campaign_profile") or CAMPAIGN_PROFILE)
+    program_space = dict(authorization.get("program_space") or {})
+    prior_count = int(program_space.get("prior_exact_count") or PRIOR_EXACT_COUNT)
+    prior_ident_sha = str(
+        program_space.get("prior_exact_identities_sha256")
+        or PRIOR_EXACT_IDENTITIES_SHA256
+    )
+    prior_freeze_payload_sha = str(
+        program_space.get("prior_freeze_payload_sha256")
+        or PRIOR_FREEZE_PAYLOAD_SHA256
+    )
     return shared._load_authority(
         args,
         authorization=authorization,
         repo_sha=repo_sha,
-        campaign_id=CAMPAIGN_ID,
-        campaign_profile=CAMPAIGN_PROFILE,
-        prior_freeze_payload_sha256=PRIOR_FREEZE_PAYLOAD_SHA256,
-        prior_exact_count=PRIOR_EXACT_COUNT,
-        prior_exact_identities_sha256=PRIOR_EXACT_IDENTITIES_SHA256,
+        campaign_id=campaign_id,
+        campaign_profile=campaign_profile,
+        prior_freeze_payload_sha256=prior_freeze_payload_sha,
+        prior_exact_count=prior_count,
+        prior_exact_identities_sha256=prior_ident_sha,
         prior_identity_field="combined_prior_exact_identities",
         input_binding_schema_version="cn_program_optimizer_d1_input_binding_v1",
     )
@@ -305,6 +317,11 @@ def _run_prefinancial(
     repo_sha: str,
 ) -> dict[str, Any]:
     authority = _load_authority(args, authorization=authorization, repo_sha=repo_sha)
+    program_space = dict(authorization.get("program_space") or {})
+    remaining_prospective = int(
+        program_space.get("remaining_prospective_enhanced_exact_count")
+        or REMAINING_PROSPECTIVE_ENHANCED
+    )
     cohort = _cohort(authority)
     selected: list[str] = []
     arms: dict[str, int] = {}
@@ -346,7 +363,7 @@ def _run_prefinancial(
         "status": "D1_PREFINANCIAL_READY",
         "program_space_count": len(authority["entries"]),
         "prior_exact_count": len(authority["prior_ids"]),
-        "prospective_enhanced_available_count": REMAINING_PROSPECTIVE_ENHANCED,
+        "prospective_enhanced_available_count": remaining_prospective,
         "logical_records": len(selected),
         "unique_selected_exact_count": len(set(selected)),
         "selector_counts": cohort.selector_counts(),
@@ -367,6 +384,22 @@ def run_authorized_d1_cohort(
     if bool(getattr(args, "prefinancial_only", False)):
         raise RuntimeError("D1_PREFINANCIAL_ONLY_FORBIDDEN_AFTER_ADMISSION")
     authority = _load_authority(args, authorization=authorization, repo_sha=repo_sha)
+    program_space = dict(authorization.get("program_space") or {})
+    campaign_id = str(authorization.get("campaign_id") or CAMPAIGN_ID)
+    campaign_profile = str(authorization.get("campaign_profile") or CAMPAIGN_PROFILE)
+    prior_exact_count = int(program_space.get("prior_exact_count") or PRIOR_EXACT_COUNT)
+    prior_exact_identities_sha256 = str(
+        program_space.get("prior_exact_identities_sha256")
+        or PRIOR_EXACT_IDENTITIES_SHA256
+    )
+    prior_freeze_payload_sha256 = str(
+        program_space.get("prior_freeze_payload_sha256")
+        or PRIOR_FREEZE_PAYLOAD_SHA256
+    )
+    remaining_prospective = int(
+        program_space.get("remaining_prospective_enhanced_exact_count")
+        or REMAINING_PROSPECTIVE_ENHANCED
+    )
     root = args.output_root.resolve()
     if not root.is_dir() or not (root / ".project_control_execution").is_dir():
         raise RuntimeError("D1_ADMITTED_OUTPUT_ROOT_MISSING")
@@ -385,9 +418,9 @@ def run_authorized_d1_cohort(
         root / "prior_exact_binding.json",
         {
             "schema_version": "cn_program_optimizer_d1_prior_binding_v1",
-            "prior_exact_count": PRIOR_EXACT_COUNT,
-            "prior_exact_identities_sha256": PRIOR_EXACT_IDENTITIES_SHA256,
-            "prior_freeze_payload_sha256": PRIOR_FREEZE_PAYLOAD_SHA256,
+            "prior_exact_count": prior_exact_count,
+            "prior_exact_identities_sha256": prior_exact_identities_sha256,
+            "prior_freeze_payload_sha256": prior_freeze_payload_sha256,
             "prior_results_imported_as_optimizer_feedback": False,
         },
     )
@@ -487,8 +520,8 @@ def run_authorized_d1_cohort(
         {
             "schema_version": "cn_program_optimizer_d1_development_complete_v1",
             "status": STATUS,
-            "campaign_id": CAMPAIGN_ID,
-            "campaign_profile": CAMPAIGN_PROFILE,
+            "campaign_id": campaign_id,
+            "campaign_profile": campaign_profile,
             "policy_id": D1_POLICY_ID,
             "repo_sha": repo_sha,
             "authorization_payload_sha256": str(
@@ -497,9 +530,9 @@ def run_authorized_d1_cohort(
             "input_binding_sha256": input_hash,
             "program_space_count": FROZEN_PROGRAM_SPACE_COUNT,
             "program_space_sha256": FROZEN_PROGRAM_SPACE_SHA256,
-            "prior_exact_count": PRIOR_EXACT_COUNT,
-            "prior_exact_identities_sha256": PRIOR_EXACT_IDENTITIES_SHA256,
-            "remaining_prospective_enhanced_before_run": REMAINING_PROSPECTIVE_ENHANCED,
+            "prior_exact_count": prior_exact_count,
+            "prior_exact_identities_sha256": prior_exact_identities_sha256,
+            "remaining_prospective_enhanced_before_run": remaining_prospective,
             "logical_records": D1_LOGICAL_RECORDS,
             "physical_evaluation_calls": D1_LOGICAL_RECORDS,
             "closed_waves": TOTAL_WAVES,
