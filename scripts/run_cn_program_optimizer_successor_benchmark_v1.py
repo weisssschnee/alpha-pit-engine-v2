@@ -107,20 +107,29 @@ def _artifact(path: Path, root: Path) -> dict[str, Any]:
     }
 
 
-def _read_prior_freeze(path: Path) -> dict[str, Any]:
+def _read_prior_freeze(
+    path: Path,
+    *,
+    expected_payload_sha256: str = PRIOR_FREEZE_PAYLOAD_SHA256,
+    expected_count: int = PRIOR_EXACT_COUNT,
+    expected_exact_identities_sha256: str = PRIOR_EXACT_IDENTITIES_SHA256,
+    identity_field: str = "prior_exact_identities",
+) -> dict[str, Any]:
     payload = engine._read_json(path.resolve())
     body = dict(payload)
     claimed = str(body.pop("freeze_payload_sha256", ""))
-    if claimed != stable_hash(body) or claimed != PRIOR_FREEZE_PAYLOAD_SHA256:
+    if claimed != stable_hash(body) or claimed != str(expected_payload_sha256):
         raise RuntimeError("SUCCESSOR_PRIOR_FREEZE_HASH_DRIFT")
-    ids = tuple(map(str, payload.get("prior_exact_identities") or ()))
+    ids = tuple(map(str, payload.get(str(identity_field)) or ()))
     if (
-        len(ids) != PRIOR_EXACT_COUNT
-        or len(set(ids)) != PRIOR_EXACT_COUNT
-        or stable_hash(list(ids)) != PRIOR_EXACT_IDENTITIES_SHA256
+        len(ids) != int(expected_count)
+        or len(set(ids)) != int(expected_count)
+        or stable_hash(list(ids)) != str(expected_exact_identities_sha256)
     ):
         raise RuntimeError("SUCCESSOR_PRIOR_FREEZE_IDENTITY_DRIFT")
-    return payload
+    normalized = dict(payload)
+    normalized["prior_exact_identities"] = list(ids)
+    return normalized
 
 
 def _program_entries(catalog: Mapping[str, Sequence[Mapping[str, Any]]]):
@@ -133,6 +142,13 @@ def _load_authority(
     *,
     authorization: Mapping[str, Any],
     repo_sha: str,
+    campaign_id: str = CAMPAIGN_ID,
+    campaign_profile: str = CAMPAIGN_PROFILE,
+    prior_freeze_payload_sha256: str = PRIOR_FREEZE_PAYLOAD_SHA256,
+    prior_exact_count: int = PRIOR_EXACT_COUNT,
+    prior_exact_identities_sha256: str = PRIOR_EXACT_IDENTITIES_SHA256,
+    prior_identity_field: str = "prior_exact_identities",
+    input_binding_schema_version: str = "cn_program_optimizer_successor_input_binding_v1",
 ) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError("SUCCESSOR_BENCHMARK_UNAUTHORIZED_HOST")
@@ -156,7 +172,13 @@ def _load_authority(
         if _norm(observed_paths[key]) != _norm(expected):
             raise RuntimeError(f"SUCCESSOR_{key.upper()}_PATH_DRIFT")
 
-    prior = _read_prior_freeze(args.prior_exact_freeze)
+    prior = _read_prior_freeze(
+        args.prior_exact_freeze,
+        expected_payload_sha256=prior_freeze_payload_sha256,
+        expected_count=prior_exact_count,
+        expected_exact_identities_sha256=prior_exact_identities_sha256,
+        identity_field=prior_identity_field,
+    )
     prior_ids = tuple(map(str, prior["prior_exact_identities"]))
 
     freeze_root = args.source_freeze_root.resolve()
@@ -314,15 +336,15 @@ def _load_authority(
     )
     input_binding = engine._self_hashed(
         {
-            "schema_version": "cn_program_optimizer_successor_input_binding_v1",
-            "campaign_id": CAMPAIGN_ID,
-            "campaign_profile": CAMPAIGN_PROFILE,
+            "schema_version": str(input_binding_schema_version),
+            "campaign_id": str(campaign_id),
+            "campaign_profile": str(campaign_profile),
             "runner_repo_sha": str(repo_sha),
             "authorization_payload_sha256": str(
                 authorization["authorization_payload_sha256"]
             ),
-            "prior_freeze_payload_sha256": PRIOR_FREEZE_PAYLOAD_SHA256,
-            "prior_exact_identities_sha256": PRIOR_EXACT_IDENTITIES_SHA256,
+            "prior_freeze_payload_sha256": str(prior_freeze_payload_sha256),
+            "prior_exact_identities_sha256": str(prior_exact_identities_sha256),
             "source_freeze_closure_file_sha256": SOURCE_FREEZE_CLOSURE_FILE_SHA256,
             "source_freeze_closure_payload_sha256": SOURCE_FREEZE_CLOSURE_PAYLOAD_SHA256,
             "source_run_contract_file_sha256": SOURCE_RUN_CONTRACT_FILE_SHA256,

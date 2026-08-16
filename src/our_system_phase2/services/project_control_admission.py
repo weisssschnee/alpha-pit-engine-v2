@@ -79,6 +79,7 @@ CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
         "cn-joint-program-search-v2-canary",
         "cn-program-optimizer-tournament-v1",
         "cn-program-optimizer-successor-benchmark-v1",
+        "cn-program-optimizer-d1-development-v1",
     }
 )
 
