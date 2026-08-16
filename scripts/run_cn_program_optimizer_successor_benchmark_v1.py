@@ -720,6 +720,19 @@ def _run_prefinancial(
         raise RuntimeError("SUCCESSOR_PREFINANCIAL_LOGICAL_WAVE_DRIFT")
     if any(exact in set(authority["prior_ids"]) for exact in prepared.physical_exact_identities):
         raise RuntimeError("SUCCESSOR_PREFINANCIAL_PRIOR_EXACT_REUSE")
+    schedules = _build_physical_schedules(
+        prepared=prepared,
+        authority=authority,
+        start_ordinal=0,
+    )
+    if len(schedules) != len(prepared.physical_exact_identities):
+        raise RuntimeError("SUCCESSOR_PREFINANCIAL_PHYSICAL_SCHEDULE_COUNT_DRIFT")
+    proposal_arms = {
+        str(dict(row["proposal_receipt"])["generation_arm"])
+        for row in schedules
+    }
+    if proposal_arms != {"SUCCESSOR_PHYSICAL_DEDUP"}:
+        raise RuntimeError("SUCCESSOR_PREFINANCIAL_PHYSICAL_PROVENANCE_DRIFT")
     return {
         "status": "SUCCESSOR_PREFINANCIAL_READY",
         "program_space_count": len(authority["entries"]),
@@ -735,6 +748,8 @@ def _run_prefinancial(
         ),
         "wave0_logical_count": len(prepared.asks),
         "wave0_physical_unique_count": len(prepared.physical_exact_identities),
+        "wave0_schedule_build_count": len(schedules),
+        "wave0_physical_generation_arms": sorted(proposal_arms),
         "wave0_overlap_map": prepared.overlap_map(),
         "gate_statistics": prepared.gate_statistics,
         "restricted_reads": 0,
