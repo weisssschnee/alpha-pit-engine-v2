@@ -1,0 +1,88 @@
+{
+  "features": [
+    "dev_matched_return",
+    "dev_matched_reward",
+    "dev_robust_median",
+    "dev_lower_tail"
+  ],
+  "filter_id": "CN_D1_TRANSFER_FILTER_ECON_ONLY_LOGIT_V1",
+  "filter_payload_sha256": "2f468cbba74fc7b226c8d3b2d43b27532a9b71354ef025eb9e18fd8dedb7f421",
+  "forward_2026_reads": 0,
+  "holdout_authority": "NONE",
+  "holdout_reads": 0,
+  "model": {
+    "C": 1.0,
+    "class_weight": "balanced",
+    "family": "LOGISTIC_REGRESSION",
+    "max_iter": 2000,
+    "random_state": 826017,
+    "solver": "lbfgs",
+    "standardization": "FIT_ON_120_TUNING_ROWS"
+  },
+  "next_cohort_binding": {
+    "development_policy": "CN_PROGRAM_OPTIMIZER_TPE_BOOTSTRAP_TO_SURROGATE_D1_V1",
+    "development_selector_shape": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    },
+    "prior_exact_count": 1030,
+    "remaining_unseen_enhanced_programs": 2554
+  },
+  "promotion_authorized": false,
+  "prospective_B_validation_acceptance": {
+    "all_conditions_required": true,
+    "filtered_minus_unfiltered_precision_minimum": 0.1,
+    "filtered_precision_minimum": 0.35,
+    "filtered_recall_minimum": 0.6,
+    "minimum_development_productive_population": 30,
+    "rule_change_after_B_development_or_validation": "FORBIDDEN"
+  },
+  "schema_version": "cn_program_optimizer_d1_transfer_filter_v1",
+  "score_formula_raw": {
+    "coefficients": {
+      "dev_lower_tail": 3.4471239081108234,
+      "dev_matched_return": 1.7566715649249385,
+      "dev_matched_reward": 0.5200457654357613,
+      "dev_robust_median": -13.23500802721332
+    },
+    "intercept": -0.29075656598009203,
+    "probability": "sigmoid(raw_linear_score)"
+  },
+  "selection_contract": {
+    "ordering": [
+      "TRANSFER_SCORE_DESC",
+      "EXACT_IDENTITY_ASC"
+    ],
+    "population": "ALL_DEVELOPMENT_PRODUCTIVE_PROGRAMS_IN_NEXT_FRESH_D1_COHORT",
+    "selected_count_rule": "CEIL_FRACTION_TIMES_POPULATION",
+    "selected_fraction": 0.4,
+    "selector_template_cohort_wave_features": "FORBIDDEN",
+    "validation_visibility_at_selection": "FORBIDDEN"
+  },
+  "status": "FROZEN_BEFORE_NEXT_DEVELOPMENT_COHORT_VALIDATION",
+  "training_population": {
+    "candidate_count": 120,
+    "dataset_sha256": "f5fb4603d2d46179e7363edffe38ba7d99f6405a6e6b0d3b194f663c1c4ff350",
+    "validation_productive_count": 30,
+    "validation_productive_rate": 0.25,
+    "validation_role": "TUNING_REPORT_ONLY"
+  },
+  "tuning_evidence": {
+    "cross_cohort": {
+      "D1_FRESH_TO_SUCCESSOR_D1": {
+        "auc": 0.9064625850340137,
+        "top40_precision": 0.5652173913043478,
+        "top40_recall": 0.9285714285714286
+      },
+      "SUCCESSOR_D1_TO_D1_FRESH": {
+        "auc": 0.7578125,
+        "top40_precision": 0.4230769230769231,
+        "top40_recall": 0.6875
+      }
+    },
+    "mixed_repeated_oof_auc": 0.8018518518518519,
+    "mixed_repeated_oof_top40_precision": 0.4791666666666667,
+    "mixed_repeated_oof_top40_recall": 0.7666666666666667
+  }
+}
