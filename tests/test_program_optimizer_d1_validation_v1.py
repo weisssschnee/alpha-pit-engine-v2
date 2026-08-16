@@ -15,7 +15,9 @@ from scripts.run_cn_program_optimizer_d1_report_only_validation_v1 import (
     _validation_productive,
 )
 from our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1 import (
+    AUTHORIZATION_RELATIVE_PATH,
     ROUTE_ID,
+    verify_authorization,
 )
 from our_system_phase2.services.project_control_admission import (
     ACTION_LAUNCH,
@@ -95,3 +97,16 @@ def test_d1_validation_route_is_high_cost_and_campaign_bound() -> None:
     )
     assert app.HIGH_COST_ROUTE_ACTIONS[ROUTE_ID] == {ACTION_LAUNCH, ACTION_RETRY}
     assert ROUTE_ID in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
+
+
+def test_d1_validation_authorization_roundtrip_is_frozen_and_report_only() -> None:
+    payload = verify_authorization(REPO / AUTHORIZATION_RELATIVE_PATH, repo_root=REPO)
+    assert payload["status"] == "D1_REPORT_ONLY_VALIDATION_FROZEN_READY"
+    assert payload["candidate_freeze"]["candidate_count"] == 120
+    assert payload["prepared_binding"]["required_physical_leaf_count"] == 48
+    assert payload["evaluation_role"] == "validation"
+    assert payload["usage"] == "REPORT_ONLY_CANDIDATE_TRANSFER"
+    assert payload["optimizer_feedback_write"] == "FORBIDDEN"
+    assert payload["holdout_reads"] == 0
+    assert payload["forward_2026_reads"] == 0
+    assert payload["promotion_authorized"] is False

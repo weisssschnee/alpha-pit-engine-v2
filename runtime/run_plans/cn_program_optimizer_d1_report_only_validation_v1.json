@@ -1,0 +1,69 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "6a0849da98c6b257b64eb3bee8db1a033eaab1da9c542c7386454656ed614fc9",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_OPTIMIZER_D1_REPORT_ONLY_VALIDATION_V1",
+  "campaign_profile": "cn_program_optimizer_d1_report_only_validation_v1",
+  "candidate_freeze": {
+    "candidate_count": 120,
+    "candidate_exact_identities_sha256": "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687",
+    "freeze_payload_sha256": "ddde0c64667bef8a12e6261dab8a3998e5591085bf0fb1f0851fd0cfa0f85a8a",
+    "members_file_sha256": "4f0befede84762a81b1a458178c7e9a294821c3cb8a61f512e7a3bf990ef19da",
+    "members_relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_candidate_members_20260816.jsonl",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_candidate_freeze_20260816.json"
+  },
+  "development_search_visibility": "FORBIDDEN",
+  "evaluation_role": "validation",
+  "execution_authorized": true,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "oos_authority": "VALIDATION_REPORT_ONLY_EVIDENCE_ONLY",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "prepared_binding": {
+    "file_sha256": "2fdef8b751810b0f3812651df700273064dd875aa5f8ddae62eff0c1461675a9",
+    "payload_sha256": "44fae2d49caf1e377d7816886ec475136fdfb0e571f8be26f5fcc71731247917",
+    "prep_repo_sha": "97fbe0770cf5aed347272c9887f0228a1ba9b9d3",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_prefinancial_20260816.json",
+    "required_physical_leaf_count": 48,
+    "validation_field_manifest_sha256": "699a0c514ad19e94a91ae0d2edf38bdd567f2cc55cba10600fcc32d97b2e1a15",
+    "validation_session_authority_audit_sha256": "38cdcb8484b38a9951c72f520d0e2214f8c62266c3abad4219f275616386b950",
+    "validation_session_authority_manifest_sha256": "da914053dfd4210913904335e83fc91cafb01f77ba1d580cee4d335a261abdcc"
+  },
+  "project_control_route_id": "cn-program-optimizer-d1-report-only-validation-v1",
+  "promotion_authorized": false,
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_report_only_validation_authorization_v1",
+  "source_binding": {
+    "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "source_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+  },
+  "status": "D1_REPORT_ONLY_VALIDATION_FROZEN_READY",
+  "usage": "REPORT_ONLY_CANDIDATE_TRANSFER",
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
