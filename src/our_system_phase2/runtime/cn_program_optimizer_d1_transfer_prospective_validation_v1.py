@@ -63,13 +63,16 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
         or list(payload.get("validation_windows") or ())!=list(VALIDATION_WINDOWS)
     ): raise ValueError("prospective transfer validation authorization contract drift")
     cand=dict(payload.get("candidate_freeze") or {}); freeze_path=_relative(root,cand.get("relative_path")); members_path=_relative(root,cand.get("members_relative_path"))
-    if sha256_file(freeze_path)!=str(cand.get("file_sha256") or "") or sha256_file(members_path)!=str(cand.get("members_file_sha256") or ""): raise ValueError("prospective candidate freeze file drift")
+    if sha256_file(freeze_path)!=str(cand.get("file_sha256") or ""): raise ValueError("prospective candidate freeze file drift")
+    members=[json.loads(line) for line in members_path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
+    if stable_hash(members)!=str(cand.get("members_payload_sha256") or ""): raise ValueError("prospective candidate members semantic drift")
     freeze=_read_self_hashed(freeze_path,"freeze_payload_sha256","prospective candidate freeze")
     if (
         freeze.get("status")!="FROZEN_BEFORE_VALIDATION_ACCESS"
         or freeze.get("freeze_payload_sha256")!=cand.get("payload_sha256")
         or int(freeze.get("candidate_count") or 0)!=int(cand.get("candidate_count") or -1)
         or freeze.get("candidate_exact_identities_sha256")!=cand.get("candidate_exact_identities_sha256")
+        or freeze.get("candidate_members_payload_sha256")!=cand.get("members_payload_sha256")
         or int(freeze.get("transfer_filter_selected_count") or 0)!=int(cand.get("transfer_filter_selected_count") or -1)
         or freeze.get("transfer_filter_selected_exact_identities_sha256")!=cand.get("transfer_filter_selected_exact_identities_sha256")
     ): raise ValueError("prospective candidate freeze semantic drift")

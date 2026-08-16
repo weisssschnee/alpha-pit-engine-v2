@@ -78,7 +78,7 @@ def freeze(*, run_root: Path, filter_path: Path, output_root: Path, source_cohor
     freeze_payload={
         "schema_version":"cn_program_optimizer_d1_transfer_prospective_validation_freeze_v1","status":"FROZEN_BEFORE_VALIDATION_ACCESS","source_cohort":source_cohort,
         "source_development_root":str(run_root),"source_development_closure_file_sha256":_sha256(closure_path),"source_development_closure_payload_sha256":claimed,
-        "candidate_count":len(members),"candidate_exact_identities_sha256":stable_hash(sorted(m["exact_identity"] for m in members)),"candidate_members_file_sha256":_sha256(members_path),
+        "candidate_count":len(members),"candidate_exact_identities_sha256":stable_hash(sorted(m["exact_identity"] for m in members)),"candidate_members_payload_sha256":stable_hash(members),
         "transfer_filter_application_file_sha256":_sha256(app_path),"transfer_filter_application_payload_sha256":application["application_payload_sha256"],"transfer_filter_id":application["filter_id"],
         "transfer_filter_selected_count":len(selected),"transfer_filter_selected_exact_identities":selected,"transfer_filter_selected_exact_identities_sha256":stable_hash(selected),
         "selection_rule":{"validation_population":"ALL_DEVELOPMENT_PRODUCTIVE_PROGRAMS","filter_membership":"FROZEN_TOP_40_PERCENT_BEFORE_VALIDATION","validation_result_visibility_at_freeze":"FORBIDDEN","post_hoc_ranking":"FORBIDDEN"},
