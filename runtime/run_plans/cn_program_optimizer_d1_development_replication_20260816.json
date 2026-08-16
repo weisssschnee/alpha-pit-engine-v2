@@ -1,0 +1,40 @@
+{
+  "decision": "KEEP_D1_AS_DEFAULT_PREFERRED_DEVELOPMENT_SEARCH_POLICY",
+  "fresh_disjoint_cohort": {
+    "closure_payload_sha256": "43f220a947923c394524437baf17c3b54f3cf9af5dff0ccedbf23aed2bf90158",
+    "independent_audit_payload_sha256": "a33b6af23865a5469a083c4f58a77bf2c59913817174c66ea76fd87dd117d6d3",
+    "optimized_admitted": 61,
+    "optimized_efficiency": 0.5,
+    "optimized_evaluated": 84,
+    "optimized_productive": 42,
+    "total_evaluated": 140,
+    "total_productive": 64
+  },
+  "interpretation": {
+    "alpha_qualification_established": false,
+    "development_policy_repeatability": "SUPPORTED_ON_DISJOINT_PROGRAM_SUPPORT",
+    "fresh_optimized_yield_not_degraded": true,
+    "oos_qualification_established": false,
+    "policy_superiority_retested_in_fresh_cohort": false,
+    "production_promotion_authorized": false
+  },
+  "policy_id": "CN_PROGRAM_OPTIMIZER_TPE_BOOTSTRAP_TO_SURROGATE_D1_V1",
+  "previous_prospective_benchmark": {
+    "evidence_payload_sha256": "948e982fa1d48b68d8e30055e5ca81c1cebf40a2dc2d9a10643bc61950100a13",
+    "optimized_admitted": 60,
+    "optimized_efficiency": 0.47619047619047616,
+    "optimized_evaluated": 84,
+    "optimized_productive": 40
+  },
+  "replication_payload_sha256": "cc76311e7f78c3b607b8bd9f5cc8b946ac76dfb131ac5177d8fb0cdc657c6b6e",
+  "schema_version": "cn_program_optimizer_d1_development_replication_v1",
+  "status": "D1_SEARCH_POLICY_DEVELOPMENT_REPLICATION_PASS",
+  "support_independence": {
+    "combined_postrun_exact_sha256": "1adc01934b8c9b11459cca4b40c2bb6926d7a35b2fe90bccf35a7a39f78cfec2",
+    "combined_postrun_prior_exact_count": 1030,
+    "fresh_exact_count": 140,
+    "prior_exact_before_fresh_cohort": 890,
+    "prior_overlap_count": 0,
+    "remaining_unseen_enhanced_exact_count": 2554
+  }
+}
