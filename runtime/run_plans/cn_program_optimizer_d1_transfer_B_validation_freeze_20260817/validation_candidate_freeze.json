@@ -1,8 +1,8 @@
 {
   "candidate_count": 63,
   "candidate_exact_identities_sha256": "47f8565038a70adbdc71c1062212259ff3375d5adcb4c7cc5ed92cb8aae33f5b",
-  "candidate_members_file_sha256": "f0e333b345539339df0fce11224491a4db3f55c65bc3c396b070ccbe712b02f2",
-  "freeze_payload_sha256": "b06755773fcb4365b94e2db6eb6302086f911b04f1a82c2b043cd317a429657d",
+  "candidate_members_payload_sha256": "ba65253454a5fc44845df42e2df52d7c9f0c1b1886091616e5ba46c269af2b3f",
+  "freeze_payload_sha256": "002644259de61d7acfd2bba15946ceaeab18ac19d5a453f31ebad7c4b123d645",
   "schema_version": "cn_program_optimizer_d1_transfer_prospective_validation_freeze_v1",
   "selection_rule": {
     "filter_membership": "FROZEN_TOP_40_PERCENT_BEFORE_VALIDATION",
