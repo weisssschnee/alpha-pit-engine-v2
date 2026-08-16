@@ -3,6 +3,8 @@ from __future__ import annotations
 from types import MappingProxyType
 from pathlib import Path
 
+import app
+
 from scripts.prepare_cn_program_optimizer_d1_report_only_validation_v1 import (
     EXPECTED_CANDIDATE_COUNT,
     EXPECTED_CANDIDATE_EXACT_SHA256,
@@ -11,6 +13,14 @@ from scripts.prepare_cn_program_optimizer_d1_report_only_validation_v1 import (
 )
 from scripts.run_cn_program_optimizer_d1_report_only_validation_v1 import (
     _validation_productive,
+)
+from our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1 import (
+    ROUTE_ID,
+)
+from our_system_phase2.services.project_control_admission import (
+    ACTION_LAUNCH,
+    ACTION_RETRY,
+    CAMPAIGN_AUTHORIZATION_BOUND_ROUTES,
 )
 from our_system_phase2.services.search_v2_admission import AbsoluteEconomicAdmission
 from our_system_phase2.services.search_v2_conditional_uplift import ProgramUpliftCredit
@@ -77,3 +87,11 @@ def test_validation_productive_requires_admission_and_both_positive_uplifts() ->
     assert _validation_productive(_admission(True), _uplift(0.0, 0.2)) is False
     assert _validation_productive(_admission(True), _uplift(0.1, 0.0)) is False
     assert _validation_productive(_admission(True), _uplift(-0.1, 0.2)) is False
+
+
+def test_d1_validation_route_is_high_cost_and_campaign_bound() -> None:
+    assert app.ROUTES[ROUTE_ID] == (
+        "our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1"
+    )
+    assert app.HIGH_COST_ROUTE_ACTIONS[ROUTE_ID] == {ACTION_LAUNCH, ACTION_RETRY}
+    assert ROUTE_ID in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES

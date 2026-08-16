@@ -76,6 +76,7 @@ ROUTES: dict[str, str] = {
     "cn-program-optimizer-tournament-v1": "our_system_phase2.runtime.cn_program_optimizer_tournament_v1",
     "cn-program-optimizer-successor-benchmark-v1": "our_system_phase2.runtime.cn_program_optimizer_successor_benchmark_v1",
     "cn-program-optimizer-d1-development-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_development_v1",
+    "cn-program-optimizer-d1-report-only-validation-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1",
     "cn-typed-candidate-program-v1-smoke": "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke",
     "cn-core-pack-authority-smoke": "scripts.run_cn_core_pack_authority_smoke",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
@@ -132,6 +133,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-optimizer-d1-development-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
+    ),
+    "cn-program-optimizer-d1-report-only-validation-v1": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
 }

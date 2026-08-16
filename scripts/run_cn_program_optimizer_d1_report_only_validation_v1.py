@@ -291,6 +291,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     exacts = [str(row.get("d1_exact_identity") or row.get("successor_exact_identity") or "") for row in schedules]
     if len(set(exacts)) != EXPECTED_CANDIDATE_COUNT or stable_hash(sorted(exacts)) != EXPECTED_CANDIDATE_EXACT_SHA256:
         raise RuntimeError("D1 validation schedule exact set drift")
+    member_by_exact = {str(row["exact_identity"]): dict(row) for row in members}
+    for schedule, exact in zip(schedules, exacts, strict=True):
+        member = member_by_exact[exact]
+        body = {
+            key: value
+            for key, value in schedule.items()
+            if key != "schedule_record_sha256"
+        }
+        if stable_hash(body) != str(schedule.get("schedule_record_sha256") or ""):
+            raise RuntimeError("D1 validation schedule self-hash drift")
+        if (
+            str(schedule["schedule_record_sha256"]) != str(member["schedule_record_sha256"])
+            or str(schedule["pair_id"]) != str(member["pair_id"])
+            or str(schedule["primary_program"]["program_id"]) != str(member["program_id"])
+            or str(schedule["control_program"]["program_id"]) != str(member["control_program_id"])
+        ):
+            raise RuntimeError("D1 validation schedule/member economic identity drift")
 
     output_root = args.output_root.resolve()
     if output_root.exists():
