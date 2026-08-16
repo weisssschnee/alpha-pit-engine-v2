@@ -214,11 +214,24 @@ def test_receipt_is_replayable_and_provenance_does_not_change_program_identity(
         ask_ordinal=8,
         generation_arm="NOVELTY_RESERVE",
     )
+    successor_physical = adapter.build_receipt(
+        program_template_id="BASE_TEMPORAL_MARKET_EVENT",
+        program=program,
+        components=[components[role] for role in roles],
+        combination_policy=None,
+        batch_id="successor_wave_000",
+        ask_ordinal=0,
+        generation_arm="SUCCESSOR_PHYSICAL_DEDUP",
+    )
     assert first.semantic_program_hash == second.semantic_program_hash
     assert first.to_record()["proposal_receipt_sha256"] != second.to_record()[
         "proposal_receipt_sha256"
     ]
     assert ProgramProposalReceiptV0.from_record(first.to_record()) == first
+    assert (
+        ProgramProposalReceiptV0.from_record(successor_physical.to_record())
+        == successor_physical
+    )
 
 
 def test_component_forgery_and_template_role_drift_fail_closed(program_context) -> None:
