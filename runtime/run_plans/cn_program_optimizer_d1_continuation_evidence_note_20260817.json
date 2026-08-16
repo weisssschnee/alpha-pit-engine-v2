@@ -1,0 +1,17 @@
+{
+  "evidence_payload_sha256": "8ec7d7619b5ca609bc5336db4d33caf5fc76bfeba298440b2d60169ea8bb0214",
+  "forward_2026_access": 0,
+  "holdout_access": 0,
+  "independent_audit_file_sha256": "e6dddad21d43bc8734a2e5345b0907596659ce48287fabd029469d4bdb9c3b92",
+  "next_action": "APPLY_FROZEN_TRANSFER_FILTER_THEN_REPORT_ONLY_VALIDATION",
+  "postrun_prior_exact_count": 1170,
+  "postrun_prior_freeze_file_sha256": "178b739c373bf1139baae8816a7d8f5b3eb543a0c2a68cfb827f9869d96a0276",
+  "promotion_authorized": false,
+  "remaining_unseen_enhanced_programs": 2414,
+  "repo_sha": "135110e792b13996a88fe27a3cf386ff47147bee",
+  "run_closure_file_sha256": "abd6a8fd2863ddb18ce95919c7dc2c523e43105527034ce7a17ed367817dfef2",
+  "run_closure_payload_sha256": "6ad3f2edd9628fa67f950210eeeb9d2a0e887c8fffc51de0cd39f082d8b2f8be",
+  "schema_version": "cn_program_optimizer_d1_continuation_evidence_note_v1",
+  "status": "DEVELOPMENT_ONLY_EVIDENCE_CLOSED",
+  "validation_access_during_run": 0
+}

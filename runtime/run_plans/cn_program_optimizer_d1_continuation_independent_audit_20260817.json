@@ -1,0 +1,48 @@
+{
+  "audit": {
+    "closed_waves": 20,
+    "closure_file_sha256": "abd6a8fd2863ddb18ce95919c7dc2c523e43105527034ce7a17ed367817dfef2",
+    "closure_payload_sha256": "6ad3f2edd9628fa67f950210eeeb9d2a0e887c8fffc51de0cd39f082d8b2f8be",
+    "consumption_count": 1,
+    "errors": [],
+    "logical_records": 140,
+    "metric_post_bootstrap": {
+      "admitted": 76,
+      "evaluated": 112,
+      "productive": 52
+    },
+    "metric_surrogate_optimized": {
+      "admitted": 60,
+      "evaluated": 84,
+      "productive": 42
+    },
+    "metric_total": {
+      "admitted": 94,
+      "evaluated": 140,
+      "productive": 63
+    },
+    "policy_id": "CN_PROGRAM_OPTIMIZER_TPE_BOOTSTRAP_TO_SURROGATE_D1_V1",
+    "prior_overlap_count": 0,
+    "restricted_reads": {
+      "forward_2026": 0,
+      "forward_b": 0,
+      "historical_2023": 0,
+      "holdout": 0,
+      "validation": 0
+    },
+    "selector_counts": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    },
+    "status": "PASS",
+    "unique_exact": 140
+  },
+  "audit_payload_sha256": "cab551fd88ca7c88abb59720c3ab2989c91cc23572858fff0d0157ec78e9b9a9",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "promotion_authorized": false,
+  "schema_version": "cn_program_optimizer_d1_continuation_independent_audit_v1",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_v1_20260817_135110e",
+  "status": "PASS"
+}

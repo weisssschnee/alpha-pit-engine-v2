@@ -1,0 +1,375 @@
+{
+  "automatic_successor_authorized": false,
+  "closed_waves": 20,
+  "closure_file_sha256": "abd6a8fd2863ddb18ce95919c7dc2c523e43105527034ce7a17ed367817dfef2",
+  "closure_payload_sha256": "6ad3f2edd9628fa67f950210eeeb9d2a0e887c8fffc51de0cd39f082d8b2f8be",
+  "development_productive_count": 63,
+  "independent_audit_closure_file_sha256": "abd6a8fd2863ddb18ce95919c7dc2c523e43105527034ce7a17ed367817dfef2",
+  "independent_audit_status": "PASS",
+  "logical_records": 140,
+  "next_action": "FREEZE_ALL_DEVELOPMENT_PRODUCTIVE_AND_TRANSFER_FILTER_MEMBERSHIP_BEFORE_VALIDATION",
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "ffb776df698efd1e320818cb02b144933cc72fd63badcfdd4f420a5fb9570927",
+  "physical_evaluation_calls": 140,
+  "policy_metrics": {
+    "POST_BOOTSTRAP_EFFICIENCY": {
+      "admission_rate": 0.6785714285714286,
+      "admitted": 76,
+      "evaluated": 112,
+      "productive": 52,
+      "productive_efficiency": 0.4642857142857143,
+      "productive_wilson_95": {
+        "lower": 0.37464361045629735,
+        "upper": 0.5562964857627701
+      }
+    },
+    "SURROGATE_OPTIMIZED_EFFICIENCY": {
+      "admission_rate": 0.7142857142857143,
+      "admitted": 60,
+      "evaluated": 84,
+      "productive": 42,
+      "productive_efficiency": 0.5,
+      "productive_wilson_95": {
+        "lower": 0.3954393376854136,
+        "upper": 0.6045606623145864
+      }
+    },
+    "TOTAL_POLICY_EFFICIENCY": {
+      "admission_rate": 0.6714285714285714,
+      "admitted": 94,
+      "evaluated": 140,
+      "productive": 63,
+      "productive_efficiency": 0.45,
+      "productive_wilson_95": {
+        "lower": 0.37002376321068237,
+        "upper": 0.532646856826259
+      }
+    },
+    "per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.5,
+        "admitted": 10,
+        "evaluated": 20,
+        "productive": 6,
+        "productive_efficiency": 0.3,
+        "productive_wilson_95": {
+          "lower": 0.14547724486760433,
+          "upper": 0.5189728183535235
+        }
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 10,
+        "evaluated": 20,
+        "productive": 5,
+        "productive_efficiency": 0.25,
+        "productive_wilson_95": {
+          "lower": 0.11186170140766569,
+          "upper": 0.46870087761874407
+        }
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.85,
+        "admitted": 17,
+        "evaluated": 20,
+        "productive": 12,
+        "productive_efficiency": 0.6,
+        "productive_wilson_95": {
+          "lower": 0.3865815007622531,
+          "upper": 0.781193467627183
+        }
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.75,
+        "admitted": 15,
+        "evaluated": 20,
+        "productive": 9,
+        "productive_efficiency": 0.45,
+        "productive_wilson_95": {
+          "lower": 0.2581978582556243,
+          "upper": 0.6579146575496578
+        }
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.95,
+        "admitted": 19,
+        "evaluated": 20,
+        "productive": 18,
+        "productive_efficiency": 0.9,
+        "productive_wilson_95": {
+          "lower": 0.6989663547715128,
+          "upper": 0.9721335187862318
+        }
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.35,
+        "admitted": 7,
+        "evaluated": 20,
+        "productive": 4,
+        "productive_efficiency": 0.2,
+        "productive_wilson_95": {
+          "lower": 0.08065766257979808,
+          "upper": 0.41601743225189364
+        }
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.8,
+        "admitted": 16,
+        "evaluated": 20,
+        "productive": 9,
+        "productive_efficiency": 0.45,
+        "productive_wilson_95": {
+          "lower": 0.2581978582556243,
+          "upper": 0.6579146575496578
+        }
+      }
+    },
+    "per_wave": {
+      "0": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 5,
+        "productive_efficiency": 0.7142857142857143,
+        "productive_wilson_95": {
+          "lower": 0.35893445183261935,
+          "upper": 0.9177810759959434
+        }
+      },
+      "1": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "10": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 5,
+        "productive_efficiency": 0.7142857142857143,
+        "productive_wilson_95": {
+          "lower": 0.35893445183261935,
+          "upper": 0.9177810759959434
+        }
+      },
+      "11": {
+        "admission_rate": 0.42857142857142855,
+        "admitted": 3,
+        "evaluated": 7,
+        "productive": 0,
+        "productive_efficiency": 0.0,
+        "productive_wilson_95": {
+          "lower": 3.584186086443356e-17,
+          "upper": 0.3543304350666874
+        }
+      },
+      "12": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 5,
+        "productive_efficiency": 0.7142857142857143,
+        "productive_wilson_95": {
+          "lower": 0.35893445183261935,
+          "upper": 0.9177810759959434
+        }
+      },
+      "13": {
+        "admission_rate": 0.2857142857142857,
+        "admitted": 2,
+        "evaluated": 7,
+        "productive": 1,
+        "productive_efficiency": 0.14285714285714285,
+        "productive_wilson_95": {
+          "lower": 0.025679624344743555,
+          "upper": 0.5131278292743189
+        }
+      },
+      "14": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 4,
+        "productive_efficiency": 0.5714285714285714,
+        "productive_wilson_95": {
+          "lower": 0.2504583645276572,
+          "upper": 0.8417801447485304
+        }
+      },
+      "15": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 4,
+        "productive_efficiency": 0.5714285714285714,
+        "productive_wilson_95": {
+          "lower": 0.2504583645276572,
+          "upper": 0.8417801447485304
+        }
+      },
+      "16": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "17": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 4,
+        "productive_efficiency": 0.5714285714285714,
+        "productive_wilson_95": {
+          "lower": 0.2504583645276572,
+          "upper": 0.8417801447485304
+        }
+      },
+      "18": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 3,
+        "productive_efficiency": 0.42857142857142855,
+        "productive_wilson_95": {
+          "lower": 0.15821985525146973,
+          "upper": 0.7495416354723429
+        }
+      },
+      "19": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 6,
+        "productive_efficiency": 0.8571428571428571,
+        "productive_wilson_95": {
+          "lower": 0.48687217072568106,
+          "upper": 0.9743203756552565
+        }
+      },
+      "2": {
+        "admission_rate": 0.5714285714285714,
+        "admitted": 4,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "3": {
+        "admission_rate": 0.42857142857142855,
+        "admitted": 3,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "4": {
+        "admission_rate": 0.5714285714285714,
+        "admitted": 4,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "5": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 5,
+        "productive_efficiency": 0.7142857142857143,
+        "productive_wilson_95": {
+          "lower": 0.35893445183261935,
+          "upper": 0.9177810759959434
+        }
+      },
+      "6": {
+        "admission_rate": 0.5714285714285714,
+        "admitted": 4,
+        "evaluated": 7,
+        "productive": 3,
+        "productive_efficiency": 0.42857142857142855,
+        "productive_wilson_95": {
+          "lower": 0.15821985525146973,
+          "upper": 0.7495416354723429
+        }
+      },
+      "7": {
+        "admission_rate": 0.7142857142857143,
+        "admitted": 5,
+        "evaluated": 7,
+        "productive": 2,
+        "productive_efficiency": 0.2857142857142857,
+        "productive_wilson_95": {
+          "lower": 0.0822189240040568,
+          "upper": 0.6410655481673808
+        }
+      },
+      "8": {
+        "admission_rate": 0.2857142857142857,
+        "admitted": 2,
+        "evaluated": 7,
+        "productive": 1,
+        "productive_efficiency": 0.14285714285714285,
+        "productive_wilson_95": {
+          "lower": 0.025679624344743555,
+          "upper": 0.5131278292743189
+        }
+      },
+      "9": {
+        "admission_rate": 0.8571428571428571,
+        "admitted": 6,
+        "evaluated": 7,
+        "productive": 5,
+        "productive_efficiency": 0.7142857142857143,
+        "productive_wilson_95": {
+          "lower": 0.35893445183261935,
+          "upper": 0.9177810759959434
+        }
+      }
+    },
+    "policy_id": "CN_PROGRAM_OPTIMIZER_TPE_BOOTSTRAP_TO_SURROGATE_D1_V1",
+    "selector_counts": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    }
+  },
+  "prior_exact_count_before_run": 1030,
+  "promotion_authorized": false,
+  "remaining_unseen_before_run": 2554,
+  "repo_sha": "135110e792b13996a88fe27a3cf386ff47147bee",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_optimizer_d1_continuation_outcome_v1",
+  "selector_counts": {
+    "SURROGATE_FULL_ACQUISITION": 84,
+    "TPE_BOOTSTRAP": 21,
+    "UNIFORM": 35
+  },
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_v1_20260817_135110e",
+  "status": "D1_CONTINUATION_DEVELOPMENT_COMPLETE"
+}
