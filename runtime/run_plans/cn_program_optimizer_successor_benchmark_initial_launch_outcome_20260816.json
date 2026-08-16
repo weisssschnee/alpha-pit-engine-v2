@@ -1,0 +1,69 @@
+{
+  "schema_version": "cn_program_optimizer_successor_benchmark_initial_launch_outcome_v1",
+  "status": "INCOMPLETE_FAIL_CLOSED",
+  "decision": "TOURNAMENT_INCOMPLETE_STOPPED_FOR_EXTERNAL_REVIEW",
+  "execution_repo_sha": "7112b9ffd9503db5e2dd2e0eca9a977dd9a66a57",
+  "repair_repo_sha": "aa8f2e99f4efff44f4d1f64e227c286938f13456",
+  "target_run_id": "cn_program_optimizer_successor_benchmark_v1_20260816_7112b9f",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_successor_benchmark_v1_20260816_7112b9f",
+  "terminal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_successor_terminal_logs\\cn_program_optimizer_successor_benchmark_v1_20260816_7112b9f_f5a5b3f62104",
+  "project_control": {
+    "task_id": "cn-execution-717f11e93bf0b5a0d7b208f1",
+    "run_id": "d3723d3d-e18c-4f36-bf9c-4d54c771d274",
+    "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+    "admission_file_sha256": "f5a5b3f621045304eee0d66c652673e7d3c93cafb29fe4685b18450b1773de9a",
+    "admission_payload_sha256": "123c4c78a3c8076125352133682b932179c8a25e2e64dd434550d0b39a19df1e",
+    "consumption_count": 1
+  },
+  "prefinancial": {
+    "status": "SUCCESSOR_PREFINANCIAL_READY",
+    "file_sha256": "2ada5fd616a26dd5750b9e502417683ab4394835f31b80ebdc2af73935785562",
+    "full_program_space": 3616,
+    "enhanced_program_space": 3584,
+    "v1_prior_exact_count": 504,
+    "prospective_enhanced_available": 3080,
+    "wave0_logical_count": 28,
+    "wave0_physical_unique_count": 7,
+    "restricted_reads": 0
+  },
+  "failure": {
+    "classification": "SUCCESSOR_PHYSICAL_PROVENANCE_ARM_CONTRACT_DRIFT",
+    "phase": "WAVE_000_SCHEDULE_BUILD_BEFORE_EVALUATOR",
+    "exception_type": "ValueError",
+    "exception_message": "program proposal receipt has unknown generation arm",
+    "root_cause": "The successor runner correctly used the policy-neutral physical provenance arm SUCCESSOR_PHYSICAL_DEDUP for a deduplicated physical evaluation shared by multiple logical policies, but ProgramProposalReceiptV0.GENERATION_ARMS did not yet authorize that neutral provenance value.",
+    "repair": "Add SUCCESSOR_PHYSICAL_DEDUP to the ProgramProposalReceiptV0 generation-arm contract. Do not relabel shared physical evaluations as Uniform, TPE, D1, or D2."
+  },
+  "formal_boundary": {
+    "closed_waves": 0,
+    "inflight_wave": 0,
+    "economic_record_files": 0,
+    "physical_result_files": 0,
+    "optimizer_tells": 0,
+    "inflight_results_reusable": false,
+    "fresh_retry_from_genesis_required": true
+  },
+  "artifact_hashes": {
+    "execution_identity_sha256": "72b72e540671d5bc55015f055b398c4d61047c2d5ed2320c7127d80f0e248b5c",
+    "benchmark_state_genesis_sha256": "31c58d2244a0f69d87a1c3a04b5c6e5607c084e3de903f83a79829d626f5555e",
+    "input_binding_sha256": "a80a7b1353e5cbabee4fb7c6a05898da0ff0680cabf5b8c22efba89f8560da10",
+    "prior_exact_binding_sha256": "a4482e1c4b9bd2efa18e477b0cbbbd75d216d4d18e19db82b966d407d340e8a4",
+    "wave0_logical_asks_sha256": "371a958cf069fe1e0e58ad1d0d264f8b6186b9b0040f178fa5d94873401754ce",
+    "wave0_physical_union_sha256": "ecfd360d10b3399b4943dc28a09d8e3664351d14fac8f12dea647e48e2727d5a",
+    "runner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner_stderr_sha256": "bc2464acf7e91dd6f75a51fa040e72799cc1b808d3239ef8bfbe8612ed5f1b6e",
+    "terminal_receipt_sha256": "365fd43658da74a54df9b398bcc76ac4c84d85adc52eb4596dc3cc70e48d2b56"
+  },
+  "restricted_reads": {
+    "validation": 0,
+    "holdout": 0,
+    "historical_2023": 0,
+    "forward_b": 0,
+    "forward_2026": 0
+  },
+  "economic_conclusion": "NONE_INCONCLUSIVE_NO_ECONOMIC_RECORDS",
+  "oos": "NONE",
+  "promotion": false,
+  "automatic_retry_or_recovery": false,
+  "outcome_payload_sha256": "b153fa7e66ec967bdb4226a6a3f71f250ad7bb2a42bc1a0658a1fcca6aa5eb5c"
+}

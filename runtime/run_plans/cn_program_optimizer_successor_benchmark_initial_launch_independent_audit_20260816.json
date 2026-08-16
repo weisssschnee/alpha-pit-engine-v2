@@ -1,0 +1,32 @@
+{
+  "schema_version": "cn_program_optimizer_successor_benchmark_initial_launch_independent_audit_v1",
+  "status": "PASS_INCOMPLETE_FAIL_CLOSED",
+  "outcome_path": "runtime/run_plans/cn_program_optimizer_successor_benchmark_initial_launch_outcome_20260816.json",
+  "outcome_payload_sha256": "b153fa7e66ec967bdb4226a6a3f71f250ad7bb2a42bc1a0658a1fcca6aa5eb5c",
+  "checks": {
+    "execution_sha_exact": true,
+    "project_control_single_consumption": true,
+    "prefinancial_passed_before_launch": true,
+    "closed_waves_zero": true,
+    "economic_records_zero": true,
+    "physical_results_zero": true,
+    "optimizer_tells_zero": true,
+    "wave0_inflight_excluded": true,
+    "restricted_reads_zero": true,
+    "complete_traceback_preserved": true,
+    "root_cause_reproduced_from_static_contract": true,
+    "repair_changes_only_physical_provenance_enum": true,
+    "no_second_admission_created": true
+  },
+  "repair_verification": {
+    "repair_repo_sha": "aa8f2e99f4efff44f4d1f64e227c286938f13456",
+    "candidate_program_proposal_tests": "7 PASS",
+    "successor_receipt_runtime_focused_tests": "4 PASS",
+    "successor_d1_d2_roundtrip_focused_tests": "4 PASS",
+    "legacy_program_optimizer_regression": "58 PASS",
+    "financial_evaluation_run_after_repair": false
+  },
+  "next_execution_authority": "EXTERNAL_REVIEW_REQUIRED_FOR_ONE_FRESH_TECHNICAL_RETRY",
+  "reuse_old_wave0": false,
+  "audit_payload_sha256": "5c6ed96df9b5f943d9e018772e161b51e61261419f592491386e8d3f1fdf97f7"
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "cn_program_optimizer_successor_benchmark_initial_launch_evidence_note_v1",
+  "outcome": "runtime/run_plans/cn_program_optimizer_successor_benchmark_initial_launch_outcome_20260816.json",
+  "outcome_payload_sha256": "b153fa7e66ec967bdb4226a6a3f71f250ad7bb2a42bc1a0658a1fcca6aa5eb5c",
+  "independent_audit": "runtime/run_plans/cn_program_optimizer_successor_benchmark_initial_launch_independent_audit_20260816.json",
+  "independent_audit_payload_sha256": "5c6ed96df9b5f943d9e018772e161b51e61261419f592491386e8d3f1fdf97f7",
+  "summary": "The first formally admitted fair successor benchmark stopped before any physical/economic evaluation because the policy-neutral deduplicated physical provenance arm was missing from the legacy proposal-receipt generation-arm allowlist. The failed wave has no reusable economic result. The one-line contract repair is independently regression-tested; no second admission or run was launched.",
+  "evidence_note_payload_sha256": "25e5425abbbe083464b14a9fa710267bd6853f281a91b045e3ab3b37c221c9eb"
+}
