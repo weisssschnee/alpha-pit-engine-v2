@@ -1,0 +1,1032 @@
+{
+  "analysis_payload_sha256": "948e982fa1d48b68d8e30055e5ca81c1cebf40a2dc2d9a10643bc61950100a13",
+  "conditional_economics_policy_specific": {
+    "FEASIBILITY_GATED_TPE": {
+      "mean_uplift_return": 0.19431279734220971,
+      "mean_uplift_reward": 1.0670243818565188,
+      "median_uplift_return": 0.24257401413887336,
+      "n_admitted": 50,
+      "positive_return_rate_given_admitted": 0.68,
+      "productive_rate_given_admitted": 0.68
+    },
+    "TPE_CONTROL": {
+      "mean_uplift_return": 0.1390131796772492,
+      "mean_uplift_reward": 0.7682767014846116,
+      "median_uplift_return": 0.07749757458582374,
+      "n_admitted": 53,
+      "positive_return_rate_given_admitted": 0.5849056603773585,
+      "productive_rate_given_admitted": 0.5849056603773585
+    },
+    "TPE_TO_SURROGATE": {
+      "mean_uplift_return": 0.14791804508764883,
+      "mean_uplift_reward": 0.9942784378897729,
+      "median_uplift_return": 0.11081345560030431,
+      "n_admitted": 60,
+      "positive_return_rate_given_admitted": 0.6666666666666666,
+      "productive_rate_given_admitted": 0.6666666666666666
+    },
+    "UNIFORM": {
+      "mean_uplift_return": 0.07814964698195574,
+      "mean_uplift_reward": 0.6017671369161413,
+      "median_uplift_return": -0.004330389280423175,
+      "n_admitted": 52,
+      "positive_return_rate_given_admitted": 0.46153846153846156,
+      "productive_rate_given_admitted": 0.46153846153846156
+    }
+  },
+  "d1_online_selected_set_calibration": {
+    "brier": 0.20073801180610032,
+    "chunks": [
+      {
+        "admission_rate": 0.6785714285714286,
+        "brier": 0.20728340672291748,
+        "chunk": 1,
+        "mean_feasibility_probability": 0.5737499811232624,
+        "mean_uplift_prediction": 0.09739534069494842,
+        "n": 28,
+        "productive_rate": 0.4642857142857143,
+        "uplift_spearman": -0.10350877192982456,
+        "waves": [
+          5,
+          6,
+          8,
+          9
+        ]
+      },
+      {
+        "admission_rate": 0.7142857142857143,
+        "brier": 0.21420899395580237,
+        "chunk": 2,
+        "mean_feasibility_probability": 0.5721647660631837,
+        "mean_uplift_prediction": 0.13925396079270744,
+        "n": 28,
+        "productive_rate": 0.42857142857142855,
+        "uplift_spearman": 0.20300751879699247,
+        "waves": [
+          11,
+          12,
+          14,
+          15
+        ]
+      },
+      {
+        "admission_rate": 0.75,
+        "brier": 0.180721634739581,
+        "chunk": 3,
+        "mean_feasibility_probability": 0.5837524782814497,
+        "mean_uplift_prediction": 0.11597335195210697,
+        "n": 28,
+        "productive_rate": 0.5357142857142857,
+        "uplift_spearman": 0.6038961038961039,
+        "waves": [
+          16,
+          17,
+          18,
+          19
+        ]
+      }
+    ],
+    "interpretation": "Feasibility ranking is useful throughout; uplift ranking is weak overall but materially strengthens late (last 28 asks Spearman about 0.604). D1 late advantage is therefore not feasibility-only.",
+    "n": 84,
+    "reliability_quintiles": [
+      {
+        "actual_admission": 0.5,
+        "bin": 1,
+        "mean_pred": 0.3222040026442341,
+        "n": 16,
+        "productive_rate": 0.1875
+      },
+      {
+        "actual_admission": 0.6470588235294118,
+        "bin": 2,
+        "mean_pred": 0.49778571087255963,
+        "n": 17,
+        "productive_rate": 0.4117647058823529
+      },
+      {
+        "actual_admission": 0.7647058823529411,
+        "bin": 3,
+        "mean_pred": 0.5872261694535529,
+        "n": 17,
+        "productive_rate": 0.47058823529411764
+      },
+      {
+        "actual_admission": 0.7058823529411765,
+        "bin": 4,
+        "mean_pred": 0.6545949651316728,
+        "n": 17,
+        "productive_rate": 0.5294117647058824
+      },
+      {
+        "actual_admission": 0.9411764705882353,
+        "bin": 5,
+        "mean_pred": 0.8060059940006463,
+        "n": 17,
+        "productive_rate": 0.7647058823529411
+      }
+    ],
+    "score_diagnostics": {
+      "auc_feasibility_probability_to_admission": 0.70625,
+      "auc_feasibility_probability_to_productive": 0.7232954545454545,
+      "auc_full_acquisition_to_productive": 0.6909090909090909,
+      "auc_uplift_mean_to_productive": 0.665340909090909
+    },
+    "uplift_head_selected_admitted": {
+      "mae": 0.2670896292966365,
+      "n": 60,
+      "pearson": 0.25438819369437476,
+      "sign_accuracy": 0.6333333333333333,
+      "spearman": 0.21389274798555155
+    }
+  },
+  "headline": {
+    "decision": "FREEZE_D1_AS_PREFERRED_NEXT_DEVELOPMENT_POLICY",
+    "development_point_estimate_leader": "TPE_TO_SURROGATE",
+    "oos_authority": "NONE",
+    "policy_specific_optimized_84": {
+      "FEASIBILITY_GATED_TPE": 34,
+      "TPE_CONTROL": 31,
+      "TPE_TO_SURROGATE": 40,
+      "UNIFORM": 24
+    },
+    "promotion_authority": false,
+    "superiority_grade_vs_tpe": "DEVELOPMENT_LEADER_BUT_NOT_SEPARATED",
+    "total_productive": {
+      "FEASIBILITY_GATED_TPE": 50,
+      "TPE_CONTROL": 47,
+      "TPE_TO_SURROGATE": 56,
+      "UNIFORM": 45
+    }
+  },
+  "learning_curve": {
+    "adaptive_waves": [
+      5,
+      6,
+      8,
+      9,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "chunks": [
+      {
+        "chunk": 1,
+        "obs_before_range": [
+          35,
+          63
+        ],
+        "policies": {
+          "FEASIBILITY_GATED_TPE": {
+            "admission_rate": 0.5357142857142857,
+            "admitted": 15,
+            "admitted_to_productive": 0.5333333333333333,
+            "n": 28,
+            "productive": 8,
+            "productive_rate": 0.2857142857142857
+          },
+          "TPE_CONTROL": {
+            "admission_rate": 0.6785714285714286,
+            "admitted": 19,
+            "admitted_to_productive": 0.5789473684210527,
+            "n": 28,
+            "productive": 11,
+            "productive_rate": 0.39285714285714285
+          },
+          "TPE_TO_SURROGATE": {
+            "admission_rate": 0.6785714285714286,
+            "admitted": 19,
+            "admitted_to_productive": 0.6842105263157895,
+            "n": 28,
+            "productive": 13,
+            "productive_rate": 0.4642857142857143
+          },
+          "UNIFORM": {
+            "admission_rate": 0.6785714285714286,
+            "admitted": 19,
+            "admitted_to_productive": 0.47368421052631576,
+            "n": 28,
+            "productive": 9,
+            "productive_rate": 0.32142857142857145
+          }
+        },
+        "waves": [
+          5,
+          6,
+          8,
+          9
+        ]
+      },
+      {
+        "chunk": 2,
+        "obs_before_range": [
+          77,
+          105
+        ],
+        "policies": {
+          "FEASIBILITY_GATED_TPE": {
+            "admission_rate": 0.6785714285714286,
+            "admitted": 19,
+            "admitted_to_productive": 0.7894736842105263,
+            "n": 28,
+            "productive": 15,
+            "productive_rate": 0.5357142857142857
+          },
+          "TPE_CONTROL": {
+            "admission_rate": 0.6428571428571429,
+            "admitted": 18,
+            "admitted_to_productive": 0.5555555555555556,
+            "n": 28,
+            "productive": 10,
+            "productive_rate": 0.35714285714285715
+          },
+          "TPE_TO_SURROGATE": {
+            "admission_rate": 0.7142857142857143,
+            "admitted": 20,
+            "admitted_to_productive": 0.6,
+            "n": 28,
+            "productive": 12,
+            "productive_rate": 0.42857142857142855
+          },
+          "UNIFORM": {
+            "admission_rate": 0.6428571428571429,
+            "admitted": 18,
+            "admitted_to_productive": 0.5,
+            "n": 28,
+            "productive": 9,
+            "productive_rate": 0.32142857142857145
+          }
+        },
+        "waves": [
+          11,
+          12,
+          14,
+          15
+        ]
+      },
+      {
+        "chunk": 3,
+        "obs_before_range": [
+          112,
+          133
+        ],
+        "policies": {
+          "FEASIBILITY_GATED_TPE": {
+            "admission_rate": 0.5714285714285714,
+            "admitted": 16,
+            "admitted_to_productive": 0.6875,
+            "n": 28,
+            "productive": 11,
+            "productive_rate": 0.39285714285714285
+          },
+          "TPE_CONTROL": {
+            "admission_rate": 0.5714285714285714,
+            "admitted": 16,
+            "admitted_to_productive": 0.625,
+            "n": 28,
+            "productive": 10,
+            "productive_rate": 0.35714285714285715
+          },
+          "TPE_TO_SURROGATE": {
+            "admission_rate": 0.75,
+            "admitted": 21,
+            "admitted_to_productive": 0.7142857142857143,
+            "n": 28,
+            "productive": 15,
+            "productive_rate": 0.5357142857142857
+          },
+          "UNIFORM": {
+            "admission_rate": 0.5357142857142857,
+            "admitted": 15,
+            "admitted_to_productive": 0.4,
+            "n": 28,
+            "productive": 6,
+            "productive_rate": 0.21428571428571427
+          }
+        },
+        "waves": [
+          16,
+          17,
+          18,
+          19
+        ]
+      }
+    ],
+    "d1_cumulative_productive_overtakes_tpe_at_wave": 8,
+    "d1_first_adaptive_selection_observations_before": 35,
+    "final_policy_specific_productive_lead_vs_tpe": 9,
+    "lead_remained_nonnegative_after_overtake": true,
+    "observations_before_overtake": 56
+  },
+  "mechanism_conclusions": [
+    "D1 advantage appears in the first 28 adaptive selections and expands late rather than arising from one terminal lucky wave.",
+    "Feasibility probability is informative (selected-set admission AUC about 0.706; productive AUC about 0.723).",
+    "Uplift head is not strong globally (selected admitted Spearman about 0.214) but becomes strong late (about 0.604 in the final 28 adaptive asks).",
+    "D2 feasibility-gated TPE preserves strong conditional economics but loses too much admission/selectivity versus full Surrogate acquisition; gating alone discards useful ranking information.",
+    "TPE/D2 legal projection is not shown to be harmful in this run; projected subsets had higher realized yield than direct subsets, so projection reduction is not an evidence-backed optimization target.",
+    "Observed template-specific winners are hypotheses only; template routing would be a post-hoc policy and requires a fresh prospective test."
+  ],
+  "next_action": "Freeze the exact prospectively tested D1 policy as the preferred development search policy for a fresh 140-record cohort over the 2694 remaining enhanced exact Programs; retain no OOS/promotion authority.",
+  "optimized_policy_overlap": {
+    "FEASIBILITY_GATED_TPE": {
+      "intersection": 5,
+      "intersection_productive": 2,
+      "jaccard": 0.03067484662576687,
+      "same_slot_exact": 0
+    },
+    "TPE_CONTROL": {
+      "intersection": 2,
+      "intersection_productive": 0,
+      "jaccard": 0.012048192771084338,
+      "same_slot_exact": 0
+    },
+    "UNIFORM": {
+      "intersection": 0,
+      "intersection_productive": 0,
+      "jaccard": 0.0,
+      "same_slot_exact": 0
+    }
+  },
+  "paired_slot_comparisons": {
+    "TPE_TO_SURROGATE_vs_FEASIBILITY_GATED_TPE_admitted": {
+      "losses": 11,
+      "mean_slot_difference": 0.11904761904761904,
+      "sign_test_two_sided_p": 0.11018416518345475,
+      "ties": 52,
+      "wins": 21
+    },
+    "TPE_TO_SURROGATE_vs_FEASIBILITY_GATED_TPE_productive": {
+      "losses": 15,
+      "mean_slot_difference": 0.07142857142857142,
+      "sign_test_two_sided_p": 0.40503224614076316,
+      "ties": 48,
+      "wins": 21
+    },
+    "TPE_TO_SURROGATE_vs_TPE_CONTROL_admitted": {
+      "losses": 10,
+      "mean_slot_difference": 0.08333333333333333,
+      "sign_test_two_sided_p": 0.24778856337070465,
+      "ties": 57,
+      "wins": 17
+    },
+    "TPE_TO_SURROGATE_vs_TPE_CONTROL_productive": {
+      "losses": 14,
+      "mean_slot_difference": 0.10714285714285714,
+      "sign_test_two_sided_p": 0.18774155899882317,
+      "ties": 47,
+      "wins": 23
+    },
+    "TPE_TO_SURROGATE_vs_UNIFORM_admitted": {
+      "losses": 14,
+      "mean_slot_difference": 0.09523809523809523,
+      "sign_test_two_sided_p": 0.2429849540349096,
+      "ties": 48,
+      "wins": 22
+    },
+    "TPE_TO_SURROGATE_vs_UNIFORM_productive": {
+      "losses": 10,
+      "mean_slot_difference": 0.19047619047619047,
+      "sign_test_two_sided_p": 0.011330984183587134,
+      "ties": 48,
+      "wins": 26
+    }
+  },
+  "per_template_policy_specific": {
+    "BASE_EVENT": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 5,
+        "admitted_to_productive": 0.2,
+        "n": 12,
+        "productive": 1,
+        "productive_rate": 0.08333333333333333
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.5,
+        "admitted": 6,
+        "admitted_to_productive": 0.5,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.75,
+        "admitted": 9,
+        "admitted_to_productive": 0.7777777777777778,
+        "n": 12,
+        "productive": 7,
+        "productive_rate": 0.5833333333333334
+      },
+      "UNIFORM": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 7,
+        "admitted_to_productive": 0.42857142857142855,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      }
+    },
+    "BASE_MARKET": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 5,
+        "admitted_to_productive": 0.6,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 5,
+        "admitted_to_productive": 0.2,
+        "n": 12,
+        "productive": 1,
+        "productive_rate": 0.08333333333333333
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 8,
+        "admitted_to_productive": 0.75,
+        "n": 12,
+        "productive": 6,
+        "productive_rate": 0.5
+      },
+      "UNIFORM": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 8,
+        "admitted_to_productive": 0.375,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      }
+    },
+    "BASE_MARKET_EVENT": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 11,
+        "admitted_to_productive": 0.7272727272727273,
+        "n": 12,
+        "productive": 8,
+        "productive_rate": 0.6666666666666666
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 11,
+        "admitted_to_productive": 0.5454545454545454,
+        "n": 12,
+        "productive": 6,
+        "productive_rate": 0.5
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 1.0,
+        "admitted": 12,
+        "admitted_to_productive": 0.6666666666666666,
+        "n": 12,
+        "productive": 8,
+        "productive_rate": 0.6666666666666666
+      },
+      "UNIFORM": {
+        "admission_rate": 0.75,
+        "admitted": 9,
+        "admitted_to_productive": 0.3333333333333333,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      }
+    },
+    "BASE_TEMPORAL": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 7,
+        "admitted_to_productive": 0.7142857142857143,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.5,
+        "admitted": 6,
+        "admitted_to_productive": 0.3333333333333333,
+        "n": 12,
+        "productive": 2,
+        "productive_rate": 0.16666666666666666
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 7,
+        "admitted_to_productive": 0.2857142857142857,
+        "n": 12,
+        "productive": 2,
+        "productive_rate": 0.16666666666666666
+      },
+      "UNIFORM": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 5,
+        "admitted_to_productive": 1.0,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      }
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 11,
+        "admitted_to_productive": 1.0,
+        "n": 12,
+        "productive": 11,
+        "productive_rate": 0.9166666666666666
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 1.0,
+        "admitted": 12,
+        "admitted_to_productive": 1.0,
+        "n": 12,
+        "productive": 12,
+        "productive_rate": 1.0
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 11,
+        "admitted_to_productive": 0.9090909090909091,
+        "n": 12,
+        "productive": 10,
+        "productive_rate": 0.8333333333333334
+      },
+      "UNIFORM": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 11,
+        "admitted_to_productive": 0.45454545454545453,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      }
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.25,
+        "admitted": 3,
+        "admitted_to_productive": 0.3333333333333333,
+        "n": 12,
+        "productive": 1,
+        "productive_rate": 0.08333333333333333
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.3333333333333333,
+        "admitted": 4,
+        "admitted_to_productive": 0.5,
+        "n": 12,
+        "productive": 2,
+        "productive_rate": 0.16666666666666666
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.3333333333333333,
+        "admitted": 4,
+        "admitted_to_productive": 0.5,
+        "n": 12,
+        "productive": 2,
+        "productive_rate": 0.16666666666666666
+      },
+      "UNIFORM": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 5,
+        "admitted_to_productive": 0.4,
+        "n": 12,
+        "productive": 2,
+        "productive_rate": 0.16666666666666666
+      }
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "FEASIBILITY_GATED_TPE": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 8,
+        "admitted_to_productive": 0.625,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      },
+      "TPE_CONTROL": {
+        "admission_rate": 0.75,
+        "admitted": 9,
+        "admitted_to_productive": 0.5555555555555556,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      },
+      "TPE_TO_SURROGATE": {
+        "admission_rate": 0.75,
+        "admitted": 9,
+        "admitted_to_productive": 0.5555555555555556,
+        "n": 12,
+        "productive": 5,
+        "productive_rate": 0.4166666666666667
+      },
+      "UNIFORM": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 7,
+        "admitted_to_productive": 0.42857142857142855,
+        "n": 12,
+        "productive": 3,
+        "productive_rate": 0.25
+      }
+    }
+  },
+  "projection_yield_policy_specific": {
+    "FEASIBILITY_GATED_TPE_DIRECT": {
+      "admission_rate": 0.5789473684210527,
+      "admitted": 33,
+      "admitted_to_productive": 0.6060606060606061,
+      "mean_uplift_return_admitted": 0.13466584955755187,
+      "n": 57,
+      "productive": 20,
+      "productive_rate": 0.3508771929824561
+    },
+    "FEASIBILITY_GATED_TPE_PROJECTED": {
+      "admission_rate": 0.6296296296296297,
+      "admitted": 17,
+      "admitted_to_productive": 0.8235294117647058,
+      "mean_uplift_return_admitted": 0.3100980489241926,
+      "n": 27,
+      "productive": 14,
+      "productive_rate": 0.5185185185185185
+    },
+    "TPE_CONTROL_DIRECT": {
+      "admission_rate": 0.5538461538461539,
+      "admitted": 36,
+      "admitted_to_productive": 0.5277777777777778,
+      "mean_uplift_return_admitted": 0.07152172651560203,
+      "n": 65,
+      "productive": 19,
+      "productive_rate": 0.2923076923076923
+    },
+    "TPE_CONTROL_PROJECTED": {
+      "admission_rate": 0.8947368421052632,
+      "admitted": 17,
+      "admitted_to_productive": 0.7058823529411765,
+      "mean_uplift_return_admitted": 0.28193625696073726,
+      "n": 19,
+      "productive": 12,
+      "productive_rate": 0.631578947368421
+    }
+  },
+  "schema_version": "cn_program_optimizer_d1_mechanism_analysis_v1",
+  "selected_gene_signals": [
+    {
+      "d1_n": 21,
+      "d1_productive_rate": 0.42857142857142855,
+      "d1_share": 0.25,
+      "field": "base__skeleton_id",
+      "selection_share_delta": 0.19047619047619047,
+      "tpe_n": 5,
+      "tpe_productive_rate": 0.4,
+      "tpe_share": 0.05952380952380952,
+      "value": "cn.comp.v2.slow_cross_sectional_level.cross_family_interaction"
+    },
+    {
+      "d1_n": 21,
+      "d1_productive_rate": 0.5238095238095238,
+      "d1_share": 0.25,
+      "field": "base__skeleton_id",
+      "selection_share_delta": 0.17857142857142858,
+      "tpe_n": 6,
+      "tpe_productive_rate": 0.6666666666666666,
+      "tpe_share": 0.07142857142857142,
+      "value": "cn.comp.v2.slow_cross_sectional_level.fundamental_cap_condition"
+    },
+    {
+      "d1_n": 1,
+      "d1_productive_rate": 1.0,
+      "d1_share": 0.011904761904761904,
+      "field": "combination_temporal",
+      "selection_share_delta": -0.17857142857142858,
+      "tpe_n": 16,
+      "tpe_productive_rate": 0.375,
+      "tpe_share": 0.19047619047619047,
+      "value": "SUBTRACT"
+    },
+    {
+      "d1_n": 26,
+      "d1_productive_rate": 0.5,
+      "d1_share": 0.30952380952380953,
+      "field": "raw_field_count",
+      "selection_share_delta": 0.16666666666666666,
+      "tpe_n": 12,
+      "tpe_productive_rate": 0.5833333333333334,
+      "tpe_share": 0.14285714285714285,
+      "value": "5"
+    },
+    {
+      "d1_n": 14,
+      "d1_productive_rate": 0.2857142857142857,
+      "d1_share": 0.16666666666666666,
+      "field": "raw_field_count",
+      "selection_share_delta": -0.15476190476190477,
+      "tpe_n": 27,
+      "tpe_productive_rate": 0.4444444444444444,
+      "tpe_share": 0.32142857142857145,
+      "value": "4"
+    },
+    {
+      "d1_n": 3,
+      "d1_productive_rate": 0.0,
+      "d1_share": 0.03571428571428571,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": -0.15476190476190477,
+      "tpe_n": 16,
+      "tpe_productive_rate": 0.4375,
+      "tpe_share": 0.19047619047619047,
+      "value": "cn.comp.v2.slow_temporal_change.change_level_interaction"
+    },
+    {
+      "d1_n": 64,
+      "d1_productive_rate": 0.40625,
+      "d1_share": 0.7619047619047619,
+      "field": "combination_event_application",
+      "selection_share_delta": 0.14285714285714285,
+      "tpe_n": 52,
+      "tpe_productive_rate": 0.23076923076923078,
+      "tpe_share": 0.6190476190476191,
+      "value": "FILTER"
+    },
+    {
+      "d1_n": 20,
+      "d1_productive_rate": 0.7,
+      "d1_share": 0.23809523809523808,
+      "field": "combination_event_application",
+      "selection_share_delta": -0.14285714285714285,
+      "tpe_n": 32,
+      "tpe_productive_rate": 0.59375,
+      "tpe_share": 0.38095238095238093,
+      "value": "GATE"
+    },
+    {
+      "d1_n": 22,
+      "d1_productive_rate": 0.5454545454545454,
+      "d1_share": 0.2619047619047619,
+      "field": "combination_market",
+      "selection_share_delta": 0.11904761904761904,
+      "tpe_n": 12,
+      "tpe_productive_rate": 0.08333333333333333,
+      "tpe_share": 0.14285714285714285,
+      "value": "MODULATE"
+    },
+    {
+      "d1_n": 23,
+      "d1_productive_rate": 0.6521739130434783,
+      "d1_share": 0.27380952380952384,
+      "field": "event__skeleton_id",
+      "selection_share_delta": 0.10714285714285714,
+      "tpe_n": 14,
+      "tpe_productive_rate": 0.42857142857142855,
+      "tpe_share": 0.16666666666666666,
+      "value": "cn.comp.v2.disclosure_event.pre_event_path"
+    },
+    {
+      "d1_n": 19,
+      "d1_productive_rate": 0.5263157894736842,
+      "d1_share": 0.2261904761904762,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": 0.10714285714285714,
+      "tpe_n": 10,
+      "tpe_productive_rate": 0.7,
+      "tpe_share": 0.11904761904761904,
+      "value": "cn.comp.v2.slow_temporal_change.cross_change_interaction"
+    },
+    {
+      "d1_n": 13,
+      "d1_productive_rate": 0.5384615384615384,
+      "d1_share": 0.15476190476190477,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": 0.10714285714285714,
+      "tpe_n": 4,
+      "tpe_productive_rate": 0.75,
+      "tpe_share": 0.047619047619047616,
+      "value": "cn.comp.v2.slow_temporal_change.short_long_change"
+    },
+    {
+      "d1_n": 6,
+      "d1_productive_rate": 0.16666666666666666,
+      "d1_share": 0.07142857142857142,
+      "field": "combination_market",
+      "selection_share_delta": -0.10714285714285714,
+      "tpe_n": 15,
+      "tpe_productive_rate": 0.3333333333333333,
+      "tpe_share": 0.17857142857142858,
+      "value": "GATE"
+    },
+    {
+      "d1_n": 3,
+      "d1_productive_rate": 0.3333333333333333,
+      "d1_share": 0.03571428571428571,
+      "field": "base__skeleton_id",
+      "selection_share_delta": -0.10714285714285714,
+      "tpe_n": 12,
+      "tpe_productive_rate": 0.3333333333333333,
+      "tpe_share": 0.14285714285714285,
+      "value": "cn.comp.v2.slow_cross_sectional_level.masked_normalized_level"
+    },
+    {
+      "d1_n": 27,
+      "d1_productive_rate": 0.48148148148148145,
+      "d1_share": 0.32142857142857145,
+      "field": "market__skeleton_id",
+      "selection_share_delta": 0.09523809523809523,
+      "tpe_n": 19,
+      "tpe_productive_rate": 0.42105263157894735,
+      "tpe_share": 0.2261904761904762,
+      "value": "cn.comp.v2.market_regime_condition.regime_maturity_payload"
+    },
+    {
+      "d1_n": 8,
+      "d1_productive_rate": 0.625,
+      "d1_share": 0.09523809523809523,
+      "field": "base__skeleton_id",
+      "selection_share_delta": -0.09523809523809523,
+      "tpe_n": 16,
+      "tpe_productive_rate": 0.5,
+      "tpe_share": 0.19047619047619047,
+      "value": "cn.comp.v2.slow_cross_sectional_level.fundamental_level"
+    },
+    {
+      "d1_n": 16,
+      "d1_productive_rate": 0.3125,
+      "d1_share": 0.19047619047619047,
+      "field": "combination_temporal",
+      "selection_share_delta": 0.08333333333333333,
+      "tpe_n": 9,
+      "tpe_productive_rate": 0.4444444444444444,
+      "tpe_share": 0.10714285714285714,
+      "value": "MIN"
+    },
+    {
+      "d1_n": 3,
+      "d1_productive_rate": 0.3333333333333333,
+      "d1_share": 0.03571428571428571,
+      "field": "base__skeleton_id",
+      "selection_share_delta": -0.08333333333333333,
+      "tpe_n": 10,
+      "tpe_productive_rate": 0.0,
+      "tpe_share": 0.11904761904761904,
+      "value": "cn.comp.v2.slow_cross_sectional_level.fundamental_residual"
+    },
+    {
+      "d1_n": 18,
+      "d1_productive_rate": 0.5555555555555556,
+      "d1_share": 0.21428571428571427,
+      "field": "raw_field_count",
+      "selection_share_delta": 0.05952380952380952,
+      "tpe_n": 13,
+      "tpe_productive_rate": 0.46153846153846156,
+      "tpe_share": 0.15476190476190477,
+      "value": "6"
+    },
+    {
+      "d1_n": 2,
+      "d1_productive_rate": 0.0,
+      "d1_share": 0.023809523809523808,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": -0.05952380952380952,
+      "tpe_n": 7,
+      "tpe_productive_rate": 0.0,
+      "tpe_share": 0.08333333333333333,
+      "value": "cn.comp.v2.slow_temporal_change.slope"
+    },
+    {
+      "d1_n": 50,
+      "d1_productive_rate": 0.5,
+      "d1_share": 0.5952380952380952,
+      "field": "combination_temporal",
+      "selection_share_delta": 0.047619047619047616,
+      "tpe_n": 46,
+      "tpe_productive_rate": 0.34782608695652173,
+      "tpe_share": 0.5476190476190477,
+      "value": "ADD"
+    },
+    {
+      "d1_n": 25,
+      "d1_productive_rate": 0.52,
+      "d1_share": 0.2976190476190476,
+      "field": "raw_field_count",
+      "selection_share_delta": 0.047619047619047616,
+      "tpe_n": 21,
+      "tpe_productive_rate": 0.19047619047619047,
+      "tpe_share": 0.25,
+      "value": "3"
+    },
+    {
+      "d1_n": 17,
+      "d1_productive_rate": 0.5294117647058824,
+      "d1_share": 0.20238095238095238,
+      "field": "combination_temporal",
+      "selection_share_delta": 0.047619047619047616,
+      "tpe_n": 13,
+      "tpe_productive_rate": 0.38461538461538464,
+      "tpe_share": 0.15476190476190477,
+      "value": "MAX"
+    },
+    {
+      "d1_n": 7,
+      "d1_productive_rate": 0.2857142857142857,
+      "d1_share": 0.08333333333333333,
+      "field": "combination_market",
+      "selection_share_delta": -0.047619047619047616,
+      "tpe_n": 11,
+      "tpe_productive_rate": 0.36363636363636365,
+      "tpe_share": 0.13095238095238096,
+      "value": "VETO"
+    },
+    {
+      "d1_n": 1,
+      "d1_productive_rate": 0.0,
+      "d1_share": 0.011904761904761904,
+      "field": "raw_field_count",
+      "selection_share_delta": -0.047619047619047616,
+      "tpe_n": 5,
+      "tpe_productive_rate": 0.2,
+      "tpe_share": 0.05952380952380952,
+      "value": "7"
+    },
+    {
+      "d1_n": 49,
+      "d1_productive_rate": 0.5102040816326531,
+      "d1_share": 0.5833333333333334,
+      "field": "combination_market",
+      "selection_share_delta": 0.03571428571428571,
+      "tpe_n": 46,
+      "tpe_productive_rate": 0.45652173913043476,
+      "tpe_share": 0.5476190476190477,
+      "value": "FILTER"
+    },
+    {
+      "d1_n": 12,
+      "d1_productive_rate": 0.16666666666666666,
+      "d1_share": 0.14285714285714285,
+      "field": "market__skeleton_id",
+      "selection_share_delta": -0.03571428571428571,
+      "tpe_n": 15,
+      "tpe_productive_rate": 0.2,
+      "tpe_share": 0.17857142857142858,
+      "value": "cn.comp.v2.market_regime_condition.regime_persistence_gate"
+    },
+    {
+      "d1_n": 10,
+      "d1_productive_rate": 0.2,
+      "d1_share": 0.11904761904761904,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": 0.03571428571428571,
+      "tpe_n": 7,
+      "tpe_productive_rate": 0.2857142857142857,
+      "tpe_share": 0.08333333333333333,
+      "value": "cn.comp.v2.slow_temporal_change.delta"
+    },
+    {
+      "d1_n": 3,
+      "d1_productive_rate": 0.3333333333333333,
+      "d1_share": 0.03571428571428571,
+      "field": "base__skeleton_id",
+      "selection_share_delta": -0.03571428571428571,
+      "tpe_n": 6,
+      "tpe_productive_rate": 0.0,
+      "tpe_share": 0.07142857142857142,
+      "value": "cn.comp.v2.slow_cross_sectional_level.size_residual_level"
+    },
+    {
+      "d1_n": 1,
+      "d1_productive_rate": 0.0,
+      "d1_share": 0.011904761904761904,
+      "field": "temporal__skeleton_id",
+      "selection_share_delta": -0.03571428571428571,
+      "tpe_n": 4,
+      "tpe_productive_rate": 0.5,
+      "tpe_share": 0.047619047619047616,
+      "value": "cn.comp.v2.slow_temporal_change.reported_change"
+    }
+  ],
+  "source_run": {
+    "closed_waves": 20,
+    "closure_file_sha256": "dd8225b8e7842aca376c667efc58bede5d0b367d96c347a22a2308f4787f9e29",
+    "closure_payload_sha256": "0aa7f8c8f33ffd3424825a3d12f037f1af2d9a25b38827cb7e99f9e80913a9bb",
+    "execution_repo_sha": "5096ed1188f8b42897311b4adea183fdeb398e52",
+    "independent_readonly_structure_audit": "PASS",
+    "logical_records": 560,
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_successor_benchmark_v1_retry_20260816_5096ed1",
+    "physical_evaluations": 386,
+    "restricted_reads": 0
+  },
+  "status": "PASS_READ_ONLY_MECHANISM_ANALYSIS",
+  "template_decomposition_vs_tpe": {
+    "BASE_EVENT": 4,
+    "BASE_MARKET": 5,
+    "BASE_MARKET_EVENT": 2,
+    "BASE_TEMPORAL": 0,
+    "BASE_TEMPORAL_EVENT": -2,
+    "BASE_TEMPORAL_MARKET": 0,
+    "BASE_TEMPORAL_MARKET_EVENT": 0,
+    "interpretation": "D1 gain is concentrated in event/market basins; TPE retains a strong BASE_TEMPORAL_EVENT pocket. Do not create post-hoc template routing from this same result.",
+    "net": 9
+  }
+}

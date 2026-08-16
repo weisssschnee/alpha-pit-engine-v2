@@ -1,0 +1,112 @@
+{
+  "automatic_successor_authorized": false,
+  "base_diversity": {
+    "maximum_variants_per_base_component_id_per_template": 4,
+    "minimum_distinct_base_component_ids_per_template": 16
+  },
+  "decision": "READY_FOR_SEPARATELY_AUTHORIZED_FRESH_DEVELOPMENT_COHORT",
+  "evidence_binding": {
+    "evidence_grade": "DEVELOPMENT_LEADER_BUT_NOT_SEPARATED_VS_TPE_OR_D2",
+    "mechanism_analysis_payload_sha256": "948e982fa1d48b68d8e30055e5ca81c1cebf40a2dc2d9a10643bc61950100a13",
+    "mechanism_analysis_relative_path": "runtime/run_plans/cn_program_optimizer_d1_mechanism_analysis_20260816.json",
+    "source_successor_closure_file_sha256": "dd8225b8e7842aca376c667efc58bede5d0b367d96c347a22a2308f4787f9e29",
+    "source_successor_closure_payload_sha256": "0aa7f8c8f33ffd3424825a3d12f037f1af2d9a25b38827cb7e99f9e80913a9bb"
+  },
+  "feedback_semantics": {
+    "absolute_admission_head": true,
+    "admitted_only_conditional_uplift_head": true,
+    "bootstrap_tpe_and_uniform_results_train_surrogate": true,
+    "cross_policy_feedback_used": false,
+    "same_policy_observations_only": true,
+    "validation_feedback_used": false
+  },
+  "fixed_cohort_design": {
+    "bootstrap_observations": 28,
+    "bootstrap_waves": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "dynamic_budget_reallocation": false,
+    "dynamic_handoff": false,
+    "first_surrogate_adaptive_selection_after_completed_observations": 35,
+    "logical_records": 140,
+    "selector_counts": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    },
+    "surrogate_optimized_waves": [
+      5,
+      6,
+      8,
+      9,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "template_routing": false,
+    "template_serialization": "DETERMINISTIC_ONE_POSITION_ROTATION_PER_WAVE",
+    "templates_per_wave": 7,
+    "tpe_bootstrap_waves": [
+      1,
+      2,
+      3
+    ],
+    "uniform_floor_waves": [
+      0,
+      4,
+      7,
+      10,
+      13
+    ],
+    "wave_semantics": "SELECT_ALL_7_TEMPLATE_PROGRAMS_BLIND_THEN_EVALUATE_THEN_TELL",
+    "waves": 20
+  },
+  "forbidden": [
+    "POST_HOC_TEMPLATE_ROUTING",
+    "D2_FEASIBILITY_ONLY_GATE_SUBSTITUTION",
+    "WINNER_TAKES_ALL_OOS_PROMOTION",
+    "VALIDATION_READS",
+    "HOLDOUT_READS",
+    "FORWARD_B_READS",
+    "FORWARD_2026_READS",
+    "DYNAMIC_HANDOFF_BASED_ON_OUTCOMES"
+  ],
+  "oos_authority": "NONE",
+  "policy_id": "CN_PROGRAM_OPTIMIZER_TPE_BOOTSTRAP_TO_SURROGATE_D1_V1",
+  "policy_payload_sha256": "3f2360953ae460d2c5078b049cbfb46b9da02ae0252aaa26bffee541b6bb107b",
+  "program_universe": {
+    "enhanced_program_space_count": 3584,
+    "full_program_space_count": 3616,
+    "full_program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+    "prior_exclusion_count": 890,
+    "prior_exclusion_exact_identities_sha256": "f636b2991ede4eedb7ba0a0f75fdb502d516609c2636858ca6ff5aee820186cc",
+    "prior_exclusion_relative_path": "runtime/run_plans/cn_program_optimizer_d1_next_prior_exact_freeze_20260816.json",
+    "prior_results_imported_as_optimizer_feedback": false,
+    "remaining_prospective_enhanced_exact_count": 2694
+  },
+  "promotion_authorized": false,
+  "role": "PREFERRED_DEVELOPMENT_SEARCH_POLICY_ONLY",
+  "schema_version": "cn_program_optimizer_d1_development_policy_v1",
+  "status": "FROZEN_NOT_RUN",
+  "surrogate_config": {
+    "acquisition": "P_ADMISSION * max(0, UPLIFT_MEAN + 1.0 * UPLIFT_ENSEMBLE_DISPERSION)",
+    "candidate_pool_size": 256,
+    "cold_start_asks": 24,
+    "exploration_beta": 1.0,
+    "full_eligible_scoring": true,
+    "min_samples_leaf": 2,
+    "n_estimators": 256
+  },
+  "tpe_config": {
+    "n_ei_candidates": 64,
+    "n_startup_trials": 24
+  }
+}
