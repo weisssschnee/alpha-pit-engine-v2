@@ -4,6 +4,7 @@ from types import MappingProxyType
 from pathlib import Path
 
 import app
+import pytest
 
 from scripts.prepare_cn_program_optimizer_d1_report_only_validation_v1 import (
     EXPECTED_CANDIDATE_COUNT,
@@ -13,6 +14,7 @@ from scripts.prepare_cn_program_optimizer_d1_report_only_validation_v1 import (
 )
 from scripts.run_cn_program_optimizer_d1_report_only_validation_v1 import (
     _validation_productive,
+    _verify_admitted_output_root,
 )
 from our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1 import (
     AUTHORIZATION_RELATIVE_PATH,
@@ -110,3 +112,26 @@ def test_d1_validation_authorization_roundtrip_is_frozen_and_report_only() -> No
     assert payload["holdout_reads"] == 0
     assert payload["forward_2026_reads"] == 0
     assert payload["promotion_authorized"] is False
+
+
+def test_validation_runner_accepts_clean_project_control_root_and_rejects_other_shapes(tmp_path: Path) -> None:
+    root = tmp_path / "admitted"
+    root.mkdir()
+    (root / ".project_control_execution").mkdir()
+    assert _verify_admitted_output_root(root) == root.resolve()
+
+    dirty = tmp_path / "dirty"
+    dirty.mkdir()
+    (dirty / ".project_control_execution").mkdir()
+    (dirty / "unexpected.txt").write_text("x", encoding="utf-8")
+    with pytest.raises(
+        RuntimeError, match="D1_VALIDATION_ADMITTED_OUTPUT_ROOT_NOT_CLEAN"
+    ):
+        _verify_admitted_output_root(dirty)
+
+    no_identity = tmp_path / "no_identity"
+    no_identity.mkdir()
+    with pytest.raises(
+        RuntimeError, match="D1_VALIDATION_ADMITTED_OUTPUT_ROOT_MISSING"
+    ):
+        _verify_admitted_output_root(no_identity)

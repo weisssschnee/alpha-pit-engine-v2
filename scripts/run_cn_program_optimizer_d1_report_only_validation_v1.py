@@ -270,6 +270,20 @@ def _grouped_metrics(rows: Sequence[Mapping[str, Any]], field: str) -> dict[str,
     return {value: _metric([row for row in rows if str(row[field]) == value]) for value in values}
 
 
+def _verify_admitted_output_root(output_root: Path) -> Path:
+    root = Path(output_root).resolve()
+    if not root.is_dir() or not (root / ".project_control_execution").is_dir():
+        raise RuntimeError("D1_VALIDATION_ADMITTED_OUTPUT_ROOT_MISSING")
+    unexpected = {
+        path.name
+        for path in root.iterdir()
+        if path.name != ".project_control_execution"
+    }
+    if unexpected:
+        raise RuntimeError("D1_VALIDATION_ADMITTED_OUTPUT_ROOT_NOT_CLEAN")
+    return root
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     prepared = _read_json(args.prepared_binding.resolve())
@@ -309,10 +323,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ):
             raise RuntimeError("D1 validation schedule/member economic identity drift")
 
-    output_root = args.output_root.resolve()
-    if output_root.exists():
-        raise FileExistsError(output_root)
-    output_root.mkdir(parents=True)
+    output_root = _verify_admitted_output_root(args.output_root)
     record_root = output_root / "records"
     record_root.mkdir()
     input_binding = {
