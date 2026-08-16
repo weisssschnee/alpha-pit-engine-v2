@@ -1,0 +1,86 @@
+{
+  "candidate_member_artifact": {
+    "bytes": 167720,
+    "file_sha256": "4f0befede84762a81b1a458178c7e9a294821c3cb8a61f512e7a3bf990ef19da",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_candidate_members_20260816.jsonl"
+  },
+  "forward_2026_reads": 0,
+  "freeze_payload_sha256": "0ee0f43f4cc6a83b46faa000665958243ac826b7c8cb88a0b50c3e2e39bc8044",
+  "frozen_candidate_count": 120,
+  "frozen_candidate_exact_identities_sha256": "ec419271b7bc2a3fb5d039c6e1441c489961601fbd788ccd84c2d80231cc3687",
+  "holdout_reads": 0,
+  "oos_authority": "VALIDATION_REPORT_ONLY_AFTER_SEPARATE_AUTHORIZATION",
+  "per_cohort": {
+    "D1_FRESH": 64,
+    "SUCCESSOR_D1": 56
+  },
+  "per_selector": {
+    "COMMON_TPE_BOOTSTRAP": 4,
+    "COMMON_UNIFORM_FLOOR": 12,
+    "SURROGATE_FULL_ACQUISITION": 42,
+    "SURROGATE_OPTIMIZED": 40,
+    "TPE_BOOTSTRAP": 7,
+    "UNIFORM": 15
+  },
+  "per_template": {
+    "BASE_EVENT": 13,
+    "BASE_MARKET": 14,
+    "BASE_MARKET_EVENT": 26,
+    "BASE_TEMPORAL": 14,
+    "BASE_TEMPORAL_EVENT": 35,
+    "BASE_TEMPORAL_MARKET": 4,
+    "BASE_TEMPORAL_MARKET_EVENT": 14
+  },
+  "schedule_resolution_contract": {
+    "locator_fields": [
+      "source_root",
+      "source_wave",
+      "exact_identity"
+    ],
+    "required_schedule_binding": "schedule_record_sha256",
+    "schedule_copy_committed_to_repo": false,
+    "source": "IMMUTABLE_SOURCE_WAVE_PHYSICAL_SCHEDULES",
+    "source_wave_binding": "source_wave_manifest_sha256"
+  },
+  "schema_version": "cn_program_optimizer_d1_report_only_validation_compact_freeze_v1",
+  "selection_rule": {
+    "eligibility": "DEVELOPMENT_ADMITTED_AND_MATCHED_RETURN_INCREMENT_GT_0_AND_MATCHED_REWARD_INCREMENT_GT_0",
+    "population": "ALL_D1_LOGICAL_ASKS_FROM_TWO_DISJOINT_PROSPECTIVE_DEVELOPMENT_COHORTS",
+    "post_hoc_top_k": "FORBIDDEN",
+    "ranking": "NONE_ALL_ELIGIBLE_INCLUDED",
+    "selector_quota": "NONE",
+    "template_quota": "NONE"
+  },
+  "source_cohorts": [
+    {
+      "closure_file_sha256": "dd8225b8e7842aca376c667efc58bede5d0b367d96c347a22a2308f4787f9e29",
+      "closure_payload_sha256": "0aa7f8c8f33ffd3424825a3d12f037f1af2d9a25b38827cb7e99f9e80913a9bb",
+      "cohort": "SUCCESSOR_D1",
+      "d1_logical_count": 140,
+      "frozen_productive_count": 56,
+      "root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_successor_benchmark_v1_retry_20260816_5096ed1"
+    },
+    {
+      "closure_file_sha256": "1d41fdeb7bdec2e081fcc3a360b4581f9943fd024877f1f93b1b2ee761033817",
+      "closure_payload_sha256": "43f220a947923c394524437baf17c3b54f3cf9af5dff0ccedbf23aed2bf90158",
+      "cohort": "D1_FRESH",
+      "d1_logical_count": 140,
+      "frozen_productive_count": 64,
+      "root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_v1_20260816_b20f01b"
+    }
+  ],
+  "source_support_overlap_count": 0,
+  "status": "FROZEN_BEFORE_VALIDATION_ACCESS",
+  "validation_contract": {
+    "archive_write": "FORBIDDEN",
+    "development_search_visibility": "FORBIDDEN",
+    "evaluation_role": "validation",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "usage": "REPORT_ONLY_CANDIDATE_TRANSFER"
+  },
+  "validation_reads_performed_by_freeze": 0
+}
