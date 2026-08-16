@@ -1,0 +1,53 @@
+{
+  "boundaries": {
+    "development_only": true,
+    "oos_authority": "NONE",
+    "promotion_authorized": false,
+    "validation_reads": 0
+  },
+  "evidence_note_payload_sha256": "1eb010311abdb73377b300d0621ad1e89f06598874b1352116680d2ea1bf0266",
+  "independent_audit_payload_sha256": "a33b6af23865a5469a083c4f58a77bf2c59913817174c66ea76fd87dd117d6d3",
+  "key_result": {
+    "post_bootstrap": {
+      "admission_rate": 0.6696428571428571,
+      "admitted": 75,
+      "evaluated": 112,
+      "productive": 55,
+      "productive_efficiency": 0.49107142857142855,
+      "productive_wilson_95": {
+        "lower": 0.400330262344281,
+        "upper": 0.5824047617104859
+      }
+    },
+    "selector_counts": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    },
+    "surrogate_optimized": {
+      "admission_rate": 0.7261904761904762,
+      "admitted": 61,
+      "evaluated": 84,
+      "productive": 42,
+      "productive_efficiency": 0.5,
+      "productive_wilson_95": {
+        "lower": 0.3954393376854136,
+        "upper": 0.6045606623145864
+      }
+    },
+    "total": {
+      "admission_rate": 0.6428571428571429,
+      "admitted": 90,
+      "evaluated": 140,
+      "productive": 64,
+      "productive_efficiency": 0.45714285714285713,
+      "productive_wilson_95": {
+        "lower": 0.37686991731172453,
+        "upper": 0.5397048998627966
+      }
+    }
+  },
+  "outcome_payload_sha256": "4dfe42d11d0aa5ce003e61ae18d7b7ffe390f4b098c9b1b955c3ce0ac042839a",
+  "schema_version": "cn_program_optimizer_d1_development_evidence_note_v1",
+  "status": "D1_DEVELOPMENT_EVIDENCE_CLOSED"
+}
