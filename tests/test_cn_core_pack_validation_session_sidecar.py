@@ -5,6 +5,7 @@ import pytest
 from scripts.build_cn_core_pack_validation_session_sidecar import (
     _assert_positive_pit_coverage,
     _direct_session_fields,
+    _missing_session_fields,
     _resolve_fundamental_partition_root,
 )
 
@@ -65,3 +66,14 @@ def test_direct_session_fields_exclude_dedicated_open_close_columns() -> None:
         source_schema={"code", "trade_time", "open", "close", "amount", "pct_chg"},
     )
     assert direct == ["amount", "pct_chg"]
+
+
+def test_missing_session_fields_accept_dedicated_open_close_materialization() -> None:
+    missing = _missing_session_fields(
+        required_fields=("open", "close", "amount", "fund_x"),
+        direct_fields=["amount"],
+        canonical_fields=set(),
+        chip_fields=(),
+        source_schema={"code", "trade_time", "open", "close", "amount"},
+    )
+    assert missing == ["fund_x"]

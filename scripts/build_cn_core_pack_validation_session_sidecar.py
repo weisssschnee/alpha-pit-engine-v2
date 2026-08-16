@@ -64,6 +64,26 @@ def _direct_session_fields(
     )
 
 
+def _missing_session_fields(
+    *,
+    required_fields: tuple[str, ...],
+    direct_fields: list[str],
+    canonical_fields: set[str],
+    chip_fields: tuple[str, ...],
+    source_schema: set[str],
+) -> list[str]:
+    """Return required fields with no direct/core/canonical/chip materializer."""
+
+    dedicated_core = CORE_SESSION_COLUMNS & set(source_schema)
+    return sorted(
+        set(required_fields)
+        - set(direct_fields)
+        - set(canonical_fields)
+        - set(chip_fields)
+        - dedicated_core
+    )
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -262,11 +282,12 @@ def main() -> int:
             chip_fields=chip_fields,
             source_schema=source_schema,
         )
-        missing = sorted(
-            set(required_fields)
-            - set(direct_fields)
-            - set(specs)
-            - set(chip_fields)
+        missing = _missing_session_fields(
+            required_fields=required_fields,
+            direct_fields=direct_fields,
+            canonical_fields=set(specs),
+            chip_fields=chip_fields,
+            source_schema=source_schema,
         )
         if missing:
             raise RuntimeError(f"unmaterializable session fields: {missing}")
