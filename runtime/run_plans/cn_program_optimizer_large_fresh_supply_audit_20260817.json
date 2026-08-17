@@ -1,0 +1,51 @@
+{
+  "authorized_logical_record_cap": 840,
+  "authorized_macro_count": 5,
+  "balanced_supply_macro_cap": 5,
+  "checkpoint_batch_size": 24,
+  "distinct_base_groups_by_template": {
+    "BASE_EVENT": 32,
+    "BASE_MARKET": 32,
+    "BASE_MARKET_EVENT": 32,
+    "BASE_TEMPORAL": 32,
+    "BASE_TEMPORAL_EVENT": 32,
+    "BASE_TEMPORAL_MARKET": 32,
+    "BASE_TEMPORAL_MARKET_EVENT": 32
+  },
+  "financial_evaluation_executed": false,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "group_capped_remaining_capacity": {
+    "BASE_EVENT": 128,
+    "BASE_MARKET": 128,
+    "BASE_MARKET_EVENT": 128,
+    "BASE_TEMPORAL": 128,
+    "BASE_TEMPORAL_EVENT": 127,
+    "BASE_TEMPORAL_MARKET": 128,
+    "BASE_TEMPORAL_MARKET_EVENT": 128
+  },
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "maximum_variants_per_base_group_per_template": 4,
+  "prior_exact_count": 1310,
+  "prior_exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+  "prior_freeze_payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+  "program_space_count": 3616,
+  "program_space_sha256": "86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0",
+  "raw_remaining_by_template": {
+    "BASE_EVENT": 325,
+    "BASE_MARKET": 327,
+    "BASE_MARKET_EVENT": 327,
+    "BASE_TEMPORAL": 325,
+    "BASE_TEMPORAL_EVENT": 323,
+    "BASE_TEMPORAL_MARKET": 322,
+    "BASE_TEMPORAL_MARKET_EVENT": 325
+  },
+  "remaining_exact_count": 2274,
+  "repo_sha": "4656fcd9b7082f54c0c19551ed2f1ad67655ac41",
+  "requested_hard_cap": 1960,
+  "schema_version": "cn_program_optimizer_large_fresh_supply_audit_v1",
+  "status": "PASS_ZERO_FINANCIAL_SUPPLY_AUDIT",
+  "supply_audit_payload_sha256": "1289dca07539025a3884166867429461914fe7d3337c654f0d23589f20b7e694",
+  "validation_reads": 0
+}
