@@ -2,7 +2,7 @@
 
 Updated: 2026-08-17
 
-Current state: `PROGRAM_OPTIMIZER_D1_TRANSFER_V1_PROSPECTIVE_FAIL_V2_FROZEN_RETROSPECTIVE_ONLY_REPRODUCIBILITY_GAP_C_COHORT_AND_V2_VALIDATION_PLUMBING_PREPARED_NOT_RUN_RESTRICTED_READS_ZERO_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_STOPPED_FOR_EXTERNAL_REVIEW`
+Current state: `PROGRAM_OPTIMIZER_D1_TRANSFER_V2_REPRODUCIBILITY_RESTORED_C_DEVELOPMENT_COMPLETE_140_UNIQUE_67_PRODUCTIVE_V2_TOP40_27_FROZEN_BEFORE_VALIDATION_RESTRICTED_READS_ZERO_VALIDATION_UNREAD_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_STOPPED_FOR_EXTERNAL_REVIEW`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,55 +16,71 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### D1 transfer V1 prospective filter failed; V2 is frozen retrospective evidence only and C remains not run (2026-08-17)
+### D1 Transfer V2 reproducibility restored; fresh C development complete and membership frozen before validation (2026-08-17)
 
-- The original 120-candidate development-to-validation autopsy froze Transfer
-  Filter V1 before a fresh B continuation cohort. B development then closed
-  140/140 unique exact Programs with zero overlap against the prior 1,030 exact
-  identities and zero validation/holdout/Forward-2026 reads; 63 Programs were
-  development-productive.
-- The frozen V1 filter selected 26/63 before validation. Report-only validation
-  produced 20/63 productive overall and 10/26 productive inside the filtered
-  set: precision `0.3846153846` versus `0.3174603175` overall, a lift of only
-  `+0.0671550672`, with recall `0.50`. The unchanged prospective gates required
-  precision >= 0.35, lift >= +0.10 and recall >= 0.60, so the formal verdict is
-  `FAIL_PROSPECTIVE_FILTER_TEST`; no promotion or optimizer feedback followed.
-- Post-failure retrospective analysis combined the already-burned 120 rows with
-  the 63-row B validation population and froze
-  `CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2` over five development-only
-  economic features, including ordered `development_1/2/3` return increments.
-  Its 183-row/50-positive LOCO metrics are hypothesis-design evidence only;
-  Filter V2 has no prospective C evidence and does not alter the formal Hybrid
-  TPE + Availability development authority.
-- Independent zero-financial-read reproducibility work at implementation SHA
-  `2bc8618bbed45b8f3615de8a464228fc5a29135f` produced audit payload
-  `0f913149705bdbc166f94cce4c726e463cba285db6526856ad3ab10eac5654e2`
-  with terminal status `FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP`.
-  Durable Git evidence preserves all 120 old validation labels, but preserves
-  none of the 183 ordered chronological development-window feature rows and
-  preserves only B's aggregate 20/63 positive count rather than its 63
-  per-exact validation labels. Therefore the frozen V2 coefficients and LOCO
-  claims are preserved but are not yet independently re-derived.
-- Recovery plumbing is now committed: one tool freezes ordered development
-  windows from immutable closed `physical_results.jsonl`, one freezes per-exact
-  labels from an already-completed report-only validation root, one builds the
-  deterministic 183-row reconstruction dataset, and one refits the exact frozen
-  Logistic V2 contract and checks coefficients/intercept plus all three LOCO
-  folds. These tools perform no new financial evaluation and keep holdout and
-  Forward-2026 reads at zero.
-- A fresh C development authorization and V2 prospective validation plumbing
-  exist, with prior exact count 1,170 and 2,414 unseen enhanced Programs
-  remaining. C is still `CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_FROZEN_NOT_RUN`;
-  its freeze path has been upgraded to persist ordered window increments for
-  future reproducibility. The reproducibility audit authorizes neither C
-  development nor C validation. No Project Control admission for C was consumed
-  by this work, and execution remains stopped for external review.
-- Canonical Graph artifacts were not refreshed by this non-architecture
-  research patch. The pre-existing `.planning/graphs/current.json` is already
-  `FAIL`: its RAW graph predates later non-overlay source changes and it also
-  reports an experimental/formal semantic-authority conflict; tracked
-  `.planning/graphs/graph.html` is absent. This transfer work does not claim a
-  GraphSkill PASS and leaves that independent Graph maintenance issue untouched.
+- Transfer Filter V1 remains a clean prospective failure on B: all 63
+  development-positive Programs transferred at 20/63 (`0.31746`), while the
+  frozen top-26 subset transferred at 10/26 (`0.38462`), only `+0.06716` lift
+  with `0.50` recall; the unchanged `+0.10` lift and `0.60` recall gates failed.
+- The prior V2 reproducibility gap is now closed from immutable 77o evidence.
+  The old 120 and B63 chronological development windows plus all B63 per-exact
+  validation labels were recovered, yielding the original 183-candidate /
+  50-positive population. The recovered fitting contract is
+  `StandardScaler(train rows) -> balanced liblinear Logistic(C=0.5)` with the
+  fitted score exactly inverse-transformed to raw feature space. All five frozen
+  raw coefficients, the intercept, all three leave-one-cohort-out folds,
+  aggregate AUC `0.7557894737` and average precision `0.5386599158` reproduce
+  exactly. Model reproduction payload is
+  `433808b6a72f4017ddd32b4abe22c168ce481dd380af16764d8171fd6b09d1ad`;
+  current durable reproducibility audit payload is
+  `093e18fac0b778fd1653a6e8b989588c37f649bc080c7c85adb10cbe0cc54031`.
+  The historical temporary dataset serialization hash is not byte-reproduced,
+  but candidate/label membership, model, raw score and every reported LOCO
+  metric are independently reproduced; the earlier fail-closed audit remains
+  preserved as point-in-time evidence.
+- Fresh continuation C had already completed on `DESKTOP-77OPJ6F` under exact
+  execution SHA `1cc384d27e6d673ca342561c6463f3481b1cf2d8`. That branch changed only
+  the frozen C authorization/prior binding relative to the accepted D1 runner;
+  its C binding is identical to the later main-line binding. Project Control
+  task `cn-execution-1128ee43b47073016990c2e6`, run
+  `260e3bb0-a778-41f9-aa03-de21a302895e`, admission payload
+  `e46905ef7bfa4f78404e98d8a1671beb3f457ab9a5c7e007d6d26a4e7b175ffc`
+  was consumed exactly once against the C output root.
+- Independent postrun replay verified all 20 wave manifests and 140/140
+  ask/schedule/result records: 140 unique exact Programs, zero overlap with the
+  prior 1,170, selector counts `84/21/35` for Surrogate/TPE/Uniform, 93 admitted
+  and 67 development-productive. Validation, holdout, historical-2023,
+  Forward-B and Forward-2026 reads are all zero; no promotion or automatic
+  successor was authorized.
+- The unchanged frozen `CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2` was then
+  applied only to those 67 development-positive C Programs using development
+  information. Top-40% membership froze 27 Programs before any C validation
+  access. Candidate-set hash is
+  `80baef6280f1ae0c10644e10a1391679d7ed5b8aa56ad540cfaf0ba811d6ae18`,
+  selected-set hash is
+  `53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b`,
+  and freeze payload is
+  `389cf2e86db80104d58110a3a477b8b42b6259c049939c640d41634c8283cb6f`.
+  Every frozen member persists ordered `development_1/2/3` increments and is
+  bound fail-closed by exact identity, wave, logical proposal, selection kind
+  and schedule self-hash.
+- Post-C prior exacts are now frozen at 1,310 with 2,274 enhanced Programs still
+  unseen. The postrun prior payload is
+  `7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa`;
+  independent C audit payload is
+  `c60fec20c7dc368965be50a81b9d1570323a5d5f13950ab2c0ee15a36464b75f`;
+  terminal pre-validation outcome payload is
+  `4e75e06d20834999d72408e014bd0cd58e7a22d74a7805db1d08d0a74df8e2f1`.
+  Terminal status is
+  `C_DEVELOPMENT_COMPLETE_AND_V2_MEMBERSHIP_FROZEN_BEFORE_VALIDATION`.
+- C validation has **not** been prepared, authorized, consumed or executed by
+  this closure. The next financial evidence step, if approved, is one separately
+  authorized report-only C validation over all 67 frozen candidates with the 27
+  V2 memberships fixed. Holdout and Forward-2026 remain sealed, validation
+  cannot feed optimizer/scheduler/archive state, and formal Hybrid TPE plus
+  Availability development authority is unchanged.
+- Canonical Graph/SPR maintenance remains a separate task and was intentionally
+  not touched by this transfer closure.
 
 ### Program optimizer frozen prospective tournament complete; Hybrid TPE leads development search efficiency (2026-08-15)
 

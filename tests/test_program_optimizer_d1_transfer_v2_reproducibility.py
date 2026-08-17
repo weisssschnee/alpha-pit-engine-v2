@@ -20,20 +20,23 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
 
-def test_current_v2_reproducibility_gap_is_explicit_and_fail_closed() -> None:
+def test_current_v2_reproducibility_is_restored_from_durable_recovery_pack() -> None:
     report = build_audit(REPO)
-    assert report["status"] == "FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP"
-    assert report["durable_coverage"] == {
-        "old_120_validation_label_rows": 120,
-        "old_120_window_feature_rows": 0,
-        "B_63_validation_label_rows": 0,
-        "B_63_window_feature_rows": 0,
-    }
-    missing = {row["requirement"]: row for row in report["missing_requirements"]}
-    assert missing["OLD_120_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"]["missing_rows"] == 120
-    assert missing["B_63_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"]["missing_rows"] == 63
-    assert missing["B_63_PER_EXACT_VALIDATION_LABELS"]["missing_rows"] == 63
-    assert missing["B_63_PER_EXACT_VALIDATION_LABELS"]["aggregate_positive_count_available"] == 20
+    assert report["status"] == "PASS_V2_REPRODUCIBILITY_RESTORED_FROM_DURABLE_EVIDENCE"
+    assert report["missing_requirements"] == []
+    historical = {row["requirement"]: row for row in report["historical_missing_requirements_before_recovery"]}
+    assert historical["OLD_120_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"]["missing_rows"] == 120
+    assert historical["B_63_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"]["missing_rows"] == 63
+    assert historical["B_63_PER_EXACT_VALIDATION_LABELS"]["missing_rows"] == 63
+    recovered = report["recovered_durable_evidence"]
+    assert recovered["development_window_rows"] == 183
+    assert recovered["B_label_rows"] == 63
+    assert recovered["candidate_count"] == 183
+    assert recovered["validation_productive_count"] == 50
+    assert recovered["status"] == "PASS_V2_MODEL_AND_LOCO_REPRODUCTION"
+    assert recovered["preprocessing_contract"]["family"] == "STANDARD_SCALER"
+    assert recovered["legacy_dataset_serialization_hash_matches_recovered_rows"] is False
+    assert report["frozen_V2_claims_preserved_but_not_rederived"] is False
     assert report["C_development_execution_authorized_by_this_audit"] is False
     assert report["C_validation_execution_authorized_by_this_audit"] is False
     assert report["holdout_reads"] == 0

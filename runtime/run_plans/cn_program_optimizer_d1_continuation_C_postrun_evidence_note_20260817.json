@@ -1,0 +1,17 @@
+{
+  "C_development_productive": 67,
+  "C_execution_repo_sha": "1cc384d27e6d673ca342561c6463f3481b1cf2d8",
+  "V2_reproduction_payload_sha256": "433808b6a72f4017ddd32b4abe22c168ce481dd380af16764d8171fd6b09d1ad",
+  "V2_selected": 27,
+  "V2_selected_exact_identities_sha256": "53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b",
+  "evidence_note_payload_sha256": "afa52bbee1f95cd9aa8b8ecd276bf1183d263a264c67ca58a2375c8892bdbe6f",
+  "forward_2026_reads": 0,
+  "headline": "Fresh C development closed 140/140 with zero prior overlap and zero restricted reads; 67 development-positive Programs were scored by the independently reproduced frozen V2 filter and 27 were frozen before any C validation access.",
+  "holdout_reads": 0,
+  "next_decision": "EXTERNAL_REVIEW_THEN_SEPARATELY_AUTHORIZE_REPORT_ONLY_C_VALIDATION_IF_APPROVED",
+  "postrun_evidence_repo_sha": "087afa62bf642e7fbc6b15a1ec826c2ceff30cc1",
+  "promotion_authorized": false,
+  "schema_version": "cn_program_optimizer_d1_continuation_C_postrun_evidence_note_v1",
+  "status": "C_DEVELOPMENT_COMPLETE_AND_V2_MEMBERSHIP_FROZEN_BEFORE_VALIDATION",
+  "validation_reads": 0
+}

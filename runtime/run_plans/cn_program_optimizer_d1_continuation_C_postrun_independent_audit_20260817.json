@@ -1,0 +1,68 @@
+{
+  "audit": {
+    "closed_waves": 20,
+    "errors": [],
+    "logical_records": 140,
+    "metric_post_bootstrap": {
+      "admitted": 78,
+      "evaluated": 112,
+      "productive": 58
+    },
+    "metric_surrogate_optimized": {
+      "admitted": 63,
+      "evaluated": 84,
+      "productive": 49
+    },
+    "metric_total": {
+      "admitted": 93,
+      "evaluated": 140,
+      "productive": 67
+    },
+    "physical_evaluation_calls": 140,
+    "prior_overlap_count": 0,
+    "project_control_admission_payload_sha256": "e46905ef7bfa4f78404e98d8a1671beb3f457ab9a5c7e007d6d26a4e7b175ffc",
+    "project_control_consumption_count": 1,
+    "project_control_run_id": "260e3bb0-a778-41f9-aa03-de21a302895e",
+    "project_control_task_id": "cn-execution-1128ee43b47073016990c2e6",
+    "restricted_reads": {
+      "forward_2026": 0,
+      "forward_b": 0,
+      "historical_2023": 0,
+      "holdout": 0,
+      "validation": 0
+    },
+    "selector_counts": {
+      "SURROGATE_FULL_ACQUISITION": 84,
+      "TPE_BOOTSTRAP": 21,
+      "UNIFORM": 35
+    },
+    "status": "PASS",
+    "transfer_candidate_count": 67,
+    "transfer_filter_id": "CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2",
+    "transfer_selected_count": 27,
+    "transfer_selected_exact_identities_sha256": "53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b",
+    "unique_exact": 140,
+    "v2_reproduction_payload_sha256": "433808b6a72f4017ddd32b4abe22c168ce481dd380af16764d8171fd6b09d1ad",
+    "v2_reproduction_status": "PASS_V2_MODEL_AND_LOCO_REPRODUCTION",
+    "validation_accessed": false
+  },
+  "audit_payload_sha256": "c60fec20c7dc368965be50a81b9d1570323a5d5f13950ab2c0ee15a36464b75f",
+  "closure_file_sha256": "f095db85f99afa9e27121492f833bb39188ebf58bd0fc987d0f73208369ee2fd",
+  "closure_payload_sha256": "4688fef480bba3969e38ce4138b177f83c3f6a39cd82ab309b11c8c20162783b",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "postrun_prior_payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+  "project_control_admission_file_sha256": "69b50dd5b7ab8fe29529d4ca23798275f8bd69a9c841e1dacd59518a30d5d112",
+  "project_control_admission_payload_sha256": "e46905ef7bfa4f78404e98d8a1671beb3f457ab9a5c7e007d6d26a4e7b175ffc",
+  "promotion_authorized": false,
+  "schema_version": "cn_program_optimizer_d1_continuation_C_postrun_independent_audit_v1",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d",
+  "status": "PASS",
+  "transfer_application_file_sha256": "020d78857ed35f71501ac5ecb6581678fdd54e6116ec746617d1e2c65bef9f76",
+  "transfer_application_payload_sha256": "7abfdd8643bf753cf2b48ec9e56e4aa889687e954f5caaf02ceaae672c0ec6b2",
+  "transfer_freeze_file_sha256": "b31102613ff541cb375ecb01f457f3ffe7d083fac30fad7dbe3a5330dfc6c865",
+  "transfer_freeze_payload_sha256": "389cf2e86db80104d58110a3a477b8b42b6259c049939c640d41634c8283cb6f",
+  "v2_reproduction_receipt_file_sha256": "ddd51879ae4304710b49131b1de22f03e17c2c5273490168e74690b4f8276cf8",
+  "v2_reproduction_receipt_payload_sha256": "433808b6a72f4017ddd32b4abe22c168ce481dd380af16764d8171fd6b09d1ad",
+  "validation_reads": 0
+}

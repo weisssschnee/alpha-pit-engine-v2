@@ -1,0 +1,132 @@
+{
+  "LOCO_fold_checks": {
+    "D1_CONTINUATION_B": true,
+    "D1_FRESH": true,
+    "SUCCESSOR_D1": true
+  },
+  "LOCO_folds": {
+    "D1_CONTINUATION_B": {
+      "auc": 0.6988372093023255,
+      "base_precision": 0.31746031746031744,
+      "population": 63,
+      "top40_lift_pp": 0.14407814407814412,
+      "top40_precision": 0.46153846153846156,
+      "top40_productive": 12,
+      "top40_recall": 0.6,
+      "top40_selected": 26,
+      "validation_productive": 20
+    },
+    "D1_FRESH": {
+      "auc": 0.8294270833333333,
+      "base_precision": 0.25,
+      "population": 64,
+      "top40_lift_pp": 0.28846153846153844,
+      "top40_precision": 0.5384615384615384,
+      "top40_productive": 14,
+      "top40_recall": 0.875,
+      "top40_selected": 26,
+      "validation_productive": 16
+    },
+    "SUCCESSOR_D1": {
+      "auc": 0.8299319727891157,
+      "base_precision": 0.25,
+      "population": 56,
+      "top40_lift_pp": 0.2282608695652174,
+      "top40_precision": 0.4782608695652174,
+      "top40_productive": 11,
+      "top40_recall": 0.7857142857142857,
+      "top40_selected": 23,
+      "validation_productive": 14
+    }
+  },
+  "aggregate_LOCO": {
+    "auc": 0.7557894736842106,
+    "average_precision": 0.5386599157729539
+  },
+  "aggregate_LOCO_checks": {
+    "aggregate_auc": true,
+    "aggregate_average_precision": true
+  },
+  "candidate_count": 183,
+  "check_payload_sha256": "433808b6a72f4017ddd32b4abe22c168ce481dd380af16764d8171fd6b09d1ad",
+  "checks": {
+    "aggregate_auc": true,
+    "aggregate_average_precision": true,
+    "all_LOCO_folds": true,
+    "coefficients": true,
+    "intercept": true
+  },
+  "coefficient_checks": {
+    "dev_matched_return": true,
+    "dev_matched_reward": true,
+    "dev_window_1_increment": true,
+    "dev_window_2_increment": true,
+    "dev_window_3_increment": true
+  },
+  "dataset_payload_sha256": "02614aa72338424c68bf61a37279d3cc8f4949a08a8d569c6f847326e534cab9",
+  "financial_evaluation_performed_by_this_check": false,
+  "fitted_model": {
+    "coefficients": {
+      "dev_matched_return": -0.7363351972081593,
+      "dev_matched_reward": 0.07422475450709504,
+      "dev_window_1_increment": 1.255889587763062,
+      "dev_window_2_increment": 4.354904873756828,
+      "dev_window_3_increment": -6.902738995372167
+    },
+    "features": [
+      "dev_matched_return",
+      "dev_matched_reward",
+      "dev_window_1_increment",
+      "dev_window_2_increment",
+      "dev_window_3_increment"
+    ],
+    "intercept": 0.5433662165160279,
+    "scaler_mean": {
+      "dev_matched_return": 0.3985573637287518,
+      "dev_matched_reward": 1.8459136992329819,
+      "dev_window_1_increment": 0.32709219808409024,
+      "dev_window_2_increment": -0.09062225027253525,
+      "dev_window_3_increment": 0.10543954689935699
+    },
+    "scaler_scale": {
+      "dev_matched_return": 0.3175388519814438,
+      "dev_matched_reward": 1.1962913084653173,
+      "dev_window_1_increment": 0.22909006949511773,
+      "dev_window_2_increment": 0.2454149585420572,
+      "dev_window_3_increment": 0.1424888886268051
+    },
+    "standardized_coefficients": {
+      "dev_matched_return": -0.23381503319500896,
+      "dev_matched_reward": 0.08879442868980968,
+      "dev_window_1_increment": 0.2877118329388346,
+      "dev_window_2_increment": 1.0687587990476348,
+      "dev_window_3_increment": -0.9835636079314891
+    },
+    "standardized_intercept": -0.3247743729439917
+  },
+  "forward_2026_reads": 0,
+  "frozen_model": {
+    "coefficients": {
+      "dev_matched_return": -0.7363351972081602,
+      "dev_matched_reward": 0.07422475450709497,
+      "dev_window_1_increment": 1.2558895877630634,
+      "dev_window_2_increment": 4.35490487375683,
+      "dev_window_3_increment": -6.902738995372169
+    },
+    "filter_payload_sha256": "512c81728e3fca363ffcb3a148b3fd09f088e1f56d9f3f330b9a9f1170466081",
+    "intercept": 0.5433662165160273
+  },
+  "holdout_reads": 0,
+  "intercept_check": true,
+  "optimizer_feedback_write": "FORBIDDEN",
+  "promotion_authorized": false,
+  "recovered_preprocessing_contract": {
+    "family": "STANDARD_SCALER",
+    "fit_scope": "FIT_ON_TRAINING_ROWS_FOR_EACH_MODEL_FIT",
+    "frozen_score_formula_space": "RAW_FEATURE_SPACE_AFTER_EXACT_INVERSE_TRANSFORM",
+    "transform": "z=(x-mean)/scale"
+  },
+  "schema_version": "cn_program_optimizer_d1_transfer_v2_model_reproduction_check_v1",
+  "status": "PASS_V2_MODEL_AND_LOCO_REPRODUCTION",
+  "validation_productive_count": 50
+}

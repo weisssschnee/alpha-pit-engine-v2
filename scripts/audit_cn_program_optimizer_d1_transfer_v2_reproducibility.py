@@ -27,6 +27,11 @@ B_MEMBERS_REL = Path("runtime/run_plans/cn_program_optimizer_d1_transfer_B_valid
 B_OUTCOME_REL = Path("runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_outcome_20260817.json")
 V2_AUTOPSY_REL = Path("runtime/run_plans/cn_program_optimizer_d1_transfer_v2_autopsy_20260817.json")
 V2_FILTER_REL = Path("runtime/run_plans/cn_program_optimizer_d1_transfer_filter_v2_20260817.json")
+RECOVERY_DIR_REL = Path("runtime/run_plans/cn_program_optimizer_d1_transfer_v2_recovery_20260817")
+RECOVERED_WINDOWS_REL = RECOVERY_DIR_REL / "development_window_features.json"
+RECOVERED_B_LABELS_REL = RECOVERY_DIR_REL / "B63_validation_labels.json"
+RECOVERED_DATASET_REL = RECOVERY_DIR_REL / "combined_183_dataset.json"
+RECOVERED_MODEL_REL = RECOVERY_DIR_REL / "model_reproduction_check_standardized.json"
 EXPECTED_WINDOWS = ("development_1", "development_2", "development_3")
 
 
@@ -69,6 +74,110 @@ def _exact_labels_from_members(rows: Sequence[Mapping[str, Any]]) -> dict[str, b
             raise RuntimeError("duplicate/empty durable validation label exact identity")
         labels[exact] = bool(row["validation_productive"])
     return labels
+
+
+def _load_recovered_evidence(
+    root: Path,
+    *,
+    expected_exacts: set[str],
+    expected_b_exacts: set[str],
+    v2_filter: Mapping[str, Any],
+    v2_autopsy: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    paths = {
+        "development_windows": root / RECOVERED_WINDOWS_REL,
+        "B_labels": root / RECOVERED_B_LABELS_REL,
+        "dataset": root / RECOVERED_DATASET_REL,
+        "model_reproduction": root / RECOVERED_MODEL_REL,
+    }
+    existing = {name: path.is_file() for name, path in paths.items()}
+    if not any(existing.values()):
+        return None
+    if not all(existing.values()):
+        raise RuntimeError(f"partial V2 recovery pack: {existing}")
+
+    windows = _read_json(paths["development_windows"])
+    labels = _read_json(paths["B_labels"])
+    dataset = _read_json(paths["dataset"])
+    model = _read_json(paths["model_reproduction"])
+    _verify_self_hash(windows, "evidence_payload_sha256", "recovered development windows")
+    _verify_self_hash(labels, "evidence_payload_sha256", "recovered B labels")
+    _verify_self_hash(dataset, "dataset_payload_sha256", "recovered V2 dataset")
+    _verify_self_hash(model, "check_payload_sha256", "recovered V2 model reproduction")
+
+    window_rows = list(windows.get("feature_rows") or ())
+    label_rows = list(labels.get("label_rows") or ())
+    dataset_rows = list(dataset.get("rows") or ())
+    window_exacts = {str(row.get("exact_identity") or "") for row in window_rows}
+    label_exacts = {str(row.get("exact_identity") or "") for row in label_rows}
+    dataset_exacts = {str(row.get("exact_identity") or "") for row in dataset_rows}
+    if (
+        int(windows.get("candidate_count") or 0) != 183
+        or len(window_rows) != 183
+        or tuple(windows.get("development_window_ids") or ()) != EXPECTED_WINDOWS
+        or stable_hash(window_rows) != str(windows.get("feature_rows_sha256") or "")
+        or window_exacts != expected_exacts
+        or int(labels.get("candidate_count") or 0) != 63
+        or int(labels.get("validation_productive_count") or 0) != 20
+        or len(label_rows) != 63
+        or stable_hash(label_rows) != str(labels.get("label_rows_sha256") or "")
+        or label_exacts != expected_b_exacts
+        or int(dataset.get("candidate_count") or 0) != 183
+        or int(dataset.get("validation_productive_count") or 0) != 50
+        or len(dataset_rows) != 183
+        or stable_hash(dataset_rows) != str(dataset.get("rows_sha256") or "")
+        or dataset_exacts != expected_exacts
+    ):
+        raise RuntimeError("recovered V2 evidence semantic drift")
+
+    expected_loco = dict(v2_autopsy.get("leave_one_cohort_out") or {})
+    observed_loco = dict(model.get("aggregate_LOCO") or {})
+    preprocessing = dict(model.get("recovered_preprocessing_contract") or {})
+    if (
+        model.get("status") != "PASS_V2_MODEL_AND_LOCO_REPRODUCTION"
+        or not all(bool(value) for value in dict(model.get("checks") or {}).values())
+        or not all(bool(value) for value in dict(model.get("LOCO_fold_checks") or {}).values())
+        or int(model.get("candidate_count") or 0) != 183
+        or int(model.get("validation_productive_count") or 0) != 50
+        or model.get("dataset_payload_sha256") != dataset.get("dataset_payload_sha256")
+        or model.get("frozen_model", {}).get("filter_payload_sha256") != v2_filter.get("filter_payload_sha256")
+        or preprocessing.get("family") != "STANDARD_SCALER"
+        or preprocessing.get("fit_scope") != "FIT_ON_TRAINING_ROWS_FOR_EACH_MODEL_FIT"
+        or float(observed_loco.get("auc")) != float(expected_loco.get("aggregate_auc"))
+        or float(observed_loco.get("average_precision")) != float(expected_loco.get("aggregate_average_precision"))
+        or int(model.get("holdout_reads") or 0) != 0
+        or int(model.get("forward_2026_reads") or 0) != 0
+    ):
+        raise RuntimeError("recovered V2 model/LOCO contract drift")
+
+    return {
+        "status": "PASS_V2_MODEL_AND_LOCO_REPRODUCTION",
+        "development_window_rows": len(window_rows),
+        "B_label_rows": len(label_rows),
+        "candidate_count": int(dataset["candidate_count"]),
+        "validation_productive_count": int(dataset["validation_productive_count"]),
+        "dataset_rows_sha256": str(dataset["rows_sha256"]),
+        "legacy_dataset_serialization_sha256_claim": str(
+            dict(v2_autopsy.get("tuning_population") or {}).get("combined_183_window_dataset_sha256") or ""
+        ),
+        "legacy_dataset_serialization_hash_matches_recovered_rows": bool(
+            dataset.get("rows_sha256_matches_frozen_claim")
+        ),
+        "legacy_dataset_hash_interpretation": (
+            "LEGACY_TEMPORARY_SERIALIZATION_NOT_BYTE_REPRODUCED; CANDIDATE/LABEL POPULATION, "
+            "STANDARDIZED MODEL, RAW-SPACE SCORE, ALL LOCO FOLDS AND AGGREGATE METRICS REPRODUCED EXACTLY"
+        ),
+        "preprocessing_contract": preprocessing,
+        "aggregate_LOCO": observed_loco,
+        "model_reproduction_payload_sha256": str(model["check_payload_sha256"]),
+        "sources": {
+            name: {
+                "relative_path": path.relative_to(root).as_posix(),
+                "file_sha256": _sha256(path),
+            }
+            for name, path in paths.items()
+        },
+    }
 
 
 def build_audit(repo_root: Path) -> dict[str, Any]:
@@ -125,6 +234,14 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
     if v2_filter.get("status") != "FROZEN_BEFORE_C_DEVELOPMENT_AND_VALIDATION":
         raise RuntimeError("V2 filter freeze status drift")
 
+    recovered = _load_recovered_evidence(
+        root,
+        expected_exacts=old_ids.union({str(row["exact_identity"]) for row in b_members}),
+        expected_b_exacts={str(row["exact_identity"]) for row in b_members},
+        v2_filter=v2_filter,
+        v2_autopsy=v2_autopsy,
+    )
+
     missing: list[dict[str, Any]] = []
     if old_window_rows != len(old_members):
         missing.append({
@@ -152,7 +269,10 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
             "reason": "B outcome freezes only aggregate productive count; per-exact validation_productive labels are not durably frozen",
         })
 
-    status = "PASS_V2_REPRODUCIBLE_FROM_DURABLE_EVIDENCE" if not missing else "FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP"
+    if recovered is not None:
+        status = "PASS_V2_REPRODUCIBILITY_RESTORED_FROM_DURABLE_EVIDENCE"
+    else:
+        status = "PASS_V2_REPRODUCIBLE_FROM_DURABLE_EVIDENCE" if not missing else "FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP"
     report: dict[str, Any] = {
         "schema_version": "cn_program_optimizer_d1_transfer_v2_reproducibility_audit_v1",
         "status": status,
@@ -184,8 +304,10 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
             "B_63_validation_label_rows": b_exact_label_rows,
             "B_63_window_feature_rows": b_window_rows,
         },
-        "missing_requirements": missing,
-        "frozen_V2_claims_preserved_but_not_rederived": bool(missing),
+        "historical_missing_requirements_before_recovery": missing if recovered is not None else [],
+        "missing_requirements": [] if recovered is not None else missing,
+        "recovered_durable_evidence": recovered,
+        "frozen_V2_claims_preserved_but_not_rederived": bool(missing) and recovered is None,
         "C_development_execution_authorized_by_this_audit": False,
         "C_validation_execution_authorized_by_this_audit": False,
         "promotion_authorized": False,
@@ -193,8 +315,13 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "next_action": (
-            "RECOVER_HASH_BOUND_LEGACY_DEVELOPMENT_WINDOW_FEATURES_AND_B_PER_EXACT_VALIDATION_LABELS_THEN_REBUILD_V2"
-            if missing else "INDEPENDENTLY_REBUILD_AND_COMPARE_V2_MODEL_AND_LOCO_METRICS"
+            "KEEP_V2_FROZEN_AND_USE_ONLY_SEPARATELY_FROZEN_PROSPECTIVE_C_MEMBERSHIP; DO_NOT READ C VALIDATION FROM THIS AUDIT"
+            if recovered is not None
+            else (
+                "RECOVER_HASH_BOUND_LEGACY_DEVELOPMENT_WINDOW_FEATURES_AND_B_PER_EXACT_VALIDATION_LABELS_THEN_REBUILD_V2"
+                if missing
+                else "INDEPENDENTLY_REBUILD_AND_COMPARE_V2_MODEL_AND_LOCO_METRICS"
+            )
         ),
     }
     report["audit_payload_sha256"] = stable_hash(report)
