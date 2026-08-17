@@ -1,0 +1,100 @@
+{
+  "C_development_execution_authorized_by_this_audit": false,
+  "C_validation_execution_authorized_by_this_audit": false,
+  "audit_payload_sha256": "0f913149705bdbc166f94cce4c726e463cba285db6526856ad3ab10eac5654e2",
+  "durable_coverage": {
+    "B_63_validation_label_rows": 0,
+    "B_63_window_feature_rows": 0,
+    "old_120_validation_label_rows": 120,
+    "old_120_window_feature_rows": 0
+  },
+  "durable_sources": {
+    "B_63_members": {
+      "count": 63,
+      "file_sha256": "f0e333b345539339df0fce11224491a4db3f55c65bc3c396b070ccbe712b02f2",
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_freeze_20260817/validation_candidate_members.jsonl"
+    },
+    "B_validation_outcome": {
+      "aggregate_positive_count": 20,
+      "file_sha256": "a36dc07952764694a6678576d456214a9c5185e802f915b5590553a7c544be13",
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_outcome_20260817.json"
+    },
+    "V2_autopsy": {
+      "file_sha256": "084120f748baba37c7e3a6c4c3ca1ba5f38f98bfe1311a9adc6e9b53834abf59",
+      "payload_sha256": "477b8b896ed0c9362cc53303be9bf4ae4feecd4465dfc2e04bf6049b5c8512d4",
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_v2_autopsy_20260817.json"
+    },
+    "V2_filter": {
+      "file_sha256": "696d6bd7ddd1e0f91b3bee769c65989d2751e1dec3f7ace470a21cab418fb8bf",
+      "payload_sha256": "512c81728e3fca363ffcb3a148b3fd09f088e1f56d9f3f330b9a9f1170466081",
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_filter_v2_20260817.json"
+    },
+    "old_120_members": {
+      "count": 120,
+      "file_sha256": "4f0befede84762a81b1a458178c7e9a294821c3cb8a61f512e7a3bf990ef19da",
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_candidate_members_20260816.jsonl"
+    },
+    "old_120_validation_labels": {
+      "file_sha256": "42afa50ec3516131e0ae5aefc717272d0fbb7cd7bcba7fcc30c33539e6225be1",
+      "label_count": 120,
+      "positive_count": 30,
+      "relative_path": "runtime/run_plans/cn_program_optimizer_d1_validation_survivor_freeze_20260817.json"
+    }
+  },
+  "forward_2026_reads": 0,
+  "frozen_V2_claims_preserved_but_not_rederived": true,
+  "holdout_reads": 0,
+  "missing_requirements": [
+    {
+      "available_rows": 0,
+      "missing_rows": 120,
+      "reason": "durable old candidate members contain summary statistics but not ordered development_1/2/3 increments",
+      "required_rows": 120,
+      "requirement": "OLD_120_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"
+    },
+    {
+      "available_rows": 0,
+      "missing_rows": 63,
+      "reason": "durable B candidate members do not contain ordered development_1/2/3 increments",
+      "required_rows": 63,
+      "requirement": "B_63_CHRONOLOGICAL_DEVELOPMENT_WINDOWS"
+    },
+    {
+      "aggregate_positive_count_available": 20,
+      "available_rows": 0,
+      "missing_rows": 63,
+      "reason": "B outcome freezes only aggregate productive count; per-exact validation_productive labels are not durably frozen",
+      "required_rows": 63,
+      "requirement": "B_63_PER_EXACT_VALIDATION_LABELS"
+    }
+  ],
+  "next_action": "RECOVER_HASH_BOUND_LEGACY_DEVELOPMENT_WINDOW_FEATURES_AND_B_PER_EXACT_VALIDATION_LABELS_THEN_REBUILD_V2",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "promotion_authorized": false,
+  "purpose": "Determine whether the frozen 183-row Transfer Filter V2 derivation can be independently rebuilt from durable Git evidence without reopening financial datasets.",
+  "rebuild_requirements": {
+    "candidate_count": 183,
+    "development_window_ids": [
+      "development_1",
+      "development_2",
+      "development_3"
+    ],
+    "features": [
+      "dev_matched_return",
+      "dev_matched_reward",
+      "dev_window_1_increment",
+      "dev_window_2_increment",
+      "dev_window_3_increment"
+    ],
+    "per_exact_validation_label_required": true,
+    "validation_productive_count": 50
+  },
+  "recovery_tools": {
+    "build_183_row_dataset": "scripts/build_cn_program_optimizer_d1_transfer_v2_repro_dataset.py",
+    "check_model_and_LOCO": "scripts/check_cn_program_optimizer_d1_transfer_v2_model_reproduction.py",
+    "freeze_development_windows": "scripts/freeze_cn_program_optimizer_d1_transfer_development_window_features_v2.py",
+    "freeze_validation_labels": "scripts/freeze_cn_program_optimizer_d1_transfer_validation_labels_v1.py"
+  },
+  "schema_version": "cn_program_optimizer_d1_transfer_v2_reproducibility_audit_v1",
+  "status": "FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP"
+}
