@@ -1,0 +1,22 @@
+{
+  "decision": "V1_ECON_ONLY_FILTER_NOT_QUALIFIED",
+  "evidence_note_payload_sha256": "75a16e172ffa96760535efe66d52a31e4f617307d0b8ba9ddc309257e25e9d73",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "independent_audit_payload_sha256": "f5f63af75e65b9b21986e00cb845bbff46fad0984c724c90f1559dabb874d008",
+  "next_boundary": "Use already-burned development+validation evidence for filter-failure autopsy. Any Filter V2 must be frozen before a third fresh development cohort C and its validation. Holdout remains sealed.",
+  "outcome_payload_sha256": "3acf6b891a8e7e67bad6a367a65626d1c211075dfe73ccfc9e932fe3fbcfe79d",
+  "promotion_authorized": false,
+  "schema_version": "cn_program_optimizer_d1_transfer_B_validation_evidence_note_v1",
+  "status": "EVIDENCE_NOTE_CLOSED",
+  "summary": {
+    "all_precision": 0.31746031746031744,
+    "development_positive_candidates": 63,
+    "filtered_precision": 0.38461538461538464,
+    "filtered_recall": 0.5,
+    "frozen_top40_candidates": 26,
+    "precision_lift": 0.0671550671550672,
+    "validation_productive_filtered": 10,
+    "validation_productive_total": 20
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "acceptance_checks": {
+    "filtered_minus_unfiltered_precision_minimum": false,
+    "filtered_precision_minimum": true,
+    "filtered_recall_minimum": false,
+    "minimum_development_productive_population": true
+  },
+  "acceptance_contract": {
+    "all_conditions_required": true,
+    "filtered_minus_unfiltered_precision_minimum": 0.1,
+    "filtered_precision_minimum": 0.35,
+    "filtered_recall_minimum": 0.6,
+    "minimum_development_productive_population": 30,
+    "rule_change_after_B_development_or_validation": "FORBIDDEN"
+  },
+  "admission_file_sha256": "af8d054a8b69e2a6318b2c61e45f866ea8af7cd662bafc61cd6f341526fa9fa1",
+  "all_development_positive_metric": {
+    "admission_rate": 0.7777777777777778,
+    "admitted": 49,
+    "evaluated": 63,
+    "productive": 20,
+    "productive_transfer_rate": 0.31746031746031744
+  },
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "9db08fbc5b507802c19ee819f75210aa4e94d76a64b141cbdfcd18b250fb6e5b",
+  "automatic_filter_v2_authorized": false,
+  "candidate_count": 63,
+  "candidate_exact_identities_sha256": "47f8565038a70adbdc71c1062212259ff3375d5adcb4c7cc5ed92cb8aae33f5b",
+  "candidate_freeze_file_sha256": "eebc48b9cb0371d16b35a4a7364ed224cd4a3597df4c7c166d6e82a17a588fa5",
+  "candidate_freeze_payload_sha256": "002644259de61d7acfd2bba15946ceaeab18ac19d5a453f31ebad7c4b123d645",
+  "closure_file_sha256": "82e4fde374329becc905add1507fb43f3a05dcd76250081a1d6323bd840159d2",
+  "closure_payload_sha256": "c6a1699075abd7c3e4fb8e755342d44c92129aa5b793940a03c6e819f078c744",
+  "decision": "FILTER_V1_PROSPECTIVE_FAIL_KEEP_HOLDOUT_SEALED",
+  "execution_repo_sha": "4fca83ab65b5f3fdb96b9804515a90739aacadcb",
+  "filter_rule_changed_after_B_development_or_validation": false,
+  "filtered_metric": {
+    "admission_rate": 0.7307692307692307,
+    "admitted": 19,
+    "evaluated": 26,
+    "productive": 10,
+    "productive_transfer_rate": 0.38461538461538464
+  },
+  "filtered_minus_unfiltered_precision": 0.0671550671550672,
+  "filtered_recall": 0.5,
+  "formal_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_prospective_validation_v1_20260817_4fca83a",
+  "forward_2026_reads": 0,
+  "frozen_selected_count": 26,
+  "frozen_selected_exact_identities_sha256": "14305d8f7791d7e1df01c3ff421b8e00ff3e47e243fa8a0446b6b9fbdfc7a50e",
+  "holdout_authority": "NONE",
+  "holdout_reads": 0,
+  "not_filtered_metric": {
+    "admission_rate": 0.8108108108108109,
+    "admitted": 30,
+    "evaluated": 37,
+    "productive": 10,
+    "productive_transfer_rate": 0.2702702702702703
+  },
+  "optimizer_feedback_write": "FORBIDDEN",
+  "outcome_payload_sha256": "3acf6b891a8e7e67bad6a367a65626d1c211075dfe73ccfc9e932fe3fbcfe79d",
+  "prepared_binding_payload_sha256": "8062ad672e45ca4a5cf84fc9344b05d78f21a3f56e325b3eed886a2ddc8544a6",
+  "project_control_run_id": "fa9b3c54-6401-446c-ac5b-1c2d87041b46",
+  "project_control_task_id": "cn-execution-5bfc35556ca13e53667d7924",
+  "promotion_authorized": false,
+  "prospective_filter_verdict": "FAIL_PROSPECTIVE_FILTER_TEST",
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_transfer_B_validation_outcome_v1",
+  "source_B_development_audit_file_sha256": "e6dddad21d43bc8734a2e5345b0907596659ce48287fabd029469d4bdb9c3b92",
+  "source_B_development_repo_sha": "135110e792b13996a88fe27a3cf386ff47147bee",
+  "status": "PROSPECTIVE_TRANSFER_FILTER_V1_TEST_COMPLETE",
+  "transfer_filter_file_sha256": "0cffb086d88157c2a753288f93717c34a6a38bbda09e2311e45cad22f852129a",
+  "transfer_filter_id": "CN_D1_TRANSFER_FILTER_ECON_ONLY_LOGIT_V1",
+  "transfer_filter_payload_sha256": "2f468cbba74fc7b226c8d3b2d43b27532a9b71354ef025eb9e18fd8dedb7f421"
+}
