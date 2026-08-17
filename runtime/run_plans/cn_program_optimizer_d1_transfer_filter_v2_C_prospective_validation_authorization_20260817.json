@@ -1,0 +1,100 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "9c21dc3cecd90e665dfa60fd3480f33e3837e860e16d7481d577b8d6208b21d1",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_OPTIMIZER_D1_TRANSFER_FILTER_V2_C_PROSPECTIVE_VALIDATION",
+  "campaign_profile": "cn_program_optimizer_d1_transfer_filter_v2_c_prospective_validation",
+  "candidate_freeze": {
+    "candidate_count": 67,
+    "candidate_exact_identities_sha256": "80baef6280f1ae0c10644e10a1391679d7ed5b8aa56ad540cfaf0ba811d6ae18",
+    "file_sha256": "661dbafa85bd973ec6b061b3e033c78f2572054dd95a2a50cca434f6cbf3bf5c",
+    "members_payload_sha256": "03ccf04619afeda354ea8024ddfb91d8d2fbcda465ec627f5c50751f2a6125b4",
+    "members_relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_C_validation_freeze_20260817_4c5404b/validation_candidate_members.jsonl",
+    "payload_sha256": "389cf2e86db80104d58110a3a477b8b42b6259c049939c640d41634c8283cb6f",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_C_validation_freeze_20260817_4c5404b/validation_candidate_freeze.json",
+    "transfer_filter_selected_count": 27,
+    "transfer_filter_selected_exact_identities_sha256": "53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b"
+  },
+  "development_outcome": {
+    "file_sha256": "98d3487b91e3f3e2ba20178ac11767102e1373bda79f8e92cd0ce6888c03da41",
+    "payload_sha256": "4e75e06d20834999d72408e014bd0cd58e7a22d74a7805db1d08d0a74df8e2f1",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_outcome_20260817.json"
+  },
+  "evaluation_role": "validation",
+  "execution_authorized": true,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_authority": "NONE",
+  "holdout_reads": 0,
+  "optimizer_feedback_write": "FORBIDDEN",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN"
+  ],
+  "project_control_route_id": "cn-program-optimizer-d1-transfer-prospective-validation-v1",
+  "promotion_authorized": false,
+  "reproducibility_audit": {
+    "file_sha256": "5c0b5d5cb6950f80feccaa50732ac10605fceca58f55a0d28e9255adb17673a5",
+    "payload_sha256": "093e18fac0b778fd1653a6e8b989588c37f649bc080c7c85adb10cbe0cc54031",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_v2_reproducibility_restored_20260817.json"
+  },
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_transfer_prospective_validation_authorization_v2",
+  "search_memory_write": "FORBIDDEN",
+  "source_binding": {
+    "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "source_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+  },
+  "source_cohort": "D1_CONTINUATION_C",
+  "status": "D1_TRANSFER_FILTER_V2_C_PROSPECTIVE_VALIDATION_FROZEN_READY",
+  "transfer_filter": {
+    "acceptance_contract": {
+      "all_conditions_required": true,
+      "filtered_minus_unfiltered_precision_minimum": 0.1,
+      "filtered_precision_minimum": 0.35,
+      "filtered_recall_minimum": 0.6,
+      "minimum_development_productive_population": 30,
+      "rule_change_after_C_development_or_validation": "FORBIDDEN"
+    },
+    "file_sha256": "27a991d28c695cee15f5e82154707df2f6eba306c1830bb355cfdc89eb120791",
+    "filter_id": "CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2",
+    "payload_sha256": "512c81728e3fca363ffcb3a148b3fd09f088e1f56d9f3f330b9a9f1170466081",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_filter_v2_20260817.json"
+  },
+  "usage": "REPORT_ONLY_PROSPECTIVE_TRANSFER_FILTER_V2_C_TEST",
+  "validation_reads_before_admission": 0,
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ],
+  "zero_read_preflight": {
+    "base_validation_field_manifest_sha256": "699a0c514ad19e94a91ae0d2edf38bdd567f2cc55cba10600fcc32d97b2e1a15",
+    "file_sha256": "3f57d4e7bf302e087c3023cac0d001d0a73d221264d24bfb28f0966d0f80f73a",
+    "missing_required_physical_leaf_count": 5,
+    "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_C_validation_zero_read_preflight_20260817_2765729_clean\\D1_TRANSFER_PROSPECTIVE_VALIDATION_ZERO_READ_PREFLIGHT_READY.json",
+    "payload_sha256": "8a8f33e065b3f38d4e1192fa6d18fef706fa1f8f9ad600ad2cd6e36fa97d66c2",
+    "required_physical_leaf_count": 49,
+    "source_validation_session_authority_audit_sha256": "38cdcb8484b38a9951c72f520d0e2214f8c62266c3abad4219f275616386b950",
+    "source_validation_session_authority_manifest_sha256": "da914053dfd4210913904335e83fc91cafb01f77ba1d580cee4d335a261abdcc",
+    "validation_label_manifest_sha256": "a7ecab7d11bc2e585a0cdfc63a4b0f08194dd6065b277d7a6e5a9e0f80f92721",
+    "validation_reads": 0
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "schema_version":  "cn_d1_transfer_filter_v2_C_terminal_receipt_v1",
+    "target_run_id":  "cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_20260817_2765729",
+    "output_root":  "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_20260817_2765729",
+    "repo_sha":  "2765729a65493961a7e5b2feef5c2e5c07caf57e",
+    "branch":  "feature/cn-d1-transfer-v2-c-validation-20260817",
+    "project_control_task_id":  "cn-execution-b8996d41cc1062eea697a95f",
+    "project_control_run_id":  "fa66eda5-0be0-4d2d-936e-8d85bb10563d",
+    "admission_file_sha256":  "240453834cc4cda214bb1cdc09bfabce767cd98b4ca86e576fcd737774ce2338",
+    "authorization_file_sha256":  "3189daa383912903d020f80a0c522050897d29083f580dc87c35fb98ce0c45d4",
+    "zero_read_preflight_file_sha256":  "3f57d4e7bf302e087c3023cac0d001d0a73d221264d24bfb28f0966d0f80f73a",
+    "resource_profile":  "VALIDATION_DUAL_8",
+    "lease_id":  "lease_c_transfer_v2_240453834cc4cda2",
+    "lease_acquired":  true,
+    "route_exit_code":  0,
+    "lease_release_exit_code":  0,
+    "observed_at_utc":  "2026-08-17T11:32:48.0629651Z"
+}

@@ -1,0 +1,24 @@
+{
+  "active_cpu_threads_after_admission": 8,
+  "active_memory_claim_bytes_after_admission": 21474836480,
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "capacity_manifest_path": "D:\\ChengboRemote\\workspace\\alpha_pit_d1_transfer_v2_c_validation_2765729_20260817\\runtime\\run_plans\\cn_alpha_node_resource_profiles_v1.json",
+  "capacity_manifest_sha256": "f7d250e1a9acf172bfd736f359c4a3cec464c66e923b40526735cc41d13e6c32",
+  "lease": {
+    "acquired_at_utc": "2026-08-17T11:27:09.255519+00:00",
+    "cpu_threads": 8,
+    "lease_id": "lease_c_transfer_v2_240453834cc4cda2",
+    "memory_claim_bytes": 21474836480,
+    "minimum_free_memory_bytes": 25769803776,
+    "owner_create_time": 1786966026.20237,
+    "owner_pid": 40148,
+    "profile_id": "VALIDATION_DUAL_8",
+    "role": "VALIDATION",
+    "workload_id": "cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_20260817_2765729"
+  },
+  "receipt_sha256": "103d6c87b6cb93c64665973e056bfc13e5da9b33851a31b0efa162a6334badad",
+  "schema_version": "cn_node_resource_lease_receipt_v1",
+  "state_path": "D:\\ChengboRemote\\runtime\\node_resource_governor\\active_node_resource_leases.json",
+  "state_sha256": "b8cd75afedbe285e0b76cbf68272e1d287d14ecc6652220a0e28ca5fa6dec5fe",
+  "status": "NODE_RESOURCE_LEASE_ACTIVE"
+}

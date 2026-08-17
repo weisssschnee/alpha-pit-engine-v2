@@ -1,0 +1,87 @@
+{
+  "audit_payload_sha256": "9174944f42d151a0be5c230cb4d037d0cbb629b2198e0907b295eb0a24a19e67",
+  "authorization_file_sha256": "3189daa383912903d020f80a0c522050897d29083f580dc87c35fb98ce0c45d4",
+  "authorization_payload_sha256": "9c21dc3cecd90e665dfa60fd3480f33e3837e860e16d7481d577b8d6208b21d1",
+  "automatic_successor": false,
+  "candidate_count": 67,
+  "candidate_exact_identities_sha256": "80baef6280f1ae0c10644e10a1391679d7ed5b8aa56ad540cfaf0ba811d6ae18",
+  "candidate_freeze_payload_sha256": "389cf2e86db80104d58110a3a477b8b42b6259c049939c640d41634c8283cb6f",
+  "candidate_promotion": false,
+  "economic_verdict": "FAIL_PROSPECTIVE_FILTER_V2",
+  "execution_repo_sha": "2765729a65493961a7e5b2feef5c2e5c07caf57e",
+  "feedback_writes": {
+    "archive": 0,
+    "optimizer": 0,
+    "scheduler": 0,
+    "search_memory": 0
+  },
+  "input_binding_payload_sha256": "66bf1e3a4f5ca00971d814ba7fc56cb47a1656aa1de11efda19ad73507fcdf68",
+  "metrics": {
+    "acceptance": {
+      "all_development_positive_count": 67,
+      "all_development_positive_precision": 0.23880597014925373,
+      "checks": {
+        "filtered_minus_unfiltered_precision_minimum": false,
+        "filtered_precision_minimum": false,
+        "filtered_recall_minimum": false,
+        "minimum_development_productive_population": true
+      },
+      "contract": {
+        "all_conditions_required": true,
+        "filtered_minus_unfiltered_precision_minimum": 0.1,
+        "filtered_precision_minimum": 0.35,
+        "filtered_recall_minimum": 0.6,
+        "minimum_development_productive_population": 30,
+        "rule_change_after_C_development_or_validation": "FORBIDDEN"
+      },
+      "filtered_count": 27,
+      "filtered_minus_unfiltered_precision": 0.09452736318407959,
+      "filtered_precision": 0.3333333333333333,
+      "filtered_recall": 0.5625,
+      "status": "FAIL_PROSPECTIVE_FILTER_V2",
+      "validation_productive_filtered": 9,
+      "validation_productive_total": 16
+    },
+    "all_67": {
+      "admission_rate": 0.7313432835820896,
+      "admitted": 49,
+      "evaluated": 67,
+      "productive": 16,
+      "productive_transfer_rate": 0.23880597014925373
+    },
+    "selected_27": {
+      "admission_rate": 0.8148148148148148,
+      "admitted": 22,
+      "evaluated": 27,
+      "productive": 9,
+      "productive_transfer_rate": 0.3333333333333333
+    },
+    "unselected_40": {
+      "admission_rate": 0.675,
+      "admitted": 27,
+      "evaluated": 40,
+      "productive": 7,
+      "productive_transfer_rate": 0.175
+    }
+  },
+  "prepared_binding_payload_sha256": "15097537582ee7e604e03da073908845f33d3267db242f10b9ac560c9b0be1c9",
+  "producer_closure_payload_sha256": "5cccdc6b075338112aef8e6bd7c93e2d3b71a40556f3b5bde96165a912fb600e",
+  "project_control_admission_file_sha256": "240453834cc4cda214bb1cdc09bfabce767cd98b4ca86e576fcd737774ce2338",
+  "project_control_admission_payload_sha256": "b4aae0807e55b43ce18080a2319f18ae764b6b978defbb78ea3693c1584c0aa9",
+  "project_control_consumption_count": 1,
+  "project_control_exactly_once": true,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_spent_or_challenge": 0,
+    "holdout": 0,
+    "validation_before_admission": 0
+  },
+  "run_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_20260817_2765729",
+  "schema_version": "cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_independent_audit_v1",
+  "selected_count": 27,
+  "selected_exact_identities_sha256": "53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b",
+  "status": "PASS_INDEPENDENT_C_TRANSFER_FILTER_V2_VALIDATION_AUDIT",
+  "unselected_count": 40,
+  "zero_read_preflight_payload_sha256": "8a8f33e065b3f38d4e1192fa6d18fef706fa1f8f9ad600ad2cd6e36fa97d66c2"
+}

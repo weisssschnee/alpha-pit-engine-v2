@@ -3681,6 +3681,47 @@ remains unchanged. The compact receipt is
   inherited `127.0.0.1:7890` proxy, so the exact pushed commit was deployed via
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
+## D1 Transfer Filter V2 C prospective validation closure (2026-08-17)
+
+- The one authorized report-only C validation completed on independent 77o
+  workspace branch `feature/cn-d1-transfer-v2-c-validation-20260817` at
+  execution SHA `2765729a65493961a7e5b2feef5c2e5c07caf57e`. Project Control task
+  `cn-execution-b8996d41cc1062eea697a95f`, run
+  `fa66eda5-0be0-4d2d-936e-8d85bb10563d`, and admission file SHA256
+  `240453834cc4cda214bb1cdc09bfabce767cd98b4ca86e576fcd737774ce2338`
+  were bound to the exact checkout, C authorization and output root and were
+  consumed exactly once. The run held and released `VALIDATION_DUAL_8` without
+  sharing a worktree, output root or Project Control task with fresh search.
+- Zero-read preflight bound all 67 frozen C development-positive candidates and
+  the pre-frozen 27-member V2 selection exactly. It observed five legally
+  materializable missing leaves and performed zero validation reads. After
+  Project Control consumption, the existing materializer completed the required
+  49/49 physical leaves and its validation authority audit before evaluating all
+  67 candidates; the 27 selected candidates were used only as the pre-frozen
+  reporting group.
+- Producer and independent audit agree on 67/67 complete records. All 67 had
+  49 admissions and 16 validation-productives, precision `0.2388059701`.
+  Selected 27 had 22 admissions and 9 productives, precision `0.3333333333`;
+  unselected 40 had 27 admissions and 7 productives, precision `0.175`.
+  Selected-minus-all lift was `0.0945273632` and recall was `0.5625`.
+  Development productive population passed 67 >= 30, while the frozen minimum
+  precision 0.35, lift 0.10 and recall 0.60 gates all failed. The immutable
+  terminal verdict is therefore `FAIL_PROSPECTIVE_FILTER_V2`.
+- Independent audit status is
+  `PASS_INDEPENDENT_C_TRANSFER_FILTER_V2_VALIDATION_AUDIT`, payload SHA256
+  `9174944f42d151a0be5c230cb4d037d0cbb629b2198e0907b295eb0a24a19e67`.
+  Validation-before-admission, holdout, historical spent/challenge, Forward-B
+  and Forward-2026 reads were zero. Optimizer, scheduler, archive and
+  search-memory feedback writes were zero; candidate promotion and automatic
+  successor were false. No Graph/SPR authority was changed.
+- Preserve the exact external output root
+  `D:\ChengboRemote\runtime\cn_program_optimizer_d1_transfer_filter_v2_C_prospective_validation_20260817_2765729`
+  and the committed authorization, zero-read preflight, metrics, producer
+  outcome, Project Control/resource receipts and independent audit as terminal
+  evidence. Do not rerun this validation, tune V2 retrospectively, create V3,
+  open holdout/Forward data, promote candidates or feed the result into fresh
+  search without a separate external decision.
+
 ## Next action
 
 Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot,

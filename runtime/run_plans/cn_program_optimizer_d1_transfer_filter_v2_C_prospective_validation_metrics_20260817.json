@@ -1,0 +1,174 @@
+{
+  "all_67": {
+    "admission_rate": 0.7313432835820896,
+    "admitted": 49,
+    "evaluated": 67,
+    "productive": 16,
+    "productive_transfer_rate": 0.23880597014925373,
+    "productive_wilson_95": {
+      "lower": 0.1526813904849293,
+      "upper": 0.353257637555303
+    }
+  },
+  "per_selector": {
+    "SURROGATE_FULL_ACQUISITION": {
+      "admission_rate": 0.673469387755102,
+      "admitted": 33,
+      "evaluated": 49,
+      "productive": 9,
+      "productive_transfer_rate": 0.1836734693877551,
+      "productive_wilson_95": {
+        "lower": 0.09976341062070307,
+        "upper": 0.3135760260289987
+      }
+    },
+    "TPE_BOOTSTRAP": {
+      "admission_rate": 1.0,
+      "admitted": 8,
+      "evaluated": 8,
+      "productive": 2,
+      "productive_transfer_rate": 0.25,
+      "productive_wilson_95": {
+        "lower": 0.07147921275210901,
+        "upper": 0.5907245696898311
+      }
+    },
+    "UNIFORM": {
+      "admission_rate": 0.8,
+      "admitted": 8,
+      "evaluated": 10,
+      "productive": 5,
+      "productive_transfer_rate": 0.5,
+      "productive_wilson_95": {
+        "lower": 0.236593090512564,
+        "upper": 0.763406909487436
+      }
+    }
+  },
+  "per_template": {
+    "BASE_EVENT": {
+      "admission_rate": 0.2857142857142857,
+      "admitted": 2,
+      "evaluated": 7,
+      "productive": 0,
+      "productive_transfer_rate": 0.0,
+      "productive_wilson_95": {
+        "lower": 3.584186086443356e-17,
+        "upper": 0.3543304350666874
+      }
+    },
+    "BASE_MARKET": {
+      "admission_rate": 0.3333333333333333,
+      "admitted": 3,
+      "evaluated": 9,
+      "productive": 0,
+      "productive_transfer_rate": 0.0,
+      "productive_wilson_95": {
+        "lower": 0.0,
+        "upper": 0.2991450484195441
+      }
+    },
+    "BASE_MARKET_EVENT": {
+      "admission_rate": 1.0,
+      "admitted": 11,
+      "evaluated": 11,
+      "productive": 3,
+      "productive_transfer_rate": 0.2727272727272727,
+      "productive_wilson_95": {
+        "lower": 0.0974605929002489,
+        "upper": 0.5656453011761291
+      }
+    },
+    "BASE_TEMPORAL": {
+      "admission_rate": 0.8888888888888888,
+      "admitted": 8,
+      "evaluated": 9,
+      "productive": 6,
+      "productive_transfer_rate": 0.6666666666666666,
+      "productive_wilson_95": {
+        "lower": 0.35420213558039626,
+        "upper": 0.8794161816130891
+      }
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "admission_rate": 0.8333333333333334,
+      "admitted": 15,
+      "evaluated": 18,
+      "productive": 6,
+      "productive_transfer_rate": 0.3333333333333333,
+      "productive_wilson_95": {
+        "lower": 0.1627877475083369,
+        "upper": 0.5625053270405489
+      }
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "admission_rate": 0.6666666666666666,
+      "admitted": 2,
+      "evaluated": 3,
+      "productive": 0,
+      "productive_transfer_rate": 0.0,
+      "productive_wilson_95": {
+        "lower": 4.8683609171202235e-17,
+        "upper": 0.5614970317550455
+      }
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "admission_rate": 0.8,
+      "admitted": 8,
+      "evaluated": 10,
+      "productive": 1,
+      "productive_transfer_rate": 0.1,
+      "productive_wilson_95": {
+        "lower": 0.01787621309507289,
+        "upper": 0.4041500267952385
+      }
+    }
+  },
+  "prospective_transfer_filter_acceptance": {
+    "all_development_positive_count": 67,
+    "all_development_positive_precision": 0.23880597014925373,
+    "checks": {
+      "filtered_minus_unfiltered_precision_minimum": false,
+      "filtered_precision_minimum": false,
+      "filtered_recall_minimum": false,
+      "minimum_development_productive_population": true
+    },
+    "contract": {
+      "all_conditions_required": true,
+      "filtered_minus_unfiltered_precision_minimum": 0.1,
+      "filtered_precision_minimum": 0.35,
+      "filtered_recall_minimum": 0.6,
+      "minimum_development_productive_population": 30,
+      "rule_change_after_C_development_or_validation": "FORBIDDEN"
+    },
+    "filtered_count": 27,
+    "filtered_minus_unfiltered_precision": 0.09452736318407959,
+    "filtered_precision": 0.3333333333333333,
+    "filtered_recall": 0.5625,
+    "status": "FAIL_PROSPECTIVE_FILTER_V2",
+    "validation_productive_filtered": 9,
+    "validation_productive_total": 16
+  },
+  "selected_27": {
+    "admission_rate": 0.8148148148148148,
+    "admitted": 22,
+    "evaluated": 27,
+    "productive": 9,
+    "productive_transfer_rate": 0.3333333333333333,
+    "productive_wilson_95": {
+      "lower": 0.18643261498715644,
+      "upper": 0.5217523949267993
+    }
+  },
+  "unselected_40": {
+    "admission_rate": 0.675,
+    "admitted": 27,
+    "evaluated": 40,
+    "productive": 7,
+    "productive_transfer_rate": 0.175,
+    "productive_wilson_95": {
+      "lower": 0.0874541374603592,
+      "upper": 0.31949990331787714
+    }
+  }
+}

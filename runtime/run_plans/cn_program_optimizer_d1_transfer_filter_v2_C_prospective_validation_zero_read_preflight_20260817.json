@@ -1,0 +1,233 @@
+{
+  "archive_write": "FORBIDDEN",
+  "base_validation_field_manifest_sha256": "699a0c514ad19e94a91ae0d2edf38bdd567f2cc55cba10600fcc32d97b2e1a15",
+  "base_validation_field_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_validation_prefinancial_20260816_97fbe07\\program_validation_session_fields",
+  "candidate_count": 67,
+  "candidate_evaluation_executed": false,
+  "candidate_exact_identities_sha256": "80baef6280f1ae0c10644e10a1391679d7ed5b8aa56ad540cfaf0ba811d6ae18",
+  "candidate_freeze_file_sha256": "661dbafa85bd973ec6b061b3e033c78f2572054dd95a2a50cca434f6cbf3bf5c",
+  "candidate_freeze_payload_sha256": "389cf2e86db80104d58110a3a477b8b42b6259c049939c640d41634c8283cb6f",
+  "candidate_freeze_relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_C_validation_freeze_20260817_4c5404b/validation_candidate_freeze.json",
+  "candidate_members_payload_sha256": "03ccf04619afeda354ea8024ddfb91d8d2fbcda465ec627f5c50751f2a6125b4",
+  "candidate_members_relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_C_validation_freeze_20260817_4c5404b/validation_candidate_members.jsonl",
+  "chip_root": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713",
+  "daily_st_source": "D:\\ChengboRemote\\data\\20260730_142854_hfq_daily_2024_2025\\hfq_daily_2024_2025\\year=2025\\part.parquet",
+  "daily_st_source_sha256": "7060dd78cde6b826157f10c03541a4c302d11fe3213517236dc893393c071e68",
+  "forward_2026_reads": 0,
+  "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+  "holdout_reads": 0,
+  "implementation_repo_sha": "2765729a65493961a7e5b2feef5c2e5c07caf57e",
+  "minute_source_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+  "missing_required_physical_leaf_count": 5,
+  "missing_required_physical_leaf_ids": [
+    "ctx_sent_ditian_num",
+    "fund_ba_inventory_slope_at_disclosure",
+    "fund_ba_total_current_assets_source_yoy",
+    "fund_disclosure_cashflow_pulse",
+    "fund_disclosure_profit_pulse"
+  ],
+  "optimizer_feedback_write": "FORBIDDEN",
+  "promotion": "FORBIDDEN",
+  "public_source_manifest_sha256": "0c06baa7c24109ea8a1064a291565ce6352ab2a0ca32f20f6cc257261e25514d",
+  "public_source_root": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41",
+  "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+  "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+  "required_physical_leaf_count": 49,
+  "required_physical_leaf_ids": [
+    "amount",
+    "chip_cost_p15",
+    "chip_cost_p85",
+    "chip_cost_p95",
+    "ctx_hfq_float_market_cap_yuan",
+    "ctx_hfq_market_cap_yuan",
+    "ctx_hfq_pb",
+    "ctx_hfq_ps_ttm",
+    "ctx_hfq_turnover_ratio",
+    "ctx_hfq_volume_ratio",
+    "ctx_rzrq_rzjme",
+    "ctx_rzrq_rzye",
+    "ctx_sent_damian_num",
+    "ctx_sent_ditian_num",
+    "ctx_sent_down_num",
+    "ctx_sent_lt5_num",
+    "ctx_sent_max_lb_num",
+    "ctx_sent_tiandi_num",
+    "fund_accruals_profit_minus_cfo_assets",
+    "fund_ba_accounts_rece_source_yoy",
+    "fund_ba_accounts_rece_source_yoy_at_disclosure",
+    "fund_ba_fixed_asset_source_yoy_at_disclosure",
+    "fund_ba_inventory_delta",
+    "fund_ba_inventory_slope_at_disclosure",
+    "fund_ba_monetaryfunds_slope",
+    "fund_ba_total_current_assets_source_yoy",
+    "fund_ca_construct_long_asset_persistence",
+    "fund_ca_netcash_finance_acceleration",
+    "fund_ca_netcash_operate_source_yoy",
+    "fund_cashflow_cfo_profit",
+    "fund_cashflow_cfo_revenue",
+    "fund_disclosure_balance_pulse",
+    "fund_disclosure_cashflow_pulse",
+    "fund_disclosure_profit_pulse",
+    "fund_efficiency_fixed_asset_intensity",
+    "fund_holder_average_shares_log_change_at_disclosure",
+    "fund_holder_count_log",
+    "fund_leverage_liabilities_assets",
+    "fund_liquidity_current_ratio",
+    "fund_pr_deduct_parent_netprofit_slope",
+    "fund_pr_deduct_parent_netprofit_yoy",
+    "fund_pr_parent_netprofit_acceleration",
+    "fund_pr_parent_netprofit_source_yoy",
+    "fund_profit_gross_margin",
+    "fund_profit_operating_margin",
+    "fund_profit_parent_margin",
+    "open",
+    "pct_chg",
+    "ret_1m"
+  ],
+  "requirements_table_file_sha256": "d2c50a4fbb5c46efcc351639c244b420fd5638de6a4fef8616d130edb2afcc06",
+  "requirements_table_path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_C_validation_zero_read_preflight_20260817_2765729_clean\\validation_program_required_fields.csv",
+  "resolved_schedule_file_sha256": "11b6a822c498eb3df408bf8afc15c7716fd63f3aba40c9537bcd9e39711d3947",
+  "resolved_schedule_path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_transfer_C_validation_zero_read_preflight_20260817_2765729_clean\\resolved_program_schedules.jsonl",
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_transfer_prospective_validation_zero_read_preflight_v1",
+  "source_cohort": "D1_CONTINUATION_C",
+  "source_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+  "source_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+  "source_physical_result_files": [
+    {
+      "file_sha256": "f7bfbe4cc79ffc6120912f8d58ac7896c8e818506c9d4ce8aee9f9b7b08bbe41",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_000\\physical_results.jsonl",
+      "wave": 0
+    },
+    {
+      "file_sha256": "25ae452a185e6e774e30673e0e30035a28f40245fa7a46aaf79f1ce7df8733f4",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_001\\physical_results.jsonl",
+      "wave": 1
+    },
+    {
+      "file_sha256": "dae51bead3529c8cb9d511446ccfaf1f3b2392666fbf1fc2328a577e04028d85",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_002\\physical_results.jsonl",
+      "wave": 2
+    },
+    {
+      "file_sha256": "662dcea7d918b8991bb8330961a7a2c025d415bc614ed83b60972119048930b9",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_003\\physical_results.jsonl",
+      "wave": 3
+    },
+    {
+      "file_sha256": "83726b501afcf5f111ebaa3a9dd3ed6f0ca8c73fee145d1ddfda28150a04f0f1",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_004\\physical_results.jsonl",
+      "wave": 4
+    },
+    {
+      "file_sha256": "3ade2f28b9114aa0b709cca0aa5a02e957b5ad5715cd302cd329ef8b126cedd9",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_005\\physical_results.jsonl",
+      "wave": 5
+    },
+    {
+      "file_sha256": "cb68851ab7ba2c10f6f406f05944091b2d55fd71d8ec75c342ec26133e171bdd",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_006\\physical_results.jsonl",
+      "wave": 6
+    },
+    {
+      "file_sha256": "efa002cbe901d260405d46b5f2fff3ecf5ad361d73b03488eb16bd338574a4b9",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_007\\physical_results.jsonl",
+      "wave": 7
+    },
+    {
+      "file_sha256": "6423c4890dda6acb9f174286f6c263dd58cac8ad185a92733dc5fee26293aac6",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_008\\physical_results.jsonl",
+      "wave": 8
+    },
+    {
+      "file_sha256": "7624d814fe2a9ee2ad60cdc8904060ec040416af1f8956c833c5607bd487286b",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_009\\physical_results.jsonl",
+      "wave": 9
+    },
+    {
+      "file_sha256": "826e52d8834b3b0a3b84e4e8c156058ae6a972ed54f3008645eba42a7c2905c8",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_010\\physical_results.jsonl",
+      "wave": 10
+    },
+    {
+      "file_sha256": "83e2cd672c9ae846f30639bdf935092f0d7453a5fc9525173eb4e130366be411",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_011\\physical_results.jsonl",
+      "wave": 11
+    },
+    {
+      "file_sha256": "6a7b9073492542bb187d0ac16b2925a53e46a3d6dcf83fb529eff35a07d9723d",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_012\\physical_results.jsonl",
+      "wave": 12
+    },
+    {
+      "file_sha256": "7760639ab5474f668e6a790434f7bc94036d97326e591ba09b0eb1b7d6ea17b7",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_013\\physical_results.jsonl",
+      "wave": 13
+    },
+    {
+      "file_sha256": "58a1e7a28f6b9265b89bed224fb807dfd7b47027532fb8ac37519610e9098fc3",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_014\\physical_results.jsonl",
+      "wave": 14
+    },
+    {
+      "file_sha256": "66a378f88895b345164735b193d373f5ced03d50b5815543a76c494ea2d40143",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_015\\physical_results.jsonl",
+      "wave": 15
+    },
+    {
+      "file_sha256": "f35f0def46c6bece905c633ce98e6b5787b3138c2311b23572a672e887b5790b",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_016\\physical_results.jsonl",
+      "wave": 16
+    },
+    {
+      "file_sha256": "862e7c626e56d5dae3cfe602d7bc02bceea9f6a6a810e6bcd2ef7c89c95d4e17",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_017\\physical_results.jsonl",
+      "wave": 17
+    },
+    {
+      "file_sha256": "0f9bb60ba35d68f6d14cf967a094b45a5fe4be06e9cc2edea260590064341652",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_018\\physical_results.jsonl",
+      "wave": 18
+    },
+    {
+      "file_sha256": "6cf42ed0b7bb5ad06f89f1d4280981e971a95216d329e6e0195070708c9f6e93",
+      "path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_development_continuation_C_v1_20260817_1cc384d\\wave_019\\physical_results.jsonl",
+      "wave": 19
+    }
+  ],
+  "source_validation_session_authority_audit_path": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_validation_prefinancial_20260816_97fbe07\\validation_session_authority_audit\\audit.json",
+  "source_validation_session_authority_audit_sha256": "38cdcb8484b38a9951c72f520d0e2214f8c62266c3abad4219f275616386b950",
+  "source_validation_session_authority_manifest_sha256": "da914053dfd4210913904335e83fc91cafb01f77ba1d580cee4d335a261abdcc",
+  "source_validation_session_authority_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_validation_prefinancial_20260816_97fbe07\\validation_session_authority",
+  "split_manifest_path": "D:\\ChengboRemote\\staging\\phase3ga_true1min_2024_2025_global_split_manifest_canonical.csv",
+  "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "D1_TRANSFER_PROSPECTIVE_VALIDATION_ZERO_READ_PREFLIGHT_READY",
+  "transfer_filter_application_file_sha256": "020d78857ed35f71501ac5ecb6581678fdd54e6116ec746617d1e2c65bef9f76",
+  "transfer_filter_id": "CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2",
+  "transfer_filter_selected_count": 27,
+  "transfer_filter_selected_exact_identities_sha256": "53b7f2aab3dbeec8964525e6a46ce20509b4081044836b8baef068e5740d619b",
+  "validation_label_manifest_sha256": "a7ecab7d11bc2e585a0cdfc63a4b0f08194dd6065b277d7a6e5a9e0f80f92721",
+  "validation_label_root": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\validation_session_labels",
+  "validation_reads_by_this_preflight": 0,
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ],
+  "zero_read_preflight_payload_sha256": "8a8f33e065b3f38d4e1192fa6d18fef706fa1f8f9ad600ad2cd6e36fa97d66c2"
+}
