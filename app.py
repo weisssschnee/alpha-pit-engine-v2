@@ -140,7 +140,7 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-optimizer-d1-transfer-prospective-validation-v1": frozenset(
-        {ACTION_LAUNCH, ACTION_RETRY}
+        {ACTION_LAUNCH}
     ),
 }
 
