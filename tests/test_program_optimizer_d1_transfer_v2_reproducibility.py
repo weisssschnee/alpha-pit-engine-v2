@@ -175,3 +175,45 @@ def test_v2_model_reproduction_checker_uses_exact_frozen_model_contract() -> Non
     assert params["class_weight"] == "balanced"
     assert params["solver"] == "liblinear"
     assert params["random_state"] == 82617
+
+
+def test_development_window_feature_freezer_accepts_successor_wave_physical_results(tmp_path: Path) -> None:
+    from scripts.freeze_cn_program_optimizer_d1_transfer_development_window_features_v2 import freeze_features
+
+    exact = "e" * 64
+    run_root = tmp_path / "successor"
+    wave_root = run_root / "wave_000"
+    wave_root.mkdir(parents=True)
+    result = {
+        "exact_identity": exact,
+        "source_record_sha256": "3" * 64,
+        "physical_result_hash": "4" * 64,
+        "admission": {
+            "admitted": True,
+            "metrics": {"development_window_ids": ["development_1", "development_2", "development_3"]},
+        },
+        "uplift": {
+            "program_credit": {
+                "matched_cumulative_net_return_increment": 0.6,
+                "matched_net_reward_increment": 1.8,
+                "window_return_increments": [0.3, 0.2, 0.1],
+            }
+        },
+    }
+    _write_jsonl(wave_root / "wave_physical_results.jsonl", [result])
+    members = [{
+        "exact_identity": exact,
+        "source_cohort": "SUCCESSOR_D1",
+        "source_root": str(run_root),
+        "source_wave": 0,
+        "source_record_sha256": "3" * 64,
+        "physical_result_hash": "4" * 64,
+        "development_matched_cumulative_net_return_increment": 0.6,
+        "development_matched_net_reward_increment": 1.8,
+    }]
+    members_path = tmp_path / "successor_members.jsonl"
+    _write_jsonl(members_path, members)
+    payload = freeze_features(member_paths=[members_path], output_path=tmp_path / "successor_windows.json")
+    assert payload["candidate_count"] == 1
+    assert payload["feature_rows"][0]["development_window_return_increments"] == [0.3, 0.2, 0.1]
+    assert payload["source_physical_result_files"][0]["path"].endswith("wave_physical_results.jsonl")

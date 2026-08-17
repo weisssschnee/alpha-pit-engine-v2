@@ -35,6 +35,21 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _result_path(run_root: Path, wave: int) -> Path:
+    wave_root = run_root / f"wave_{wave:03d}"
+    candidates = (
+        wave_root / "physical_results.jsonl",
+        wave_root / "wave_physical_results.jsonl",
+    )
+    existing = [path for path in candidates if path.is_file()]
+    if len(existing) != 1:
+        raise RuntimeError(
+            f"development result artifact cardinality drift for wave {wave}: "
+            f"{[str(path) for path in existing]}"
+        )
+    return existing[0]
+
+
 def freeze_features(*, member_paths: Sequence[Path], output_path: Path) -> dict[str, Any]:
     if not member_paths:
         raise ValueError("at least one candidate-member file is required")
@@ -62,9 +77,7 @@ def freeze_features(*, member_paths: Sequence[Path], output_path: Path) -> dict[
     source_result_files: list[dict[str, Any]] = []
     for (root_text, wave), group in sorted(grouped.items(), key=lambda item: (item[0][0], item[0][1])):
         run_root = Path(root_text)
-        result_path = run_root / f"wave_{wave:03d}" / "physical_results.jsonl"
-        if not result_path.is_file():
-            raise FileNotFoundError(result_path)
+        result_path = _result_path(run_root, wave)
         result_rows = _read_jsonl(result_path)
         by_exact = {str(row.get("exact_identity") or ""): row for row in result_rows}
         if len(by_exact) != len(result_rows):
