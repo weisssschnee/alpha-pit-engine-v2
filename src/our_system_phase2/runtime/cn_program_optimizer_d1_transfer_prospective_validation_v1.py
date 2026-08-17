@@ -113,7 +113,8 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
     if sha256_file(filter_path)!=str(flt.get("file_sha256") or ""): raise ValueError("prospective transfer filter file drift")
     filter_payload=_read_self_hashed(filter_path,"filter_payload_sha256","prospective transfer filter")
     if filter_payload.get("filter_payload_sha256")!=EXPECTED_FILTER_PAYLOAD_SHA256 or filter_payload.get("filter_payload_sha256")!=flt.get("payload_sha256") or filter_payload.get("filter_id")!=flt.get("filter_id") or _filter_acceptance_contract(filter_payload)!=dict(flt.get("acceptance_contract") or {}): raise ValueError("prospective transfer filter semantic drift")
-    prep=dict(payload.get("zero_read_preflight") or {}); prep_path=_relative(root,prep.get("relative_path"))
+    prep=dict(payload.get("zero_read_preflight") or {}); prep_path=Path(str(prep.get("path") or "")).resolve()
+    if not prep_path.is_file(): raise ValueError("prospective zero-read preflight missing")
     if sha256_file(prep_path)!=str(prep.get("file_sha256") or ""): raise ValueError("prospective zero-read preflight file drift")
     prepared=_read_self_hashed(prep_path,"zero_read_preflight_payload_sha256","prospective validation zero-read preflight")
     if (
@@ -150,7 +151,7 @@ def main(argv:Sequence[str]|None=None)->int:
     if dict(verified.payload)!=authorization: raise ProjectControlDenied("prospective validation campaign authorization payload drift")
     if str(admission.get("requested_action") or "")!=ACTION_LAUNCH: raise ProjectControlDenied("prospective validation requested action drift")
     if int(args.workers)!=8: raise ProjectControlDenied("prospective validation requires VALIDATION_DUAL_8 workers")
-    preflight_path=_relative(repo_root,authorization["zero_read_preflight"]["relative_path"])
+    preflight_path=Path(str(authorization["zero_read_preflight"]["path"])).resolve()
     preflight=_read_self_hashed(preflight_path,"zero_read_preflight_payload_sha256","prospective validation zero-read preflight")
     if str(preflight.get("implementation_repo_sha") or "")!=str(admission.get("repo_sha") or ""): raise ProjectControlDenied("prospective validation execution SHA/preflight drift")
     source=dict(authorization.get("source_binding") or {})
