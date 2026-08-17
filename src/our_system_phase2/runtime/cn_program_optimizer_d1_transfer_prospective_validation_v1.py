@@ -41,6 +41,13 @@ def _relative(root:Path,raw:Any)->Path:
     if not p.is_relative_to(root.resolve()): raise ValueError("prospective validation binding escapes repo")
     return p
 
+def _filter_acceptance_contract(filter_payload:Mapping[str,Any])->dict[str,Any]:
+    keys=[k for k in ("prospective_B_validation_acceptance","prospective_C_validation_acceptance") if k in filter_payload]
+    if len(keys)!=1: raise ValueError(f"prospective transfer acceptance contract cardinality drift: {keys}")
+    contract=dict(filter_payload[keys[0]])
+    if not contract: raise ValueError("prospective transfer acceptance contract empty")
+    return contract
+
 def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
     root=Path(repo_root or Path(__file__).resolve().parents[3]).resolve()
     payload=_read_self_hashed(path,"authorization_payload_sha256","prospective transfer validation authorization")
@@ -79,7 +86,7 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
     flt=dict(payload.get("transfer_filter") or {}); filter_path=_relative(root,flt.get("relative_path"))
     if sha256_file(filter_path)!=str(flt.get("file_sha256") or ""): raise ValueError("prospective transfer filter file drift")
     filter_payload=_read_self_hashed(filter_path,"filter_payload_sha256","prospective transfer filter")
-    if filter_payload.get("filter_payload_sha256")!=flt.get("payload_sha256") or filter_payload.get("filter_id")!=flt.get("filter_id") or dict(filter_payload.get("prospective_B_validation_acceptance") or {})!=dict(flt.get("acceptance_contract") or {}): raise ValueError("prospective transfer filter semantic drift")
+    if filter_payload.get("filter_payload_sha256")!=flt.get("payload_sha256") or filter_payload.get("filter_id")!=flt.get("filter_id") or _filter_acceptance_contract(filter_payload)!=dict(flt.get("acceptance_contract") or {}): raise ValueError("prospective transfer filter semantic drift")
     prep=dict(payload.get("prepared_binding") or {}); prep_path=_relative(root,prep.get("relative_path"))
     if sha256_file(prep_path)!=str(prep.get("file_sha256") or ""): raise ValueError("prospective prepared binding file drift")
     prepared=_read_self_hashed(prep_path,"prepared_binding_payload_sha256","prospective validation prepared binding")
