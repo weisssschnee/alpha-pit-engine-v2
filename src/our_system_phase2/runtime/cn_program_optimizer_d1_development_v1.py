@@ -60,11 +60,17 @@ CAMPAIGN_PROFILE = "cn_program_optimizer_d1_development_v1"
 CAMPAIGN_ID_CONTINUATION = (
     "CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_CONTINUATION_V1"
 )
+CAMPAIGN_ID_CONTINUATION_C = (
+    "CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_CONTINUATION_C_V1"
+)
 AUTHORIZATION_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_d1_development_cohort_v1.json"
 )
 AUTHORIZATION_RELATIVE_PATH_CONTINUATION = Path(
     "runtime/run_plans/cn_program_optimizer_d1_development_continuation_cohort_v1.json"
+)
+AUTHORIZATION_RELATIVE_PATH_CONTINUATION_C = Path(
+    "runtime/run_plans/cn_program_optimizer_d1_development_continuation_C_cohort_v1.json"
 )
 POLICY_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_d1_development_policy_v1.json"
@@ -74,6 +80,9 @@ PRIOR_FREEZE_RELATIVE_PATH = Path(
 )
 PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION = Path(
     "runtime/run_plans/cn_program_optimizer_d1_postrun_prior_exact_freeze_20260816.json"
+)
+PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION_C = Path(
+    "runtime/run_plans/cn_program_optimizer_d1_continuation_postrun_prior_exact_freeze_20260817.json"
 )
 POLICY_PAYLOAD_SHA256 = (
     "3f2360953ae460d2c5078b049cbfb46b9da02ae0252aaa26bffee541b6bb107b"
@@ -97,6 +106,17 @@ CONTINUATION_PRIOR_FREEZE_PAYLOAD_SHA256 = (
     "a5431c84da70ae6151b70c3f4796a033fa798a5180856ed6efc886180329268d"
 )
 CONTINUATION_REMAINING_PROSPECTIVE_ENHANCED = 2554
+CONTINUATION_C_CAMPAIGN_PROFILE = (
+    "cn_program_optimizer_d1_development_continuation_C_v1"
+)
+CONTINUATION_C_PRIOR_EXACT_COUNT = 1170
+CONTINUATION_C_PRIOR_EXACT_IDENTITIES_SHA256 = (
+    "76cdd3e6df492a4c3713776babc2d8eeaaca59c28f19ad3a0266702fe2289d79"
+)
+CONTINUATION_C_PRIOR_FREEZE_PAYLOAD_SHA256 = (
+    "d0ad12047375d2615c2e63acea5c6842b64088fa67aef34dc79c7c1406cb3a63"
+)
+CONTINUATION_C_REMAINING_PROSPECTIVE_ENHANCED = 2414
 
 
 @dataclass(frozen=True)
@@ -139,6 +159,18 @@ _CAMPAIGN_BINDINGS = {
         prior_freeze_relative_path=PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION,
         prior_freeze_payload_sha256=CONTINUATION_PRIOR_FREEZE_PAYLOAD_SHA256,
         remaining_prospective_enhanced_exact_count=CONTINUATION_REMAINING_PROSPECTIVE_ENHANCED,
+    ),
+    CAMPAIGN_ID_CONTINUATION_C: _D1CampaignBinding(
+        campaign_id=CAMPAIGN_ID_CONTINUATION_C,
+        campaign_profile=CONTINUATION_C_CAMPAIGN_PROFILE,
+        authorization_relative_path=AUTHORIZATION_RELATIVE_PATH_CONTINUATION_C,
+        policy_relative_path=POLICY_RELATIVE_PATH,
+        policy_payload_sha256=POLICY_PAYLOAD_SHA256,
+        prior_exact_count=CONTINUATION_C_PRIOR_EXACT_COUNT,
+        prior_exact_identities_sha256=CONTINUATION_C_PRIOR_EXACT_IDENTITIES_SHA256,
+        prior_freeze_relative_path=PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION_C,
+        prior_freeze_payload_sha256=CONTINUATION_C_PRIOR_FREEZE_PAYLOAD_SHA256,
+        remaining_prospective_enhanced_exact_count=CONTINUATION_C_REMAINING_PROSPECTIVE_ENHANCED,
     ),
 }
 

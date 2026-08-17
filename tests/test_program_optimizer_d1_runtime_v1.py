@@ -6,17 +6,24 @@ import app
 from our_system_phase2.runtime.cn_program_optimizer_d1_development_v1 import (
     AUTHORIZATION_RELATIVE_PATH,
     AUTHORIZATION_RELATIVE_PATH_CONTINUATION,
+    AUTHORIZATION_RELATIVE_PATH_CONTINUATION_C,
     CAMPAIGN_ID,
     CAMPAIGN_ID_CONTINUATION,
+    CAMPAIGN_ID_CONTINUATION_C,
     CAMPAIGN_PROFILE,
     D1_LOGICAL_RECORDS,
     CONTINUATION_PRIOR_EXACT_COUNT,
     CONTINUATION_PRIOR_FREEZE_PAYLOAD_SHA256,
     CONTINUATION_PRIOR_EXACT_IDENTITIES_SHA256,
     CONTINUATION_REMAINING_PROSPECTIVE_ENHANCED,
+    CONTINUATION_C_PRIOR_EXACT_COUNT,
+    CONTINUATION_C_PRIOR_EXACT_IDENTITIES_SHA256,
+    CONTINUATION_C_PRIOR_FREEZE_PAYLOAD_SHA256,
+    CONTINUATION_C_REMAINING_PROSPECTIVE_ENHANCED,
     PRIOR_EXACT_COUNT,
     PRIOR_EXACT_IDENTITIES_SHA256,
     PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION,
+    PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION_C,
     PRIOR_FREEZE_PAYLOAD_SHA256,
     PRIOR_FREEZE_RELATIVE_PATH,
     REMAINING_PROSPECTIVE_ENHANCED,
@@ -95,6 +102,34 @@ def test_d1_continuation_authorization_is_byte_semantically_bound_to_postrun_pri
     assert observed["oos_authority"] == "NONE"
     assert observed["promotion_authorized"] is False
     assert observed["campaign_id"] != CAMPAIGN_ID
+
+
+def test_d1_continuation_C_authorization_is_bound_to_1170_prior() -> None:
+    path = REPO / AUTHORIZATION_RELATIVE_PATH_CONTINUATION_C
+    observed = verify_authorization(path)
+    assert observed == authorization_payload_v1(REPO, campaign_id=CAMPAIGN_ID_CONTINUATION_C)
+    assert observed["campaign_id"] == CAMPAIGN_ID_CONTINUATION_C
+    assert observed["campaign_profile"] == "cn_program_optimizer_d1_development_continuation_C_v1"
+    assert observed["program_space"]["prior_exact_count"] == CONTINUATION_C_PRIOR_EXACT_COUNT
+    assert observed["program_space"]["prior_exact_identities_sha256"] == CONTINUATION_C_PRIOR_EXACT_IDENTITIES_SHA256
+    assert observed["program_space"]["prior_freeze_payload_sha256"] == CONTINUATION_C_PRIOR_FREEZE_PAYLOAD_SHA256
+    assert observed["program_space"]["remaining_prospective_enhanced_exact_count"] == CONTINUATION_C_REMAINING_PROSPECTIVE_ENHANCED
+    assert observed["policy_binding"]["selector_counts"] == D1_SELECTOR_COUNTS
+    assert observed["oos_authority"] == "NONE"
+    assert observed["promotion_authorized"] is False
+
+
+def test_d1_continuation_C_prior_loader_has_1170_unique_and_2414_remaining() -> None:
+    prior = _read_prior_freeze(
+        REPO / PRIOR_FREEZE_RELATIVE_PATH_CONTINUATION_C,
+        expected_payload_sha256=CONTINUATION_C_PRIOR_FREEZE_PAYLOAD_SHA256,
+        expected_count=CONTINUATION_C_PRIOR_EXACT_COUNT,
+        expected_exact_identities_sha256=CONTINUATION_C_PRIOR_EXACT_IDENTITIES_SHA256,
+        identity_field="combined_prior_exact_identities",
+    )
+    assert len(prior["prior_exact_identities"]) == CONTINUATION_C_PRIOR_EXACT_COUNT
+    assert len(set(prior["prior_exact_identities"])) == CONTINUATION_C_PRIOR_EXACT_COUNT
+    assert prior["remaining_enhanced_program_count"] == CONTINUATION_C_REMAINING_PROSPECTIVE_ENHANCED
 
 
 def test_shared_prior_loader_normalizes_d1_combined_identity_field_in_memory() -> None:
