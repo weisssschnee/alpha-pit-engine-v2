@@ -59,3 +59,142 @@ def test_v2_filter_selects_ceil_top40_with_exact_tie_break()->None:
     assert k==2
     assert [r["exact_identity"] for r in ordered[:2]]==["a","b"]
     assert {r["exact_identity"] for r in rows if r["transfer_filter_v2_selected"]}=={"a","b"}
+
+
+def test_C_freeze_binds_logical_proposal_to_schedule_before_validation(tmp_path: Path)->None:
+    from scripts.freeze_cn_program_optimizer_d1_transfer_C_validation_v2 import freeze as freeze_c
+    from our_system_phase2.services.unified_capability_registry import stable_hash
+
+    run=tmp_path/"c_run"
+    run.mkdir()
+    closure={
+        "schema_version":"test",
+        "status":"CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_COMPLETE",
+        "closed_waves":20,
+        "logical_records":140,
+        "physical_evaluation_calls":140,
+        "restricted_reads":{"validation":0,"holdout":0,"historical_2023":0,"forward_b":0,"forward_2026":0},
+    }
+    closure["closure_payload_sha256"]=stable_hash(closure)
+    (run/"CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_COMPLETE.json").write_text(json.dumps(closure,sort_keys=True),encoding="utf-8")
+
+    first_schedule=None
+    for wave in range(20):
+        wr=run/f"wave_{wave:03d}"
+        wr.mkdir()
+        asks=[]; schedules=[]; results=[]
+        for slot in range(2):
+            exact=(f"{wave:02x}{slot:02x}"+"a"*64)[:64]
+            logical=f"logical-{wave}-{slot}"
+            kind="SURROGATE_FULL_ACQUISITION" if slot else "UNIFORM"
+            asks.append({"exact_identity":exact,"logical_proposal_id":logical,"template_id":"BASE_EVENT","selection_kind":kind})
+            body={
+                "d1_exact_identity":exact,
+                "successor_exact_identity":exact,
+                "d1_wave_index":wave,
+                "d1_logical_proposal_id":logical,
+                "d1_selection_kind":kind,
+                "pair_id":f"pair-{wave}-{slot}",
+                "primary_program":{"program_id":f"program-{wave}-{slot}"},
+                "control_program":{"program_id":f"control-{wave}-{slot}"},
+            }
+            schedule={**body,"schedule_record_sha256":stable_hash(body)}
+            schedules.append(schedule)
+            if first_schedule is None: first_schedule=schedule
+            results.append({
+                "exact_identity":exact,
+                "physical_result_hash":f"physical-{wave}-{slot}",
+                "source_record_sha256":f"source-{wave}-{slot}",
+                "admission":{"admitted":True,"metrics":{"development_window_ids":["development_1","development_2","development_3"]}},
+                "uplift":{"program_credit":{"matched_cumulative_net_return_increment":0.1+wave/100+slot/1000,"matched_net_reward_increment":1.0+wave/10+slot/100,"window_return_increments":[0.1+slot/100,0.2+wave/100,0.3-wave/200]}},
+            })
+        (wr/"logical_asks.jsonl").write_text("".join(json.dumps(x,sort_keys=True)+"\n" for x in asks),encoding="utf-8")
+        (wr/"physical_schedules.jsonl").write_text("".join(json.dumps(x,sort_keys=True)+"\n" for x in schedules),encoding="utf-8")
+        (wr/"physical_results.jsonl").write_text("".join(json.dumps(x,sort_keys=True)+"\n" for x in results),encoding="utf-8")
+        (wr/"wave_manifest.json").write_text(json.dumps({"wave":wave},sort_keys=True),encoding="utf-8")
+
+    out=tmp_path/"freeze_good"
+    frozen=freeze_c(run_root=run,filter_path=FILTER,output_root=out)
+    assert frozen["status"]=="FROZEN_BEFORE_VALIDATION_ACCESS"
+    assert frozen["candidate_count"]==40
+    members=[json.loads(line) for line in (out/"validation_candidate_members.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    assert all(len(row["development_window_return_increments"])==3 for row in members)
+
+    schedule_path=run/"wave_000"/"physical_schedules.jsonl"
+    schedule_rows=[json.loads(line) for line in schedule_path.read_text(encoding="utf-8").splitlines() if line]
+    schedule_rows[0]["d1_logical_proposal_id"]="WRONG-LOGICAL"
+    body={k:v for k,v in schedule_rows[0].items() if k!="schedule_record_sha256"}
+    schedule_rows[0]["schedule_record_sha256"]=stable_hash(body)
+    schedule_path.write_text("".join(json.dumps(x,sort_keys=True)+"\n" for x in schedule_rows),encoding="utf-8")
+    with pytest.raises(RuntimeError,match="logical/schedule lineage drift"):
+        freeze_c(run_root=run,filter_path=FILTER,output_root=tmp_path/"freeze_bad")
+
+
+def test_prospective_prepare_fails_closed_on_missing_or_wrong_d1_lineage(tmp_path: Path)->None:
+    import hashlib
+    from scripts.prepare_cn_program_optimizer_d1_transfer_prospective_validation_v1 import _resolve_schedules
+    from our_system_phase2.services.unified_capability_registry import stable_hash
+
+    root=tmp_path/"source"
+    exact="d"*64
+    logical="logical-0"
+    selection="SURROGATE_FULL_ACQUISITION"
+    manifest_hash=""
+    base_body={
+        "d1_exact_identity":exact,
+        "successor_exact_identity":exact,
+        "d1_wave_index":0,
+        "d1_logical_proposal_id":logical,
+        "d1_selection_kind":selection,
+        "pair_id":"pair-0",
+        "primary_program":{"program_id":"program-0"},
+        "control_program":{"program_id":"control-0"},
+    }
+    for wave in range(20):
+        wr=root/f"wave_{wave:03d}"
+        wr.mkdir(parents=True)
+        manifest=wr/"wave_manifest.json"
+        manifest.write_text(json.dumps({"wave":wave},sort_keys=True),encoding="utf-8")
+        if wave==0:
+            manifest_hash=hashlib.sha256(manifest.read_bytes()).hexdigest()
+        schedule_path=wr/"physical_schedules.jsonl"
+        if wave==0:
+            row={**base_body,"schedule_record_sha256":stable_hash(base_body)}
+            schedule_path.write_text(json.dumps(row,sort_keys=True)+"\n",encoding="utf-8")
+        else:
+            schedule_path.write_text("",encoding="utf-8")
+
+    def member_for(row:dict)->dict:
+        return {
+            "source_root":str(root),
+            "source_wave":0,
+            "source_wave_manifest_sha256":manifest_hash,
+            "exact_identity":exact,
+            "schedule_record_sha256":row["schedule_record_sha256"],
+            "pair_id":"pair-0",
+            "program_id":"program-0",
+            "control_program_id":"control-0",
+            "logical_proposal_id":logical,
+            "selection_kind":selection,
+        }
+
+    schedule_path=root/"wave_000"/"physical_schedules.jsonl"
+    good=json.loads(schedule_path.read_text(encoding="utf-8").strip())
+    resolved=_resolve_schedules([member_for(good)])
+    assert resolved[0]["d1_logical_proposal_id"]==logical
+
+    missing=dict(good)
+    missing.pop("d1_logical_proposal_id")
+    missing_body={k:v for k,v in missing.items() if k!="schedule_record_sha256"}
+    missing["schedule_record_sha256"]=stable_hash(missing_body)
+    schedule_path.write_text(json.dumps(missing,sort_keys=True)+"\n",encoding="utf-8")
+    with pytest.raises(RuntimeError,match="logical lineage drift"):
+        _resolve_schedules([member_for(missing)])
+
+    wrong=dict(good)
+    wrong["d1_selection_kind"]="UNIFORM"
+    wrong_body={k:v for k,v in wrong.items() if k!="schedule_record_sha256"}
+    wrong["schedule_record_sha256"]=stable_hash(wrong_body)
+    schedule_path.write_text(json.dumps(wrong,sort_keys=True)+"\n",encoding="utf-8")
+    with pytest.raises(RuntimeError,match="logical lineage drift"):
+        _resolve_schedules([member_for(wrong)])

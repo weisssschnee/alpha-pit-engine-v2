@@ -17,7 +17,6 @@ for p in (PROJECT_ROOT, PROJECT_ROOT / "src"):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from scripts import run_cn_portfolio_decoder_v2_oos as oos
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
 EXPECTED_SPLIT_SHA256 = "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
@@ -84,6 +83,12 @@ def _resolve_schedules(members:Sequence[Mapping[str,Any]])->list[dict[str,Any]]:
         schedule=dict(matches[0]); body={k:v for k,v in schedule.items() if k!="schedule_record_sha256"}
         if stable_hash(body)!=sh: raise RuntimeError("prospective schedule self-hash drift")
         if str(schedule["pair_id"])!=str(member["pair_id"]) or str(schedule["primary_program"]["program_id"])!=str(member["program_id"]) or str(schedule["control_program"]["program_id"])!=str(member["control_program_id"]): raise RuntimeError("prospective schedule/member economic identity drift")
+        if (
+            str(schedule.get("d1_exact_identity") or "")!=exact
+            or int(schedule.get("d1_wave_index") if schedule.get("d1_wave_index") is not None else -1)!=wave
+            or str(schedule.get("d1_logical_proposal_id") or "")!=str(member.get("logical_proposal_id") or "")
+            or str(schedule.get("d1_selection_kind") or "")!=str(member.get("selection_kind") or "")
+        ): raise RuntimeError("prospective schedule/member logical lineage drift")
         resolved.append(schedule)
     return resolved
 
@@ -134,6 +139,7 @@ def prepare(args:argparse.Namespace)->dict[str,Any]:
     _run([sys.executable,str(repo/"scripts/verify_cn_validation_session_authority.py"),"--authority-root",str(authority),"--output-root",str(audit)])
     audit_payload=_read_json(audit/"audit.json")
     if audit_payload.get("status")!="PASS_INDEPENDENT_VALIDATION_SESSION_AUTHORITY_VERIFICATION": raise RuntimeError("prospective validation authority audit failed")
+    from scripts import run_cn_portfolio_decoder_v2_oos as oos
     context=oos._load_validation_context(source_contract_path=args.source_contract.resolve(),validation_field_root=field_root,validation_label_root=args.validation_label_root.resolve(),validation_session_authority_root=authority)
     missing=sorted(set(required)-set(context["field_frame"].columns))
     if missing: raise RuntimeError(f"prospective validation prepared context misses leaves: {missing}")

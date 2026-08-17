@@ -52,6 +52,14 @@ def freeze(*,run_root:Path,filter_path:Path,output_root:Path,source_cohort:str='
    if int(filt['wave_index'])!=wave: continue
    ask=asks.get(exact); schedule=schedules.get(exact); result=results.get(exact)
    if ask is None or schedule is None or result is None: raise RuntimeError(f'C freeze lineage missing: {exact}')
+   schedule_body={k:v for k,v in schedule.items() if k!='schedule_record_sha256'}
+   if stable_hash(schedule_body)!=str(schedule.get('schedule_record_sha256') or ''): raise RuntimeError(f'C freeze schedule self-hash drift: {exact}')
+   if (
+    str(schedule.get('d1_exact_identity') or '')!=exact
+    or int(schedule.get('d1_wave_index') if schedule.get('d1_wave_index') is not None else -1)!=wave
+    or str(schedule.get('d1_logical_proposal_id') or '')!=str(ask.get('logical_proposal_id') or '')
+    or str(schedule.get('d1_selection_kind') or '')!=str(ask.get('selection_kind') or '')
+   ): raise RuntimeError(f'C freeze logical/schedule lineage drift: {exact}')
    credit=dict((result.get('uplift') or {}).get('program_credit') or {})
    if not bool(result['admission']['admitted']) or float(credit.get('matched_cumulative_net_return_increment') or 0)<=0 or float(credit.get('matched_net_reward_increment') or 0)<=0: raise RuntimeError('V2 application includes non-productive Program')
    members.append({
