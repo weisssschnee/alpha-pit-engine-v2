@@ -111,7 +111,22 @@ def prepare(args:argparse.Namespace)->dict[str,Any]:
     selection={"schema_version":"cn_program_optimizer_d1_transfer_prospective_selection_binding_v1","status":"FROZEN_BEFORE_VALIDATION_RESULT_ACCESS","candidate_freeze_payload_sha256":freeze["freeze_payload_sha256"],"candidate_exact_identities_sha256":freeze["candidate_exact_identities_sha256"],"candidate_count":len(members),"transfer_filter_id":freeze["transfer_filter_id"],"transfer_filter_selected_count":freeze["transfer_filter_selected_count"],"transfer_filter_selected_exact_identities_sha256":freeze["transfer_filter_selected_exact_identities_sha256"],"resolved_schedule_file_sha256":_sha256(schedules_path),"required_physical_leaf_count":len(required),"required_physical_leaf_ids":list(required),"requirements_table_file_sha256":_sha256(req_path),"validation_windows":list(VALIDATION_WINDOWS),"validation_reads":0,"candidate_evaluation_executed":False}
     selection["binding_payload_sha256"]=stable_hash(selection); _write_json(out/"selection_binding.json",selection)
     field_root=out/"program_validation_session_fields"
-    _run([sys.executable,str(repo/"scripts/build_cn_core_pack_validation_session_sidecar.py"),"--source-root",str(args.minute_source_root.resolve()),"--evaluation-role","validation","--output-root",str(field_root),"--candidate-table",str(req_path),"--registry",str(args.registry.resolve()),"--split-manifest",str(args.split_manifest.resolve()),"--split-manifest-hash",EXPECTED_SPLIT_SHA256,"--fundamental-root",str(args.fundamental_root.resolve()),"--chip-root",str(args.chip_root.resolve()),"--max-shards","16"])
+    base_field_root=(args.base_validation_field_root.resolve() if args.base_validation_field_root else None)
+    if base_field_root is None:
+        _run([sys.executable,str(repo/"scripts/build_cn_core_pack_validation_session_sidecar.py"),"--source-root",str(args.minute_source_root.resolve()),"--evaluation-role","validation","--output-root",str(field_root),"--candidate-table",str(req_path),"--registry",str(args.registry.resolve()),"--split-manifest",str(args.split_manifest.resolve()),"--split-manifest-hash",EXPECTED_SPLIT_SHA256,"--fundamental-root",str(args.fundamental_root.resolve()),"--chip-root",str(args.chip_root.resolve()),"--max-shards","16"])
+    else:
+        base_manifest=_read_json(base_field_root/"CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json")
+        base_fields=set(map(str,base_manifest.get("fields") or ()))
+        missing_required=tuple(sorted(set(required)-base_fields))
+        if not missing_required:
+            field_root=base_field_root
+        else:
+            missing_req_path=_requirements_table(out/"validation_program_missing_fields.csv",missing_required)
+            incremental_root=out/"incremental_validation_session_fields"
+            _run([sys.executable,str(repo/"scripts/build_cn_core_pack_validation_session_sidecar.py"),"--source-root",str(args.minute_source_root.resolve()),"--evaluation-role","validation","--output-root",str(incremental_root),"--candidate-table",str(missing_req_path),"--registry",str(args.registry.resolve()),"--split-manifest",str(args.split_manifest.resolve()),"--split-manifest-hash",EXPECTED_SPLIT_SHA256,"--fundamental-root",str(args.fundamental_root.resolve()),"--chip-root",str(args.chip_root.resolve()),"--max-shards","16"])
+            required_path=out/"required_physical_leaf_ids.json"
+            required_path.write_text(json.dumps(list(required),ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+            _run([sys.executable,str(repo/"scripts/fuse_cn_program_validation_session_sidecar_v1.py"),"--base-root",str(base_field_root),"--incremental-root",str(incremental_root),"--output-root",str(field_root),"--required-fields-json",str(required_path)])
     field_manifest=field_root/"CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"; field_sha=_sha256(field_manifest)
     authority=out/"validation_session_authority"
     _run([sys.executable,str(repo/"scripts/build_cn_validation_session_authority.py"),"--field-manifest",str(field_manifest),"--public-source-root",str(args.public_source_root.resolve()),"--output-root",str(authority),"--expected-field-manifest-sha256",field_sha,"--expected-source-manifest-sha256",EXPECTED_PUBLIC_SOURCE_MANIFEST_SHA256,"--historical-daily-st-source",str(args.daily_st_source.resolve()),"--expected-daily-st-source-sha256",EXPECTED_DAILY_ST_SOURCE_SHA256,"--builder-commit-sha",str(args.repo_sha),"--evaluation-role","validation"])
@@ -129,7 +144,7 @@ def prepare(args:argparse.Namespace)->dict[str,Any]:
     return {**prepared,"prepared_binding_file_sha256":_sha256(p)}
 
 def parser()->argparse.ArgumentParser:
-    p=argparse.ArgumentParser(description=__doc__); p.add_argument("--repo-root",type=Path,required=True); p.add_argument("--repo-sha",required=True); p.add_argument("--freeze-root",type=Path,required=True); p.add_argument("--output-root",type=Path,required=True); p.add_argument("--minute-source-root",type=Path,required=True); p.add_argument("--fundamental-root",type=Path,required=True); p.add_argument("--chip-root",type=Path,required=True); p.add_argument("--registry",type=Path,required=True); p.add_argument("--split-manifest",type=Path,required=True); p.add_argument("--public-source-root",type=Path,required=True); p.add_argument("--daily-st-source",type=Path,required=True); p.add_argument("--source-contract",type=Path,required=True); p.add_argument("--validation-label-root",type=Path,required=True); return p
+    p=argparse.ArgumentParser(description=__doc__); p.add_argument("--repo-root",type=Path,required=True); p.add_argument("--repo-sha",required=True); p.add_argument("--freeze-root",type=Path,required=True); p.add_argument("--output-root",type=Path,required=True); p.add_argument("--minute-source-root",type=Path,required=True); p.add_argument("--fundamental-root",type=Path,required=True); p.add_argument("--chip-root",type=Path,required=True); p.add_argument("--registry",type=Path,required=True); p.add_argument("--split-manifest",type=Path,required=True); p.add_argument("--public-source-root",type=Path,required=True); p.add_argument("--daily-st-source",type=Path,required=True); p.add_argument("--source-contract",type=Path,required=True); p.add_argument("--validation-label-root",type=Path,required=True); p.add_argument("--base-validation-field-root",type=Path); return p
 
 def main(argv:Sequence[str]|None=None)->int:
     result=prepare(parser().parse_args(argv)); print(json.dumps(result,ensure_ascii=False,sort_keys=True)); return 0
