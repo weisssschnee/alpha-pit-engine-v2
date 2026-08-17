@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-15
+Updated: 2026-08-17
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_BATCH_FEASIBILITY_RETRY_COMPLETE_536_RECORDS_67_CHECKPOINTS_ALL_ARMS_STAGE2_HYBRID_TPE_SEARCH_EFFICIENCY_WINNER_RESTRICTED_READS_ZERO_AUDIT_PASS_NO_SUCCESSOR_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_STOPPED_FOR_EXTERNAL_REVIEW`
+Current state: `PROGRAM_OPTIMIZER_D1_TRANSFER_V1_PROSPECTIVE_FAIL_V2_FROZEN_RETROSPECTIVE_ONLY_REPRODUCIBILITY_GAP_C_COHORT_AND_V2_VALIDATION_PLUMBING_PREPARED_NOT_RUN_RESTRICTED_READS_ZERO_NO_PROMOTION_FORMAL_HYBRID_AUTHORITY_UNCHANGED_STOPPED_FOR_EXTERNAL_REVIEW`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,56 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### D1 transfer V1 prospective filter failed; V2 is frozen retrospective evidence only and C remains not run (2026-08-17)
+
+- The original 120-candidate development-to-validation autopsy froze Transfer
+  Filter V1 before a fresh B continuation cohort. B development then closed
+  140/140 unique exact Programs with zero overlap against the prior 1,030 exact
+  identities and zero validation/holdout/Forward-2026 reads; 63 Programs were
+  development-productive.
+- The frozen V1 filter selected 26/63 before validation. Report-only validation
+  produced 20/63 productive overall and 10/26 productive inside the filtered
+  set: precision `0.3846153846` versus `0.3174603175` overall, a lift of only
+  `+0.0671550672`, with recall `0.50`. The unchanged prospective gates required
+  precision >= 0.35, lift >= +0.10 and recall >= 0.60, so the formal verdict is
+  `FAIL_PROSPECTIVE_FILTER_TEST`; no promotion or optimizer feedback followed.
+- Post-failure retrospective analysis combined the already-burned 120 rows with
+  the 63-row B validation population and froze
+  `CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2` over five development-only
+  economic features, including ordered `development_1/2/3` return increments.
+  Its 183-row/50-positive LOCO metrics are hypothesis-design evidence only;
+  Filter V2 has no prospective C evidence and does not alter the formal Hybrid
+  TPE + Availability development authority.
+- Independent zero-financial-read reproducibility work at implementation SHA
+  `2bc8618bbed45b8f3615de8a464228fc5a29135f` produced audit payload
+  `0f913149705bdbc166f94cce4c726e463cba285db6526856ad3ab10eac5654e2`
+  with terminal status `FAIL_CLOSED_V2_REPRODUCIBILITY_EVIDENCE_GAP`.
+  Durable Git evidence preserves all 120 old validation labels, but preserves
+  none of the 183 ordered chronological development-window feature rows and
+  preserves only B's aggregate 20/63 positive count rather than its 63
+  per-exact validation labels. Therefore the frozen V2 coefficients and LOCO
+  claims are preserved but are not yet independently re-derived.
+- Recovery plumbing is now committed: one tool freezes ordered development
+  windows from immutable closed `physical_results.jsonl`, one freezes per-exact
+  labels from an already-completed report-only validation root, one builds the
+  deterministic 183-row reconstruction dataset, and one refits the exact frozen
+  Logistic V2 contract and checks coefficients/intercept plus all three LOCO
+  folds. These tools perform no new financial evaluation and keep holdout and
+  Forward-2026 reads at zero.
+- A fresh C development authorization and V2 prospective validation plumbing
+  exist, with prior exact count 1,170 and 2,414 unseen enhanced Programs
+  remaining. C is still `CN_PROGRAM_OPTIMIZER_D1_DEVELOPMENT_FROZEN_NOT_RUN`;
+  its freeze path has been upgraded to persist ordered window increments for
+  future reproducibility. The reproducibility audit authorizes neither C
+  development nor C validation. No Project Control admission for C was consumed
+  by this work, and execution remains stopped for external review.
+- Canonical Graph artifacts were not refreshed by this non-architecture
+  research patch. The pre-existing `.planning/graphs/current.json` is already
+  `FAIL`: its RAW graph predates later non-overlay source changes and it also
+  reports an experimental/formal semantic-authority conflict; tracked
+  `.planning/graphs/graph.html` is absent. This transfer work does not claim a
+  GraphSkill PASS and leaves that independent Graph maintenance issue untouched.
 
 ### Program optimizer frozen prospective tournament complete; Hybrid TPE leads development search efficiency (2026-08-15)
 
