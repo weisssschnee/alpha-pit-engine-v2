@@ -1,0 +1,83 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "9db08fbc5b507802c19ee819f75210aa4e94d76a64b141cbdfcd18b250fb6e5b",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_OPTIMIZER_D1_TRANSFER_PROSPECTIVE_VALIDATION_V1",
+  "campaign_profile": "cn_program_optimizer_d1_transfer_prospective_validation_v1",
+  "candidate_freeze": {
+    "candidate_count": 63,
+    "candidate_exact_identities_sha256": "47f8565038a70adbdc71c1062212259ff3375d5adcb4c7cc5ed92cb8aae33f5b",
+    "file_sha256": "ebc0258e2a86b69cf265e743bccb541b285477b1b59e7a915036cc2181196c1d",
+    "members_payload_sha256": "ba65253454a5fc44845df42e2df52d7c9f0c1b1886091616e5ba46c269af2b3f",
+    "members_relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_freeze_20260817/validation_candidate_members.jsonl",
+    "payload_sha256": "002644259de61d7acfd2bba15946ceaeab18ac19d5a453f31ebad7c4b123d645",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_freeze_20260817/validation_candidate_freeze.json",
+    "transfer_filter_selected_count": 26,
+    "transfer_filter_selected_exact_identities_sha256": "14305d8f7791d7e1df01c3ff421b8e00ff3e47e243fa8a0446b6b9fbdfc7a50e"
+  },
+  "evaluation_role": "validation",
+  "execution_authorized": true,
+  "forward_2026_reads": 0,
+  "holdout_authority": "NONE",
+  "holdout_reads": 0,
+  "optimizer_feedback_write": "FORBIDDEN",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "prepared_binding": {
+    "file_sha256": "204e19ddb75632a143109308c1c21d9b09f73cf5e080ed43f5d7716a09689b70",
+    "payload_sha256": "8062ad672e45ca4a5cf84fc9344b05d78f21a3f56e325b3eed886a2ddc8544a6",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_B_validation_prefinancial_20260817.json",
+    "required_physical_leaf_count": 47,
+    "validation_field_manifest_sha256": "629483b0c1bdeaef1f950dcff43082fddfe175bf1b3e15e009c3648e4d2b5ffc",
+    "validation_session_authority_audit_sha256": "5fd6d69ce3fb7aea19c71b9beb57f7f226d2f42eb1a857c2a1bd5ec9ba70f684",
+    "validation_session_authority_manifest_sha256": "520e7bd09ebeef832b2fe2fa5f90283af773d8f51d6df56b166815f4a31aca79"
+  },
+  "project_control_route_id": "cn-program-optimizer-d1-transfer-prospective-validation-v1",
+  "promotion_authorized": false,
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_transfer_prospective_validation_authorization_v1",
+  "source_binding": {
+    "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "source_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+  },
+  "status": "D1_TRANSFER_PROSPECTIVE_VALIDATION_FROZEN_READY",
+  "transfer_filter": {
+    "acceptance_contract": {
+      "all_conditions_required": true,
+      "filtered_minus_unfiltered_precision_minimum": 0.1,
+      "filtered_precision_minimum": 0.35,
+      "filtered_recall_minimum": 0.6,
+      "minimum_development_productive_population": 30,
+      "rule_change_after_B_development_or_validation": "FORBIDDEN"
+    },
+    "file_sha256": "5335dbef4c5128535102cd4024a0b3c290155e2cb713890ca1ad57a888962fcb",
+    "filter_id": "CN_D1_TRANSFER_FILTER_ECON_ONLY_LOGIT_V1",
+    "payload_sha256": "2f468cbba74fc7b226c8d3b2d43b27532a9b71354ef025eb9e18fd8dedb7f421",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_transfer_filter_v1_20260817.json"
+  },
+  "usage": "REPORT_ONLY_PROSPECTIVE_TRANSFER_TEST",
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
