@@ -39,6 +39,14 @@ def _metric(rows:Sequence[Mapping[str,Any]])->dict[str,Any]:
 def _grouped(rows:Sequence[Mapping[str,Any]],field:str)->dict[str,Any]:
     return {v:_metric([x for x in rows if str(x[field])==v]) for v in sorted(set(str(x[field]) for x in rows))}
 
+def _filter_acceptance_contract(filter_payload:Mapping[str,Any])->dict[str,Any]:
+    keys=[k for k in ("prospective_B_validation_acceptance","prospective_C_validation_acceptance") if k in filter_payload]
+    if len(keys)!=1: raise RuntimeError(f"prospective transfer acceptance contract cardinality drift: {keys}")
+    contract=dict(filter_payload[keys[0]])
+    if not contract: raise RuntimeError("prospective transfer acceptance contract empty")
+    return contract
+
+
 def _acceptance(*, all_rows:Sequence[Mapping[str,Any]], selected_rows:Sequence[Mapping[str,Any]], contract:Mapping[str,Any])->dict[str,Any]:
     all_metric=_metric(all_rows); sel_metric=_metric(selected_rows); total_positive=int(all_metric["productive"]); selected_positive=int(sel_metric["productive"])
     recall=(selected_positive/total_positive) if total_positive else 0.0
@@ -83,7 +91,7 @@ def run(args:argparse.Namespace)->dict[str,Any]:
     selected=[r for r in results if bool(r["transfer_filter_selected"])]
     filter_payload=_read_json(args.transfer_filter.resolve()); _verify_self_hash(filter_payload,"filter_payload_sha256","transfer filter")
     if filter_payload.get("filter_id")!=freeze["transfer_filter_id"]: raise RuntimeError("prospective transfer filter identity drift")
-    acceptance=_acceptance(all_rows=results,selected_rows=selected,contract=filter_payload["prospective_B_validation_acceptance"])
+    acceptance=_acceptance(all_rows=results,selected_rows=selected,contract=_filter_acceptance_contract(filter_payload))
     metrics={"total":_metric(results),"transfer_filter_selected":_metric(selected),"transfer_filter_not_selected":_metric([r for r in results if not bool(r["transfer_filter_selected"])]),"per_template":_grouped(results,"template_id"),"per_selector":_grouped(results,"selection_kind"),"prospective_transfer_filter_acceptance":acceptance}
     _write_json(root/"validation_metrics.json",metrics)
     closure={"schema_version":SCHEMA_VERSION,"status":STATUS,"candidate_count":len(members),"candidate_exact_identities_sha256":freeze["candidate_exact_identities_sha256"],"transfer_filter_id":freeze["transfer_filter_id"],"transfer_filter_selected_count":len(selected),"transfer_filter_selected_exact_identities_sha256":freeze["transfer_filter_selected_exact_identities_sha256"],"input_binding_sha256":input_binding["input_binding_sha256"],"metrics":metrics,"validation_windows":list(VALIDATION_WINDOWS),"wall_seconds":float(time.perf_counter()-started),"validation_reads_per_worker_context":int(results[0]["validation_reads"]) if results else 0,"holdout_reads":0,"forward_2026_reads":0,"optimizer_feedback_write":"FORBIDDEN","scheduler_write":"FORBIDDEN","archive_write":"FORBIDDEN","promotion_authorized":False,"oos_authority":"VALIDATION_REPORT_ONLY_EVIDENCE_ONLY","holdout_authority":"NONE"}

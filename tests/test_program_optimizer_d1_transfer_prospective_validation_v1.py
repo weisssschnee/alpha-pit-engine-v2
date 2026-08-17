@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import app
+import pytest
 
-from scripts.run_cn_program_optimizer_d1_transfer_prospective_validation_v1 import _acceptance
+from scripts.run_cn_program_optimizer_d1_transfer_prospective_validation_v1 import _acceptance, _filter_acceptance_contract
 from our_system_phase2.runtime.cn_program_optimizer_d1_transfer_prospective_validation_v1 import ROUTE_ID
 from our_system_phase2.services.project_control_admission import (
     ACTION_LAUNCH,
@@ -48,6 +49,17 @@ def test_prospective_transfer_acceptance_fails_when_precision_lift_is_too_small(
     assert verdict["status"] == "FAIL_PROSPECTIVE_FILTER_TEST"
     assert verdict["checks"]["filtered_precision_minimum"] is False
     assert verdict["checks"]["filtered_minus_unfiltered_precision_minimum"] is False
+
+
+def test_filter_acceptance_contract_supports_frozen_B_or_C_but_not_both() -> None:
+    b={"prospective_B_validation_acceptance":_contract()}
+    c={"prospective_C_validation_acceptance":{**_contract(),"rule_change_after_C_development_or_validation":"FORBIDDEN"}}
+    assert _filter_acceptance_contract(b)["filtered_precision_minimum"]==0.35
+    assert _filter_acceptance_contract(c)["filtered_recall_minimum"]==0.60
+    with pytest.raises(RuntimeError,match="cardinality drift"):
+        _filter_acceptance_contract({**b,**c})
+    with pytest.raises(RuntimeError,match="cardinality drift"):
+        _filter_acceptance_contract({})
 
 
 def test_prospective_transfer_validation_route_is_high_cost_and_campaign_bound() -> None:
