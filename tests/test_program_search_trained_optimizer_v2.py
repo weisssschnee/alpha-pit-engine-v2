@@ -7,7 +7,7 @@ from our_system_phase2.services.program_search_trained_optimizer_v2 import (
     StructuredMultiHeadSearchV2,
     structural_feature_dict,
 )
-from scripts.run_cn_program_optimizer_search_core_replay_v2 import _balanced_order
+from scripts.run_cn_program_optimizer_search_core_replay_v2 import TEMPLATES, _balanced_order
 
 
 def _row(i: int, *, admitted: bool, productive: bool, template: str = "BASE_TEMPORAL"):
@@ -71,15 +71,7 @@ def test_multihead_and_v1_fit_and_score_structured_rows() -> None:
 
 
 def test_balanced_order_round_robins_templates() -> None:
-    templates = (
-        "BASE_EVENT",
-        "BASE_MARKET",
-        "BASE_MARKET_EVENT",
-        "BASE_TEMPORAL",
-        "BASE_TEMPORAL_EVENT",
-        "BASE_TEMPORAL_MARKET",
-        "BASE_TEMPORAL_MARKET_EVENT",
-    )
+    templates = TEMPLATES
     rows = []
     scores = []
     for t_index, template in enumerate(templates):

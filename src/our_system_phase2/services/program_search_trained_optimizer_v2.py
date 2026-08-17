@@ -294,3 +294,193 @@ def zscore(values: Sequence[float]) -> np.ndarray:
     if std <= 1e-12:
         return np.zeros(len(array), dtype=float)
     return (array - float(array.mean())) / std
+
+
+def lightgbm_available() -> bool:
+    try:
+        import lightgbm  # noqa: F401
+    except Exception:
+        return False
+    return True
+
+
+def catboost_available() -> bool:
+    try:
+        import catboost  # noqa: F401
+    except Exception:
+        return False
+    return True
+
+
+def _ordered_rank_rows(rows: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
+    return sorted(
+        rows,
+        key=lambda row: (
+            str(row["query_group"]),
+            int(row["source_order"]),
+            str(row["exact_identity"]),
+        ),
+    )
+
+
+def _group_sizes(rows: Sequence[Mapping[str, Any]]) -> list[int]:
+    groups: list[int] = []
+    last: str | None = None
+    size = 0
+    for row in rows:
+        current = str(row["query_group"])
+        if last is None:
+            last = current
+        if current != last:
+            groups.append(size)
+            last = current
+            size = 0
+        size += 1
+    if size:
+        groups.append(size)
+    if sum(groups) != len(rows) or any(value < 1 for value in groups):
+        raise RuntimeError("ranker query-group cardinality drift")
+    return groups
+
+
+class LightGBMLambdaRankerV2:
+    """LightGBM LambdaRank over the same structural feature surface."""
+
+    def __init__(self, *, seed: int = DEFAULT_SEED) -> None:
+        self.seed = int(seed)
+        self.vectorizer: Any = None
+        self.model: Any = None
+
+    def fit(self, rows: Sequence[Mapping[str, Any]]) -> "LightGBMLambdaRankerV2":
+        if not lightgbm_available():
+            raise RuntimeError("lightgbm is unavailable")
+        from sklearn.feature_extraction import DictVectorizer
+        from lightgbm import LGBMRanker
+
+        ordered = _ordered_rank_rows(rows)
+        self.vectorizer = DictVectorizer(sparse=True, sort=True)
+        X = self.vectorizer.fit_transform([structural_feature_dict(row) for row in ordered])
+        y = np.asarray([int(row["relevance_grade"]) for row in ordered], dtype=float)
+        self.model = LGBMRanker(
+            objective="lambdarank",
+            metric="ndcg",
+            n_estimators=320,
+            learning_rate=0.04,
+            num_leaves=31,
+            max_depth=-1,
+            min_child_samples=12,
+            subsample=0.85,
+            colsample_bytree=0.85,
+            reg_lambda=2.0,
+            reg_alpha=0.05,
+            random_state=self.seed,
+            n_jobs=1,
+            verbosity=-1,
+        )
+        self.model.fit(
+            X,
+            y,
+            group=_group_sizes(ordered),
+            eval_at=(3, 7, 14, 24),
+        )
+        return self
+
+    def score_rows(self, rows: Sequence[Mapping[str, Any]]) -> np.ndarray:
+        if self.vectorizer is None or self.model is None:
+            raise RuntimeError("LightGBM ranker is not fit")
+        X = self.vectorizer.transform([structural_feature_dict(row) for row in rows])
+        return np.asarray(self.model.predict(X), dtype=float)
+
+
+def _catboost_feature_table(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    columns: Sequence[str] | None = None,
+) -> tuple[list[list[Any]], tuple[str, ...], tuple[int, ...]]:
+    feature_rows = [structural_feature_dict(row) for row in rows]
+    if columns is None:
+        names = tuple(sorted({key for row in feature_rows for key in row}))
+    else:
+        names = tuple(map(str, columns))
+    categorical = tuple(
+        index
+        for index, name in enumerate(names)
+        if name not in {"gene::raw_field_count", "gene::rolling_node_count"}
+    )
+    categorical_set = set(categorical)
+    matrix: list[list[Any]] = []
+    for row in feature_rows:
+        values = []
+        for index, name in enumerate(names):
+            value = row.get(name)
+            if index in categorical_set:
+                values.append("__MISSING__" if value is None else str(value))
+            else:
+                values.append(float("nan") if value is None else float(value))
+        matrix.append(values)
+    return matrix, names, categorical
+
+
+class CatBoostRankerV2:
+    """Native-categorical CatBoost ranking baseline for the Program pool."""
+
+    def __init__(self, *, seed: int = DEFAULT_SEED, loss: str = "YetiRank") -> None:
+        self.seed = int(seed)
+        self.loss = str(loss)
+        self.columns: tuple[str, ...] | None = None
+        self.categorical: tuple[int, ...] = ()
+        self.model: Any = None
+
+    def fit(self, rows: Sequence[Mapping[str, Any]]) -> "CatBoostRankerV2":
+        if not catboost_available():
+            raise RuntimeError("catboost is unavailable")
+        from catboost import CatBoostRanker, Pool
+
+        ordered = _ordered_rank_rows(rows)
+        matrix, columns, categorical = _catboost_feature_table(ordered)
+        self.columns = columns
+        self.categorical = categorical
+        group_names = [str(row["query_group"]) for row in ordered]
+        group_map = {name: index for index, name in enumerate(sorted(set(group_names)))}
+        group_id = [group_map[name] for name in group_names]
+        labels = [int(row["relevance_grade"]) for row in ordered]
+        pool = Pool(
+            matrix,
+            label=labels,
+            group_id=group_id,
+            cat_features=list(categorical),
+            feature_names=list(columns),
+        )
+        self.model = CatBoostRanker(
+            loss_function=self.loss,
+            iterations=360,
+            depth=6,
+            learning_rate=0.04,
+            l2_leaf_reg=5.0,
+            random_seed=self.seed,
+            random_strength=0.5,
+            bootstrap_type="Bayesian",
+            bagging_temperature=0.5,
+            thread_count=1,
+            verbose=False,
+            allow_writing_files=False,
+        )
+        self.model.fit(pool, verbose=False)
+        return self
+
+    def score_rows(self, rows: Sequence[Mapping[str, Any]]) -> np.ndarray:
+        if self.columns is None or self.model is None:
+            raise RuntimeError("CatBoost ranker is not fit")
+        from catboost import Pool
+
+        matrix, columns, categorical = _catboost_feature_table(
+            rows, columns=self.columns
+        )
+        if columns != self.columns or categorical != self.categorical:
+            raise RuntimeError("CatBoost feature schema drift")
+        pool = Pool(
+            matrix,
+            cat_features=list(categorical),
+            feature_names=list(columns),
+        )
+        return np.asarray(self.model.predict(pool), dtype=float)

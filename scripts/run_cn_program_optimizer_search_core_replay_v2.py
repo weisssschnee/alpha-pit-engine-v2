@@ -16,9 +16,13 @@ import numpy as np
 
 from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import TEMPLATE_ORDER
 from our_system_phase2.services.program_search_trained_optimizer_v2 import (
+    CatBoostRankerV2,
     LambdaMARTRankerV2,
+    LightGBMLambdaRankerV2,
     StructuredExtraTreesReplayV1,
     StructuredMultiHeadSearchV2,
+    catboost_available,
+    lightgbm_available,
     xgboost_available,
     zscore,
 )
@@ -189,16 +193,52 @@ def _score_policies(
         try:
             ranker = LambdaMARTRankerV2(seed=seed).fit(train_rows)
             rank_scores = ranker.score_rows(test_rows)
-            scores["LAMBDAMART_V2"] = rank_scores
-            scores["HYBRID_LAMBDAMART_MULTIHEAD_V2"] = (
+            scores["XGBOOST_LAMBDAMART_V2"] = rank_scores
+            scores["HYBRID_XGBOOST_MULTIHEAD_V2"] = (
                 zscore(rank_scores) + zscore(scores["TRAINED_MULTIHEAD_V2"])
             )
-            metadata["lambdamart_status"] = "AVAILABLE_AND_FIT"
+            metadata["xgboost_lambdamart_status"] = "AVAILABLE_AND_FIT"
         except Exception as exc:
-            metadata["lambdamart_status"] = "FIT_FAILED"
-            metadata["lambdamart_error"] = f"{type(exc).__name__}:{exc}"
+            metadata["xgboost_lambdamart_status"] = "FIT_FAILED"
+            metadata["xgboost_lambdamart_error"] = f"{type(exc).__name__}:{exc}"
     else:
-        metadata["lambdamart_status"] = "XGBOOST_UNAVAILABLE"
+        metadata["xgboost_lambdamart_status"] = "XGBOOST_UNAVAILABLE"
+
+    metadata["lightgbm_available"] = lightgbm_available()
+    if lightgbm_available():
+        try:
+            ranker = LightGBMLambdaRankerV2(seed=seed).fit(train_rows)
+            rank_scores = ranker.score_rows(test_rows)
+            scores["LIGHTGBM_LAMBDARANK_V2"] = rank_scores
+            scores["HYBRID_LIGHTGBM_MULTIHEAD_V2"] = (
+                zscore(rank_scores) + zscore(scores["TRAINED_MULTIHEAD_V2"])
+            )
+            metadata["lightgbm_lambdarank_status"] = "AVAILABLE_AND_FIT"
+        except Exception as exc:
+            metadata["lightgbm_lambdarank_status"] = "FIT_FAILED"
+            metadata["lightgbm_lambdarank_error"] = f"{type(exc).__name__}:{exc}"
+    else:
+        metadata["lightgbm_lambdarank_status"] = "LIGHTGBM_UNAVAILABLE"
+
+    metadata["catboost_available"] = catboost_available()
+    if catboost_available():
+        for policy, loss in (
+            ("CATBOOST_YETIRANK_V2", "YetiRank"),
+            ("CATBOOST_LAMBDAMART_V2", "LambdaMart"),
+        ):
+            try:
+                ranker = CatBoostRankerV2(seed=seed, loss=loss).fit(train_rows)
+                rank_scores = ranker.score_rows(test_rows)
+                scores[policy] = rank_scores
+                scores[f"HYBRID_{policy}_MULTIHEAD"] = (
+                    zscore(rank_scores) + zscore(scores["TRAINED_MULTIHEAD_V2"])
+                )
+                metadata[f"{policy}_status"] = "AVAILABLE_AND_FIT"
+            except Exception as exc:
+                metadata[f"{policy}_status"] = "FIT_FAILED"
+                metadata[f"{policy}_error"] = f"{type(exc).__name__}:{exc}"
+    else:
+        metadata["catboost_status"] = "CATBOOST_UNAVAILABLE"
     return scores, metadata
 
 
@@ -270,23 +310,75 @@ def run_replay(*, dataset_path: Path, output_path: Path, seed: int) -> dict[str,
             "budgets": by_budget,
         }
 
+    baseline_names = {
+        "UNIFORM_HASH",
+        "HISTORICAL_EXECUTION_ORDER",
+        "ORACLE_UPPER_BOUND",
+    }
     trained_candidates = [
-        name for name in (
-            "TRAINED_MULTIHEAD_V2",
-            "LAMBDAMART_V2",
-            "HYBRID_LAMBDAMART_MULTIHEAD_V2",
-            "STRUCTURED_EXTRATREES_V1",
-        )
-        if name in aggregate and aggregate[name]["available_fold_count"] == len(fold_rows)
+        name
+        for name, block in aggregate.items()
+        if name not in baseline_names
+        and int(block["available_fold_count"]) == len(fold_rows)
     ]
-    def replay_key(name: str) -> tuple[float, float, float, str]:
+    uniform_fold_24 = [
+        float(fold["policies"]["UNIFORM_HASH"]["budgets"]["24"]["productive_precision"])
+        for fold in fold_rows
+    ]
+    uniform_fold_48 = [
+        float(fold["policies"]["UNIFORM_HASH"]["budgets"]["48"]["productive_precision"])
+        for fold in fold_rows
+    ]
+    qualification: dict[str, Any] = {}
+    for name in trained_candidates:
+        fold_24 = [
+            float(fold["policies"][name]["budgets"]["24"]["productive_precision"])
+            for fold in fold_rows
+        ]
+        fold_48 = [
+            float(fold["policies"][name]["budgets"]["48"]["productive_precision"])
+            for fold in fold_rows
+        ]
+        delta_24 = [value - base for value, base in zip(fold_24, uniform_fold_24, strict=True)]
+        delta_48 = [value - base for value, base in zip(fold_48, uniform_fold_48, strict=True)]
+        aggregate_delta_24 = (
+            float(aggregate[name]["budgets"]["24"]["productive_precision"])
+            - float(aggregate["UNIFORM_HASH"]["budgets"]["24"]["productive_precision"])
+        )
+        aggregate_delta_48 = (
+            float(aggregate[name]["budgets"]["48"]["productive_precision"])
+            - float(aggregate["UNIFORM_HASH"]["budgets"]["48"]["productive_precision"])
+        )
+        checks = {
+            "aggregate_top24_delta_ge_0p05": aggregate_delta_24 >= 0.05,
+            "aggregate_top48_delta_ge_0p03": aggregate_delta_48 >= 0.03,
+            "top24_fold_wins_ge_3": sum(value > 0.0 for value in delta_24) >= 3,
+            "top24_worst_fold_delta_ge_minus_0p10": min(delta_24) >= -0.10,
+            "mean_productive_auc_ge_0p55": float(aggregate[name]["mean_productive_auc"] or 0.0) >= 0.55,
+        }
+        qualification[name] = {
+            "checks": checks,
+            "qualified": all(checks.values()),
+            "aggregate_top24_precision_delta_vs_uniform": aggregate_delta_24,
+            "aggregate_top48_precision_delta_vs_uniform": aggregate_delta_48,
+            "top24_fold_precision_deltas_vs_uniform": delta_24,
+            "top48_fold_precision_deltas_vs_uniform": delta_48,
+            "top24_fold_wins_vs_uniform": sum(value > 0.0 for value in delta_24),
+            "top24_worst_fold_precision_delta_vs_uniform": min(delta_24),
+        }
+
+    def replay_key(name: str) -> tuple[float, float, float, float, str]:
+        q = qualification[name]
         return (
-            float(aggregate[name]["budgets"]["24"]["productive_precision"]),
-            float(aggregate[name]["budgets"]["48"]["productive_precision"]),
+            float(q["top24_worst_fold_precision_delta_vs_uniform"]),
+            float(q["top24_fold_wins_vs_uniform"]),
+            float(q["aggregate_top24_precision_delta_vs_uniform"]),
             float(aggregate[name]["mean_productive_auc"] or 0.0),
             name,
         )
     replay_leader = max(trained_candidates, key=replay_key) if trained_candidates else None
+    qualified_leaders = [name for name in trained_candidates if qualification[name]["qualified"]]
+    qualified_leader = max(qualified_leaders, key=replay_key) if qualified_leaders else None
     payload: dict[str, Any] = {
         "schema_version": "cn_program_optimizer_search_core_replay_v2",
         "status": "OFFLINE_WALK_FORWARD_SEARCH_CORE_REPLAY_COMPLETE",
@@ -296,8 +388,19 @@ def run_replay(*, dataset_path: Path, output_path: Path, seed: int) -> dict[str,
         "cohort_order": list(COHORT_ORDER),
         "folds": fold_rows,
         "aggregate": aggregate,
+        "trained_policy_qualification_contract": {
+            "aggregate_top24_precision_delta_vs_uniform_minimum": 0.05,
+            "aggregate_top48_precision_delta_vs_uniform_minimum": 0.03,
+            "minimum_top24_fold_wins_vs_uniform": 3,
+            "minimum_top24_worst_fold_precision_delta_vs_uniform": -0.10,
+            "minimum_mean_productive_auc": 0.55,
+            "all_conditions_required": True,
+        },
+        "trained_policy_qualification": qualification,
         "trained_policy_replay_leader": replay_leader,
+        "qualified_trained_policy_leader": qualified_leader,
         "trained_policy_replay_leader_is_fresh_search_authority": False,
+        "qualified_trained_policy_leader_is_fresh_search_authority": False,
         "counterfactual_candidate_selection_claim_authorized": False,
         "financial_evaluation_performed_by_replay": False,
         "validation_reads": 0,
@@ -326,6 +429,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(json.dumps({
         "status": payload["status"],
         "trained_policy_replay_leader": payload["trained_policy_replay_leader"],
+        "qualified_trained_policy_leader": payload["qualified_trained_policy_leader"],
         "replay_payload_sha256": payload["replay_payload_sha256"],
         "policies": sorted(payload["aggregate"]),
     }, sort_keys=True))
