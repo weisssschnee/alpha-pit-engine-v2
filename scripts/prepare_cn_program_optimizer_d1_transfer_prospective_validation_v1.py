@@ -205,7 +205,7 @@ def prepare_zero_read(args:argparse.Namespace)->dict[str,Any]:
 
 def materialize_authorized(*,repo_root:Path,preflight_binding:Path,output_root:Path)->Path:
     repo=repo_root.resolve(); plan=_read_json(preflight_binding.resolve()); _verify_self_hash(plan,"zero_read_preflight_payload_sha256","prospective validation zero-read preflight")
-    if plan.get("status")!=ZERO_READ_STATUS or int(plan.get("validation_reads_by_this_preflight") or -1)!=0 or bool(plan.get("candidate_evaluation_executed")): raise RuntimeError("prospective zero-read preflight drift")
+    if plan.get("status")!=ZERO_READ_STATUS or int(plan.get("validation_reads_by_this_preflight") if plan.get("validation_reads_by_this_preflight") is not None else -1)!=0 or bool(plan.get("candidate_evaluation_executed")): raise RuntimeError("prospective zero-read preflight drift")
     out=output_root.resolve()
     if out.exists(): raise FileExistsError(out)
     out.mkdir(parents=True)

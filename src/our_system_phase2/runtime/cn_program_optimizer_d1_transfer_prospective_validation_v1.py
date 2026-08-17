@@ -82,7 +82,7 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
         or payload.get("archive_write")!="FORBIDDEN"
         or payload.get("search_memory_write")!="FORBIDDEN"
         or bool(payload.get("promotion_authorized"))
-        or int(payload.get("validation_reads_before_admission") or -1)!=0
+        or int(payload.get("validation_reads_before_admission") if payload.get("validation_reads_before_admission") is not None else -1)!=0
         or int(payload.get("holdout_reads") or 0)!=0
         or int(payload.get("historical_challenge_reads") or 0)!=0
         or int(payload.get("forward_b_reads") or 0)!=0
@@ -129,7 +129,7 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
         or int(prepared.get("transfer_filter_selected_count") or 0)!=EXPECTED_SELECTED_COUNT
         or prepared.get("transfer_filter_selected_exact_identities_sha256")!=EXPECTED_SELECTED_SET_SHA256
         or bool(prepared.get("candidate_evaluation_executed"))
-        or int(prepared.get("validation_reads_by_this_preflight") or -1)!=0
+        or int(prepared.get("validation_reads_by_this_preflight") if prepared.get("validation_reads_by_this_preflight") is not None else -1)!=0
         or int(prepared.get("holdout_reads") or 0)!=0
         or int(prepared.get("forward_2026_reads") or 0)!=0
     ): raise ValueError("prospective prepared binding semantic drift")
