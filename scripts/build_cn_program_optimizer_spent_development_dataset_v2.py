@@ -150,6 +150,7 @@ def _read_one_existing(root: Path, names: Sequence[str]) -> Path:
 def _collect_wave_run(run_root: Path, cohort: str, cohort_index: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
     evidence: list[dict[str, Any]] = []
+    successor_seen: dict[str, dict[str, str]] = {}
     wave_roots = [p for p in sorted(run_root.glob("wave_*")) if p.is_dir() and not p.name.endswith(".inflight")]
     for wave_root in wave_roots:
         try:
@@ -169,32 +170,101 @@ def _collect_wave_run(run_root: Path, cohort: str, cohort_index: int) -> tuple[l
                 raise RuntimeError(f"duplicate wave schedule exact: {exact}")
             by_exact[exact] = schedule
         result_by_exact = {str(row.get("exact_identity") or ""): row for row in results}
-        if set(by_exact) != set(result_by_exact):
-            raise RuntimeError(f"wave schedule/result exact drift: {wave_root}")
+        if any(not exact for exact in result_by_exact) or len(result_by_exact) != len(results):
+            raise RuntimeError(f"wave result exact cardinality drift: {results_path}")
         records = _record_by_hash(wave_root / "records")
-        for exact, schedule in sorted(by_exact.items(), key=lambda item: int(item[1].get("main_record_ordinal") or 0)):
-            result = result_by_exact[exact]
-            source_sha = str(result.get("source_record_sha256") or "")
-            record = records.get(source_sha)
-            selection_kind = str(
-                schedule.get("d1_selection_kind")
-                or "+".join(map(str, schedule.get("successor_logical_policies") or ()))
-                or dict(schedule.get("proposal_receipt") or {}).get("generation_arm")
-                or ""
-            )
-            rows.append(_economic_row(
-                exact=exact,
-                cohort=cohort,
-                cohort_index=cohort_index,
-                source_order=wave * 1000 + int(schedule.get("main_record_ordinal") or 0),
-                source_wave=wave,
-                template_id=str(schedule.get("template_id") or ""),
-                selection_kind=selection_kind,
-                admission=dict(result.get("admission") or {}),
-                uplift=(dict(result["uplift"]) if isinstance(result.get("uplift"), Mapping) else None),
-                record=record,
-                source_record_sha256=source_sha,
-            ))
+
+        if cohort == "SUCCESSOR_D1":
+            asks_path = wave_root / "logical_asks.jsonl"
+            if not asks_path.is_file():
+                raise RuntimeError(f"successor logical asks missing: {wave_root}")
+            asks = _read_jsonl(asks_path)
+            ask_by_exact: dict[str, dict[str, Any]] = {}
+            ask_order: dict[str, int] = {}
+            for ordinal, ask in enumerate(asks):
+                exact = str(ask.get("exact_identity") or "")
+                if not exact or exact in ask_by_exact:
+                    raise RuntimeError(f"successor logical exact cardinality drift: {asks_path}")
+                ask_by_exact[exact] = ask
+                ask_order[exact] = ordinal
+            if set(ask_by_exact) != set(result_by_exact):
+                raise RuntimeError(f"successor logical/result exact drift: {wave_root}")
+            if not set(by_exact).issubset(result_by_exact):
+                raise RuntimeError(f"successor schedule outside result set: {wave_root}")
+
+            for exact in sorted(result_by_exact, key=lambda identity: ask_order[identity]):
+                result = result_by_exact[exact]
+                schedule = by_exact.get(exact)
+                if schedule is None:
+                    if not bool(result.get("cache_hit")):
+                        raise RuntimeError(f"successor unscheduled result is not cache hit: {exact}")
+                    prior = successor_seen.get(exact)
+                    if prior is None:
+                        raise RuntimeError(f"successor cache hit lacks prior physical provenance: {exact}")
+                    if (
+                        str(result.get("physical_result_hash") or "") != prior["physical_result_hash"]
+                        or str(result.get("source_record_sha256") or "") != prior["source_record_sha256"]
+                    ):
+                        raise RuntimeError(f"successor cache-hit provenance drift: {exact}")
+                    continue
+                if bool(result.get("cache_hit")):
+                    raise RuntimeError(f"successor scheduled result unexpectedly marked cache hit: {exact}")
+                if exact in successor_seen:
+                    raise RuntimeError(f"successor repeated physical schedule without cache semantics: {exact}")
+                ask = ask_by_exact[exact]
+                if str(ask.get("template_id") or "") != str(schedule.get("template_id") or ""):
+                    raise RuntimeError(f"successor logical/schedule template drift: {exact}")
+                source_sha = str(result.get("source_record_sha256") or "")
+                record = records.get(source_sha)
+                if record is None:
+                    raise RuntimeError(f"successor physical record missing: {exact}")
+                selection_kind = str(ask.get("selection_kind") or ask.get("policy") or "")
+                rows.append(_economic_row(
+                    exact=exact,
+                    cohort=cohort,
+                    cohort_index=cohort_index,
+                    source_order=wave * 1000 + ask_order[exact],
+                    source_wave=wave,
+                    template_id=str(schedule.get("template_id") or ""),
+                    selection_kind=selection_kind,
+                    admission=dict(result.get("admission") or {}),
+                    uplift=(dict(result["uplift"]) if isinstance(result.get("uplift"), Mapping) else None),
+                    record=record,
+                    source_record_sha256=source_sha,
+                ))
+                successor_seen[exact] = {
+                    "physical_result_hash": str(result.get("physical_result_hash") or ""),
+                    "source_record_sha256": source_sha,
+                }
+            evidence.append({"path": str(asks_path), "sha256": _sha256(asks_path)})
+        else:
+            if set(by_exact) != set(result_by_exact):
+                raise RuntimeError(f"wave schedule/result exact drift: {wave_root}")
+            for exact, schedule in sorted(by_exact.items(), key=lambda item: int(item[1].get("main_record_ordinal") or 0)):
+                result = result_by_exact[exact]
+                source_sha = str(result.get("source_record_sha256") or "")
+                record = records.get(source_sha)
+                if record is None:
+                    raise RuntimeError(f"wave physical record missing: {exact}")
+                selection_kind = str(
+                    schedule.get("d1_selection_kind")
+                    or "+".join(map(str, schedule.get("successor_logical_policies") or ()))
+                    or dict(schedule.get("proposal_receipt") or {}).get("generation_arm")
+                    or ""
+                )
+                rows.append(_economic_row(
+                    exact=exact,
+                    cohort=cohort,
+                    cohort_index=cohort_index,
+                    source_order=wave * 1000 + int(schedule.get("main_record_ordinal") or 0),
+                    source_wave=wave,
+                    template_id=str(schedule.get("template_id") or ""),
+                    selection_kind=selection_kind,
+                    admission=dict(result.get("admission") or {}),
+                    uplift=(dict(result["uplift"]) if isinstance(result.get("uplift"), Mapping) else None),
+                    record=record,
+                    source_record_sha256=source_sha,
+                ))
         evidence.extend([
             {"path": str(schedules_path), "sha256": _sha256(schedules_path)},
             {"path": str(results_path), "sha256": _sha256(results_path)},
