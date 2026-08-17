@@ -1,0 +1,115 @@
+{
+  "automatic_filter_v3_authorized": false,
+  "development_window_ids": [
+    "development_1",
+    "development_2",
+    "development_3"
+  ],
+  "evidence_binding": {
+    "V1_failure_outcome_payload_sha256": "3acf6b891a8e7e67bad6a367a65626d1c211075dfe73ccfc9e932fe3fbcfe79d",
+    "autopsy_payload_sha256": "477b8b896ed0c9362cc53303be9bf4ae4feecd4465dfc2e04bf6049b5c8512d4",
+    "three_cohort_leave_one_out": true,
+    "tuning_candidate_count": 183,
+    "tuning_validation_productive_count": 50
+  },
+  "feature_semantics": {
+    "dev_matched_return": "development matched cumulative return increment Full minus BASE",
+    "dev_matched_reward": "development matched continuous-book net reward increment Full minus BASE",
+    "dev_window_1_increment": "matched return increment in development_1",
+    "dev_window_2_increment": "matched return increment in development_2",
+    "dev_window_3_increment": "matched return increment in development_3"
+  },
+  "features": [
+    "dev_matched_return",
+    "dev_matched_reward",
+    "dev_window_1_increment",
+    "dev_window_2_increment",
+    "dev_window_3_increment"
+  ],
+  "filter_id": "CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2",
+  "filter_payload_sha256": "512c81728e3fca363ffcb3a148b3fd09f088e1f56d9f3f330b9a9f1170466081",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "leave_one_cohort_out_top40": {
+    "D1_CONTINUATION_B": {
+      "auc": 0.6988372093023255,
+      "base_precision": 0.31746031746031744,
+      "population": 63,
+      "top40_lift_pp": 0.14407814407814412,
+      "top40_precision": 0.46153846153846156,
+      "top40_productive": 12,
+      "top40_recall": 0.6,
+      "top40_selected": 26,
+      "validation_productive": 20
+    },
+    "D1_FRESH": {
+      "auc": 0.8294270833333333,
+      "base_precision": 0.25,
+      "population": 64,
+      "top40_lift_pp": 0.28846153846153844,
+      "top40_precision": 0.5384615384615384,
+      "top40_productive": 14,
+      "top40_recall": 0.875,
+      "top40_selected": 26,
+      "validation_productive": 16
+    },
+    "SUCCESSOR_D1": {
+      "auc": 0.8299319727891157,
+      "base_precision": 0.25,
+      "population": 56,
+      "top40_lift_pp": 0.2282608695652174,
+      "top40_precision": 0.4782608695652174,
+      "top40_productive": 11,
+      "top40_recall": 0.7857142857142857,
+      "top40_selected": 23,
+      "validation_productive": 14
+    }
+  },
+  "model": {
+    "C": 0.5,
+    "class_weight": "balanced",
+    "cohort_features_used": false,
+    "family": "LOGISTIC_REGRESSION",
+    "gene_features_used": false,
+    "positive_count": 50,
+    "random_state": 82617,
+    "selector_features_used": false,
+    "solver": "liblinear",
+    "template_features_used": false,
+    "training_candidate_count": 183
+  },
+  "optimizer_feedback_write": "FORBIDDEN",
+  "promotion_authorized": false,
+  "prospective_C_validation_acceptance": {
+    "all_conditions_required": true,
+    "filtered_minus_unfiltered_precision_minimum": 0.1,
+    "filtered_precision_minimum": 0.35,
+    "filtered_recall_minimum": 0.6,
+    "minimum_development_productive_population": 30,
+    "rule_change_after_C_development_or_validation": "FORBIDDEN"
+  },
+  "purpose": "Rank development-positive Programs for prospective validation transfer without using selector/template/cohort/validation labels from the future cohort.",
+  "rule_change_after_C_development_or_validation": "FORBIDDEN",
+  "schema_version": "cn_program_optimizer_d1_transfer_filter_v2",
+  "score_formula_raw": {
+    "coefficients": {
+      "dev_matched_return": -0.7363351972081602,
+      "dev_matched_reward": 0.07422475450709497,
+      "dev_window_1_increment": 1.2558895877630634,
+      "dev_window_2_increment": 4.35490487375683,
+      "dev_window_3_increment": -6.902738995372169
+    },
+    "intercept": 0.5433662165160273,
+    "probability": "sigmoid(linear_score)"
+  },
+  "selection_contract": {
+    "all_development_positive_candidates_must_be_scored": true,
+    "membership_frozen_before_validation_access": true,
+    "ranking": "DESCENDING_LINEAR_SCORE",
+    "rounding": "CEIL",
+    "selected_fraction": 0.4,
+    "tie_break": "EXACT_IDENTITY_ASC"
+  },
+  "status": "FROZEN_BEFORE_C_DEVELOPMENT_AND_VALIDATION",
+  "validation_feedback_write": "FORBIDDEN"
+}

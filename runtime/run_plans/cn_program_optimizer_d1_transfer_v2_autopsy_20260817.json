@@ -1,0 +1,96 @@
+{
+  "V1_prospective_failure": {
+    "all_precision": 0.31746031746031744,
+    "filtered_precision": 0.38461538461538464,
+    "filtered_recall": 0.5,
+    "outcome_file_sha256": "d328dc426fe7eb4995f31c903f61a2d136f765e7a25810f1d2c694dbd70b5799",
+    "outcome_payload_sha256": "3acf6b891a8e7e67bad6a367a65626d1c211075dfe73ccfc9e932fe3fbcfe79d",
+    "precision_lift_pp": 0.0671550671550672,
+    "verdict": "FAIL_PROSPECTIVE_FILTER_TEST"
+  },
+  "autopsy_payload_sha256": "477b8b896ed0c9362cc53303be9bf4ae4feecd4465dfc2e04bf6049b5c8512d4",
+  "development_window_contract": {
+    "candidate_count_verified_same_order": 183,
+    "status": "PASS_IDENTICAL_WINDOW_ORDER",
+    "window_ids": [
+      "development_1",
+      "development_2",
+      "development_3"
+    ]
+  },
+  "failure_mechanism_evidence": {
+    "V1_summary_compression_lost_temporal_order": true,
+    "interpretation": "Chronological shape contains transfer information that median/lower-tail summaries cannot preserve. Do not interpret individual coefficient signs causally.",
+    "recent_minus_prior_mean_best_direction_auc_lower_is_better": 0.7481203007518797,
+    "window_1_univariate_auc": 0.48601503759398496,
+    "window_2_univariate_auc": 0.6819548872180451,
+    "window_3_auc_higher_direction": 0.3111278195488722,
+    "window_3_best_direction_auc_lower_is_better": 0.6888721804511277
+  },
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "leave_one_cohort_out": {
+    "aggregate_auc": 0.7557894736842106,
+    "aggregate_average_precision": 0.5386599157729539,
+    "all_three_cohorts_meet_original_V1_acceptance": true,
+    "top40_folds": {
+      "D1_CONTINUATION_B": {
+        "auc": 0.6988372093023255,
+        "base_precision": 0.31746031746031744,
+        "population": 63,
+        "top40_lift_pp": 0.14407814407814412,
+        "top40_precision": 0.46153846153846156,
+        "top40_productive": 12,
+        "top40_recall": 0.6,
+        "top40_selected": 26,
+        "validation_productive": 20
+      },
+      "D1_FRESH": {
+        "auc": 0.8294270833333333,
+        "base_precision": 0.25,
+        "population": 64,
+        "top40_lift_pp": 0.28846153846153844,
+        "top40_precision": 0.5384615384615384,
+        "top40_productive": 14,
+        "top40_recall": 0.875,
+        "top40_selected": 26,
+        "validation_productive": 16
+      },
+      "SUCCESSOR_D1": {
+        "auc": 0.8299319727891157,
+        "base_precision": 0.25,
+        "population": 56,
+        "top40_lift_pp": 0.2282608695652174,
+        "top40_precision": 0.4782608695652174,
+        "top40_productive": 11,
+        "top40_recall": 0.7857142857142857,
+        "top40_selected": 23,
+        "validation_productive": 14
+      }
+    }
+  },
+  "model_selection": {
+    "category_features_rejected": true,
+    "category_rejection_reason": "selector/template/gene additions did not restore robust three-cohort V1 gates and would increase post-selection confounding.",
+    "primary": "RETURN_REWARD_WINS3_LOGISTIC",
+    "rejected_primary_alternative": "HISTGB_SHALLOW",
+    "rejection_reason": "HistGB had stronger LOCO metrics but 183 labeled candidates are too small to justify a more flexible filter when a five-feature linear model already clears the unchanged prospective gates on every cohort."
+  },
+  "promotion_authorized": false,
+  "purpose": "Diagnose V1 prospective transfer-filter failure using only already-burned development and validation evidence; holdout remains sealed.",
+  "schema_version": "cn_program_optimizer_d1_transfer_v2_autopsy_v1",
+  "status": "FILTER_V2_FREEZE_EVIDENCE_READY",
+  "tuning_population": {
+    "B_63_dataset_sha256": "960c46616c5cb74842c6d4a81b4e6bd6981bd5be74fbf588dbed3acf7fa10363",
+    "analysis_sha256": "21a809f85b1bbf91976db4fd2de3d04587808722d0b112fc47c47bcfa59fd070",
+    "candidate_count": 183,
+    "cohorts": {
+      "D1_CONTINUATION_B": 63,
+      "D1_FRESH": 64,
+      "SUCCESSOR_D1": 56
+    },
+    "combined_183_window_dataset_sha256": "0080cdc0057fd075efe6b96d9ef91e5e1b246ba26b5823b127bef672a58e19d0",
+    "old_120_dataset_sha256": "f5fb4603d2d46179e7363edffe38ba7d99f6405a6e6b0d3b194f663c1c4ff350",
+    "validation_productive_count": 50
+  }
+}
