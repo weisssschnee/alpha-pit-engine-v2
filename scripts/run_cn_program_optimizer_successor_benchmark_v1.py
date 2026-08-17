@@ -149,6 +149,9 @@ def _load_authority(
     prior_exact_identities_sha256: str = PRIOR_EXACT_IDENTITIES_SHA256,
     prior_identity_field: str = "prior_exact_identities",
     input_binding_schema_version: str = "cn_program_optimizer_successor_input_binding_v1",
+    resource_profile_id: str = "VALIDATION_EXCLUSIVE_32",
+    resource_profile_role: str = "VALIDATION",
+    maximum_executor_workers: int = 8,
 ) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError("SUCCESSOR_BENCHMARK_UNAUTHORIZED_HOST")
@@ -276,12 +279,16 @@ def _load_authority(
     capacity_hash = str(capacity_body.pop("capacity_manifest_sha256", ""))
     if capacity_hash != stable_hash(capacity_body):
         raise RuntimeError("SUCCESSOR_NODE_CAPACITY_SELF_HASH_DRIFT")
-    profile = dict(capacity.get("profiles", {}).get("VALIDATION_EXCLUSIVE_32") or {})
+    profile = dict(capacity.get("profiles", {}).get(str(resource_profile_id)) or {})
+    profile_cpu_threads = int(profile.get("cpu_threads") or 0)
     if (
-        int(profile.get("cpu_threads") or 0) != 32
+        profile_cpu_threads < 1
+        or str(profile.get("role") or "").upper() != str(resource_profile_role).upper()
         or int(profile.get("minimum_free_memory_bytes") or 0)
         != engine.MINIMUM_FREE_MEMORY_BYTES
-        or not 1 <= int(args.executor_workers) <= 8
+        or not 1 <= int(args.executor_workers) <= min(
+            int(maximum_executor_workers), profile_cpu_threads
+        )
     ):
         raise RuntimeError("SUCCESSOR_RESOURCE_PROFILE_DRIFT")
 

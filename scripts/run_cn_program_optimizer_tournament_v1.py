@@ -173,15 +173,21 @@ def _eligible_entries(
     catalog: Mapping[str, Sequence[Mapping[str, Any]]],
     state: MutableMapping[str, Any],
     program_gene_slots: Sequence[str],
+    prior_exact_identities: Sequence[str] | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     template_id = str(asks[0]["template_id"])
+    prior = (
+        _PRIOR_PROGRAM_EXACT_IDENTITIES
+        if prior_exact_identities is None
+        else frozenset(map(str, prior_exact_identities))
+    )
     candidates = [
         dict(entry)
         for entry in catalog[template_id]
         if normalized_program_gene_identity_v1(
             dict(entry["program_genes"]), ordered_slots=program_gene_slots
         )
-        not in _PRIOR_PROGRAM_EXACT_IDENTITIES
+        not in prior
         if str(entry["reservoir"]["reservoir_record_sha256"])
         not in state["reservoir_ids"]
         and (
@@ -238,6 +244,7 @@ def _select_checkpoint(
     components_by_id: Mapping[str, Any],
     adapter: Any,
     compiler: Any,
+    prior_exact_identities: Sequence[str] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     arms = {str(row["generation_arm"]) for row in asks}
     templates = {str(row["template_id"]) for row in asks}
@@ -251,6 +258,7 @@ def _select_checkpoint(
         catalog=catalog,
         state=state,
         program_gene_slots=program_gene_slots,
+        prior_exact_identities=prior_exact_identities,
     )
     constraint = _batch_group_constraint(
         template_id=template_id,
