@@ -160,7 +160,13 @@ def test_development_window_feature_freezer_replays_only_closed_result_files(tmp
 
 
 def test_v2_model_reproduction_checker_uses_exact_frozen_model_contract() -> None:
-    from scripts.check_cn_program_optimizer_d1_transfer_v2_model_reproduction import FEATURES, _model
+    import numpy as np
+
+    from scripts.check_cn_program_optimizer_d1_transfer_v2_model_reproduction import (
+        FEATURES,
+        _fit_standardized,
+        _model,
+    )
 
     model = _model()
     params = model.get_params()
@@ -175,6 +181,20 @@ def test_v2_model_reproduction_checker_uses_exact_frozen_model_contract() -> Non
     assert params["class_weight"] == "balanced"
     assert params["solver"] == "liblinear"
     assert params["random_state"] == 82617
+
+    x = np.asarray([
+        [0.1, 1.0, -0.2, 0.1, 0.3],
+        [0.2, 1.5, 0.0, 0.2, 0.1],
+        [0.4, 2.0, 0.1, 0.4, -0.1],
+        [0.8, 3.0, 0.3, 0.6, -0.3],
+        [0.3, 1.2, -0.1, 0.3, 0.0],
+        [0.7, 2.7, 0.2, 0.5, -0.2],
+    ], dtype=float)
+    labels = np.asarray([0, 0, 1, 1, 0, 1], dtype=int)
+    scaler, fitted, raw_coefficients, raw_intercept = _fit_standardized(x, labels)
+    standardized_scores = fitted.decision_function(scaler.transform(x))
+    raw_scores = x @ raw_coefficients + raw_intercept
+    assert np.allclose(standardized_scores, raw_scores, rtol=0.0, atol=1e-12)
 
 
 def test_development_window_feature_freezer_accepts_successor_wave_physical_results(tmp_path: Path) -> None:

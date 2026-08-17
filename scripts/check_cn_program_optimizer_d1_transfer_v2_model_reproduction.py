@@ -17,6 +17,7 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.preprocessing import StandardScaler
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT / "src") not in sys.path:
@@ -54,6 +55,20 @@ def _model() -> LogisticRegression:
         solver="liblinear",
         random_state=82617,
     )
+
+
+def _fit_standardized(
+    x: np.ndarray, labels: np.ndarray
+) -> tuple[StandardScaler, LogisticRegression, np.ndarray, float]:
+    """Fit the recovered V2 pipeline and express its score in raw feature space."""
+    scaler = StandardScaler().fit(x)
+    model = _model().fit(scaler.transform(x), labels)
+    standardized_coefficients = np.asarray(model.coef_[0], dtype=float)
+    raw_coefficients = standardized_coefficients / np.asarray(scaler.scale_, dtype=float)
+    raw_intercept = float(model.intercept_[0]) - float(
+        np.dot(standardized_coefficients, np.asarray(scaler.mean_, dtype=float) / np.asarray(scaler.scale_, dtype=float))
+    )
+    return scaler, model, raw_coefficients, raw_intercept
 
 
 def _top40(rows: Sequence[Mapping[str, Any]], scores: np.ndarray, labels: np.ndarray) -> dict[str, Any]:
@@ -115,9 +130,11 @@ def check(*, repo_root: Path, dataset_path: Path) -> dict[str, Any]:
 
     x = np.asarray([[float(row[feature]) for feature in FEATURES] for row in rows], dtype=float)
     y = np.asarray([1 if bool(row["validation_productive"]) else 0 for row in rows], dtype=int)
-    full = _model().fit(x, y)
-    fitted_coefficients = {feature: float(value) for feature, value in zip(FEATURES, full.coef_[0], strict=True)}
-    fitted_intercept = float(full.intercept_[0])
+    full_scaler, full_model, raw_coefficients, fitted_intercept = _fit_standardized(x, y)
+    fitted_coefficients = {
+        feature: float(value)
+        for feature, value in zip(FEATURES, raw_coefficients, strict=True)
+    }
     frozen_formula = dict(filter_payload["score_formula_raw"])
     frozen_coefficients = dict(frozen_formula["coefficients"])
     coefficient_checks = {feature: _close(fitted_coefficients[feature], float(frozen_coefficients[feature])) for feature in FEATURES}
@@ -135,8 +152,8 @@ def check(*, repo_root: Path, dataset_path: Path) -> dict[str, Any]:
         train_idx = np.where(cohort_array != cohort)[0]
         if not len(test_idx) or not len(train_idx):
             raise RuntimeError(f"LOCO cohort split empty: {cohort}")
-        model = _model().fit(x[train_idx], y[train_idx])
-        scores = model.decision_function(x[test_idx])
+        scaler, model, _, _ = _fit_standardized(x[train_idx], y[train_idx])
+        scores = model.decision_function(scaler.transform(x[test_idx]))
         aggregate_scores[test_idx] = scores
         aggregate_seen[test_idx] = True
         held_rows = [rows[int(idx)] for idx in test_idx]
@@ -186,10 +203,29 @@ def check(*, repo_root: Path, dataset_path: Path) -> dict[str, Any]:
         "dataset_payload_sha256": dataset["dataset_payload_sha256"],
         "candidate_count": len(rows),
         "validation_productive_count": int(y.sum()),
+        "recovered_preprocessing_contract": {
+            "family": "STANDARD_SCALER",
+            "fit_scope": "FIT_ON_TRAINING_ROWS_FOR_EACH_MODEL_FIT",
+            "transform": "z=(x-mean)/scale",
+            "frozen_score_formula_space": "RAW_FEATURE_SPACE_AFTER_EXACT_INVERSE_TRANSFORM",
+        },
         "fitted_model": {
             "features": list(FEATURES),
             "coefficients": fitted_coefficients,
             "intercept": fitted_intercept,
+            "standardized_coefficients": {
+                feature: float(value)
+                for feature, value in zip(FEATURES, full_model.coef_[0], strict=True)
+            },
+            "standardized_intercept": float(full_model.intercept_[0]),
+            "scaler_mean": {
+                feature: float(value)
+                for feature, value in zip(FEATURES, full_scaler.mean_, strict=True)
+            },
+            "scaler_scale": {
+                feature: float(value)
+                for feature, value in zip(FEATURES, full_scaler.scale_, strict=True)
+            },
         },
         "frozen_model": {
             "filter_payload_sha256": filter_payload["filter_payload_sha256"],
