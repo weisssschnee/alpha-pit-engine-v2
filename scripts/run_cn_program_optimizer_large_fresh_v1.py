@@ -52,6 +52,9 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 
 STATUS_COMPLETE = "LARGE_FRESH_DEVELOPMENT_SEARCH_COMPLETE"
 CLOSURE_NAME = "CN_PROGRAM_OPTIMIZER_LARGE_FRESH_DEVELOPMENT_COMPLETE.json"
+FORMAL_OPTIMIZER_ARM = HYBRID_TPE_PROGRAM
+FORMAL_SEARCH_AUTHORITY = "HYBRID_TPE_AVAILABILITY"
+CLOSURE_SCHEMA_VERSION = "cn_program_optimizer_large_fresh_development_complete_v1"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 
 
@@ -83,7 +86,7 @@ def _checkpoint_arm(macro_index: int, template_index: int) -> str:
     return (
         UNIFORM_CONTROL
         if template_index == macro_index % len(ENHANCED_TEMPLATES)
-        else HYBRID_TPE_PROGRAM
+        else FORMAL_OPTIMIZER_ARM
     )
 
 
@@ -263,7 +266,7 @@ def _macro_metrics(
             new_pairs.append(identity)
             seen_behavior_pairs.add(identity)
     per_arm = {}
-    for arm in (HYBRID_TPE_PROGRAM, UNIFORM_CONTROL):
+    for arm in (FORMAL_OPTIMIZER_ARM, UNIFORM_CONTROL):
         subset = [row for row in feedback_rows if str(row.get("generation_arm")) == arm]
         per_arm[arm] = _metric_block(subset)
     per_template = {}
@@ -323,6 +326,13 @@ def _close_checkpoint(
         raise RuntimeError("LARGE_FRESH_CLOSED_CHECKPOINT_ALREADY_EXISTS")
     inflight.replace(closed)
     return engine._sha256(closed / "checkpoint_manifest.json")
+
+
+def _formal_optimizer_closure_fields(bandit: Any) -> dict[str, Any]:
+    adapter = bandit.adapters[FORMAL_OPTIMIZER_ARM]
+    if hasattr(adapter, "projection_statistics"):
+        return {"projection_statistics": adapter.projection_statistics()}
+    return {"formal_optimizer_metadata": adapter.optimizer_metadata()}
 
 
 def _filtered_bandit(authority: Mapping[str, Any]) -> ProgramOptimizerTournamentV1:
@@ -546,7 +556,7 @@ def run(
     total_metrics = _metric_block(all_feedback)
     per_arm = {
         arm: _metric_block([row for row in all_feedback if str(row.get("generation_arm")) == arm])
-        for arm in (HYBRID_TPE_PROGRAM, UNIFORM_CONTROL)
+        for arm in (FORMAL_OPTIMIZER_ARM, UNIFORM_CONTROL)
     }
     per_template = {
         str(template): _metric_block(
@@ -556,14 +566,14 @@ def run(
     }
     closure = engine._self_hashed(
         {
-            "schema_version": "cn_program_optimizer_large_fresh_development_complete_v1",
+            "schema_version": CLOSURE_SCHEMA_VERSION,
             "status": STATUS_COMPLETE,
             "campaign_id": CAMPAIGN_ID,
             "campaign_profile": CAMPAIGN_PROFILE,
             "repo_sha": repo_sha,
             "authorization_payload_sha256": authorization["authorization_payload_sha256"],
             "input_binding_sha256": input_hash,
-            "formal_search_authority": "HYBRID_TPE_AVAILABILITY",
+            "formal_search_authority": FORMAL_SEARCH_AUTHORITY,
             "resource_profile": RESOURCE_PROFILE,
             "executor_workers": workers,
             "logical_records": len(all_feedback),
@@ -580,7 +590,7 @@ def run(
             "macro_metrics": macro_rows,
             "behavior_pair_count": len(seen_behavior_pairs),
             "optimizer_final_state_sha256": str(bandit.snapshot()["bandit_state_sha256"]),
-            "projection_statistics": bandit.adapters[HYBRID_TPE_PROGRAM].projection_statistics(),
+            **_formal_optimizer_closure_fields(bandit),
             "wall_seconds": float(time.perf_counter() - wall_start),
             "resource_final": engine._runtime_resource_snapshot(),
             "restricted_reads": {

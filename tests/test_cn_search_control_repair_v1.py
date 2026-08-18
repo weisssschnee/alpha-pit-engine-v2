@@ -1030,6 +1030,7 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         "cn-program-optimizer-successor-benchmark-v1",
         "cn-program-optimizer-d1-development-v1",
         "cn-program-optimizer-large-fresh-development-v1",
+        "cn-program-optimizer-large-fresh-development-v2",
         "cn-program-optimizer-d1-report-only-validation-v1",
         "cn-program-optimizer-d1-transfer-prospective-validation-v1",
     }

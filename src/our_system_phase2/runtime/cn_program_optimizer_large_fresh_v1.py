@@ -84,24 +84,33 @@ def _read_self_hashed(path: Path, field: str, label: str) -> dict[str, Any]:
     return payload
 
 
-def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[str, Any]:
+def verify_authorization(
+    path: Path,
+    *,
+    repo_root: Path | None = None,
+    expected_schema_version: str = "cn_program_optimizer_large_fresh_development_authorization_v1",
+    expected_campaign_id: str = CAMPAIGN_ID,
+    expected_campaign_profile: str = CAMPAIGN_PROFILE,
+    expected_route_id: str = ROUTE_ID,
+    expected_formal_search_authority: str = "HYBRID_TPE_AVAILABILITY",
+    expected_formal_optimizer_arm: str = HYBRID_TPE_PROGRAM,
+) -> dict[str, Any]:
     root = Path(repo_root or Path(__file__).resolve().parents[3]).resolve()
     payload = _read_self_hashed(
         path, "authorization_payload_sha256", "large fresh Program authorization"
     )
     if (
-        payload.get("schema_version")
-        != "cn_program_optimizer_large_fresh_development_authorization_v1"
+        payload.get("schema_version") != expected_schema_version
         or payload.get("status") != "LARGE_FRESH_DEVELOPMENT_FROZEN_NOT_RUN"
-        or payload.get("campaign_id") != CAMPAIGN_ID
-        or payload.get("campaign_profile") != CAMPAIGN_PROFILE
-        or payload.get("project_control_route_id") != ROUTE_ID
+        or payload.get("campaign_id") != expected_campaign_id
+        or payload.get("campaign_profile") != expected_campaign_profile
+        or payload.get("project_control_route_id") != expected_route_id
         or not bool(payload.get("execution_authorized"))
         or list(payload.get("permitted_project_control_actions") or ())
         != [ACTION_LAUNCH, ACTION_RETRY]
         or str(payload.get("authorized_host") or "").upper() != AUTHORIZED_HOST
         or payload.get("evaluation_data_role") != "DEVELOPMENT_ONLY"
-        or payload.get("formal_search_authority") != "HYBRID_TPE_AVAILABILITY"
+        or payload.get("formal_search_authority") != expected_formal_search_authority
         or payload.get("validation_feedback_used") is not False
         or bool(payload.get("promotion_authorized"))
         or bool(payload.get("automatic_successor_authorized"))
@@ -148,7 +157,7 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or not 1 <= macro_count <= MAX_BALANCED_MACROS
         or logical_cap != macro_count * RECORDS_PER_MACRO
         or logical_cap > REQUESTED_HARD_CAP
-        or design.get("formal_optimizer_arm") != HYBRID_TPE_PROGRAM
+        or design.get("formal_optimizer_arm") != expected_formal_optimizer_arm
         or design.get("uniform_reserve_arm") != UNIFORM_CONTROL
         or design.get("uniform_reserve_schedule")
         != "ONE_ROTATING_TEMPLATE_CHECKPOINT_PER_MACRO"

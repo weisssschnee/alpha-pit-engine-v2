@@ -512,6 +512,7 @@ class CatalogTypedEvolutionProgramV2(_AvailabilityProgramOptimizer):
         warmup: int = 32,
         tournament_size: int = 4,
         population_limit: int = 256,
+        template_cell_limit: int = 64,
         gene_mutation_probability: float = 0.55,
         skeleton_mutation_probability: float = 0.25,
         crossover_probability: float = 0.20,
@@ -524,6 +525,9 @@ class CatalogTypedEvolutionProgramV2(_AvailabilityProgramOptimizer):
         self.warmup = int(warmup)
         self.tournament_size = int(tournament_size)
         self.population_limit = int(population_limit)
+        self.template_cell_limit = int(template_cell_limit)
+        if not 1 <= self.template_cell_limit <= self.population_limit:
+            raise ValueError("PROGRAM_EVOLUTION_TEMPLATE_CELL_LIMIT_INVALID")
         self.minimum_mutated_factors = int(minimum_mutated_factors)
         self.maximum_mutated_factors = int(maximum_mutated_factors)
         self.duplicate_resample_limit = int(duplicate_resample_limit)
@@ -806,8 +810,20 @@ class CatalogTypedEvolutionProgramV2(_AvailabilityProgramOptimizer):
                     item[0],
                 ),
                 reverse=True,
-            )[: self.population_limit]
-            self.population = dict(ordered)
+            )
+            template_counts: Counter[str] = Counter()
+            retained: list[tuple[str, dict[str, Any]]] = []
+            for exact, row in ordered:
+                template_id = str(
+                    self.entry_by_exact[exact].genes["program_template_id"]
+                )
+                if template_counts[template_id] >= self.template_cell_limit:
+                    continue
+                retained.append((exact, row))
+                template_counts[template_id] += 1
+                if len(retained) == self.population_limit:
+                    break
+            self.population = dict(retained)
         receipt = {
             "schema_version": "cn_catalog_typed_evolution_program_tell_v2",
             "optimizer_arm": self.arm,
@@ -831,6 +847,7 @@ class CatalogTypedEvolutionProgramV2(_AvailabilityProgramOptimizer):
             "warmup": self.warmup,
             "tournament_size": self.tournament_size,
             "population_limit": self.population_limit,
+            "template_cell_limit": self.template_cell_limit,
             "operation_probabilities": dict(self.operation_probabilities),
             "operation_productivity": copy.deepcopy(self.operation_productivity),
         }
