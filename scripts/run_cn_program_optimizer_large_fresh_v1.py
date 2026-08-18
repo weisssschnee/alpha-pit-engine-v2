@@ -56,6 +56,9 @@ FORMAL_OPTIMIZER_ARM = HYBRID_TPE_PROGRAM
 FORMAL_SEARCH_AUTHORITY = "HYBRID_TPE_AVAILABILITY"
 CLOSURE_SCHEMA_VERSION = "cn_program_optimizer_large_fresh_development_complete_v1"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
+RESOURCE_CANARY_FIELD_COLUMNS: tuple[str, ...] | None = None
+RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL = True
+RESOURCE_CANARY_PROBE_SECONDS = 1.0
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -119,10 +122,17 @@ def _ask_rows(*, macro_index: int, template_index: int, checkpoint_ordinal: int,
 def _resource_probe(delay: float) -> dict[str, int]:
     time.sleep(float(delay))
     process = psutil.Process()
+    snapshot = engine._runtime_resource_snapshot()
     return {
         "pid": os.getpid(),
         "rss_bytes": int(process.memory_info().rss),
-        "available_memory_bytes": int(psutil.virtual_memory().available),
+        "available_memory_bytes": int(snapshot["available_physical_bytes"]),
+        "committed_bytes": int(snapshot["committed_bytes"]),
+        "commit_headroom_bytes": int(snapshot["commit_headroom_bytes"]),
+        "pagefile_used_bytes": int(snapshot["pagefile_used_bytes"]),
+        "pagefile_pages_in_bytes": int(snapshot["pagefile_pages_in_bytes"]),
+        "pagefile_pages_out_bytes": int(snapshot["pagefile_pages_out_bytes"]),
+        "process_tree_rss_bytes": int(snapshot["process_tree_rss_bytes"]),
     }
 
 
@@ -141,7 +151,7 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
         authority["windows"],
         authority["field_manifest_file_sha"],
         authority["field_manifest_payload_sha"],
-        None,
+        RESOURCE_CANARY_FIELD_COLUMNS,
     )
     results: list[dict[str, int]] = []
     started = time.perf_counter()
@@ -150,7 +160,10 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
         initializer=engine._initialize_worker,
         initargs=initargs,
     ) as executor:
-        futures = [executor.submit(_resource_probe, 1.0) for _ in range(int(workers) * 2)]
+        futures = [
+            executor.submit(_resource_probe, RESOURCE_CANARY_PROBE_SECONDS)
+            for _ in range(int(workers))
+        ]
         results = [future.result() for future in futures]
     after = engine._runtime_resource_snapshot()
     engine._require_runtime_resource_safety(after)
@@ -164,19 +177,76 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
         [int(row["available_memory_bytes"]) for row in results]
         + [int(after["available_physical_bytes"])]
     )
+    minimum_commit_headroom = min(
+        [int(row["commit_headroom_bytes"]) for row in results]
+        + [int(after["commit_headroom_bytes"])]
+    )
+    maximum_committed = max(
+        [int(row["committed_bytes"]) for row in results]
+        + [int(after["committed_bytes"])]
+    )
+    maximum_pagefile_used = max(
+        [int(row["pagefile_used_bytes"]) for row in results]
+        + [int(after["pagefile_used_bytes"])]
+    )
+    maximum_tree_rss = max(
+        [int(row["process_tree_rss_bytes"]) for row in results]
+        + [int(after["process_tree_rss_bytes"])]
+    )
+    pagefile_pages_in_delta = max(
+        0,
+        max(
+            [int(row["pagefile_pages_in_bytes"]) for row in results]
+            + [int(after["pagefile_pages_in_bytes"])]
+        )
+        - int(before["pagefile_pages_in_bytes"]),
+    )
+    pagefile_pages_out_delta = max(
+        0,
+        max(
+            [int(row["pagefile_pages_out_bytes"]) for row in results]
+            + [int(after["pagefile_pages_out_bytes"])]
+        )
+        - int(before["pagefile_pages_out_bytes"]),
+    )
     if len(pids) != int(workers):
         raise RuntimeError(
             f"LARGE_FRESH_RESOURCE_CANARY_WORKER_CARDINALITY:{len(pids)}!={workers}"
         )
-    if minimum_free < MINIMUM_FREE_MEMORY_BYTES:
+    if (
+        RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL
+        and minimum_free < MINIMUM_FREE_MEMORY_BYTES
+    ):
         raise RuntimeError("LARGE_FRESH_RESOURCE_CANARY_MEMORY_HEADROOM")
+    if minimum_commit_headroom < engine.MINIMUM_COMMIT_HEADROOM_BYTES:
+        raise RuntimeError("LARGE_FRESH_RESOURCE_CANARY_COMMIT_HEADROOM")
     return {
         "schema_version": "cn_program_optimizer_large_fresh_resource_canary_v1",
         "status": "PASS_ZERO_CANDIDATE_EVALUATION_RESOURCE_CANARY",
         "requested_workers": int(workers),
         "distinct_worker_pids": pids,
+        "field_columns": (
+            None
+            if RESOURCE_CANARY_FIELD_COLUMNS is None
+            else list(RESOURCE_CANARY_FIELD_COLUMNS)
+        ),
+        "field_column_count": (
+            None
+            if RESOURCE_CANARY_FIELD_COLUMNS is None
+            else len(RESOURCE_CANARY_FIELD_COLUMNS)
+        ),
         "minimum_free_memory_bytes": minimum_free,
+        "minimum_commit_headroom_bytes": minimum_commit_headroom,
+        "maximum_committed_bytes": maximum_committed,
+        "maximum_pagefile_used_bytes": maximum_pagefile_used,
+        "maximum_process_tree_rss_bytes": maximum_tree_rss,
+        "pagefile_pages_in_delta_bytes": pagefile_pages_in_delta,
+        "pagefile_pages_out_delta_bytes": pagefile_pages_out_delta,
         "maximum_worker_rss_bytes": max(int(row["rss_bytes"]) for row in results),
+        "probe_seconds": float(RESOURCE_CANARY_PROBE_SECONDS),
+        "physical_free_gate_required": bool(
+            RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL
+        ),
         "wall_seconds": float(time.perf_counter() - started),
         "candidate_evaluation_executed": False,
         "validation_reads": 0,

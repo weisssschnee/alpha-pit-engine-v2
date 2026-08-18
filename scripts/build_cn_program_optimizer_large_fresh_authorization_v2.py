@@ -18,11 +18,11 @@ from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
     FORMAL_SEARCH_AUTHORITY,
     ROUTE_ID,
     PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_CANARY_FIELD_COLUMNS_SHA256,
     RESOURCE_FALLBACK_EXECUTOR_WORKERS,
-    RESOURCE_BENCHMARK_RELATIVE_PATH,
-    RESOURCE_BENCHMARK_FILE_SHA256,
-    RESOURCE_BENCHMARK_PAYLOAD_SHA256,
-    RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8,
+    RESOURCE_STRESS_RELATIVE_PATH,
+    RESOURCE_STRESS_FILE_SHA256,
+    RESOURCE_STRESS_PAYLOAD_SHA256,
 )
 from our_system_phase2.services.program_search_optimizer_historical_v2 import (
     CATALOG_TYPED_EVOLUTION_PROGRAM_V2,
@@ -70,28 +70,26 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise ValueError("Large Fresh V2 optimizer evidence drift")
 
-    resource_path = (repo / RESOURCE_BENCHMARK_RELATIVE_PATH).resolve()
+    resource_path = (repo / RESOURCE_STRESS_RELATIVE_PATH).resolve()
     resource = _read(resource_path)
-    selected = next(
-        (
-            dict(row)
-            for row in list(resource.get("benchmark_results") or ())
-            if int(dict(row).get("worker_count") or 0) == PRIMARY_EXECUTOR_WORKERS
-        ),
-        None,
-    )
+    resource_body = dict(resource)
+    resource_claimed = str(resource_body.pop("resource_evidence_payload_sha256", ""))
     if (
-        _sha256(resource_path) != RESOURCE_BENCHMARK_FILE_SHA256
-        or resource.get("status") != "PASS"
-        or resource.get("benchmark_payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
-        or int(resource.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or selected is None
-        or float(selected.get("records_per_hour") or 0.0) != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
-        or int(selected.get("minimum_available_physical_bytes") or 0) < 24 * 1024**3
-        or list(selected.get("orphan_worker_pids") or ())
-        or selected.get("parity_status") != "PASS"
+        _sha256(resource_path) != RESOURCE_STRESS_FILE_SHA256
+        or resource_claimed != RESOURCE_STRESS_PAYLOAD_SHA256
+        or stable_hash(resource_body) != resource_claimed
+        or resource.get("status") != "PASS_RESOURCE_ONLY_REALISTIC_24_WORKER_STRESS"
+        or int(resource.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or int(resource.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or int(resource.get("field_column_count") or 0) != 47
+        or resource.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource.get("minimum_commit_headroom_bytes") or 0) < 24 * 1024**3
+        or int(resource.get("pagefile_pages_in_delta_bytes", -1)) != 0
+        or int(resource.get("pagefile_pages_out_delta_bytes", -1)) != 0
+        or list(resource.get("orphan_worker_pids") or ())
+        or resource.get("financial_candidate_evaluation_performed") is not False
     ):
-        raise ValueError("Large Fresh V2 resource benchmark drift")
+        raise ValueError("Large Fresh V2 realistic resource stress drift")
 
     authorization = copy.deepcopy(base)
     baseline_payload = str(authorization.pop("authorization_payload_sha256"))
@@ -140,14 +138,20 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     )
     authorization["resource_contract"] = resource_contract
     authorization["resource_evidence"] = {
-        "relative_path": str(RESOURCE_BENCHMARK_RELATIVE_PATH).replace("\\", "/"),
-        "file_sha256": RESOURCE_BENCHMARK_FILE_SHA256,
-        "payload_sha256": RESOURCE_BENCHMARK_PAYLOAD_SHA256,
-        "selected_checkpoint_worker_cap": PRIMARY_EXECUTOR_WORKERS,
-        "records_per_hour_at_selected_cap": RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8,
-        "maximum_process_tree_rss_bytes": int(selected["maximum_process_tree_rss_bytes"]),
-        "minimum_available_physical_bytes": int(selected["minimum_available_physical_bytes"]),
-        "parity_status": str(selected["parity_status"]),
+        "relative_path": str(RESOURCE_STRESS_RELATIVE_PATH).replace("\\", "/"),
+        "file_sha256": RESOURCE_STRESS_FILE_SHA256,
+        "payload_sha256": RESOURCE_STRESS_PAYLOAD_SHA256,
+        "requested_workers": PRIMARY_EXECUTOR_WORKERS,
+        "distinct_worker_count": int(resource["distinct_worker_count"]),
+        "field_column_count": int(resource["field_column_count"]),
+        "field_columns_sha256": str(resource["field_columns_sha256"]),
+        "minimum_available_physical_bytes": int(resource["minimum_available_physical_bytes"]),
+        "minimum_commit_headroom_bytes": int(resource["minimum_commit_headroom_bytes"]),
+        "maximum_committed_bytes": int(resource["maximum_committed_bytes"]),
+        "maximum_process_tree_rss_bytes": int(resource["maximum_process_tree_rss_bytes"]),
+        "maximum_pagefile_used_bytes": int(resource["maximum_pagefile_used_bytes"]),
+        "pagefile_pages_in_delta_bytes": int(resource["pagefile_pages_in_delta_bytes"]),
+        "pagefile_pages_out_delta_bytes": int(resource["pagefile_pages_out_delta_bytes"]),
         "usage": "RESOURCE_ONLY_NO_ECONOMIC_REUSE",
     }
     authorization["optimizer_evidence"] = {

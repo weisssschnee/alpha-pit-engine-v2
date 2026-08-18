@@ -11,6 +11,8 @@ from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v1 import (
 )
 from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
     PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_CANARY_FIELD_COLUMNS,
+    RESOURCE_CANARY_PROBE_SECONDS,
     RESOURCE_FALLBACK_EXECUTOR_WORKERS,
 )
 from our_system_phase2.services.program_optimizer_large_fresh_v2 import (
@@ -83,6 +85,9 @@ def _configure_base_runner() -> None:
     base.CLOSURE_SCHEMA_VERSION = CLOSURE_SCHEMA_VERSION
     base.PRIMARY_EXECUTOR_WORKERS = PRIMARY_EXECUTOR_WORKERS
     base.RESOURCE_FALLBACK_EXECUTOR_WORKERS = RESOURCE_FALLBACK_EXECUTOR_WORKERS
+    base.RESOURCE_CANARY_FIELD_COLUMNS = RESOURCE_CANARY_FIELD_COLUMNS
+    base.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL = False
+    base.RESOURCE_CANARY_PROBE_SECONDS = RESOURCE_CANARY_PROBE_SECONDS
     base._checkpoint_arm = _checkpoint_arm_v2
     base._filtered_bandit = _filtered_bandit_v2
 
@@ -97,6 +102,9 @@ _BASE_RUNNER_MUTABLE_FIELDS = (
     "CLOSURE_SCHEMA_VERSION",
     "PRIMARY_EXECUTOR_WORKERS",
     "RESOURCE_FALLBACK_EXECUTOR_WORKERS",
+    "RESOURCE_CANARY_FIELD_COLUMNS",
+    "RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL",
+    "RESOURCE_CANARY_PROBE_SECONDS",
     "_checkpoint_arm",
     "_filtered_bandit",
 )

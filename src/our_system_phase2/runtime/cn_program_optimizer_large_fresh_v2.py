@@ -35,14 +35,37 @@ FORMAL_SEARCH_AUTHORITY = "CATALOG_TYPED_EVOLUTION_AVAILABILITY_V2"
 AUTHORIZATION_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_large_fresh_development_v2.json"
 )
-PRIMARY_EXECUTOR_WORKERS = 8
-RESOURCE_FALLBACK_EXECUTOR_WORKERS = 4
-RESOURCE_BENCHMARK_RELATIVE_PATH = Path(
-    "runtime/run_plans/cn_program_optimizer_checkpoint003_resource_benchmark_20260814.json"
+PRIMARY_EXECUTOR_WORKERS = 24
+RESOURCE_FALLBACK_EXECUTOR_WORKERS = 16
+RESOURCE_CANARY_PROBE_SECONDS = 30.0
+RESOURCE_STRESS_RELATIVE_PATH = Path(
+    "runtime/run_plans/cn_program_optimizer_large_fresh_resource_stress_v2_20260818.json"
 )
-RESOURCE_BENCHMARK_FILE_SHA256 = "5337fc7a940e07311b3b6f5271e6daa3226e270dd0d90ceeb4cb73873475d972"
-RESOURCE_BENCHMARK_PAYLOAD_SHA256 = "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d"
-RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8 = 216.32523487744282
+RESOURCE_STRESS_FILE_SHA256 = "a1397e8929b21faafcfe95325c4bcb9ce6b42f54faaf18ef72dcfd0317ce8460"
+RESOURCE_STRESS_PAYLOAD_SHA256 = "529cd4db455698c854a70242b495cbf54efc4931ff68d1939790450c9779e6e0"
+RESOURCE_CANARY_FIELD_COLUMNS_SHA256 = "85c84e8faf2bf6293dd8628641605a8af38686aa878b63b6ac46d0539e361544"
+RESOURCE_CANARY_FIELD_COLUMNS = (
+    "amount", "chip_cost_p15", "chip_cost_p85", "close", "code",
+    "ctx_hfq_float_market_cap_yuan", "ctx_hfq_market_cap_yuan", "ctx_hfq_ps_ttm",
+    "ctx_hfq_volume_ratio", "ctx_rzrq_rzjme", "ctx_sent_damian_num",
+    "ctx_sent_ditian_num", "ctx_sent_down_num", "ctx_sent_lt5_num",
+    "ctx_sent_max_lb_num", "ctx_sent_tiandi_num",
+    "fund_accruals_profit_minus_cfo_assets", "fund_ba_accounts_rece_source_yoy",
+    "fund_ba_accounts_rece_source_yoy_at_disclosure",
+    "fund_ba_fixed_asset_source_yoy_at_disclosure", "fund_ba_inventory_delta",
+    "fund_ba_inventory_slope_at_disclosure", "fund_ba_monetaryfunds_slope",
+    "fund_ca_construct_long_asset_persistence", "fund_ca_netcash_finance_acceleration",
+    "fund_ca_netcash_operate_source_yoy", "fund_capex_construct_assets",
+    "fund_cashflow_cfo_profit", "fund_cashflow_cfo_revenue",
+    "fund_disclosure_balance_pulse", "fund_disclosure_profit_pulse",
+    "fund_efficiency_fixed_asset_intensity", "fund_holder_count_log",
+    "fund_holder_top10_share_ratio", "fund_holder_top10_shares_log",
+    "fund_leverage_liabilities_assets", "fund_liquidity_current_ratio",
+    "fund_pr_deduct_parent_netprofit_slope", "fund_pr_deduct_parent_netprofit_yoy",
+    "fund_pr_parent_netprofit_acceleration", "fund_pr_parent_netprofit_source_yoy",
+    "fund_profit_gross_margin", "fund_profit_operating_margin", "open", "pct_chg",
+    "ret_1m", "trade_time",
+)
 
 
 def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[str, Any]:
@@ -95,39 +118,38 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         raise ValueError("large fresh V2 optimizer evidence payload drift")
 
     resource_evidence = dict(payload.get("resource_evidence") or {})
-    resource_path = (root / RESOURCE_BENCHMARK_RELATIVE_PATH).resolve()
+    resource_path = (root / RESOURCE_STRESS_RELATIVE_PATH).resolve()
     if (
-        resource_evidence.get("relative_path") != str(RESOURCE_BENCHMARK_RELATIVE_PATH).replace("\\", "/")
+        resource_evidence.get("relative_path") != str(RESOURCE_STRESS_RELATIVE_PATH).replace("\\", "/")
         or not resource_path.is_file()
-        or sha256_file(resource_path) != RESOURCE_BENCHMARK_FILE_SHA256
-        or resource_evidence.get("file_sha256") != RESOURCE_BENCHMARK_FILE_SHA256
-        or resource_evidence.get("payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
-        or int(resource_evidence.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or float(resource_evidence.get("records_per_hour_at_selected_cap") or 0.0)
-        != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
+        or sha256_file(resource_path) != RESOURCE_STRESS_FILE_SHA256
+        or resource_evidence.get("file_sha256") != RESOURCE_STRESS_FILE_SHA256
+        or resource_evidence.get("payload_sha256") != RESOURCE_STRESS_PAYLOAD_SHA256
+        or int(resource_evidence.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or int(resource_evidence.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or int(resource_evidence.get("field_column_count") or 0) != len(RESOURCE_CANARY_FIELD_COLUMNS)
+        or resource_evidence.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
         or resource_evidence.get("usage") != "RESOURCE_ONLY_NO_ECONOMIC_REUSE"
     ):
         raise ValueError("large fresh V2 resource evidence binding drift")
     resource_payload = json.loads(resource_path.read_text(encoding="utf-8-sig"))
-    selected = next(
-        (
-            dict(row)
-            for row in list(resource_payload.get("benchmark_results") or ())
-            if int(dict(row).get("worker_count") or 0) == PRIMARY_EXECUTOR_WORKERS
-        ),
-        None,
-    )
+    body = dict(resource_payload)
+    resource_claimed = str(body.pop("resource_evidence_payload_sha256", ""))
     if (
-        resource_payload.get("status") != "PASS"
-        or resource_payload.get("benchmark_payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
-        or int(resource_payload.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or selected is None
-        or float(selected.get("records_per_hour") or 0.0) != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
-        or int(selected.get("minimum_available_physical_bytes") or 0) < 24 * 1024**3
-        or list(selected.get("orphan_worker_pids") or ())
-        or selected.get("parity_status") != "PASS"
+        resource_claimed != RESOURCE_STRESS_PAYLOAD_SHA256
+        or stable_hash(body) != resource_claimed
+        or resource_payload.get("status") != "PASS_RESOURCE_ONLY_REALISTIC_24_WORKER_STRESS"
+        or int(resource_payload.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or int(resource_payload.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or tuple(resource_payload.get("field_columns") or ()) != RESOURCE_CANARY_FIELD_COLUMNS
+        or resource_payload.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource_payload.get("minimum_commit_headroom_bytes") or 0) < 24 * 1024**3
+        or int(resource_payload.get("pagefile_pages_in_delta_bytes", -1)) != 0
+        or int(resource_payload.get("pagefile_pages_out_delta_bytes", -1)) != 0
+        or list(resource_payload.get("orphan_worker_pids") or ())
+        or resource_payload.get("financial_candidate_evaluation_performed") is not False
     ):
-        raise ValueError("large fresh V2 historical resource benchmark drift")
+        raise ValueError("large fresh V2 realistic resource stress drift")
     return payload
 
 
