@@ -275,13 +275,23 @@ def main() -> int:
     parser.add_argument("--seeds", type=int, default=4)
     parser.add_argument("--macros", type=int, default=5)
     parser.add_argument("--checkpoint-size", type=int, default=24)
+    parser.add_argument(
+        "--policies",
+        nargs="+",
+        choices=POLICIES,
+        default=list(POLICIES),
+    )
     args = parser.parse_args()
     dataset = _read_json(args.dataset.resolve())
     _verify_dataset(dataset)
     entries, by_exact = _entries_and_rows(dataset)
-    runs: dict[str, list[dict[str, Any]]] = {policy: [] for policy in POLICIES}
+    selected_policies = tuple(args.policies)
+    runs: dict[str, list[dict[str, Any]]] = {
+        policy: [] for policy in selected_policies
+    }
     for seed_offset in range(args.seeds):
-        for policy_index, policy in enumerate(POLICIES):
+        for policy in selected_policies:
+            policy_index = POLICIES.index(policy)
             runs[policy].append(
                 _run_policy(
                     policy,
@@ -334,6 +344,7 @@ def main() -> int:
         "macro_count": args.macros,
         "checkpoint_size": args.checkpoint_size,
         "seed_count": args.seeds,
+        "policies": list(selected_policies),
         "aggregate": aggregate,
         "runs": runs,
     }
