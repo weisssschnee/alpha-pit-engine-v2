@@ -1,0 +1,95 @@
+{
+  "algorithm_contract": {
+    "algorithm_origin": "CRYPTO_TYPED_EVOLUTION_V2_PORT",
+    "compatible_skeleton_mutation_probability": 0.25,
+    "gene_mutation_probability": 0.55,
+    "homologous_crossover_probability": 0.2,
+    "optimizer_arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+    "population_limit": 256,
+    "template_cell_limit": 64,
+    "tournament_size": 4,
+    "warmup": 32
+  },
+  "cem_budget_role": "IMPLEMENTED_CHALLENGER_NOT_ALLOCATED_IN_THIS_840",
+  "dataset": {
+    "dataset_payload_sha256": "92407bbbfe6558b52915d8818bc80a46f0221eb7406ff0468413a25857782a4a",
+    "file_sha256": "84ef00041612f4f8be04e9991204021e238f5cddb43118999ad91c247d4d4007",
+    "financial_evaluation_performed_by_builder": false,
+    "row_count": 1310
+  },
+  "decision": "EVOLUTION_PRIMARY_UNIFORM_RESERVE",
+  "evidence_payload_sha256": "8a99a9469cb36f5a6781f09b03e8cd6781677855246a34f7a3e0379732941eed",
+  "evidence_role": "REPORT_ONLY_FIXED_RETROSPECTIVE_SEARCH_POLICY_COMPARISON",
+  "evolution_budget_role": "PRIMARY_6_OF_7_CHECKPOINTS_PER_MACRO",
+  "evolution_mean_productive_delta_at_168": 3,
+  "evolution_mean_productive_delta_at_840": 23.5,
+  "evolution_positive_seed_count_at_168": 4,
+  "evolution_positive_seed_count_at_840": 4,
+  "forward_reads": 0,
+  "holdout_reads": 0,
+  "implementation_repo_sha": "c8ff15049d29da00085cc7ce1e7b76b09ad58a37",
+  "mean_evolution_productive_at_840": 367.25,
+  "mean_uniform_productive_at_840": 343.75,
+  "pair_replay_receipt": {
+    "file_sha256": "0a573833ddb0b2abb5b4d0628d6264b4b209a2b9997afdd5d6eb7d0093f6b887",
+    "repo_sha": "c8ff15049d29da00085cc7ce1e7b76b09ad58a37",
+    "source_role": "77O_EXACT_SHA_REPLAY_RECEIPT"
+  },
+  "paired_runs": [
+    {
+      "delta_168": 7,
+      "delta_840": 30,
+      "evolution_productive_168": 71,
+      "evolution_productive_840": 369,
+      "replay_file_sha256": "e6787c3e58d02316f7bfcc7477f8ddbc2a3e85f6f47278513e04bc66f303a6fb",
+      "replay_payload_sha256": "90e0ee07d8c13ad631b585d57ff3f5418ad8714e0361370d3f6519db1c4d302f",
+      "seed": 82618000,
+      "seed_offset": 0,
+      "uniform_productive_168": 64,
+      "uniform_productive_840": 339
+    },
+    {
+      "delta_168": 2,
+      "delta_840": 21,
+      "evolution_productive_168": 72,
+      "evolution_productive_840": 363,
+      "replay_file_sha256": "1092459bd60848e04732ef2f3f2fb457e3880efb10927f22df89c4495803bfc5",
+      "replay_payload_sha256": "fb3028dd1721629d98610dbe104a819f642a4f150331f3faaefbf3677b005210",
+      "seed": 82618101,
+      "seed_offset": 1,
+      "uniform_productive_168": 70,
+      "uniform_productive_840": 342
+    },
+    {
+      "delta_168": 2,
+      "delta_840": 10,
+      "evolution_productive_168": 65,
+      "evolution_productive_840": 363,
+      "replay_file_sha256": "17eab2661d1c7f9d7ca729c5c0b7c04468e8862773e86513555c8999592078cf",
+      "replay_payload_sha256": "8a310311e9d55bc9869f7dfa2f347edf44bee20d4bfb99a7f76dd533267f9197",
+      "seed": 82618202,
+      "seed_offset": 2,
+      "uniform_productive_168": 63,
+      "uniform_productive_840": 353
+    },
+    {
+      "delta_168": 1,
+      "delta_840": 33,
+      "evolution_productive_168": 70,
+      "evolution_productive_840": 374,
+      "replay_file_sha256": "4f20855741c412974bacf7bf0dabd37de6f71cd6b6e1aa49f04e8c4599667519",
+      "replay_payload_sha256": "9af690b1a86541c99d691e58cc5f993303cba6a59e0345ba01d067c85f893ef0",
+      "seed": 82618303,
+      "seed_offset": 3,
+      "uniform_productive_168": 69,
+      "uniform_productive_840": 341
+    }
+  ],
+  "paired_seed_count": 4,
+  "promotion_authorized": false,
+  "schema_version": "cn_program_optimizer_policy_evidence_v2",
+  "status": "PASS_REPORT_ONLY_OPTIMIZER_POLICY_EVIDENCE",
+  "tpe_budget_role": "BASELINE_NOT_ALLOCATED_IN_THIS_840",
+  "uniform_budget_role": "ROTATING_1_OF_7_CHECKPOINTS_PER_MACRO",
+  "validation_reads": 0
+}

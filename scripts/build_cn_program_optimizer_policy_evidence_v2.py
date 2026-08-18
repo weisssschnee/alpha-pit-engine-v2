@@ -1,4 +1,4 @@
-"""Freeze report-only optimizer evidence used to authorize Large Fresh V2."""
+"""Freeze exact-SHA report-only optimizer evidence for Large Fresh V2."""
 from __future__ import annotations
 
 import argparse
@@ -10,12 +10,8 @@ from typing import Any, Mapping
 
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
-POLICIES = (
-    "UNIFORM",
-    "HIERARCHICAL_CEM_V2",
-    "CATALOG_TYPED_EVOLUTION_V2",
-)
-BUDGETS = (168, 336, 504, 672, 840)
+IMPLEMENTATION_REPO_SHA = "c8ff15049d29da00085cc7ce1e7b76b09ad58a37"
+EXPECTED_SEEDS = tuple(82618000 + offset * 101 for offset in range(4))
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -56,120 +52,106 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise ValueError("optimizer evidence dataset boundary drift")
     dataset_payload = str(dataset["dataset_payload_sha256"])
+    dataset_file_sha = _sha256(args.dataset)
 
-    paired_runs = []
-    deltas_by_budget = {budget: {"cem": [], "evolution": []} for budget in BUDGETS}
-    for seed_offset in range(4):
-        path = args.paired_root / f"CORE_s{seed_offset}.json"
-        payload = _read(path)
-        if (
-            payload.get("status") != "SPENT_DEVELOPMENT_OPTIMIZER_REPLAY_COMPLETE"
-            or payload.get("dataset_payload_sha256") != dataset_payload
-            or payload.get("financial_evaluation_performed") is not False
-            or list(payload.get("policies") or ()) != list(POLICIES)
-        ):
-            raise ValueError(f"paired replay boundary drift: {path}")
-        runs = {policy: payload["runs"][policy][0] for policy in POLICIES}
-        seeds = {int(run["seed"]) for run in runs.values()}
-        if len(seeds) != 1:
-            raise ValueError(f"paired replay seed drift: {path}")
-        seed = next(iter(seeds))
-        budget_rows = {}
-        for budget in BUDGETS:
-            label = str(budget)
-            counts = {
-                policy: int(runs[policy]["budgets"][label]["productive"])
-                for policy in POLICIES
-            }
-            cem_delta = counts["HIERARCHICAL_CEM_V2"] - counts["UNIFORM"]
-            evo_delta = counts["CATALOG_TYPED_EVOLUTION_V2"] - counts["UNIFORM"]
-            deltas_by_budget[budget]["cem"].append(cem_delta)
-            deltas_by_budget[budget]["evolution"].append(evo_delta)
-            budget_rows[label] = {
-                "productive": counts,
-                "cem_delta_vs_uniform": cem_delta,
-                "evolution_delta_vs_uniform": evo_delta,
-            }
-        paired_runs.append(
-            {
-                "seed_offset": seed_offset,
-                "seed": seed,
-                "file": str(path.resolve()),
-                "file_sha256": _sha256(path),
-                "replay_payload_sha256": str(payload["replay_payload_sha256"]),
-                "budgets": budget_rows,
-            }
-        )
-
-    paired_summary = {
-        str(budget): {
-            "cem_deltas": deltas_by_budget[budget]["cem"],
-            "cem_mean_delta": mean(deltas_by_budget[budget]["cem"]),
-            "cem_positive_seed_count": sum(x > 0 for x in deltas_by_budget[budget]["cem"]),
-            "evolution_deltas": deltas_by_budget[budget]["evolution"],
-            "evolution_mean_delta": mean(deltas_by_budget[budget]["evolution"]),
-            "evolution_positive_seed_count": sum(x > 0 for x in deltas_by_budget[budget]["evolution"]),
-        }
-        for budget in BUDGETS
-    }
+    receipt = _read(args.pair_replay_receipt)
     if (
-        paired_summary["840"]["evolution_mean_delta"] != 24.25
-        or paired_summary["840"]["evolution_positive_seed_count"] != 4
+        receipt.get("schema_version") != "cn_program_optimizer_pair_replay_receipt_v1"
+        or receipt.get("status") != "PASS"
+        or receipt.get("repo_sha") != IMPLEMENTATION_REPO_SHA
+        or int(receipt.get("dirty_count") or 0) != 0
+        or receipt.get("dataset_payload_sha256") != dataset_payload
+        or receipt.get("dataset_file_sha256") != dataset_file_sha
+        or receipt.get("financial_evaluation_performed") is not False
+        or any(int(receipt.get(key) or 0) != 0 for key in ("validation_reads", "holdout_reads", "forward_reads"))
     ):
-        raise ValueError("Evolution paired evidence qualification drift")
+        raise ValueError("pair replay receipt boundary drift")
 
-    tpe_completed = []
-    for seed_offset in (1, 2):
-        path = args.paired_root / f"TPE_s{seed_offset}.json"
-        payload = _read(path)
-        run = payload["runs"]["EXACT_ID_TPE_V1"][0]
+    runs = [dict(row) for row in receipt.get("paired_runs") or ()]
+    if len(runs) != 4:
+        raise ValueError("pair replay seed cardinality drift")
+    normalized: list[dict[str, Any]] = []
+    for offset, row in enumerate(runs):
+        seed = int(row.get("seed") or -1)
+        u168 = int(row.get("uniform_168") or 0)
+        e168 = int(row.get("evolution_168") or 0)
+        d168 = int(row.get("delta_168") or 0)
+        u840 = int(row.get("uniform_840") or 0)
+        e840 = int(row.get("evolution_840") or 0)
+        d840 = int(row.get("delta_840") or 0)
         if (
-            payload.get("dataset_payload_sha256") != dataset_payload
-            or int(run["seed"]) != paired_runs[seed_offset]["seed"]
+            int(row.get("seed_offset") or 0) != offset
+            or seed != EXPECTED_SEEDS[offset]
+            or d168 != e168 - u168
+            or d840 != e840 - u840
+            or d168 <= 0
+            or d840 <= 0
+            or len(str(row.get("file_sha256") or "")) != 64
+            or len(str(row.get("replay_payload_sha256") or "")) != 64
         ):
-            raise ValueError("paired TPE replay drift")
-        tpe = int(run["budgets"]["168"]["productive"])
-        uniform = int(
-            _read(args.paired_root / f"CORE_s{seed_offset}.json")["runs"]["UNIFORM"][0]["budgets"]["168"]["productive"]
-        )
-        tpe_completed.append(
+            raise ValueError(f"paired replay row drift: {offset}")
+        normalized.append(
             {
-                "seed_offset": seed_offset,
-                "seed": int(run["seed"]),
-                "productive_168": tpe,
-                "uniform_productive_168": uniform,
-                "delta_vs_uniform": tpe - uniform,
-                "file_sha256": _sha256(path),
+                "seed_offset": offset,
+                "seed": seed,
+                "uniform_productive_168": u168,
+                "evolution_productive_168": e168,
+                "delta_168": d168,
+                "uniform_productive_840": u840,
+                "evolution_productive_840": e840,
+                "delta_840": d840,
+                "replay_file_sha256": str(row["file_sha256"]),
+                "replay_payload_sha256": str(row["replay_payload_sha256"]),
             }
         )
-    kill = _read(args.tpe_kill_receipt)
-    if kill.get("status") != "PASS" or int(kill.get("remaining_count", -1)) != 0:
-        raise ValueError("TPE slow-path cleanup receipt drift")
+
+    mean_delta_168 = mean(row["delta_168"] for row in normalized)
+    mean_delta_840 = mean(row["delta_840"] for row in normalized)
+    mean_uniform_840 = mean(row["uniform_productive_840"] for row in normalized)
+    mean_evolution_840 = mean(row["evolution_productive_840"] for row in normalized)
+    if mean_delta_168 != 3.0 or mean_delta_840 != 23.5:
+        raise ValueError("paired replay aggregate drift")
 
     payload = {
         "schema_version": "cn_program_optimizer_policy_evidence_v2",
         "status": "PASS_REPORT_ONLY_OPTIMIZER_POLICY_EVIDENCE",
         "decision": "EVOLUTION_PRIMARY_UNIFORM_RESERVE",
         "evidence_role": "REPORT_ONLY_FIXED_RETROSPECTIVE_SEARCH_POLICY_COMPARISON",
+        "implementation_repo_sha": IMPLEMENTATION_REPO_SHA,
+        "algorithm_contract": {
+            "optimizer_arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+            "algorithm_origin": "CRYPTO_TYPED_EVOLUTION_V2_PORT",
+            "population_limit": 256,
+            "template_cell_limit": 64,
+            "warmup": 32,
+            "tournament_size": 4,
+            "gene_mutation_probability": 0.55,
+            "compatible_skeleton_mutation_probability": 0.25,
+            "homologous_crossover_probability": 0.20,
+        },
         "dataset": {
-            "file": str(args.dataset.resolve()),
-            "file_sha256": _sha256(args.dataset),
+            "file_sha256": dataset_file_sha,
             "dataset_payload_sha256": dataset_payload,
             "row_count": 1310,
             "financial_evaluation_performed_by_builder": False,
         },
+        "pair_replay_receipt": {
+            "file_sha256": _sha256(args.pair_replay_receipt),
+            "repo_sha": IMPLEMENTATION_REPO_SHA,
+            "source_role": "77O_EXACT_SHA_REPLAY_RECEIPT",
+        },
         "paired_seed_count": 4,
-        "paired_runs": paired_runs,
-        "paired_summary": paired_summary,
-        "evolution_mean_productive_delta_at_840": 24.25,
+        "paired_runs": normalized,
+        "evolution_mean_productive_delta_at_168": mean_delta_168,
+        "evolution_positive_seed_count_at_168": 4,
+        "evolution_mean_productive_delta_at_840": mean_delta_840,
         "evolution_positive_seed_count_at_840": 4,
+        "mean_uniform_productive_at_840": mean_uniform_840,
+        "mean_evolution_productive_at_840": mean_evolution_840,
         "evolution_budget_role": "PRIMARY_6_OF_7_CHECKPOINTS_PER_MACRO",
         "uniform_budget_role": "ROTATING_1_OF_7_CHECKPOINTS_PER_MACRO",
         "cem_budget_role": "IMPLEMENTED_CHALLENGER_NOT_ALLOCATED_IN_THIS_840",
         "tpe_budget_role": "BASELINE_NOT_ALLOCATED_IN_THIS_840",
-        "tpe_completed_paired_168": tpe_completed,
-        "tpe_slow_path_seed_offsets": [0, 3],
-        "tpe_slow_path_cleanup_receipt_sha256": _sha256(args.tpe_kill_receipt),
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_reads": 0,
@@ -183,14 +165,16 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=Path, required=True)
-    parser.add_argument("--paired-root", type=Path, required=True)
-    parser.add_argument("--tpe-kill-receipt", type=Path, required=True)
+    parser.add_argument("--pair-replay-receipt", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     payload = build(args)
     print(json.dumps({
         "status": payload["status"],
         "decision": payload["decision"],
+        "implementation_repo_sha": payload["implementation_repo_sha"],
+        "evolution_mean_productive_delta_at_168": payload["evolution_mean_productive_delta_at_168"],
+        "evolution_mean_productive_delta_at_840": payload["evolution_mean_productive_delta_at_840"],
         "evidence_payload_sha256": payload["evidence_payload_sha256"],
     }, sort_keys=True))
     return 0

@@ -64,9 +64,13 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or not evidence_path.is_file()
         or sha256_file(evidence_path) != str(evidence.get("file_sha256") or "")
         or evidence.get("decision") != "EVOLUTION_PRIMARY_UNIFORM_RESERVE"
+        or evidence.get("implementation_repo_sha") != "c8ff15049d29da00085cc7ce1e7b76b09ad58a37"
         or int(evidence.get("paired_seed_count") or 0) != 4
+        or float(evidence.get("evolution_mean_productive_delta_at_168") or 0.0)
+        != 3.0
+        or int(evidence.get("evolution_positive_seed_count_at_168") or 0) != 4
         or float(evidence.get("evolution_mean_productive_delta_at_840") or 0.0)
-        != 24.25
+        != 23.5
         or int(evidence.get("evolution_positive_seed_count_at_840") or 0) != 4
     ):
         raise ValueError("large fresh V2 optimizer evidence binding drift")

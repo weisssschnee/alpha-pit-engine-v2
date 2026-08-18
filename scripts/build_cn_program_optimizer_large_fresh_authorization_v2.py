@@ -55,8 +55,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         or stable_hash(evidence_body) != evidence_claimed
         or evidence.get("status") != "PASS_REPORT_ONLY_OPTIMIZER_POLICY_EVIDENCE"
         or evidence.get("decision") != "EVOLUTION_PRIMARY_UNIFORM_RESERVE"
+        or evidence.get("implementation_repo_sha") != "c8ff15049d29da00085cc7ce1e7b76b09ad58a37"
         or int(evidence.get("paired_seed_count") or 0) != 4
-        or float(evidence.get("evolution_mean_productive_delta_at_840") or 0.0) != 24.25
+        or float(evidence.get("evolution_mean_productive_delta_at_168") or 0.0) != 3.0
+        or int(evidence.get("evolution_positive_seed_count_at_168") or 0) != 4
+        or float(evidence.get("evolution_mean_productive_delta_at_840") or 0.0) != 23.5
         or int(evidence.get("evolution_positive_seed_count_at_840") or 0) != 4
     ):
         raise ValueError("Large Fresh V2 optimizer evidence drift")
@@ -104,11 +107,12 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "file_sha256": _sha256(args.optimizer_evidence),
         "payload_sha256": evidence_claimed,
         "decision": "EVOLUTION_PRIMARY_UNIFORM_RESERVE",
+        "implementation_repo_sha": evidence["implementation_repo_sha"],
         "paired_seed_count": 4,
-        "evolution_mean_productive_delta_at_840": 24.25,
+        "evolution_mean_productive_delta_at_168": 3.0,
+        "evolution_positive_seed_count_at_168": 4,
+        "evolution_mean_productive_delta_at_840": 23.5,
         "evolution_positive_seed_count_at_840": 4,
-        "tpe_completed_paired_seed_count": len(evidence.get("tpe_completed_paired_168") or ()),
-        "tpe_slow_path_seed_offsets": list(evidence.get("tpe_slow_path_seed_offsets") or ()),
         "evidence_role": evidence["evidence_role"],
     }
     authorization["authorization_payload_sha256"] = stable_hash(authorization)
