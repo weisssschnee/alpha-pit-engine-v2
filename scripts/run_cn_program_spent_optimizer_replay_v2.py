@@ -273,6 +273,7 @@ def main() -> int:
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seeds", type=int, default=4)
+    parser.add_argument("--seed-offset-start", type=int, default=0)
     parser.add_argument("--macros", type=int, default=5)
     parser.add_argument("--checkpoint-size", type=int, default=24)
     parser.add_argument(
@@ -289,15 +290,18 @@ def main() -> int:
     runs: dict[str, list[dict[str, Any]]] = {
         policy: [] for policy in selected_policies
     }
-    for seed_offset in range(args.seeds):
+    for seed_offset in range(
+        args.seed_offset_start,
+        args.seed_offset_start + args.seeds,
+    ):
+        paired_seed = 82618000 + seed_offset * 101
         for policy in selected_policies:
-            policy_index = POLICIES.index(policy)
             runs[policy].append(
                 _run_policy(
                     policy,
                     entries=entries,
                     by_exact=by_exact,
-                    seed=82618000 + seed_offset * 101 + policy_index,
+                    seed=paired_seed,
                     macro_count=args.macros,
                     checkpoint_size=args.checkpoint_size,
                 )
@@ -344,6 +348,7 @@ def main() -> int:
         "macro_count": args.macros,
         "checkpoint_size": args.checkpoint_size,
         "seed_count": args.seeds,
+        "seed_offset_start": args.seed_offset_start,
         "policies": list(selected_policies),
         "aggregate": aggregate,
         "runs": runs,
