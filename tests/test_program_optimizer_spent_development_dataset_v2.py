@@ -104,6 +104,36 @@ def test_successor_cache_hit_is_verified_and_not_counted_twice(tmp_path: Path) -
     assert sum("logical_asks.jsonl" in row["path"] for row in evidence) == 2
 
 
+def test_successor_common_floor_logical_policies_share_one_physical_exact(tmp_path: Path) -> None:
+    run = tmp_path / "successor"
+    wave = run / "wave_000"
+    policies = (
+        "UNIFORM",
+        "TPE_CONTROL",
+        "TPE_TO_SURROGATE",
+        "FEASIBILITY_GATED_TPE",
+    )
+    asks = []
+    for policy in policies:
+        ask = _ask("A", kind="PURE_UNIFORM" if policy == "UNIFORM" else "COMMON_UNIFORM_FLOOR")
+        ask["policy"] = policy
+        asks.append(ask)
+    schedule = _schedule("A", 0)
+    schedule["successor_logical_policies"] = list(policies)
+    _write_jsonl(wave / "logical_asks.jsonl", asks)
+    _write_jsonl(wave / "physical_schedules.jsonl", [schedule])
+    _write_jsonl(
+        wave / "physical_results.jsonl",
+        [_result("A", "rA", "hA", cache_hit=False)],
+    )
+    _record(wave / "records" / "record_0000.json", "rA", "A")
+
+    rows, _ = _collect_wave_run(run, "SUCCESSOR_D1", 1)
+    assert len(rows) == 1
+    assert rows[0]["exact_identity"] == "A"
+    assert rows[0]["selection_kind"] == "+".join(policies)
+
+
 def test_successor_cache_hit_provenance_drift_fails_closed(tmp_path: Path) -> None:
     run = tmp_path / "successor"
     w0 = run / "wave_000"

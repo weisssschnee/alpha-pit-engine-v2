@@ -179,15 +179,15 @@ def _collect_wave_run(run_root: Path, cohort: str, cohort_index: int) -> tuple[l
             if not asks_path.is_file():
                 raise RuntimeError(f"successor logical asks missing: {wave_root}")
             asks = _read_jsonl(asks_path)
-            ask_by_exact: dict[str, dict[str, Any]] = {}
+            asks_by_exact: dict[str, list[dict[str, Any]]] = {}
             ask_order: dict[str, int] = {}
             for ordinal, ask in enumerate(asks):
                 exact = str(ask.get("exact_identity") or "")
-                if not exact or exact in ask_by_exact:
-                    raise RuntimeError(f"successor logical exact cardinality drift: {asks_path}")
-                ask_by_exact[exact] = ask
-                ask_order[exact] = ordinal
-            if set(ask_by_exact) != set(result_by_exact):
+                if not exact:
+                    raise RuntimeError(f"successor logical exact missing: {asks_path}")
+                asks_by_exact.setdefault(exact, []).append(ask)
+                ask_order.setdefault(exact, ordinal)
+            if set(asks_by_exact) != set(result_by_exact):
                 raise RuntimeError(f"successor logical/result exact drift: {wave_root}")
             if not set(by_exact).issubset(result_by_exact):
                 raise RuntimeError(f"successor schedule outside result set: {wave_root}")
@@ -211,14 +211,30 @@ def _collect_wave_run(run_root: Path, cohort: str, cohort_index: int) -> tuple[l
                     raise RuntimeError(f"successor scheduled result unexpectedly marked cache hit: {exact}")
                 if exact in successor_seen:
                     raise RuntimeError(f"successor repeated physical schedule without cache semantics: {exact}")
-                ask = ask_by_exact[exact]
-                if str(ask.get("template_id") or "") != str(schedule.get("template_id") or ""):
+                logical_asks = asks_by_exact[exact]
+                logical_templates = {
+                    str(ask.get("template_id") or "") for ask in logical_asks
+                }
+                schedule_template = str(schedule.get("template_id") or "")
+                if logical_templates != {schedule_template}:
                     raise RuntimeError(f"successor logical/schedule template drift: {exact}")
+                logical_policies = tuple(
+                    dict.fromkeys(
+                        str(ask.get("policy") or ask.get("selection_kind") or "")
+                        for ask in logical_asks
+                        if str(ask.get("policy") or ask.get("selection_kind") or "")
+                    )
+                )
+                schedule_policies = tuple(
+                    map(str, schedule.get("successor_logical_policies") or ())
+                )
+                if schedule_policies and set(schedule_policies) != set(logical_policies):
+                    raise RuntimeError(f"successor logical/schedule policy drift: {exact}")
                 source_sha = str(result.get("source_record_sha256") or "")
                 record = records.get(source_sha)
                 if record is None:
                     raise RuntimeError(f"successor physical record missing: {exact}")
-                selection_kind = str(ask.get("selection_kind") or ask.get("policy") or "")
+                selection_kind = "+".join(schedule_policies or logical_policies)
                 rows.append(_economic_row(
                     exact=exact,
                     cohort=cohort,
