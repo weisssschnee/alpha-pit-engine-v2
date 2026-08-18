@@ -9,6 +9,10 @@ from scripts import run_cn_program_optimizer_large_fresh_v1 as base
 from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v1 import (
     ENHANCED_TEMPLATES,
 )
+from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
+    PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_FALLBACK_EXECUTOR_WORKERS,
+)
 from our_system_phase2.services.program_optimizer_large_fresh_v2 import (
     LargeFreshProgramBanditV2,
 )
@@ -77,6 +81,8 @@ def _configure_base_runner() -> None:
     base.STATUS_COMPLETE = STATUS_COMPLETE
     base.CLOSURE_NAME = CLOSURE_NAME
     base.CLOSURE_SCHEMA_VERSION = CLOSURE_SCHEMA_VERSION
+    base.PRIMARY_EXECUTOR_WORKERS = PRIMARY_EXECUTOR_WORKERS
+    base.RESOURCE_FALLBACK_EXECUTOR_WORKERS = RESOURCE_FALLBACK_EXECUTOR_WORKERS
     base._checkpoint_arm = _checkpoint_arm_v2
     base._filtered_bandit = _filtered_bandit_v2
 
@@ -89,6 +95,8 @@ _BASE_RUNNER_MUTABLE_FIELDS = (
     "STATUS_COMPLETE",
     "CLOSURE_NAME",
     "CLOSURE_SCHEMA_VERSION",
+    "PRIMARY_EXECUTOR_WORKERS",
+    "RESOURCE_FALLBACK_EXECUTOR_WORKERS",
     "_checkpoint_arm",
     "_filtered_bandit",
 )

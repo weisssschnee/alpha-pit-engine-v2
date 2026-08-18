@@ -1,5 +1,5 @@
 {
-  "authorization_payload_sha256": "8de0f3b29f783abeb0cfcd34c2dc791b5efaa9cea6e2e9a36614d81c3805da25",
+  "authorization_payload_sha256": "2c6771aa7858a96eaba269c61427a32dea354125e44b007399f230e92a329960",
   "authorized_host": "DESKTOP-77OPJ6F",
   "automatic_successor_authorized": false,
   "baseline_v1_authorization_payload_sha256": "f7fb65c307442bb653c6a55a7b29ef7688844c1beabaa6f099dbe0d46146f83f",
@@ -42,11 +42,22 @@
   "resource_contract": {
     "cpu_threads": 24,
     "fallback_scope": "RESOURCE_CANARY_ONLY_BEFORE_FIRST_CANDIDATE_EVALUATION",
-    "pre_evaluation_fallback_executor_workers": 16,
-    "primary_executor_workers": 24,
+    "pre_evaluation_fallback_executor_workers": 4,
+    "primary_executor_workers": 8,
     "profile": "SEARCH_DUAL_24",
     "resource_canary_financial_candidate_evaluation": false,
     "resource_canary_required_before_first_candidate_evaluation": true
+  },
+  "resource_evidence": {
+    "file_sha256": "5337fc7a940e07311b3b6f5271e6daa3226e270dd0d90ceeb4cb73873475d972",
+    "maximum_process_tree_rss_bytes": 12530647040,
+    "minimum_available_physical_bytes": 79940329472,
+    "parity_status": "PASS",
+    "payload_sha256": "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d",
+    "records_per_hour_at_selected_cap": 216.32523487744282,
+    "relative_path": "runtime/run_plans/cn_program_optimizer_checkpoint003_resource_benchmark_20260814.json",
+    "selected_checkpoint_worker_cap": 8,
+    "usage": "RESOURCE_ONLY_NO_ECONOMIC_REUSE"
   },
   "restricted_reads": {
     "forward_2026": 0,

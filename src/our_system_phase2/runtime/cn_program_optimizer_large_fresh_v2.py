@@ -35,6 +35,14 @@ FORMAL_SEARCH_AUTHORITY = "CATALOG_TYPED_EVOLUTION_AVAILABILITY_V2"
 AUTHORIZATION_RELATIVE_PATH = Path(
     "runtime/run_plans/cn_program_optimizer_large_fresh_development_v2.json"
 )
+PRIMARY_EXECUTOR_WORKERS = 8
+RESOURCE_FALLBACK_EXECUTOR_WORKERS = 4
+RESOURCE_BENCHMARK_RELATIVE_PATH = Path(
+    "runtime/run_plans/cn_program_optimizer_checkpoint003_resource_benchmark_20260814.json"
+)
+RESOURCE_BENCHMARK_FILE_SHA256 = "5337fc7a940e07311b3b6f5271e6daa3226e270dd0d90ceeb4cb73873475d972"
+RESOURCE_BENCHMARK_PAYLOAD_SHA256 = "653220ffaedf0e93b0f3489f0804c91fc2e2528d6c736cf8fe5459b40f75f01d"
+RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8 = 216.32523487744282
 
 
 def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[str, Any]:
@@ -48,6 +56,8 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         expected_route_id=ROUTE_ID,
         expected_formal_search_authority=FORMAL_SEARCH_AUTHORITY,
         expected_formal_optimizer_arm=CATALOG_TYPED_EVOLUTION_PROGRAM_V2,
+        expected_primary_executor_workers=PRIMARY_EXECUTOR_WORKERS,
+        expected_fallback_executor_workers=RESOURCE_FALLBACK_EXECUTOR_WORKERS,
     )
     design = dict(payload.get("search_design") or {})
     if (
@@ -83,6 +93,41 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or claimed != str(evidence.get("payload_sha256") or "")
     ):
         raise ValueError("large fresh V2 optimizer evidence payload drift")
+
+    resource_evidence = dict(payload.get("resource_evidence") or {})
+    resource_path = (root / RESOURCE_BENCHMARK_RELATIVE_PATH).resolve()
+    if (
+        resource_evidence.get("relative_path") != str(RESOURCE_BENCHMARK_RELATIVE_PATH).replace("\\", "/")
+        or not resource_path.is_file()
+        or sha256_file(resource_path) != RESOURCE_BENCHMARK_FILE_SHA256
+        or resource_evidence.get("file_sha256") != RESOURCE_BENCHMARK_FILE_SHA256
+        or resource_evidence.get("payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
+        or int(resource_evidence.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or float(resource_evidence.get("records_per_hour_at_selected_cap") or 0.0)
+        != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
+        or resource_evidence.get("usage") != "RESOURCE_ONLY_NO_ECONOMIC_REUSE"
+    ):
+        raise ValueError("large fresh V2 resource evidence binding drift")
+    resource_payload = json.loads(resource_path.read_text(encoding="utf-8-sig"))
+    selected = next(
+        (
+            dict(row)
+            for row in list(resource_payload.get("benchmark_results") or ())
+            if int(dict(row).get("worker_count") or 0) == PRIMARY_EXECUTOR_WORKERS
+        ),
+        None,
+    )
+    if (
+        resource_payload.get("status") != "PASS"
+        or resource_payload.get("benchmark_payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
+        or int(resource_payload.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or selected is None
+        or float(selected.get("records_per_hour") or 0.0) != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
+        or int(selected.get("minimum_available_physical_bytes") or 0) < 24 * 1024**3
+        or list(selected.get("orphan_worker_pids") or ())
+        or selected.get("parity_status") != "PASS"
+    ):
+        raise ValueError("large fresh V2 historical resource benchmark drift")
     return payload
 
 

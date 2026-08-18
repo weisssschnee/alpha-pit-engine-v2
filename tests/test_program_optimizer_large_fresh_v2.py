@@ -7,7 +7,11 @@ import pytest
 import app
 
 from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v1 import ENHANCED_TEMPLATES
-from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import ROUTE_ID
+from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
+    PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_FALLBACK_EXECUTOR_WORKERS,
+    ROUTE_ID,
+)
 from our_system_phase2.services.program_optimizer_large_fresh_v2 import (
     ARMS,
     LargeFreshProgramBanditV2,
@@ -105,6 +109,13 @@ def test_large_fresh_v2_route_is_high_cost_and_authorization_bound() -> None:
     assert ROUTE_ID in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
 
 
+def test_large_fresh_v2_uses_historical_safe_executor_cap() -> None:
+    assert PRIMARY_EXECUTOR_WORKERS == 8
+    assert RESOURCE_FALLBACK_EXECUTOR_WORKERS == 4
+    assert base_runner.PRIMARY_EXECUTOR_WORKERS == 24
+    assert base_runner.RESOURCE_FALLBACK_EXECUTOR_WORKERS == 16
+
+
 def test_large_fresh_v2_is_six_evolution_one_rotating_uniform() -> None:
     for macro_index in range(10):
         arms = [
@@ -184,6 +195,8 @@ def test_large_fresh_v2_restores_v1_runner_globals_on_failure(
     def fail_run(*args, **kwargs):
         assert base_runner.CAMPAIGN_ID == "CN_PROGRAM_OPTIMIZER_LARGE_FRESH_DEVELOPMENT_V2"
         assert base_runner.FORMAL_OPTIMIZER_ARM == CATALOG_TYPED_EVOLUTION_PROGRAM_V2
+        assert base_runner.PRIMARY_EXECUTOR_WORKERS == 8
+        assert base_runner.RESOURCE_FALLBACK_EXECUTOR_WORKERS == 4
         raise RuntimeError("synthetic-v2-failure")
 
     monkeypatch.setattr(base_runner, "run", fail_run)

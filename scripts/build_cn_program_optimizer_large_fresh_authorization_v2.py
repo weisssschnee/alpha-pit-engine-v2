@@ -17,6 +17,12 @@ from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
     CAMPAIGN_PROFILE,
     FORMAL_SEARCH_AUTHORITY,
     ROUTE_ID,
+    PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_FALLBACK_EXECUTOR_WORKERS,
+    RESOURCE_BENCHMARK_RELATIVE_PATH,
+    RESOURCE_BENCHMARK_FILE_SHA256,
+    RESOURCE_BENCHMARK_PAYLOAD_SHA256,
+    RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8,
 )
 from our_system_phase2.services.program_search_optimizer_historical_v2 import (
     CATALOG_TYPED_EVOLUTION_PROGRAM_V2,
@@ -64,6 +70,29 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise ValueError("Large Fresh V2 optimizer evidence drift")
 
+    resource_path = (repo / RESOURCE_BENCHMARK_RELATIVE_PATH).resolve()
+    resource = _read(resource_path)
+    selected = next(
+        (
+            dict(row)
+            for row in list(resource.get("benchmark_results") or ())
+            if int(dict(row).get("worker_count") or 0) == PRIMARY_EXECUTOR_WORKERS
+        ),
+        None,
+    )
+    if (
+        _sha256(resource_path) != RESOURCE_BENCHMARK_FILE_SHA256
+        or resource.get("status") != "PASS"
+        or resource.get("benchmark_payload_sha256") != RESOURCE_BENCHMARK_PAYLOAD_SHA256
+        or int(resource.get("selected_checkpoint_worker_cap") or 0) != PRIMARY_EXECUTOR_WORKERS
+        or selected is None
+        or float(selected.get("records_per_hour") or 0.0) != RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8
+        or int(selected.get("minimum_available_physical_bytes") or 0) < 24 * 1024**3
+        or list(selected.get("orphan_worker_pids") or ())
+        or selected.get("parity_status") != "PASS"
+    ):
+        raise ValueError("Large Fresh V2 resource benchmark drift")
+
     authorization = copy.deepcopy(base)
     baseline_payload = str(authorization.pop("authorization_payload_sha256"))
     authorization.update(
@@ -102,6 +131,25 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         }
     )
     authorization["search_design"] = design
+    resource_contract = dict(authorization["resource_contract"])
+    resource_contract.update(
+        {
+            "primary_executor_workers": PRIMARY_EXECUTOR_WORKERS,
+            "pre_evaluation_fallback_executor_workers": RESOURCE_FALLBACK_EXECUTOR_WORKERS,
+        }
+    )
+    authorization["resource_contract"] = resource_contract
+    authorization["resource_evidence"] = {
+        "relative_path": str(RESOURCE_BENCHMARK_RELATIVE_PATH).replace("\\", "/"),
+        "file_sha256": RESOURCE_BENCHMARK_FILE_SHA256,
+        "payload_sha256": RESOURCE_BENCHMARK_PAYLOAD_SHA256,
+        "selected_checkpoint_worker_cap": PRIMARY_EXECUTOR_WORKERS,
+        "records_per_hour_at_selected_cap": RESOURCE_BENCHMARK_RECORDS_PER_HOUR_8,
+        "maximum_process_tree_rss_bytes": int(selected["maximum_process_tree_rss_bytes"]),
+        "minimum_available_physical_bytes": int(selected["minimum_available_physical_bytes"]),
+        "parity_status": str(selected["parity_status"]),
+        "usage": "RESOURCE_ONLY_NO_ECONOMIC_REUSE",
+    }
     authorization["optimizer_evidence"] = {
         "relative_path": str(args.optimizer_evidence.resolve().relative_to(repo)).replace("\\", "/"),
         "file_sha256": _sha256(args.optimizer_evidence),

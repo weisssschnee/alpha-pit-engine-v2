@@ -94,6 +94,8 @@ def verify_authorization(
     expected_route_id: str = ROUTE_ID,
     expected_formal_search_authority: str = "HYBRID_TPE_AVAILABILITY",
     expected_formal_optimizer_arm: str = HYBRID_TPE_PROGRAM,
+    expected_primary_executor_workers: int = PRIMARY_EXECUTOR_WORKERS,
+    expected_fallback_executor_workers: int = RESOURCE_FALLBACK_EXECUTOR_WORKERS,
 ) -> dict[str, Any]:
     root = Path(repo_root or Path(__file__).resolve().parents[3]).resolve()
     payload = _read_self_hashed(
@@ -203,9 +205,9 @@ def verify_authorization(
         resource.get("profile") != RESOURCE_PROFILE
         or int(resource.get("cpu_threads") or 0) != RESOURCE_CPU_THREADS
         or int(resource.get("primary_executor_workers") or 0)
-        != PRIMARY_EXECUTOR_WORKERS
+        != int(expected_primary_executor_workers)
         or int(resource.get("pre_evaluation_fallback_executor_workers") or 0)
-        != RESOURCE_FALLBACK_EXECUTOR_WORKERS
+        != int(expected_fallback_executor_workers)
         or resource.get("fallback_scope")
         != "RESOURCE_CANARY_ONLY_BEFORE_FIRST_CANDIDATE_EVALUATION"
         or resource.get("resource_canary_required_before_first_candidate_evaluation") is not True
