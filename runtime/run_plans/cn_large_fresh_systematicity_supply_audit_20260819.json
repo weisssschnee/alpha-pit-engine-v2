@@ -1,0 +1,670 @@
+{
+  "audit_payload_sha256": "8be8be53330e1f755f1e2c1a5e1cd5f81f2b2625ae20529fdc787c55d1ee157f",
+  "conversion_supply": {
+    "session_executable_disclosure_event_count": 28,
+    "session_executable_disclosure_events": [
+      {
+        "component_id": "0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2",
+        "control": "",
+        "exact_identity": "0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2",
+        "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_balance_pulse),1),1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_age"
+      },
+      {
+        "component_id": "1cdb1b0c47c01a189b5ae4d70f68aa9b17ed1e1f166037fc479eba3e95a0cfe7",
+        "control": "",
+        "exact_identity": "1cdb1b0c47c01a189b5ae4d70f68aa9b17ed1e1f166037fc479eba3e95a0cfe7",
+        "expression": "EventWindow($fund_ba_total_liabilities_yoy_at_disclosure,$fund_disclosure_balance_pulse,5,5)",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_ba_total_liabilities_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_window"
+      },
+      {
+        "component_id": "2915115e81a9510187101d530f2c94e1a6b889d0eead10875cad47d36c7e8ed2",
+        "control": "",
+        "exact_identity": "2915115e81a9510187101d530f2c94e1a6b889d0eead10875cad47d36c7e8ed2",
+        "expression": "EventWindow($fund_ba_accounts_payable_source_yoy_at_disclosure,$fund_disclosure_holder_pulse,0,5)",
+        "fields": [
+          "fund_disclosure_holder_pulse",
+          "fund_ba_accounts_payable_source_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.post_maturity_state"
+      },
+      {
+        "component_id": "2a2d96e34404cbd8acdbc3cef39dd07c7ddec01bd7d21478debca3530d8c501c",
+        "control": "",
+        "exact_identity": "2a2d96e34404cbd8acdbc3cef39dd07c7ddec01bd7d21478debca3530d8c501c",
+        "expression": "EventWindow($fund_ba_total_liabilities_persistence_at_disclosure,$fund_disclosure_cashflow_pulse,5,5)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_total_liabilities_persistence_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_window"
+      },
+      {
+        "component_id": "2c1d9f7eac5e68e00d899ee3560d2520c141a7e34b0429dfc93f11de381275c0",
+        "control": "",
+        "exact_identity": "2c1d9f7eac5e68e00d899ee3560d2520c141a7e34b0429dfc93f11de381275c0",
+        "expression": "Mul(EventCount($fund_disclosure_profit_pulse,1),Sign($fund_ba_total_equity_yoy_at_disclosure))",
+        "fields": [
+          "fund_disclosure_profit_pulse",
+          "fund_ba_total_equity_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "component_id": "3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5",
+        "control": "",
+        "exact_identity": "3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5",
+        "expression": "SafeDiv(EventCount($fund_disclosure_cashflow_pulse,5),Add(EventCount($fund_disclosure_cashflow_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "component_id": "3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79",
+        "control": "",
+        "exact_identity": "3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79",
+        "expression": "SafeDiv(EventCount($fund_disclosure_profit_pulse,5),Add(EventCount($fund_disclosure_profit_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_profit_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "component_id": "3bd5f08d15ed66b75d9f16d9f91e11a63e0f62e2cc63d1a7df6e814c66291439",
+        "control": "",
+        "exact_identity": "3bd5f08d15ed66b75d9f16d9f91e11a63e0f62e2cc63d1a7df6e814c66291439",
+        "expression": "EventWindow($fund_ba_total_current_liab_delta_at_disclosure,$fund_disclosure_cashflow_pulse,5,5)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_total_current_liab_delta_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_window"
+      },
+      {
+        "component_id": "414eb0589bce996c520f3db777a4f5fc3bac409211f5348317c2e851df3da6c8",
+        "control": "",
+        "exact_identity": "414eb0589bce996c520f3db777a4f5fc3bac409211f5348317c2e851df3da6c8",
+        "expression": "EventWindow($fund_ba_inventory_acceleration_at_disclosure,$fund_disclosure_cashflow_pulse,0,5)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_inventory_acceleration_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.post_maturity_state"
+      },
+      {
+        "component_id": "4ff168a36f3b490f6878afb23a727f858ad0afbacb592cc0fb587a614dd8c766",
+        "control": "",
+        "exact_identity": "4ff168a36f3b490f6878afb23a727f858ad0afbacb592cc0fb587a614dd8c766",
+        "expression": "Mul(EventCount($fund_disclosure_cashflow_pulse,1),Sign($fund_holder_count_log_change_at_disclosure))",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_holder_count_log_change_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "component_id": "5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989",
+        "control": "",
+        "exact_identity": "5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989",
+        "expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_first_hit"
+      },
+      {
+        "component_id": "58f43d4c18626b3f523bad86fc30cab43ede432663d4d6e7c0f9d44f14a31f6a",
+        "control": "",
+        "exact_identity": "58f43d4c18626b3f523bad86fc30cab43ede432663d4d6e7c0f9d44f14a31f6a",
+        "expression": "EventWindow($fund_ba_accounts_payable_persistence_at_disclosure,$fund_disclosure_cashflow_pulse,5,0)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_accounts_payable_persistence_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.pre_event_path"
+      },
+      {
+        "component_id": "67578b74abec5a372f60e515379fe4c29be73bf61d7e7b19cf32b966aaa53c7c",
+        "control": "",
+        "exact_identity": "67578b74abec5a372f60e515379fe4c29be73bf61d7e7b19cf32b966aaa53c7c",
+        "expression": "Mul(EventCount($fund_disclosure_cashflow_pulse,1),Sign($fund_ba_monetaryfunds_persistence_at_disclosure))",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_monetaryfunds_persistence_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "component_id": "72550a20788e1d9e3864b8381f19defd8cd721cab4a59e8e78e9184fc8461926",
+        "control": "",
+        "exact_identity": "72550a20788e1d9e3864b8381f19defd8cd721cab4a59e8e78e9184fc8461926",
+        "expression": "EventWindow($fund_ba_inventory_slope_at_disclosure,$fund_disclosure_profit_pulse,0,5)",
+        "fields": [
+          "fund_disclosure_profit_pulse",
+          "fund_ba_inventory_slope_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.post_maturity_state"
+      },
+      {
+        "component_id": "7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81",
+        "control": "",
+        "exact_identity": "7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81",
+        "expression": "EventCount($fund_disclosure_holder_pulse,1)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "component_id": "8b170f7d80ce7e43062aa07d359b2ad5ea5fd5edff96bd181877ed625b152348",
+        "control": "",
+        "exact_identity": "8b170f7d80ce7e43062aa07d359b2ad5ea5fd5edff96bd181877ed625b152348",
+        "expression": "EventWindow($fund_ba_accounts_rece_source_yoy_at_disclosure,$fund_disclosure_balance_pulse,5,0)",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_ba_accounts_rece_source_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.pre_event_path"
+      },
+      {
+        "component_id": "9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969",
+        "control": "",
+        "exact_identity": "9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969",
+        "expression": "EventCount($fund_disclosure_balance_pulse,1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "component_id": "b34a995b0e20a7553c57924c3c5794411dec6b724b08eeb7782d5c1022a5508d",
+        "control": "",
+        "exact_identity": "b34a995b0e20a7553c57924c3c5794411dec6b724b08eeb7782d5c1022a5508d",
+        "expression": "EventWindow($fund_ba_total_assets_source_yoy_at_disclosure,$fund_disclosure_cashflow_pulse,5,0)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_ba_total_assets_source_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.pre_event_path"
+      },
+      {
+        "component_id": "ba83a679240a8efb9383ef1ef39ce1cd6eb129cc535e5cf5fecd7d29b0ce41d6",
+        "control": "",
+        "exact_identity": "ba83a679240a8efb9383ef1ef39ce1cd6eb129cc535e5cf5fecd7d29b0ce41d6",
+        "expression": "EventWindow($fund_holder_average_shares_log_change_at_disclosure,$fund_disclosure_balance_pulse,5,0)",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_holder_average_shares_log_change_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.pre_event_path"
+      },
+      {
+        "component_id": "bc4928f0fac5b5bb541e11d33e6bd83de6188e83a4655df46b4293b22aa30998",
+        "control": "",
+        "exact_identity": "bc4928f0fac5b5bb541e11d33e6bd83de6188e83a4655df46b4293b22aa30998",
+        "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_cashflow_pulse),1),1)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_age"
+      },
+      {
+        "component_id": "c715afb60074792fc045a033eeb8f769540c7125c35d69b596aed98753595657",
+        "control": "",
+        "exact_identity": "c715afb60074792fc045a033eeb8f769540c7125c35d69b596aed98753595657",
+        "expression": "EventWindow($fund_ba_fixed_asset_source_yoy_at_disclosure,$fund_disclosure_balance_pulse,0,5)",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_ba_fixed_asset_source_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.post_maturity_state"
+      },
+      {
+        "component_id": "d4586f896887b0661ee9e2dfd82e9f01c9d71e9b3cdc5b859346ec912ec872b5",
+        "control": "",
+        "exact_identity": "d4586f896887b0661ee9e2dfd82e9f01c9d71e9b3cdc5b859346ec912ec872b5",
+        "expression": "EventWindow($fund_ba_total_liabilities_yoy_at_disclosure,$fund_disclosure_holder_pulse,5,5)",
+        "fields": [
+          "fund_disclosure_holder_pulse",
+          "fund_ba_total_liabilities_yoy_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_window"
+      },
+      {
+        "component_id": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+        "control": "",
+        "exact_identity": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+        "expression": "FirstHit($fund_disclosure_balance_pulse,20)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_first_hit"
+      },
+      {
+        "component_id": "d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20",
+        "control": "",
+        "exact_identity": "d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20",
+        "expression": "SafeDiv(EventCount($fund_disclosure_balance_pulse,5),Add(EventCount($fund_disclosure_balance_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "component_id": "df25688b106b9665840333ffaa020899d7addb3e3750f62ddbcf3171fb685576",
+        "control": "",
+        "exact_identity": "df25688b106b9665840333ffaa020899d7addb3e3750f62ddbcf3171fb685576",
+        "expression": "Mul(EventCount($fund_disclosure_profit_pulse,1),Sign($fund_ba_total_liabilities_slope_at_disclosure))",
+        "fields": [
+          "fund_disclosure_profit_pulse",
+          "fund_ba_total_liabilities_slope_at_disclosure"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "component_id": "df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1",
+        "control": "",
+        "exact_identity": "df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1",
+        "expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "component_id": "e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f",
+        "control": "",
+        "exact_identity": "e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f",
+        "expression": "EventCount($fund_disclosure_profit_pulse,1)",
+        "fields": [
+          "fund_disclosure_profit_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "component_id": "e24c3f38f50b08bf286f20946eb902cf1bb5ad761d5b939217e657b96c11b6ee",
+        "control": "",
+        "exact_identity": "e24c3f38f50b08bf286f20946eb902cf1bb5ad761d5b939217e657b96c11b6ee",
+        "expression": "FirstHit($fund_disclosure_profit_pulse,20)",
+        "fields": [
+          "fund_disclosure_profit_pulse"
+        ],
+        "skeleton": "cn.comp.v2.disclosure_event.event_first_hit"
+      }
+    ],
+    "session_executable_route_counts": {
+      "DISCLOSURE_EVENT": 28,
+      "MARKET_REGIME_CONDITION": 28,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+      "SLOW_TEMPORAL_CHANGE": 24
+    },
+    "session_executable_slow_temporal_count": 24,
+    "upstream_disclosure_events": [
+      {
+        "candidate_id": "cn.comp.dbd33a71b804bebcd8b1",
+        "control": "Add(TimeSince($fund_disclosure_profit_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+        "exact_identity": "009bdb26fbf04e3408421f034fbe9aefe5a972a529d2423ffa24af8e56a121dc",
+        "expression": "Mul(EventCount($fund_disclosure_profit_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+        "fields": [
+          "fund_disclosure_holder_pulse",
+          "fund_disclosure_profit_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 290,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.417ad1b528ebd2dd6b37",
+        "control": "TimeSince($fund_disclosure_balance_pulse)",
+        "exact_identity": "0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2",
+        "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_balance_pulse),1),1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 860,
+        "skeleton": "cn.comp.v2.disclosure_event.event_age"
+      },
+      {
+        "candidate_id": "cn.comp.1dc1f1a96caae2b0e2b8",
+        "control": "TimeSince($fund_disclosure_cashflow_pulse)",
+        "exact_identity": "0ebab3b4cab04510599e50713b47e40f51030e389cc8f4dbce23148eb2cfbda5",
+        "expression": "EventCount($fund_disclosure_cashflow_pulse,1)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 903,
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "candidate_id": "cn.comp.1cd90075384b59e2c9bb",
+        "control": "Add(TimeSince($fund_disclosure_balance_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+        "exact_identity": "1964a18738f1299cdce2f76966391de5aa2ec4acd203fee4b94904e9ac3ba665",
+        "expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 275,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.99feee6969b30c240f86",
+        "control": "TimeSince($fund_disclosure_cashflow_pulse)",
+        "exact_identity": "3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5",
+        "expression": "SafeDiv(EventCount($fund_disclosure_cashflow_pulse,5),Add(EventCount($fund_disclosure_cashflow_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_cashflow_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 901,
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "candidate_id": "cn.comp.64e19fd53d9f0f17db48",
+        "control": "TimeSince($fund_disclosure_profit_pulse)",
+        "exact_identity": "3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79",
+        "expression": "SafeDiv(EventCount($fund_disclosure_profit_pulse,5),Add(EventCount($fund_disclosure_profit_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_profit_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 862,
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "candidate_id": "cn.comp.a71394f0da0d8aaa71e7",
+        "control": "Add(TimeSince($fund_disclosure_profit_pulse),Mul(0,TimeSince($fund_disclosure_balance_pulse)))",
+        "exact_identity": "47d501c1b6ef6d58a6446aba186e2696523ecff3dc658dc88339ed1a212d198f",
+        "expression": "Mul(EventCount($fund_disclosure_profit_pulse,1),Sign(TimeSince($fund_disclosure_balance_pulse)))",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_disclosure_profit_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 274,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.14a0c5a404e94f447996",
+        "control": "TimeSince($fund_disclosure_holder_pulse)",
+        "exact_identity": "5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989",
+        "expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 911,
+        "skeleton": "cn.comp.v2.disclosure_event.event_first_hit"
+      },
+      {
+        "candidate_id": "cn.comp.b98b7a5edbe4b3ce8a7e",
+        "control": "Add(TimeSince($fund_disclosure_cashflow_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+        "exact_identity": "598f5ac999a1978d44b637360b1ada41dd67a09193d89147ff99c17d5a48dbc2",
+        "expression": "Mul(EventCount($fund_disclosure_cashflow_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+        "fields": [
+          "fund_disclosure_cashflow_pulse",
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 302,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.655c157b3143cb36b227",
+        "control": "TimeSince($fund_disclosure_holder_pulse)",
+        "exact_identity": "7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81",
+        "expression": "EventCount($fund_disclosure_holder_pulse,1)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 914,
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "candidate_id": "cn.comp.482f86527f3ce8ead1ac",
+        "control": "TimeSince($fund_disclosure_balance_pulse)",
+        "exact_identity": "9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969",
+        "expression": "EventCount($fund_disclosure_balance_pulse,1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 887,
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      },
+      {
+        "candidate_id": "cn.comp.82bfa234d5281485d264",
+        "control": "Add(TimeSince($fund_disclosure_cashflow_pulse),Mul(0,TimeSince($fund_disclosure_balance_pulse)))",
+        "exact_identity": "9fa7cef99153ba906633f37f20e098328741518dfb66ef816b98210abf17b952",
+        "expression": "Mul(EventCount($fund_disclosure_cashflow_pulse,1),Sign(TimeSince($fund_disclosure_balance_pulse)))",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_disclosure_cashflow_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 297,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.2f96ed1fccd121ef2509",
+        "control": "Add(TimeSince($fund_disclosure_holder_pulse),Mul(0,TimeSince($fund_disclosure_balance_pulse)))",
+        "exact_identity": "d1b2a2214002448503628899aaa5c9787ffa2e12883e54f5860b5e114e62b60c",
+        "expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign(TimeSince($fund_disclosure_balance_pulse)))",
+        "fields": [
+          "fund_disclosure_balance_pulse",
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 331,
+        "skeleton": "cn.comp.v2.disclosure_event.event_prior_condition"
+      },
+      {
+        "candidate_id": "cn.comp.cc1030c1f0174dc04d81",
+        "control": "TimeSince($fund_disclosure_balance_pulse)",
+        "exact_identity": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+        "expression": "FirstHit($fund_disclosure_balance_pulse,20)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 873,
+        "skeleton": "cn.comp.v2.disclosure_event.event_first_hit"
+      },
+      {
+        "candidate_id": "cn.comp.8f43024731c6ff628d71",
+        "control": "TimeSince($fund_disclosure_balance_pulse)",
+        "exact_identity": "d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20",
+        "expression": "SafeDiv(EventCount($fund_disclosure_balance_pulse,5),Add(EventCount($fund_disclosure_balance_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_balance_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 870,
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "candidate_id": "cn.comp.139919dc6d410acad453",
+        "control": "TimeSince($fund_disclosure_holder_pulse)",
+        "exact_identity": "dea6b20e79983e23c2be08423f31383eded8e92ab8c13e784be220b846cbcdd0",
+        "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_holder_pulse),1),1)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 932,
+        "skeleton": "cn.comp.v2.disclosure_event.event_age"
+      },
+      {
+        "candidate_id": "cn.comp.51ea6181b202080fde09",
+        "control": "TimeSince($fund_disclosure_holder_pulse)",
+        "exact_identity": "df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1",
+        "expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+        "fields": [
+          "fund_disclosure_holder_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 939,
+        "skeleton": "cn.comp.v2.disclosure_event.repeated_event_suppression"
+      },
+      {
+        "candidate_id": "cn.comp.3e17038fa9591697e456",
+        "control": "TimeSince($fund_disclosure_profit_pulse)",
+        "exact_identity": "e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f",
+        "expression": "EventCount($fund_disclosure_profit_pulse,1)",
+        "fields": [
+          "fund_disclosure_profit_pulse"
+        ],
+        "financial_hypothesis": null,
+        "proposal_exposure_count": 868,
+        "skeleton": "cn.comp.v2.disclosure_event.event_pulse"
+      }
+    ],
+    "upstream_diversity_admission_disclosure_event_rows": 18,
+    "upstream_event_fieldset_counts": {
+      "fund_disclosure_balance_pulse": 4,
+      "fund_disclosure_balance_pulse|fund_disclosure_cashflow_pulse": 1,
+      "fund_disclosure_balance_pulse|fund_disclosure_holder_pulse": 2,
+      "fund_disclosure_balance_pulse|fund_disclosure_profit_pulse": 1,
+      "fund_disclosure_cashflow_pulse": 2,
+      "fund_disclosure_cashflow_pulse|fund_disclosure_holder_pulse": 1,
+      "fund_disclosure_holder_pulse": 4,
+      "fund_disclosure_holder_pulse|fund_disclosure_profit_pulse": 1,
+      "fund_disclosure_profit_pulse": 2
+    },
+    "upstream_event_skeleton_counts": {
+      "cn.comp.v2.disclosure_event.event_age": 2,
+      "cn.comp.v2.disclosure_event.event_first_hit": 2,
+      "cn.comp.v2.disclosure_event.event_prior_condition": 6,
+      "cn.comp.v2.disclosure_event.event_pulse": 4,
+      "cn.comp.v2.disclosure_event.repeated_event_suppression": 4
+    },
+    "upstream_unique_disclosure_event_exacts_with_receipts": 18
+  },
+  "current_evidence": {
+    "arm_rates": [
+      {
+        "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+        "n": 96,
+        "rate": 0.8645833333333334
+      },
+      {
+        "arm": "UNIFORM_CONTROL",
+        "n": 24,
+        "rate": 0.9166666666666666
+      }
+    ],
+    "base_cluster_bootstrap95": [
+      0.7692307692307693,
+      0.9649122807017544
+    ],
+    "base_component_count": 32,
+    "base_productive_component_count": 31,
+    "event_components": [
+      {
+        "id": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+        "n": 120,
+        "productive": 105,
+        "rate": 0.875
+      }
+    ],
+    "leave_one_base_max_rate": 0.9051724137931034,
+    "leave_one_base_min_rate": 0.8706896551724138,
+    "leave_one_temporal": [
+      {
+        "remaining_n": 51,
+        "remaining_rate": 0.9411764705882353,
+        "removed": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d"
+      },
+      {
+        "remaining_n": 73,
+        "remaining_rate": 0.8356164383561644,
+        "removed": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3"
+      },
+      {
+        "remaining_n": 116,
+        "remaining_rate": 0.8706896551724138,
+        "removed": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c"
+      }
+    ],
+    "macro_rates": [
+      {
+        "macro": 0,
+        "n": 24,
+        "rate": 0.875
+      },
+      {
+        "macro": 1,
+        "n": 24,
+        "rate": 0.9583333333333334
+      },
+      {
+        "macro": 2,
+        "n": 24,
+        "rate": 0.8333333333333334
+      },
+      {
+        "macro": 3,
+        "n": 24,
+        "rate": 0.7916666666666666
+      },
+      {
+        "macro": 4,
+        "n": 24,
+        "rate": 0.9166666666666666
+      }
+    ],
+    "non_temporal_event_rate": 0.2847222222222222,
+    "productive": 105,
+    "rate": 0.875,
+    "systematicity_interpretation": {
+      "base_component_lottery_rejected": true,
+      "checkpoint_lottery_rejected": true,
+      "event_family_generalization_unproven": true,
+      "search_policy_lottery_rejected": true,
+      "single_temporal_component_lottery_rejected": true
+    },
+    "temporal_components": [
+      {
+        "id": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d",
+        "n": 69,
+        "productive": 57,
+        "rate": 0.8260869565217391
+      },
+      {
+        "id": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3",
+        "n": 47,
+        "productive": 44,
+        "rate": 0.9361702127659575
+      },
+      {
+        "id": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c",
+        "n": 4,
+        "productive": 4,
+        "rate": 1.0
+      }
+    ],
+    "temporal_event_n": 120
+  },
+  "financial_candidate_evaluation_performed": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_large_fresh_systematicity_supply_audit_v1",
+  "status": "ZERO_FINANCIAL_SYSTEMATICITY_AND_SUPPLY_AUDIT_COMPLETE"
+}
