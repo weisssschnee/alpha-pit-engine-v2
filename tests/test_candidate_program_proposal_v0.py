@@ -31,6 +31,9 @@ from our_system_phase2.services.program_factorized_bandit_v0 import (
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     RouteConditionalTPESearchAdapter,
 )
+from our_system_phase2.services.program_search_optimizer_historical_v2 import (
+    CATALOG_TYPED_EVOLUTION_PROGRAM_V2,
+)
 from our_system_phase2.services.program_search_optimizer_v1 import (
     PROGRAM_SPACE_ID,
     program_structural_genes_v1,
@@ -232,6 +235,25 @@ def test_receipt_is_replayable_and_provenance_does_not_change_program_identity(
         ProgramProposalReceiptV0.from_record(successor_physical.to_record())
         == successor_physical
     )
+
+
+def test_typed_evolution_v2_generation_arm_is_receipt_authorized(program_context) -> None:
+    registry, components = program_context
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    template_id = "BASE_TEMPORAL_MARKET_EVENT"
+    program = _compose(adapter, components, template_id)
+    roles = PROGRAM_TEMPLATE_COMPONENTS[template_id]
+    receipt = adapter.build_receipt(
+        program_template_id=template_id,
+        program=program,
+        components=[components[role] for role in roles],
+        combination_policy=None,
+        batch_id="large_fresh_v2_checkpoint_001",
+        ask_ordinal=0,
+        generation_arm=CATALOG_TYPED_EVOLUTION_PROGRAM_V2,
+    )
+    assert receipt.generation_arm == CATALOG_TYPED_EVOLUTION_PROGRAM_V2
+    assert ProgramProposalReceiptV0.from_record(receipt.to_record()) == receipt
 
 
 def test_component_forgery_and_template_role_drift_fail_closed(program_context) -> None:

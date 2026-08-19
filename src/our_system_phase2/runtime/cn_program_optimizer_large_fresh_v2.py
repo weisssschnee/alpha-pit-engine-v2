@@ -39,11 +39,15 @@ PRIMARY_EXECUTOR_WORKERS = 24
 RESOURCE_FALLBACK_EXECUTOR_WORKERS = 16
 RESOURCE_CANARY_PROBE_SECONDS = 30.0
 RESOURCE_STRESS_RELATIVE_PATH = Path(
-    "runtime/run_plans/cn_program_optimizer_large_fresh_resource_stress_v2_20260818.json"
+    "runtime/run_plans/cn_program_optimizer_large_fresh_resource_stress_v3_20260819.json"
 )
-RESOURCE_STRESS_FILE_SHA256 = "a1397e8929b21faafcfe95325c4bcb9ce6b42f54faaf18ef72dcfd0317ce8460"
-RESOURCE_STRESS_PAYLOAD_SHA256 = "529cd4db455698c854a70242b495cbf54efc4931ff68d1939790450c9779e6e0"
+RESOURCE_STRESS_FILE_SHA256 = "26aedddd7ef1854ed43e7e162b689ad48477e6e0130a03cb67fa6042b1543f0c"
+RESOURCE_STRESS_PAYLOAD_SHA256 = "57df6a8e8dc07c9314b6c9f3b26605e5c3f0f446880a5825b9f2948f14740a72"
 RESOURCE_CANARY_FIELD_COLUMNS_SHA256 = "85c84e8faf2bf6293dd8628641605a8af38686aa878b63b6ac46d0539e361544"
+RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT = 53
+RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMNS_SHA256 = "3add1844a069d5c52a5a2dd1bc78f7c19b36c6892787a23fea7773818cca9950"
+RESOURCE_CANARY_PREVIEW_FIELD_COLUMN_COUNT = 30
+RESOURCE_CANARY_PREVIEW_FIELD_COLUMNS_SHA256 = "5380b2f7e6bae58559cfde0685210bae2c3a149ad6b215b3a32b2eb34814f067"
 RESOURCE_CANARY_FIELD_COLUMNS = (
     "amount", "chip_cost_p15", "chip_cost_p85", "close", "code",
     "ctx_hfq_float_market_cap_yuan", "ctx_hfq_market_cap_yuan", "ctx_hfq_ps_ttm",
@@ -127,8 +131,13 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or resource_evidence.get("payload_sha256") != RESOURCE_STRESS_PAYLOAD_SHA256
         or int(resource_evidence.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
         or int(resource_evidence.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or int(resource_evidence.get("field_column_count") or 0) != len(RESOURCE_CANARY_FIELD_COLUMNS)
-        or resource_evidence.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource_evidence.get("historical_field_column_count") or 0) != len(RESOURCE_CANARY_FIELD_COLUMNS)
+        or resource_evidence.get("historical_field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource_evidence.get("preview_field_column_count") or 0) != RESOURCE_CANARY_PREVIEW_FIELD_COLUMN_COUNT
+        or resource_evidence.get("preview_field_columns_sha256") != RESOURCE_CANARY_PREVIEW_FIELD_COLUMNS_SHA256
+        or int(resource_evidence.get("field_column_count") or 0) != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT
+        or resource_evidence.get("field_columns_sha256") != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMNS_SHA256
+        or resource_evidence.get("field_plan_mode") != "FIRST_CHECKPOINT_PREVIEW_UNION_HISTORICAL_MAX"
         or resource_evidence.get("usage") != "RESOURCE_ONLY_NO_ECONOMIC_REUSE"
     ):
         raise ValueError("large fresh V2 resource evidence binding drift")
@@ -138,16 +147,24 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
     if (
         resource_claimed != RESOURCE_STRESS_PAYLOAD_SHA256
         or stable_hash(body) != resource_claimed
-        or resource_payload.get("status") != "PASS_RESOURCE_ONLY_REALISTIC_24_WORKER_STRESS"
+        or resource_payload.get("status") != "PASS_RESOURCE_ONLY_PREVIEW_UNION_24_WORKER_STRESS"
         or int(resource_payload.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
         or int(resource_payload.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or tuple(resource_payload.get("field_columns") or ()) != RESOURCE_CANARY_FIELD_COLUMNS
-        or resource_payload.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or resource_payload.get("field_plan_mode") != "FIRST_CHECKPOINT_PREVIEW_UNION_HISTORICAL_MAX"
+        or int(resource_payload.get("historical_field_column_count") or 0) != len(RESOURCE_CANARY_FIELD_COLUMNS)
+        or resource_payload.get("historical_field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource_payload.get("preview_field_column_count") or 0) != RESOURCE_CANARY_PREVIEW_FIELD_COLUMN_COUNT
+        or resource_payload.get("preview_field_columns_sha256") != RESOURCE_CANARY_PREVIEW_FIELD_COLUMNS_SHA256
+        or int(resource_payload.get("field_column_count") or 0) != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT
+        or len(tuple(resource_payload.get("field_columns") or ())) != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT
+        or resource_payload.get("field_columns_sha256") != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMNS_SHA256
         or int(resource_payload.get("minimum_commit_headroom_bytes") or 0) < 24 * 1024**3
         or int(resource_payload.get("pagefile_pages_in_delta_bytes", -1)) != 0
         or int(resource_payload.get("pagefile_pages_out_delta_bytes", -1)) != 0
         or list(resource_payload.get("orphan_worker_pids") or ())
         or resource_payload.get("financial_candidate_evaluation_performed") is not False
+        or resource_payload.get("preview_candidate_evaluation_performed") is not False
+        or resource_payload.get("preview_optimizer_state_unchanged") is not True
     ):
         raise ValueError("large fresh V2 realistic resource stress drift")
     return payload

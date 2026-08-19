@@ -18,7 +18,12 @@ from our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2 import (
     FORMAL_SEARCH_AUTHORITY,
     ROUTE_ID,
     PRIMARY_EXECUTOR_WORKERS,
+    RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT,
+    RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMNS_SHA256,
+    RESOURCE_CANARY_FIELD_COLUMNS,
     RESOURCE_CANARY_FIELD_COLUMNS_SHA256,
+    RESOURCE_CANARY_PREVIEW_FIELD_COLUMN_COUNT,
+    RESOURCE_CANARY_PREVIEW_FIELD_COLUMNS_SHA256,
     RESOURCE_FALLBACK_EXECUTOR_WORKERS,
     RESOURCE_STRESS_RELATIVE_PATH,
     RESOURCE_STRESS_FILE_SHA256,
@@ -78,16 +83,24 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         _sha256(resource_path) != RESOURCE_STRESS_FILE_SHA256
         or resource_claimed != RESOURCE_STRESS_PAYLOAD_SHA256
         or stable_hash(resource_body) != resource_claimed
-        or resource.get("status") != "PASS_RESOURCE_ONLY_REALISTIC_24_WORKER_STRESS"
+        or resource.get("status") != "PASS_RESOURCE_ONLY_PREVIEW_UNION_24_WORKER_STRESS"
         or int(resource.get("requested_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
         or int(resource.get("distinct_worker_count") or 0) != PRIMARY_EXECUTOR_WORKERS
-        or int(resource.get("field_column_count") or 0) != 47
-        or resource.get("field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or resource.get("field_plan_mode") != "FIRST_CHECKPOINT_PREVIEW_UNION_HISTORICAL_MAX"
+        or int(resource.get("historical_field_column_count") or 0) != len(RESOURCE_CANARY_FIELD_COLUMNS)
+        or resource.get("historical_field_columns_sha256") != RESOURCE_CANARY_FIELD_COLUMNS_SHA256
+        or int(resource.get("preview_field_column_count") or 0) != RESOURCE_CANARY_PREVIEW_FIELD_COLUMN_COUNT
+        or resource.get("preview_field_columns_sha256") != RESOURCE_CANARY_PREVIEW_FIELD_COLUMNS_SHA256
+        or int(resource.get("field_column_count") or 0) != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT
+        or len(tuple(resource.get("field_columns") or ())) != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMN_COUNT
+        or resource.get("field_columns_sha256") != RESOURCE_CANARY_EFFECTIVE_FIELD_COLUMNS_SHA256
         or int(resource.get("minimum_commit_headroom_bytes") or 0) < 24 * 1024**3
         or int(resource.get("pagefile_pages_in_delta_bytes", -1)) != 0
         or int(resource.get("pagefile_pages_out_delta_bytes", -1)) != 0
         or list(resource.get("orphan_worker_pids") or ())
         or resource.get("financial_candidate_evaluation_performed") is not False
+        or resource.get("preview_candidate_evaluation_performed") is not False
+        or resource.get("preview_optimizer_state_unchanged") is not True
     ):
         raise ValueError("Large Fresh V2 realistic resource stress drift")
 
@@ -143,6 +156,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "payload_sha256": RESOURCE_STRESS_PAYLOAD_SHA256,
         "requested_workers": PRIMARY_EXECUTOR_WORKERS,
         "distinct_worker_count": int(resource["distinct_worker_count"]),
+        "field_plan_mode": str(resource["field_plan_mode"]),
+        "historical_field_column_count": int(resource["historical_field_column_count"]),
+        "historical_field_columns_sha256": str(resource["historical_field_columns_sha256"]),
+        "preview_field_column_count": int(resource["preview_field_column_count"]),
+        "preview_field_columns_sha256": str(resource["preview_field_columns_sha256"]),
         "field_column_count": int(resource["field_column_count"]),
         "field_columns_sha256": str(resource["field_columns_sha256"]),
         "minimum_available_physical_bytes": int(resource["minimum_available_physical_bytes"]),
