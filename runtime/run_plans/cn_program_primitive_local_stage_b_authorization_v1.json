@@ -1,5 +1,5 @@
 {
-  "authorization_payload_sha256": "1aa6201dba625a7dca20f507a23a2b802cb728cada20b354bd0342f4a383ab3d",
+  "authorization_payload_sha256": "250990b297e12475b17168c4c478b483557dd4d607c206a3ab67000757ba2bfd",
   "automatic_successor_authorized": false,
   "benchmark_contract": {
     "all_policy_curves_are_counterfactual_reveal_orders_over_same_frozen_264_physical_results": true,
@@ -43,8 +43,8 @@
     "cpu_threads": 24,
     "executor_workers": 24,
     "profile": "SEARCH_DUAL_24",
-    "resource_canary_field_column_count": 42,
-    "resource_canary_field_columns_sha256": "3f233b96f650fe9bf3582127a47494b70beb0050278dbc3dbc265598cd81e197",
+    "resource_canary_field_column_count": 38,
+    "resource_canary_field_columns_sha256": "26c0d5459a8dc4acf6e10bee1fd93340db08e3098939597761752eae2b312f3e",
     "resource_canary_probe_seconds": 30.0,
     "resource_canary_required_before_first_candidate_evaluation": true,
     "source_53_field_resource_evidence_file_sha256": "26aedddd7ef1854ed43e7e162b689ad48477e6e0130a03cb67fa6042b1543f0c",
@@ -60,10 +60,12 @@
   },
   "schema_version": "cn_program_primitive_local_stage_b_authorization_v1",
   "search_policy": {
-    "file_sha256": "55e82eb7cfd545b2e99250434167888ce90e4ffdaad34493ba8bbe0d4dc81dc5",
-    "payload_sha256": "4b2baf4aa8d6f4b9f4aba0d8cdc37e9d4a71514464b0ba860744ffd9ca640935",
+    "file_sha256": "53d378ba314ef1a04ab1379ee1d391f30e2204b965ca889c3a214d4a91763fdb",
+    "payload_sha256": "f7aa24684af178739114256136c01e854fa06ff77509c4d46ad0222b33f63f96",
     "primary_budget": 72,
     "relative_path": "runtime/run_plans/cn_program_primitive_local_stage_b_policy_v1.json",
+    "stage_b_field_column_count": 38,
+    "stage_b_field_columns_sha256": "26c0d5459a8dc4acf6e10bee1fd93340db08e3098939597761752eae2b312f3e",
     "stage_b_labels_read_during_policy_freeze": false
   },
   "source_mechanism_authorization": {

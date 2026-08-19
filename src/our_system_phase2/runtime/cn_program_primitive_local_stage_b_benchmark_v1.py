@@ -81,6 +81,9 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
     if (
         policy_binding.get("stage_b_labels_read_during_policy_freeze") is not False
         or int(policy_binding.get("primary_budget") or 0) != 72
+        or int(policy_binding.get("stage_b_field_column_count") or 0) != 38
+        or policy_binding.get("stage_b_field_columns_sha256")
+        != policy["stage_b_resource_preview"]["field_columns_sha256"]
         or policy.get("stage_b_financial_labels_read_during_policy_freeze") is not False
     ):
         raise ValueError("Stage B policy authorization drift")
@@ -120,7 +123,7 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or int(resource.get("cpu_threads") or 0) != 24
         or int(resource.get("executor_workers") or 0) != 24
         or float(resource.get("resource_canary_probe_seconds") or 0.0) != 30.0
-        or int(resource.get("resource_canary_field_column_count") or 0) != 42
+        or int(resource.get("resource_canary_field_column_count") or 0) != 38
         or resource.get("candidate_evaluation_during_resource_canary") is not False
     ):
         raise ValueError("Stage B resource authorization drift")

@@ -40,6 +40,15 @@ def verify_policy(path: Path) -> dict[str, Any]:
     spent = dict(payload["spent_freeze"])
     if int(spent["combined_spent_exact_count"]) != 2438 or int(spent["stage_b_overlap_count"]) != 0:
         raise RuntimeError("PRIMITIVE_LOCAL_STAGE_B_SPENT_DRIFT")
+    resource = dict(payload["stage_b_resource_preview"])
+    fields = list(map(str, resource.get("field_columns") or ()))
+    if (
+        int(resource.get("field_column_count") or 0) != 38
+        or len(fields) != 38
+        or stable_hash(fields) != str(resource.get("field_columns_sha256") or "")
+        or resource.get("candidate_evaluation_executed") is not False
+    ):
+        raise RuntimeError("PRIMITIVE_LOCAL_STAGE_B_RESOURCE_PREVIEW_DRIFT")
     policies = dict(payload["policies"])
     primitive = dict(policies[POLICY_ID])["orders_by_temporal"]
     family = dict(policies[FAMILY_POLICY_ID])["orders_by_temporal"]
@@ -215,7 +224,10 @@ def run(args: argparse.Namespace, *, admission: Mapping[str, Any], authorization
         "optimizer_selection_used": False,
     })
     input_hash = str(authority["input_binding"]["input_binding_sha256"])
-    fields = tuple(map(str, prefreeze["resource_preview"]["union_field_columns"]))
+    fields = tuple(map(str, policy["stage_b_resource_preview"]["field_columns"]))
+    observed_fields = tuple(sorted(engine._checkpoint_field_columns(schedules)))
+    if observed_fields != fields:
+        raise RuntimeError("PRIMITIVE_LOCAL_STAGE_B_FIELD_GEOMETRY_DRIFT")
     old_probe = large_fresh.RESOURCE_CANARY_PROBE_SECONDS
     try:
         large_fresh.RESOURCE_CANARY_PROBE_SECONDS = RESOURCE_CANARY_PROBE_SECONDS

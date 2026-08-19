@@ -84,6 +84,11 @@ def build(repo: Path) -> dict[str, Any]:
     stage_b = list(prefreeze["candidates"]["stage_b"])
     if len(stage_a) != 288 or len(stage_b) != 264:
         raise ValueError("prefrozen candidate counts drift")
+    stage_b_fields = sorted(
+        {str(field) for row in stage_b for field in row["physical_field_columns"]}
+    )
+    if len(stage_b_fields) != 38:
+        raise ValueError("Stage B physical field geometry drift")
 
     old_spent_ids = list(map(str, old_spent["combined_spent_exact_identities"]))
     stage_a_ids = [str(row["exact_identity"]) for row in stage_a]
@@ -160,6 +165,12 @@ def build(repo: Path) -> dict[str, Any]:
             "file_sha256": _sha(prefreeze_path),
             "payload_sha256": str(prefreeze["prefreeze_payload_sha256"]),
             "stage_b_count": len(stage_b),
+        },
+        "stage_b_resource_preview": {
+            "field_column_count": len(stage_b_fields),
+            "field_columns": stage_b_fields,
+            "field_columns_sha256": stable_hash(stage_b_fields),
+            "candidate_evaluation_executed": False,
         },
         "spent_freeze": {
             "old_spent_count": len(old_spent_ids),
