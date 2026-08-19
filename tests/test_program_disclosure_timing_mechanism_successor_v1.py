@@ -129,6 +129,52 @@ def test_stage_a_and_stage_b_systematic_gates_pass_broad_success() -> None:
     assert gate_b["status"] == "PASS"
 
 
+def test_runtime_injects_frozen_executor_workers(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    authorization = runtime.verify_authorization(AUTH, repo_root=REPO)
+    captured: dict[str, int] = {}
+    admission = {
+        "repo_sha": "0" * 40,
+        "campaign_authorization_path": str(AUTH.resolve()),
+        "campaign_authorization_file_sha256": runtime.sha256_file(AUTH),
+        "target_campaign_instance_id": runtime.CAMPAIGN_ID,
+        "target_campaign_profile": runtime.CAMPAIGN_PROFILE,
+    }
+    monkeypatch.setattr(runtime, "consume_active_admission", lambda *_args, **_kwargs: admission)
+    monkeypatch.setattr(runtime, "verify_consumed_admission_target", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        runtime,
+        "verify_campaign_authorization_binding",
+        lambda *_args, **_kwargs: type(
+            "Verified", (), {"path": AUTH.resolve(), "payload": authorization}
+        )(),
+    )
+    monkeypatch.setattr(runtime, "validate_node_resource_lease_receipt", lambda *_args, **_kwargs: {})
+
+    import scripts.run_cn_program_disclosure_timing_mechanism_successor_v1 as runner
+
+    def fake_run(args, *, admission, authorization):
+        captured["executor_workers"] = args.executor_workers
+        return {"status": "NOOP"}
+
+    monkeypatch.setattr(runner, "run", fake_run)
+    argv = [
+        "--campaign-authorization", str(AUTH),
+        "--mechanism-prefreeze", str(PREFREEZE),
+        "--spent-exact-freeze", str(SPENT),
+        "--source-freeze-root", str(tmp_path / "source"),
+        "--prior-exact-freeze", str(tmp_path / "prior.json"),
+        "--execution-contract", str(tmp_path / "execution.json"),
+        "--train-field-root", str(tmp_path / "fields"),
+        "--train-price-root", str(tmp_path / "prices"),
+        "--registry", str(tmp_path / "registry.json"),
+        "--node-resource-capacity", str(tmp_path / "capacity.json"),
+        "--node-resource-lease-receipt", str(tmp_path / "lease.json"),
+        "--output-root", str(tmp_path / "output"),
+    ]
+    assert runtime.main(argv) == 0
+    assert captured["executor_workers"] == 24
+
+
 def test_direct_runtime_invocation_is_denied_before_argument_parsing() -> None:
     with pytest.raises(ProjectControlDenied, match="DIRECT_HIGH_COST_MODULE_EXECUTION_FORBIDDEN"):
         runtime.main([])

@@ -212,6 +212,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--node-resource-lease-receipt", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args(argv)
+    # The successor authority requires this field on its Namespace, but this
+    # campaign's worker count is frozen by authorization rather than caller input.
+    args.executor_workers = 24
 
     verify_consumed_admission_target(admission, output_root=args.output_root)
     verified = verify_campaign_authorization_binding(admission, args.campaign_authorization)
