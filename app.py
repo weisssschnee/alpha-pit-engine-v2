@@ -79,6 +79,7 @@ ROUTES: dict[str, str] = {
     "cn-program-optimizer-large-fresh-development-v1": "our_system_phase2.runtime.cn_program_optimizer_large_fresh_v1",
     "cn-program-optimizer-large-fresh-development-v2": "our_system_phase2.runtime.cn_program_optimizer_large_fresh_v2",
     "cn-program-disclosure-timing-mechanism-successor-v1": "our_system_phase2.runtime.cn_program_disclosure_timing_mechanism_successor_v1",
+    "cn-program-primitive-local-stage-b-benchmark-v1": "our_system_phase2.runtime.cn_program_primitive_local_stage_b_benchmark_v1",
     "cn-program-optimizer-d1-report-only-validation-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1",
     "cn-program-optimizer-d1-transfer-prospective-validation-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_transfer_prospective_validation_v1",
     "cn-typed-candidate-program-v1-smoke": "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke",
@@ -146,6 +147,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-disclosure-timing-mechanism-successor-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
+    ),
+    "cn-program-primitive-local-stage-b-benchmark-v1": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-optimizer-d1-report-only-validation-v1": frozenset(

@@ -1,0 +1,95 @@
+{
+  "authorization_payload_sha256": "1aa6201dba625a7dca20f507a23a2b802cb728cada20b354bd0342f4a383ab3d",
+  "automatic_successor_authorized": false,
+  "benchmark_contract": {
+    "all_policy_curves_are_counterfactual_reveal_orders_over_same_frozen_264_physical_results": true,
+    "physical_evaluation_order_is_not_search_policy_order": true,
+    "physical_stage_b_evaluations": 264,
+    "primitive_local_policy_id": "PRIMITIVE_LOCAL_BETA_TRANSFER_V1",
+    "search_policy_orders_frozen_before_stage_b_labels": true,
+    "stage_c_execution_authorized_by_this_campaign": false,
+    "system_search_victory_gate": {
+      "all_stage_b_exact_fresh_vs_2438_spent": true,
+      "all_stage_b_exact_unique": true,
+      "budget_144_minimum_relative_ratio_vs_uniform_seed_mean": 1.1,
+      "minimum_temporal_strata_won_vs_uniform_seed_mean": 4,
+      "primitive_local_productive_count_vs_uniform_seed_mean_minimum_absolute_delta": 5.0,
+      "primitive_local_productive_count_vs_uniform_seed_mean_minimum_relative_ratio": 1.25,
+      "restricted_reads_zero": true
+    },
+    "uniform_policy_id": "UNIFORM_HASH_V1"
+  },
+  "campaign_id": "CN_PROGRAM_PRIMITIVE_LOCAL_STAGE_B_BENCHMARK_V1",
+  "campaign_profile": "cn_program_primitive_local_stage_b_benchmark_v1",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "mechanism_prefreeze": {
+    "field_column_count": 42,
+    "field_columns_sha256": "3f233b96f650fe9bf3582127a47494b70beb0050278dbc3dbc265598cd81e197",
+    "file_sha256": "1fb88c1d700672c793c8578c40b003231db47312ac34a99e70f541506248d45a",
+    "payload_sha256": "34d220a299e394feb74c5b55d4b183178a07e38d70c91eb54c81e8f180b51a4b",
+    "relative_path": "runtime/run_plans/cn_disclosure_timing_mechanism_successor_prefreeze_20260819.json",
+    "stage_b_records": 264
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "project_control_route_id": "cn-program-primitive-local-stage-b-benchmark-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_resource_canary": false,
+    "cpu_threads": 24,
+    "executor_workers": 24,
+    "profile": "SEARCH_DUAL_24",
+    "resource_canary_field_column_count": 42,
+    "resource_canary_field_columns_sha256": "3f233b96f650fe9bf3582127a47494b70beb0050278dbc3dbc265598cd81e197",
+    "resource_canary_probe_seconds": 30.0,
+    "resource_canary_required_before_first_candidate_evaluation": true,
+    "source_53_field_resource_evidence_file_sha256": "26aedddd7ef1854ed43e7e162b689ad48477e6e0130a03cb67fa6042b1543f0c",
+    "source_53_field_resource_evidence_payload_sha256": "57df6a8e8dc07c9314b6c9f3b26605e5c3f0f446880a5825b9f2948f14740a72",
+    "source_53_field_resource_evidence_relative_path": "runtime/run_plans/cn_program_optimizer_large_fresh_resource_stress_v3_20260819.json"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_local_stage_b_authorization_v1",
+  "search_policy": {
+    "file_sha256": "55e82eb7cfd545b2e99250434167888ce90e4ffdaad34493ba8bbe0d4dc81dc5",
+    "payload_sha256": "4b2baf4aa8d6f4b9f4aba0d8cdc37e9d4a71514464b0ba860744ffd9ca640935",
+    "primary_budget": 72,
+    "relative_path": "runtime/run_plans/cn_program_primitive_local_stage_b_policy_v1.json",
+    "stage_b_labels_read_during_policy_freeze": false
+  },
+  "source_mechanism_authorization": {
+    "file_sha256": "0263b9d7040d715e9ddf0112e962706e84ef1f82a332fc144c44bde3ecbcdba9",
+    "payload_sha256": "a4489d67934042a6c25d93a71b7f1cb5e03b4e1e579aa56420daf682d36952a1",
+    "relative_path": "runtime/run_plans/cn_program_disclosure_timing_mechanism_successor_v1.json"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_stage_a_audit": {
+    "classification": "LOCAL_PRIMITIVE_WIN_NOT_SYSTEMATIC_EVENT_FAMILY",
+    "file_sha256": "6dae9d315c2305b3fec0da487d4f8c1022c21b13b55956e7f53841389cd21e8d",
+    "payload_sha256": "7ab82671077a6b5f8c12995af90a98825e9a027aff6b27ad88d7a9f3f147d7f5",
+    "relative_path": "runtime/run_plans/cn_program_disclosure_timing_mechanism_successor_retry3_cbf191f_independent_audit_20260819.json",
+    "stage_b_never_started": true
+  },
+  "spent_contract": {
+    "combined_spent_exact_count": 2438,
+    "combined_spent_exact_identities_sha256": "c1d3b3e407697a05737a028ea5644397701e074ae44c8e17886925b85027afe0",
+    "stage_b_overlap_count": 0
+  },
+  "status": "PRIMITIVE_LOCAL_STAGE_B_BENCHMARK_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
