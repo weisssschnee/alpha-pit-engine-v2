@@ -1,0 +1,379 @@
+{
+  "audit_payload_sha256": "77ffcf3bf460ade021defc2228108d52b7257ac16e3055677df7680adb239f03",
+  "authorization_payload_sha256": "250990b297e12475b17168c4c478b483557dd4d607c206a3ab67000757ba2bfd",
+  "checkpoint_summary": [
+    {
+      "artifacts_ok": true,
+      "checkpoint": 0,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 1,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 2,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 3,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 4,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 5,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 6,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 7,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 8,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 9,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 10,
+      "exact_order_match": true,
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "record_count": 24,
+      "result_count": 24,
+      "result_self_hash_ok": true,
+      "schedule_count": 24
+    }
+  ],
+  "checks": {
+    "264_unique": true,
+    "artifacts_and_records": true,
+    "auth_self_hash": true,
+    "benchmark_status_match": true,
+    "canary_pass": true,
+    "checkpoint_count_11": true,
+    "closure_self_hash": true,
+    "exact_space_matches_policy": true,
+    "fresh_vs_2438_spent": true,
+    "full_metric_match": true,
+    "gate_recompute_match": true,
+    "independent_curve_match": true,
+    "launch_pass": true,
+    "lease_released": true,
+    "manifest_chain": true,
+    "manifest_self_hashes": true,
+    "no_validation_feedback": true,
+    "policy_frozen_before_labels": true,
+    "policy_payload_bound": true,
+    "policy_self_hash": true,
+    "repo_sha": true,
+    "restricted_reads_zero": true,
+    "stage_c_not_authorized": true
+  },
+  "closure_payload_sha256": "93624f980945fc1b833d1c10191898df17a650db613a954f7177ef721f99b292",
+  "full_stage_b_metric": {
+    "admitted": 141,
+    "evaluated": 264,
+    "productive": 96,
+    "productive_rate": 0.36363636363636365
+  },
+  "policy_payload_sha256": "f7aa24684af178739114256136c01e854fa06ff77509c4d46ad0222b33f63f96",
+  "recomputed_curves": {
+    "144": {
+      "family_only": {
+        "admitted": 86,
+        "evaluated": 144,
+        "productive": 57,
+        "productive_rate": 0.3958333333333333
+      },
+      "primitive_local": {
+        "admitted": 95,
+        "evaluated": 144,
+        "productive": 64,
+        "productive_rate": 0.4444444444444444
+      },
+      "primitive_temporal_strata_won_vs_uniform_seed_mean": 6,
+      "primitive_vs_uniform_absolute_productive_delta": 12.5,
+      "primitive_vs_uniform_relative_ratio": 1.2427184466019416,
+      "uniform_seed_mean_productive_count": 51.5,
+      "uniform_seed_mean_productive_rate": 0.3576388888888889,
+      "uniform_seed_metrics": {
+        "104729": {
+          "admitted": 80,
+          "evaluated": 144,
+          "productive": 53,
+          "productive_rate": 0.3680555555555556
+        },
+        "130363": {
+          "admitted": 73,
+          "evaluated": 144,
+          "productive": 45,
+          "productive_rate": 0.3125
+        },
+        "155921": {
+          "admitted": 73,
+          "evaluated": 144,
+          "productive": 53,
+          "productive_rate": 0.3680555555555556
+        },
+        "1729": {
+          "admitted": 84,
+          "evaluated": 144,
+          "productive": 54,
+          "productive_rate": 0.375
+        },
+        "196613": {
+          "admitted": 77,
+          "evaluated": 144,
+          "productive": 46,
+          "productive_rate": 0.3194444444444444
+        },
+        "2718": {
+          "admitted": 77,
+          "evaluated": 144,
+          "productive": 52,
+          "productive_rate": 0.3611111111111111
+        },
+        "31415": {
+          "admitted": 81,
+          "evaluated": 144,
+          "productive": 58,
+          "productive_rate": 0.4027777777777778
+        },
+        "65537": {
+          "admitted": 75,
+          "evaluated": 144,
+          "productive": 51,
+          "productive_rate": 0.3541666666666667
+        }
+      }
+    },
+    "48": {
+      "family_only": {
+        "admitted": 25,
+        "evaluated": 48,
+        "productive": 17,
+        "productive_rate": 0.3541666666666667
+      },
+      "primitive_local": {
+        "admitted": 33,
+        "evaluated": 48,
+        "productive": 23,
+        "productive_rate": 0.4791666666666667
+      },
+      "primitive_temporal_strata_won_vs_uniform_seed_mean": 5,
+      "primitive_vs_uniform_absolute_productive_delta": 6.5,
+      "primitive_vs_uniform_relative_ratio": 1.393939393939394,
+      "uniform_seed_mean_productive_count": 16.5,
+      "uniform_seed_mean_productive_rate": 0.34375,
+      "uniform_seed_metrics": {
+        "104729": {
+          "admitted": 27,
+          "evaluated": 48,
+          "productive": 15,
+          "productive_rate": 0.3125
+        },
+        "130363": {
+          "admitted": 25,
+          "evaluated": 48,
+          "productive": 13,
+          "productive_rate": 0.2708333333333333
+        },
+        "155921": {
+          "admitted": 30,
+          "evaluated": 48,
+          "productive": 20,
+          "productive_rate": 0.4166666666666667
+        },
+        "1729": {
+          "admitted": 25,
+          "evaluated": 48,
+          "productive": 18,
+          "productive_rate": 0.375
+        },
+        "196613": {
+          "admitted": 26,
+          "evaluated": 48,
+          "productive": 17,
+          "productive_rate": 0.3541666666666667
+        },
+        "2718": {
+          "admitted": 30,
+          "evaluated": 48,
+          "productive": 19,
+          "productive_rate": 0.3958333333333333
+        },
+        "31415": {
+          "admitted": 25,
+          "evaluated": 48,
+          "productive": 17,
+          "productive_rate": 0.3541666666666667
+        },
+        "65537": {
+          "admitted": 22,
+          "evaluated": 48,
+          "productive": 13,
+          "productive_rate": 0.2708333333333333
+        }
+      }
+    },
+    "72": {
+      "family_only": {
+        "admitted": 39,
+        "evaluated": 72,
+        "productive": 23,
+        "productive_rate": 0.3194444444444444
+      },
+      "primitive_local": {
+        "admitted": 51,
+        "evaluated": 72,
+        "productive": 33,
+        "productive_rate": 0.4583333333333333
+      },
+      "primitive_temporal_strata_won_vs_uniform_seed_mean": 5,
+      "primitive_vs_uniform_absolute_productive_delta": 7.625,
+      "primitive_vs_uniform_relative_ratio": 1.3004926108374384,
+      "uniform_seed_mean_productive_count": 25.375,
+      "uniform_seed_mean_productive_rate": 0.3524305555555556,
+      "uniform_seed_metrics": {
+        "104729": {
+          "admitted": 40,
+          "evaluated": 72,
+          "productive": 22,
+          "productive_rate": 0.3055555555555556
+        },
+        "130363": {
+          "admitted": 39,
+          "evaluated": 72,
+          "productive": 24,
+          "productive_rate": 0.3333333333333333
+        },
+        "155921": {
+          "admitted": 39,
+          "evaluated": 72,
+          "productive": 28,
+          "productive_rate": 0.3888888888888889
+        },
+        "1729": {
+          "admitted": 39,
+          "evaluated": 72,
+          "productive": 27,
+          "productive_rate": 0.375
+        },
+        "196613": {
+          "admitted": 40,
+          "evaluated": 72,
+          "productive": 27,
+          "productive_rate": 0.375
+        },
+        "2718": {
+          "admitted": 44,
+          "evaluated": 72,
+          "productive": 27,
+          "productive_rate": 0.375
+        },
+        "31415": {
+          "admitted": 39,
+          "evaluated": 72,
+          "productive": 26,
+          "productive_rate": 0.3611111111111111
+        },
+        "65537": {
+          "admitted": 38,
+          "evaluated": 72,
+          "productive": 22,
+          "productive_rate": 0.3055555555555556
+        }
+      }
+    }
+  },
+  "recomputed_victory_checks": {
+    "budget_144_relative_ratio": true,
+    "primary_absolute_delta": true,
+    "primary_relative_ratio": true,
+    "temporal_strata_wins": true
+  },
+  "repo_sha": "d0160c6347a8fdb005db9796bd68484c8e1d86d9",
+  "schema_version": "cn_program_primitive_local_stage_b_independent_terminal_audit_v1",
+  "search_transfer_status": "PRIMITIVE_LOCAL_SEARCH_TRANSFER_PASS_STAGE_C_LARGE_SCALE_AUTHORIZATION_ELIGIBLE",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT"
+}

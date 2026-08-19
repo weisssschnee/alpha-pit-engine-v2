@@ -1,0 +1,614 @@
+{
+  "authorization_payload_sha256": "250990b297e12475b17168c4c478b483557dd4d607c206a3ab67000757ba2bfd",
+  "checkpoint_count": 11,
+  "closure_payload_sha256": "93624f980945fc1b833d1c10191898df17a650db613a954f7177ef721f99b292",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "full_stage_b_metric": {
+    "admitted": 141,
+    "evaluated": 264,
+    "median_matched_cumulative_net_return_increment": 0.18049573874174873,
+    "median_matched_net_reward_increment": 0.8421951259704775,
+    "productive": 96,
+    "productive_rate": 0.36363636363636365
+  },
+  "last_checkpoint_manifest_file_sha256": "d2d20dd8b4f02889ed178001570f38be2bae8ac852d5d3ad4c48cb7658f32d3e",
+  "oos_authority": "NONE",
+  "policy_payload_sha256": "f7aa24684af178739114256136c01e854fa06ff77509c4d46ad0222b33f63f96",
+  "promotion_authorized": false,
+  "repo_sha": "d0160c6347a8fdb005db9796bd68484c8e1d86d9",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_local_stage_b_benchmark_complete_v1",
+  "search_policy_benchmark": {
+    "budgets": {
+      "144": {
+        "family_only": {
+          "admitted": 86,
+          "evaluated": 144,
+          "median_matched_cumulative_net_return_increment": 0.18077458818808112,
+          "median_matched_net_reward_increment": 0.9393289939088707,
+          "productive": 57,
+          "productive_rate": 0.3958333333333333
+        },
+        "family_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 15,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.18655877007392996,
+            "median_matched_net_reward_increment": 0.7818078716414859,
+            "productive": 12,
+            "productive_rate": 0.5
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 15,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": -0.01928596434806762,
+            "median_matched_net_reward_increment": 0.948857076019511,
+            "productive": 7,
+            "productive_rate": 0.2916666666666667
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 21,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.1923168574251417,
+            "median_matched_net_reward_increment": 1.123277712470856,
+            "productive": 15,
+            "productive_rate": 0.625
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 9,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.18049573874174873,
+            "median_matched_net_reward_increment": 0.4498201082477977,
+            "productive": 7,
+            "productive_rate": 0.2916666666666667
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 8,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.29726209582189606,
+            "median_matched_net_reward_increment": 0.9907485856577753,
+            "productive": 6,
+            "productive_rate": 0.25
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 18,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.1030563062897023,
+            "median_matched_net_reward_increment": 0.8905207848345291,
+            "productive": 10,
+            "productive_rate": 0.4166666666666667
+          }
+        },
+        "per_temporal_budget": 24,
+        "primitive_local": {
+          "admitted": 95,
+          "evaluated": 144,
+          "median_matched_cumulative_net_return_increment": 0.1810534376344135,
+          "median_matched_net_reward_increment": 0.9473782407604112,
+          "productive": 64,
+          "productive_rate": 0.4444444444444444
+        },
+        "primitive_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 16,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.11998552983800653,
+            "median_matched_net_reward_increment": 0.708494640794658,
+            "productive": 9,
+            "productive_rate": 0.375
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 17,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.12822206531780056,
+            "median_matched_net_reward_increment": 0.948857076019511,
+            "productive": 9,
+            "productive_rate": 0.375
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 22,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.37220745353295015,
+            "median_matched_net_reward_increment": 1.4790447948666312,
+            "productive": 19,
+            "productive_rate": 0.7916666666666666
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 11,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.2653995162945417,
+            "median_matched_net_reward_increment": 0.8421951259704775,
+            "productive": 9,
+            "productive_rate": 0.375
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 9,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.25924547763385075,
+            "median_matched_net_reward_increment": 0.7320648192283384,
+            "productive": 6,
+            "productive_rate": 0.25
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 20,
+            "evaluated": 24,
+            "median_matched_cumulative_net_return_increment": 0.1030563062897023,
+            "median_matched_net_reward_increment": 0.9925198044113416,
+            "productive": 12,
+            "productive_rate": 0.5
+          }
+        },
+        "primitive_temporal_strata_won_vs_uniform_seed_mean": 6,
+        "primitive_vs_uniform_absolute_productive_delta": 12.5,
+        "primitive_vs_uniform_relative_ratio": 1.2427184466019416,
+        "uniform_seed_mean_productive_count": 51.5,
+        "uniform_seed_mean_productive_rate": 0.3576388888888889,
+        "uniform_seed_metrics": {
+          "104729": {
+            "admitted": 80,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.18441960425497772,
+            "median_matched_net_reward_increment": 0.7856233228659457,
+            "productive": 53,
+            "productive_rate": 0.3680555555555556
+          },
+          "130363": {
+            "admitted": 73,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.1234450475018466,
+            "median_matched_net_reward_increment": 0.8421951259704775,
+            "productive": 45,
+            "productive_rate": 0.3125
+          },
+          "155921": {
+            "admitted": 73,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.2631708811650624,
+            "median_matched_net_reward_increment": 0.9529131447624568,
+            "productive": 53,
+            "productive_rate": 0.3680555555555556
+          },
+          "1729": {
+            "admitted": 84,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.16039441459221976,
+            "median_matched_net_reward_increment": 0.8156449534082086,
+            "productive": 54,
+            "productive_rate": 0.375
+          },
+          "196613": {
+            "admitted": 77,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.12822206531780056,
+            "median_matched_net_reward_increment": 0.6628386941134092,
+            "productive": 46,
+            "productive_rate": 0.3194444444444444
+          },
+          "2718": {
+            "admitted": 77,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.16296155102516274,
+            "median_matched_net_reward_increment": 0.7541505874759067,
+            "productive": 52,
+            "productive_rate": 0.3611111111111111
+          },
+          "31415": {
+            "admitted": 81,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.1826369181819285,
+            "median_matched_net_reward_increment": 0.9473782407604112,
+            "productive": 58,
+            "productive_rate": 0.4027777777777778
+          },
+          "65537": {
+            "admitted": 75,
+            "evaluated": 144,
+            "median_matched_cumulative_net_return_increment": 0.1923168574251417,
+            "median_matched_net_reward_increment": 0.9529131447624568,
+            "productive": 51,
+            "productive_rate": 0.3541666666666667
+          }
+        }
+      },
+      "48": {
+        "family_only": {
+          "admitted": 25,
+          "evaluated": 48,
+          "median_matched_cumulative_net_return_increment": 0.1810534376344135,
+          "median_matched_net_reward_increment": 1.6450391084608311,
+          "productive": 17,
+          "productive_rate": 0.3541666666666667
+        },
+        "family_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 2,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.058254404742031474,
+            "median_matched_net_reward_increment": 1.3594545201627795,
+            "productive": 1,
+            "productive_rate": 0.125
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 7,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.43660278123346496,
+            "median_matched_net_reward_increment": 1.7842413964362147,
+            "productive": 5,
+            "productive_rate": 0.625
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 8,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.3231678689375816,
+            "median_matched_net_reward_increment": 1.9090338938493168,
+            "productive": 7,
+            "productive_rate": 0.875
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 0,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": null,
+            "median_matched_net_reward_increment": null,
+            "productive": 0,
+            "productive_rate": 0.0
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 0,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": null,
+            "median_matched_net_reward_increment": null,
+            "productive": 0,
+            "productive_rate": 0.0
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 8,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.03660482274400745,
+            "median_matched_net_reward_increment": 1.0691297896279521,
+            "productive": 4,
+            "productive_rate": 0.5
+          }
+        },
+        "per_temporal_budget": 8,
+        "primitive_local": {
+          "admitted": 33,
+          "evaluated": 48,
+          "median_matched_cumulative_net_return_increment": 0.12327380755420814,
+          "median_matched_net_reward_increment": 1.084493120932186,
+          "productive": 23,
+          "productive_rate": 0.4791666666666667
+        },
+        "primitive_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 6,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.23052725561816778,
+            "median_matched_net_reward_increment": 1.0163453148776518,
+            "productive": 5,
+            "productive_rate": 0.625
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 6,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": -0.06471027402535745,
+            "median_matched_net_reward_increment": 0.8192803796391541,
+            "productive": 2,
+            "productive_rate": 0.25
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 8,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.1003777838363844,
+            "median_matched_net_reward_increment": 0.9369659475112957,
+            "productive": 6,
+            "productive_rate": 0.75
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 4,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.19440231412873177,
+            "median_matched_net_reward_increment": 0.9901694850176448,
+            "productive": 4,
+            "productive_rate": 0.5
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 2,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.4539902321592206,
+            "median_matched_net_reward_increment": 1.9875310028306556,
+            "productive": 2,
+            "productive_rate": 0.25
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 7,
+            "evaluated": 8,
+            "median_matched_cumulative_net_return_increment": 0.06979225352438823,
+            "median_matched_net_reward_increment": 1.5509881852876934,
+            "productive": 4,
+            "productive_rate": 0.5
+          }
+        },
+        "primitive_temporal_strata_won_vs_uniform_seed_mean": 5,
+        "primitive_vs_uniform_absolute_productive_delta": 6.5,
+        "primitive_vs_uniform_relative_ratio": 1.393939393939394,
+        "uniform_seed_mean_productive_count": 16.5,
+        "uniform_seed_mean_productive_rate": 0.34375,
+        "uniform_seed_metrics": {
+          "104729": {
+            "admitted": 27,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.09458721955553884,
+            "median_matched_net_reward_increment": 0.7541505874759067,
+            "productive": 15,
+            "productive_rate": 0.3125
+          },
+          "130363": {
+            "admitted": 25,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.11423531658072639,
+            "median_matched_net_reward_increment": 0.5177310461574975,
+            "productive": 13,
+            "productive_rate": 0.2708333333333333
+          },
+          "155921": {
+            "admitted": 30,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.18946853385284335,
+            "median_matched_net_reward_increment": 0.9057760196257667,
+            "productive": 20,
+            "productive_rate": 0.4166666666666667
+          },
+          "1729": {
+            "admitted": 25,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.2692635000663953,
+            "median_matched_net_reward_increment": 0.9529131447624568,
+            "productive": 18,
+            "productive_rate": 0.375
+          },
+          "196613": {
+            "admitted": 26,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.10043282951979415,
+            "median_matched_net_reward_increment": 0.7856233228659457,
+            "productive": 17,
+            "productive_rate": 0.3541666666666667
+          },
+          "2718": {
+            "admitted": 30,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.14946767432390728,
+            "median_matched_net_reward_increment": 0.5938189889236105,
+            "productive": 19,
+            "productive_rate": 0.3958333333333333
+          },
+          "31415": {
+            "admitted": 25,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.14908330344730114,
+            "median_matched_net_reward_increment": 0.6451450461612706,
+            "productive": 17,
+            "productive_rate": 0.3541666666666667
+          },
+          "65537": {
+            "admitted": 22,
+            "evaluated": 48,
+            "median_matched_cumulative_net_return_increment": 0.061849961159402,
+            "median_matched_net_reward_increment": 1.087698499402188,
+            "productive": 13,
+            "productive_rate": 0.2708333333333333
+          }
+        }
+      },
+      "72": {
+        "family_only": {
+          "admitted": 39,
+          "evaluated": 72,
+          "median_matched_cumulative_net_return_increment": 0.12822206531780056,
+          "median_matched_net_reward_increment": 1.2870189213850762,
+          "productive": 23,
+          "productive_rate": 0.3194444444444444
+        },
+        "family_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 4,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.058254404742031474,
+            "median_matched_net_reward_increment": 1.5044917454873032,
+            "productive": 2,
+            "productive_rate": 0.16666666666666666
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 11,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.12822206531780056,
+            "median_matched_net_reward_increment": 1.6579629203546697,
+            "productive": 6,
+            "productive_rate": 0.5
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 12,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.3231678689375816,
+            "median_matched_net_reward_increment": 1.9090338938493168,
+            "productive": 9,
+            "productive_rate": 0.75
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 0,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": null,
+            "median_matched_net_reward_increment": null,
+            "productive": 0,
+            "productive_rate": 0.0
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 0,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": null,
+            "median_matched_net_reward_increment": null,
+            "productive": 0,
+            "productive_rate": 0.0
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 12,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.03660482274400745,
+            "median_matched_net_reward_increment": 1.00751903965428,
+            "productive": 6,
+            "productive_rate": 0.5
+          }
+        },
+        "per_temporal_budget": 12,
+        "primitive_local": {
+          "admitted": 51,
+          "evaluated": 72,
+          "median_matched_cumulative_net_return_increment": 0.12327380755420814,
+          "median_matched_net_reward_increment": 1.084493120932186,
+          "productive": 33,
+          "productive_rate": 0.4583333333333333
+        },
+        "primitive_per_temporal": {
+          "038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+            "admitted": 10,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.19719539536423486,
+            "median_matched_net_reward_increment": 0.8535318661191817,
+            "productive": 6,
+            "productive_rate": 0.5
+          },
+          "064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+            "admitted": 10,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": -0.06471027402535745,
+            "median_matched_net_reward_increment": 1.3034099981870904,
+            "productive": 4,
+            "productive_rate": 0.3333333333333333
+          },
+          "6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+            "admitted": 11,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.14908330344730114,
+            "median_matched_net_reward_increment": 1.084493120932186,
+            "productive": 9,
+            "productive_rate": 0.75
+          },
+          "6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+            "admitted": 5,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.31288106050076525,
+            "median_matched_net_reward_increment": 0.9147567342895027,
+            "productive": 5,
+            "productive_rate": 0.4166666666666667
+          },
+          "6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+            "admitted": 5,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.2692635000663953,
+            "median_matched_net_reward_increment": 1.6869937032685658,
+            "productive": 3,
+            "productive_rate": 0.25
+          },
+          "90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+            "admitted": 10,
+            "evaluated": 12,
+            "median_matched_cumulative_net_return_increment": 0.08218973653996353,
+            "median_matched_net_reward_increment": 1.300695180281325,
+            "productive": 6,
+            "productive_rate": 0.5
+          }
+        },
+        "primitive_temporal_strata_won_vs_uniform_seed_mean": 5,
+        "primitive_vs_uniform_absolute_productive_delta": 7.625,
+        "primitive_vs_uniform_relative_ratio": 1.3004926108374384,
+        "uniform_seed_mean_productive_count": 25.375,
+        "uniform_seed_mean_productive_rate": 0.3524305555555556,
+        "uniform_seed_metrics": {
+          "104729": {
+            "admitted": 40,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.09196374278563069,
+            "median_matched_net_reward_increment": 0.721927135367352,
+            "productive": 22,
+            "productive_rate": 0.3055555555555556
+          },
+          "130363": {
+            "admitted": 39,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.16296155102516274,
+            "median_matched_net_reward_increment": 0.8421951259704775,
+            "productive": 24,
+            "productive_rate": 0.3333333333333333
+          },
+          "155921": {
+            "admitted": 39,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.1978836300712732,
+            "median_matched_net_reward_increment": 0.9473782407604112,
+            "productive": 28,
+            "productive_rate": 0.3888888888888889
+          },
+          "1729": {
+            "admitted": 39,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.1978836300712732,
+            "median_matched_net_reward_increment": 0.9529131447624568,
+            "productive": 27,
+            "productive_rate": 0.375
+          },
+          "196613": {
+            "admitted": 40,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.14812858823392955,
+            "median_matched_net_reward_increment": 0.7134764589013782,
+            "productive": 27,
+            "productive_rate": 0.375
+          },
+          "2718": {
+            "admitted": 44,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.11987173898386633,
+            "median_matched_net_reward_increment": 0.6452866232210634,
+            "productive": 27,
+            "productive_rate": 0.375
+          },
+          "31415": {
+            "admitted": 39,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.14908330344730114,
+            "median_matched_net_reward_increment": 0.7818078716414859,
+            "productive": 26,
+            "productive_rate": 0.3611111111111111
+          },
+          "65537": {
+            "admitted": 38,
+            "evaluated": 72,
+            "median_matched_cumulative_net_return_increment": 0.12461028379040717,
+            "median_matched_net_reward_increment": 0.9101353506997796,
+            "productive": 22,
+            "productive_rate": 0.3055555555555556
+          }
+        }
+      }
+    },
+    "status": "PRIMITIVE_LOCAL_SEARCH_TRANSFER_PASS_STAGE_C_LARGE_SCALE_AUTHORIZATION_ELIGIBLE",
+    "victory_checks": {
+      "budget_144_relative_ratio": true,
+      "primary_absolute_delta": true,
+      "primary_relative_ratio": true,
+      "temporal_strata_wins": true
+    }
+  },
+  "search_transfer_status": "PRIMITIVE_LOCAL_SEARCH_TRANSFER_PASS_STAGE_C_LARGE_SCALE_AUTHORIZATION_ELIGIBLE",
+  "stage_b_evaluated": 264,
+  "stage_c_execution_authorized": false,
+  "status": "PRIMITIVE_LOCAL_STAGE_B_BENCHMARK_COMPLETE",
+  "validation_feedback_used": false,
+  "wall_seconds": 1626.9168800000334
+}

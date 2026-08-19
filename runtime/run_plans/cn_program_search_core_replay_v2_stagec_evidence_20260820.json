@@ -1,0 +1,1935 @@
+{
+  "aggregate": {
+    "HISTORICAL_EXECUTION_ORDER": {
+      "available_fold_count": 4,
+      "budgets": {
+        "168": {
+          "effective_k": 588,
+          "fold_count": 4,
+          "new_behavior_pair_count": 464,
+          "positive_joint_economic_utility": 207.22064818311873,
+          "productive": 252,
+          "productive_precision": 0.42857142857142855
+        },
+        "24": {
+          "effective_k": 96,
+          "fold_count": 4,
+          "new_behavior_pair_count": 76,
+          "positive_joint_economic_utility": 25.258170959947847,
+          "productive": 31,
+          "productive_precision": 0.3229166666666667
+        },
+        "48": {
+          "effective_k": 192,
+          "fold_count": 4,
+          "new_behavior_pair_count": 149,
+          "positive_joint_economic_utility": 57.663546864887266,
+          "productive": 73,
+          "productive_precision": 0.3802083333333333
+        },
+        "96": {
+          "effective_k": 384,
+          "fold_count": 4,
+          "new_behavior_pair_count": 308,
+          "positive_joint_economic_utility": 114.72881028345407,
+          "productive": 154,
+          "productive_precision": 0.4010416666666667
+        }
+      },
+      "mean_productive_auc": 0.42980114867998187
+    },
+    "ORACLE_UPPER_BOUND": {
+      "available_fold_count": 4,
+      "budgets": {
+        "168": {
+          "effective_k": 588,
+          "fold_count": 4,
+          "new_behavior_pair_count": 466,
+          "positive_joint_economic_utility": 261.03490884281933,
+          "productive": 314,
+          "productive_precision": 0.5340136054421769
+        },
+        "24": {
+          "effective_k": 96,
+          "fold_count": 4,
+          "new_behavior_pair_count": 71,
+          "positive_joint_economic_utility": 105.34733675751956,
+          "productive": 95,
+          "productive_precision": 0.9895833333333334
+        },
+        "48": {
+          "effective_k": 192,
+          "fold_count": 4,
+          "new_behavior_pair_count": 143,
+          "positive_joint_economic_utility": 172.91347304319277,
+          "productive": 174,
+          "productive_precision": 0.90625
+        },
+        "96": {
+          "effective_k": 384,
+          "fold_count": 4,
+          "new_behavior_pair_count": 300,
+          "positive_joint_economic_utility": 234.6838231640452,
+          "productive": 269,
+          "productive_precision": 0.7005208333333334
+        }
+      },
+      "mean_productive_auc": 1.0
+    },
+    "STRUCTURED_EXTRATREES_V1": {
+      "available_fold_count": 4,
+      "budgets": {
+        "168": {
+          "effective_k": 588,
+          "fold_count": 4,
+          "new_behavior_pair_count": 468,
+          "positive_joint_economic_utility": 241.94925616620213,
+          "productive": 282,
+          "productive_precision": 0.47959183673469385
+        },
+        "24": {
+          "effective_k": 96,
+          "fold_count": 4,
+          "new_behavior_pair_count": 76,
+          "positive_joint_economic_utility": 77.91571242379035,
+          "productive": 58,
+          "productive_precision": 0.6041666666666666
+        },
+        "48": {
+          "effective_k": 192,
+          "fold_count": 4,
+          "new_behavior_pair_count": 152,
+          "positive_joint_economic_utility": 140.47673467912233,
+          "productive": 124,
+          "productive_precision": 0.6458333333333334
+        },
+        "96": {
+          "effective_k": 384,
+          "fold_count": 4,
+          "new_behavior_pair_count": 310,
+          "positive_joint_economic_utility": 206.68211027995,
+          "productive": 214,
+          "productive_precision": 0.5572916666666666
+        }
+      },
+      "mean_productive_auc": 0.8093580434700667
+    },
+    "TRAINED_MULTIHEAD_V2": {
+      "available_fold_count": 4,
+      "budgets": {
+        "168": {
+          "effective_k": 588,
+          "fold_count": 4,
+          "new_behavior_pair_count": 464,
+          "positive_joint_economic_utility": 247.51767760161943,
+          "productive": 289,
+          "productive_precision": 0.4914965986394558
+        },
+        "24": {
+          "effective_k": 96,
+          "fold_count": 4,
+          "new_behavior_pair_count": 77,
+          "positive_joint_economic_utility": 74.44469341588567,
+          "productive": 67,
+          "productive_precision": 0.6979166666666666
+        },
+        "48": {
+          "effective_k": 192,
+          "fold_count": 4,
+          "new_behavior_pair_count": 146,
+          "positive_joint_economic_utility": 141.75918261943363,
+          "productive": 129,
+          "productive_precision": 0.671875
+        },
+        "96": {
+          "effective_k": 384,
+          "fold_count": 4,
+          "new_behavior_pair_count": 304,
+          "positive_joint_economic_utility": 210.44688264956562,
+          "productive": 232,
+          "productive_precision": 0.6041666666666666
+        }
+      },
+      "mean_productive_auc": 0.8393160746403789
+    },
+    "UNIFORM_HASH": {
+      "available_fold_count": 4,
+      "budgets": {
+        "168": {
+          "effective_k": 588,
+          "fold_count": 4,
+          "new_behavior_pair_count": 462,
+          "positive_joint_economic_utility": 211.88543214066652,
+          "productive": 263,
+          "productive_precision": 0.44727891156462585
+        },
+        "24": {
+          "effective_k": 96,
+          "fold_count": 4,
+          "new_behavior_pair_count": 79,
+          "positive_joint_economic_utility": 37.03269520312298,
+          "productive": 51,
+          "productive_precision": 0.53125
+        },
+        "48": {
+          "effective_k": 192,
+          "fold_count": 4,
+          "new_behavior_pair_count": 152,
+          "positive_joint_economic_utility": 71.87434805216968,
+          "productive": 90,
+          "productive_precision": 0.46875
+        },
+        "96": {
+          "effective_k": 384,
+          "fold_count": 4,
+          "new_behavior_pair_count": 309,
+          "positive_joint_economic_utility": 135.91185516270986,
+          "productive": 169,
+          "productive_precision": 0.4401041666666667
+        }
+      },
+      "mean_productive_auc": 0.5109086804987769
+    }
+  },
+  "cohort_order": [
+    "TOURNAMENT_V1",
+    "SUCCESSOR_D1",
+    "D1_FRESH",
+    "D1_CONTINUATION_B",
+    "D1_CONTINUATION_C"
+  ],
+  "counterfactual_candidate_selection_claim_authorized": false,
+  "dataset_file": "G:\\Chengbo\\runtime\\spent_development_dataset_v2_fd95bac.json",
+  "dataset_payload_sha256": "92407bbbfe6558b52915d8818bc80a46f0221eb7406ff0468413a25857782a4a",
+  "evidence_role": "DEVELOPMENT_ONLY_RERANKING_EVIDENCE",
+  "financial_evaluation_performed_by_replay": false,
+  "folds": [
+    {
+      "fold_id": "TRAIN_BEFORE_SUCCESSOR_D1_TEST_SUCCESSOR_D1",
+      "model_metadata": {
+        "TRAINED_MULTIHEAD_V2": {
+          "beta": 0.75,
+          "return_scale": 0.26247961974609296,
+          "reward_scale": 1.2722489838232547
+        },
+        "catboost_available": false,
+        "catboost_status": "CATBOOST_UNAVAILABLE",
+        "lightgbm_available": false,
+        "lightgbm_lambdarank_status": "LIGHTGBM_UNAVAILABLE",
+        "xgboost_available": false,
+        "xgboost_lambdamart_status": "XGBOOST_UNAVAILABLE"
+      },
+      "policies": {
+        "HISTORICAL_EXECUTION_ORDER": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6130952380952381,
+              "admitted": 103,
+              "distinct_base_group_count": 32,
+              "effective_k": 168,
+              "new_behavior_pair_count": 143,
+              "new_behavior_pair_rate": 0.8511904761904762,
+              "positive_joint_economic_utility": 47.0071702024447,
+              "productive": 58,
+              "productive_precision": 0.34523809523809523
+            },
+            "24": {
+              "admission_rate": 0.5,
+              "admitted": 12,
+              "distinct_base_group_count": 19,
+              "effective_k": 24,
+              "new_behavior_pair_count": 20,
+              "new_behavior_pair_rate": 0.8333333333333334,
+              "positive_joint_economic_utility": 6.7265720305495265,
+              "productive": 8,
+              "productive_precision": 0.3333333333333333
+            },
+            "48": {
+              "admission_rate": 0.5625,
+              "admitted": 27,
+              "distinct_base_group_count": 28,
+              "effective_k": 48,
+              "new_behavior_pair_count": 40,
+              "new_behavior_pair_rate": 0.8333333333333334,
+              "positive_joint_economic_utility": 12.490339507740506,
+              "productive": 15,
+              "productive_precision": 0.3125
+            },
+            "96": {
+              "admission_rate": 0.59375,
+              "admitted": 57,
+              "distinct_base_group_count": 32,
+              "effective_k": 96,
+              "new_behavior_pair_count": 85,
+              "new_behavior_pair_rate": 0.8854166666666666,
+              "positive_joint_economic_utility": 24.185308252253353,
+              "productive": 32,
+              "productive_precision": 0.3333333333333333
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.4725091827364555,
+            "productive_average_precision": 0.3609058613347127
+          },
+          "top_exact_identities": [
+            "f251b49a148dbba3564686741b83d899d14e79f45299a5d235787ee2fb98e202",
+            "4deb7bed7d60897fd539f8fd86b1e5058f2a32df30f9452f4255f03b8bd208b1",
+            "eca851db3bcd40cbf9baa1a869c9492246ce7a9a02c75251c2e83ec4fcd18e29",
+            "0e543d74d35d1234ef3e8c7dd165a392cac3395892a9cd7a3f196ce01fe6f573",
+            "3eb17dd2e93d218b2496a898cc5478f3850989657372443a24a3bf9f7927982a",
+            "b9e8b3939a293cbe0a92d0f60c15c0b963ab8e3f2fab003f8b5d986b9ac6b8b5",
+            "5f20c809b66ec4988d3552f176e3445f5ccbdd91405073cf07daaa4ae4772448",
+            "88f0a4af2fcdc8822d9ef51ca9462c835ffc6bef013d9cdf54f0296c86396924",
+            "91af3ba265a4bea9b434bda506b9452e184d00451ba20fbdbb8fd12784ce5791",
+            "6803ce2ca47e201fee78fe483aade8569a0ab48921bb1de04d4bda2d9e512d17",
+            "bc40aee4f1c0dfaf69134677bc3e107962e56de4804edc83aaf9486d00e3f6e5",
+            "dc4699542d8794b5a31a33d777eb48c632404206dc69cd97ab358b1ef48fb1c2",
+            "e82cf4a5bee629959eef0d8717f8fccb4f07e38bd8c5bd59b75b912dec5b391d",
+            "a44bdd8ced1184e221c050cdc000586c314c963e45b89e97016a8afb72c563c3",
+            "ed4463e58622d31bb0b363381d6a380d4ecfc375e134b3165331795442886ae1",
+            "d839137cb4f7b9ea7f3302e8a4f9bb40cce4fb1d2f30ba84caefcccad73e2e36",
+            "53fcd4aa76e071f781169420614d921a0ed384030fc66406274dcae200ecd9e1",
+            "75c7c95a43ebfe0199ff6e240e91e55d0dcf1bc7a183bd7f7248f160ee3cfdbd",
+            "db281c82d6c179adc08d91f46f9b43fab5a9c0a7e53140f19d3b52927e24d45a",
+            "950cd7d912e47d5c9aaaffea38c911d7f8a2311750b61841a8a2657a41449d0b",
+            "7825c9a7d8f1670161d459efeb8e4ec72ffffc13e021cd97787039c360f95322",
+            "174454ce0acd995490552b88a09e6624a6b062d8a4a81509a959bf9b742693af",
+            "d3d8f772c99a87c538b0116b138a6de0b8460651dd17c4dd1e0ffcd34124bb3e",
+            "31dadce68376da0cf4b61ae926bc4897804635e8605671b60210e4bdb04c9e23"
+          ]
+        },
+        "ORACLE_UPPER_BOUND": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.9583333333333334,
+              "admitted": 161,
+              "distinct_base_group_count": 32,
+              "effective_k": 168,
+              "new_behavior_pair_count": 145,
+              "new_behavior_pair_rate": 0.8630952380952381,
+              "positive_joint_economic_utility": 100.8214308621453,
+              "productive": 120,
+              "productive_precision": 0.7142857142857143
+            },
+            "24": {
+              "admission_rate": 1.0,
+              "admitted": 24,
+              "distinct_base_group_count": 11,
+              "effective_k": 24,
+              "new_behavior_pair_count": 22,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 30.295538471598636,
+              "productive": 24,
+              "productive_precision": 1.0
+            },
+            "48": {
+              "admission_rate": 1.0,
+              "admitted": 48,
+              "distinct_base_group_count": 18,
+              "effective_k": 48,
+              "new_behavior_pair_count": 42,
+              "new_behavior_pair_rate": 0.875,
+              "positive_joint_economic_utility": 52.937278147393066,
+              "productive": 48,
+              "productive_precision": 1.0
+            },
+            "96": {
+              "admission_rate": 1.0,
+              "admitted": 96,
+              "distinct_base_group_count": 26,
+              "effective_k": 96,
+              "new_behavior_pair_count": 82,
+              "new_behavior_pair_rate": 0.8541666666666666,
+              "positive_joint_economic_utility": 80.73883762166994,
+              "productive": 89,
+              "productive_precision": 0.9270833333333334
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 1.0,
+            "productive_average_precision": 1.0
+          },
+          "top_exact_identities": [
+            "5c0ad1862effd996cc3727cdef331446a210a789394aea11cdb7ac5f3b691d7c",
+            "87fd980871d81c5f30adf1b7fba361d67f41fdfb8266ab520fdb5346c79c2e35",
+            "80ac57ef130c9de8c68db0b9673efd08aa559840be00f6dcaf303b028aee192a",
+            "0f707cdcc3ac103d0293710c3546ba9e1b4c7f74eac52e9bc94a4c51c2b45666",
+            "e6c32109b351622fb521e6b5aebd30d0c6a7d8366ddac37e7f462915e083f0ee",
+            "c2090e5c03e825e852b4db07b94ea310368d28201e7b5dcb9a0a0a8d91d0d961",
+            "19488d22b5502cb81985135dad9e81792dbb8b85545ae13581c0fc39ac310355",
+            "15c63070a7563da6480206e8dda03c7af9c9cb2999dc14a02d7cd67a2e7b15b6",
+            "91af3ba265a4bea9b434bda506b9452e184d00451ba20fbdbb8fd12784ce5791",
+            "6976dc867fcb01286636a891b071c1b13ecaba7ed7ac0729a92b8c6a20847c1f",
+            "5fcbec002637c75cdeacbfdb0d2ac0d3f846189df88df1413d72b8889c5c0d47",
+            "5632ecb912392e0822938b21313690ff666a20126fde254685d500185f5f6190",
+            "e273b2273b4b74cb812b0a7cb8207aa5f0ab095ed1b2eafebbde275193962a2d",
+            "a44bdd8ced1184e221c050cdc000586c314c963e45b89e97016a8afb72c563c3",
+            "8411eb36aa7d561371a81aafe227741fd5d44a46d240d64730ff8e54568a8004",
+            "02a94da6bc2daf7b209910e14987d218e34cf558897f1c323621d7226ba7d5b1",
+            "af1cceae1231438dc0f63b58eb39f705f3413d7a7077d6194013a0c238e9ef99",
+            "9818feeb3a21dea153b9d0db203b5e86dac0194be6591254a7f2003b6fb1f877",
+            "12fcfac24d07436c296661595e3776450c29445bfb9cc46061ce22cc2215cf17",
+            "d6c3acfdd310fbdf995f3d7f8d22c22409c4e07221e73f69d76f03f825d92fc6",
+            "7423edd5ece01ef94255086abee10b5fd88ed514542537324d3b0d699660d74a",
+            "147747ddbe665097a5ca099d9e8c31fadbff28dc744995471348010291fe7af9",
+            "ec6e6585d0ef536a50ca80281d2e9d9aab94bd9abc3d2ad87177b0a7c518cbf7",
+            "31dadce68376da0cf4b61ae926bc4897804635e8605671b60210e4bdb04c9e23"
+          ]
+        },
+        "STRUCTURED_EXTRATREES_V1": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6488095238095238,
+              "admitted": 109,
+              "distinct_base_group_count": 30,
+              "effective_k": 168,
+              "new_behavior_pair_count": 147,
+              "new_behavior_pair_rate": 0.875,
+              "positive_joint_economic_utility": 81.73577818552808,
+              "productive": 88,
+              "productive_precision": 0.5238095238095238
+            },
+            "24": {
+              "admission_rate": 0.625,
+              "admitted": 15,
+              "distinct_base_group_count": 8,
+              "effective_k": 24,
+              "new_behavior_pair_count": 23,
+              "new_behavior_pair_rate": 0.9583333333333334,
+              "positive_joint_economic_utility": 18.902273416862563,
+              "productive": 14,
+              "productive_precision": 0.5833333333333334
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 11,
+              "effective_k": 48,
+              "new_behavior_pair_count": 46,
+              "new_behavior_pair_rate": 0.9583333333333334,
+              "positive_joint_economic_utility": 35.21189278851706,
+              "productive": 29,
+              "productive_precision": 0.6041666666666666
+            },
+            "96": {
+              "admission_rate": 0.65625,
+              "admitted": 63,
+              "distinct_base_group_count": 19,
+              "effective_k": 96,
+              "new_behavior_pair_count": 90,
+              "new_behavior_pair_rate": 0.9375,
+              "positive_joint_economic_utility": 60.24331263897284,
+              "productive": 55,
+              "productive_precision": 0.5729166666666666
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.7912649219467401,
+            "productive_average_precision": 0.7384241046176
+          },
+          "top_exact_identities": [
+            "15c63070a7563da6480206e8dda03c7af9c9cb2999dc14a02d7cd67a2e7b15b6",
+            "89af90261a87a4a47c15afb6ac79d41e234bab3517b70248f62c1ee2e58a168c",
+            "80ac57ef130c9de8c68db0b9673efd08aa559840be00f6dcaf303b028aee192a",
+            "9a821c0ab6d7ff84724ece0b6d545a50c8d55c43faa9aa0a1881a70efebfd8e3",
+            "4bcaf61b84ef4b2525d76fdc68cf5da8406419350a0051de1a2654f79ae0908c",
+            "9199724cbf06f0badeb7370ff45c46b77518212baec6df72467acbe420d1bc49",
+            "a44bdd8ced1184e221c050cdc000586c314c963e45b89e97016a8afb72c563c3",
+            "25f82d930128c666acea997dd0840896ee63b98425e3412b40b6ba1c5ddeb766",
+            "3e3d7055fe6e581a0674ee701bd0aabcb4fc8db88e051d21d7ed407a24a011de",
+            "eca851db3bcd40cbf9baa1a869c9492246ce7a9a02c75251c2e83ec4fcd18e29",
+            "8672654651752ba6425fef0871631a0561cc201f8c492555132539ce4c12f515",
+            "7156cb4e01e517fca8838ca00116d36923585555d31135d2b668273da9eadc24",
+            "c2090e5c03e825e852b4db07b94ea310368d28201e7b5dcb9a0a0a8d91d0d961",
+            "19488d22b5502cb81985135dad9e81792dbb8b85545ae13581c0fc39ac310355",
+            "8411eb36aa7d561371a81aafe227741fd5d44a46d240d64730ff8e54568a8004",
+            "91af3ba265a4bea9b434bda506b9452e184d00451ba20fbdbb8fd12784ce5791",
+            "743015376f354fdfb76e7a9b69dc8d78b2a9545ad0ed5e392bdefd1ba9cc208f",
+            "23db030ef5c1afd48f41e3b17dbaed25dda4ffa4fead69af945e272d894e8790",
+            "5632ecb912392e0822938b21313690ff666a20126fde254685d500185f5f6190",
+            "44bf1b6ec5d202163bd3f6bf3e30763ca8d90f7b2e3570b9a33b60429ffe35c7",
+            "babde549f175de1b4fc7f391b01ee326bfa37e8c46d886fe610e08eb269b1ab0",
+            "7516e96f000a07759c446adb6a5bc584a5b292adcc90abf437bf372b68631bb5",
+            "122cbcf16873305b076260ba7aa5c92f815745bf87d26edf651e1452ef306ff3",
+            "15bef676566f4d0ac9b92e4a089da26429d1ba86b85f1a51e752698e2f28dff5"
+          ]
+        },
+        "TRAINED_MULTIHEAD_V2": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6785714285714286,
+              "admitted": 114,
+              "distinct_base_group_count": 28,
+              "effective_k": 168,
+              "new_behavior_pair_count": 143,
+              "new_behavior_pair_rate": 0.8511904761904762,
+              "positive_joint_economic_utility": 87.30419962094537,
+              "productive": 95,
+              "productive_precision": 0.5654761904761905
+            },
+            "24": {
+              "admission_rate": 0.8333333333333334,
+              "admitted": 20,
+              "distinct_base_group_count": 13,
+              "effective_k": 24,
+              "new_behavior_pair_count": 22,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 20.160071222945586,
+              "productive": 18,
+              "productive_precision": 0.75
+            },
+            "48": {
+              "admission_rate": 0.75,
+              "admitted": 36,
+              "distinct_base_group_count": 19,
+              "effective_k": 48,
+              "new_behavior_pair_count": 44,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 37.74772077222415,
+              "productive": 34,
+              "productive_precision": 0.7083333333333334
+            },
+            "96": {
+              "admission_rate": 0.7083333333333334,
+              "admitted": 68,
+              "distinct_base_group_count": 22,
+              "effective_k": 96,
+              "new_behavior_pair_count": 86,
+              "new_behavior_pair_rate": 0.8958333333333334,
+              "positive_joint_economic_utility": 61.947255154389055,
+              "productive": 63,
+              "productive_precision": 0.65625
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8185405188246098,
+            "productive_average_precision": 0.7746131487685717
+          },
+          "top_exact_identities": [
+            "15c63070a7563da6480206e8dda03c7af9c9cb2999dc14a02d7cd67a2e7b15b6",
+            "02a94da6bc2daf7b209910e14987d218e34cf558897f1c323621d7226ba7d5b1",
+            "80ac57ef130c9de8c68db0b9673efd08aa559840be00f6dcaf303b028aee192a",
+            "9a821c0ab6d7ff84724ece0b6d545a50c8d55c43faa9aa0a1881a70efebfd8e3",
+            "4bcaf61b84ef4b2525d76fdc68cf5da8406419350a0051de1a2654f79ae0908c",
+            "e273b2273b4b74cb812b0a7cb8207aa5f0ab095ed1b2eafebbde275193962a2d",
+            "a44bdd8ced1184e221c050cdc000586c314c963e45b89e97016a8afb72c563c3",
+            "25f82d930128c666acea997dd0840896ee63b98425e3412b40b6ba1c5ddeb766",
+            "91af3ba265a4bea9b434bda506b9452e184d00451ba20fbdbb8fd12784ce5791",
+            "0a9a44b2658696ac4afe2809d75897b48bfee1b388b952dc259beb6066ba719a",
+            "23db030ef5c1afd48f41e3b17dbaed25dda4ffa4fead69af945e272d894e8790",
+            "5632ecb912392e0822938b21313690ff666a20126fde254685d500185f5f6190",
+            "c2090e5c03e825e852b4db07b94ea310368d28201e7b5dcb9a0a0a8d91d0d961",
+            "5a586898f1efb99e5770207ee93d80bc45f89edca47a74fd38c7c81f58c92a84",
+            "147747ddbe665097a5ca099d9e8c31fadbff28dc744995471348010291fe7af9",
+            "89af90261a87a4a47c15afb6ac79d41e234bab3517b70248f62c1ee2e58a168c",
+            "743015376f354fdfb76e7a9b69dc8d78b2a9545ad0ed5e392bdefd1ba9cc208f",
+            "79001efef164380d19aad09dc55ad727e7fbdb5d285563798dfbc29eb29dacc0",
+            "dc4699542d8794b5a31a33d777eb48c632404206dc69cd97ab358b1ef48fb1c2",
+            "9199724cbf06f0badeb7370ff45c46b77518212baec6df72467acbe420d1bc49",
+            "fe17e0d8768a1c0e8f645f221798c349f77225c867980c5805cda47cd42ad5d4",
+            "9acb5865938136005b65a02ed8e01292cff07fd5dbf0d90d8bafda0903ee1d86",
+            "3e3d7055fe6e581a0674ee701bd0aabcb4fc8db88e051d21d7ed407a24a011de",
+            "6803ce2ca47e201fee78fe483aade8569a0ab48921bb1de04d4bda2d9e512d17"
+          ]
+        },
+        "UNIFORM_HASH": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6309523809523809,
+              "admitted": 106,
+              "distinct_base_group_count": 32,
+              "effective_k": 168,
+              "new_behavior_pair_count": 141,
+              "new_behavior_pair_rate": 0.8392857142857143,
+              "positive_joint_economic_utility": 51.67195415999253,
+              "productive": 69,
+              "productive_precision": 0.4107142857142857
+            },
+            "24": {
+              "admission_rate": 0.7083333333333334,
+              "admitted": 17,
+              "distinct_base_group_count": 15,
+              "effective_k": 24,
+              "new_behavior_pair_count": 22,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 11.82946740004091,
+              "productive": 15,
+              "productive_precision": 0.625
+            },
+            "48": {
+              "admission_rate": 0.6875,
+              "admitted": 33,
+              "distinct_base_group_count": 28,
+              "effective_k": 48,
+              "new_behavior_pair_count": 41,
+              "new_behavior_pair_rate": 0.8541666666666666,
+              "positive_joint_economic_utility": 19.227069096647693,
+              "productive": 23,
+              "productive_precision": 0.4791666666666667
+            },
+            "96": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 64,
+              "distinct_base_group_count": 32,
+              "effective_k": 96,
+              "new_behavior_pair_count": 83,
+              "new_behavior_pair_rate": 0.8645833333333334,
+              "positive_joint_economic_utility": 30.774290213082555,
+              "productive": 40,
+              "productive_precision": 0.4166666666666667
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.5246499081726355,
+            "productive_average_precision": 0.39886374041221667
+          },
+          "top_exact_identities": [
+            "923ea05fd66470c66a8f7b9f034fcaa4df8e2bdddedd952522b926e67edb2983",
+            "91af3ba265a4bea9b434bda506b9452e184d00451ba20fbdbb8fd12784ce5791",
+            "c9c10f280ea8767fe20c1b70e40b1c50c6d927d9e84d6b6d88e88aaa97c0dd7f",
+            "d485a853d0e8f0f613419a82b3111eafa127866ae6c33e32db52e8b83d3ec064",
+            "94d1511f52505c2becc1f7c2c9b41cf66fed1cdfa52c03ed74f6d055b6e5bc0b",
+            "83c3ae57dca929b0101b72d1dbe9401ce91ee82b1c65b53066079282d94dae4a",
+            "b337766a31a47224c96e38ae067018d1cc2af6376df924a5edc7d3f055997143",
+            "4f38cce75db35836e167f71e7cf630e7786fea8d022f4560faf7b4f815e44ec3",
+            "da13a97931c19fb30c7255c2128a729d20ad4b54eee0ba90c75583377a0a34ff",
+            "6803ce2ca47e201fee78fe483aade8569a0ab48921bb1de04d4bda2d9e512d17",
+            "659e8fbef0e10cc5d7182cf49dff0a19ce04cec7636344878f74cce23c85c827",
+            "d2642cbddb67610e1e08833f3e9296ccc0e0a4bd55d9904c8019eaf03a102008",
+            "44bf1b6ec5d202163bd3f6bf3e30763ca8d90f7b2e3570b9a33b60429ffe35c7",
+            "63b64ed447e6022cfbf65a4536137d4f6a0d9419c16b7a9d30f25554fe5fca00",
+            "10e6c16edbaf2bd906ecddd72598e8d558036fb87de21aeeb74daa4a3347494f",
+            "bf89ae4c29f02d8b9c5fb9b9a44bf904914ffd77845c1286aaef19ca276d52f9",
+            "e445d566898017fd688c3d87cb564e33699a35420cc49ed130d85f01195d7adb",
+            "cd52b63325a9b95b46e36250c112c23f26ec164448d357340ac733caa5f616ec",
+            "fb476a01b84c2432001d407ffae3b2ff5ed8293df151f185b4a5799a1fe00d0d",
+            "4d3857f51d3020e2a60a8ad845c3f540a17917e9259c8ea20e3d90ac1d85315e",
+            "77323fb7911daa87f9b5adc5719f5c5123e6544efc1efd36454b0f2f088d36a2",
+            "15c63070a7563da6480206e8dda03c7af9c9cb2999dc14a02d7cd67a2e7b15b6",
+            "30101cc3a2f06286f6f4986334e4034bca804c975d749b4293ceeb188e7ea8f7",
+            "8664537120add3922cef616a3c2491db5bdc804b782ff7d57d5ad0a0c5acec71"
+          ]
+        }
+      },
+      "test_cohort": "SUCCESSOR_D1",
+      "test_count": 386,
+      "test_productive": 144,
+      "train_count": 504,
+      "train_productive": 196
+    },
+    {
+      "fold_id": "TRAIN_BEFORE_D1_FRESH_TEST_D1_FRESH",
+      "model_metadata": {
+        "TRAINED_MULTIHEAD_V2": {
+          "beta": 0.75,
+          "return_scale": 0.2570304238606097,
+          "reward_scale": 1.1780753080778843
+        },
+        "catboost_available": false,
+        "catboost_status": "CATBOOST_UNAVAILABLE",
+        "lightgbm_available": false,
+        "lightgbm_lambdarank_status": "LIGHTGBM_UNAVAILABLE",
+        "xgboost_available": false,
+        "xgboost_lambdamart_status": "XGBOOST_UNAVAILABLE"
+      },
+      "policies": {
+        "HISTORICAL_EXECUTION_ORDER": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6428571428571429,
+              "admitted": 90,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 115,
+              "new_behavior_pair_rate": 0.8214285714285714,
+              "positive_joint_economic_utility": 57.42341409553601,
+              "productive": 64,
+              "productive_precision": 0.45714285714285713
+            },
+            "24": {
+              "admission_rate": 0.5,
+              "admitted": 12,
+              "distinct_base_group_count": 18,
+              "effective_k": 24,
+              "new_behavior_pair_count": 22,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 7.28128892258101,
+              "productive": 7,
+              "productive_precision": 0.2916666666666667
+            },
+            "48": {
+              "admission_rate": 0.5625,
+              "admitted": 27,
+              "distinct_base_group_count": 25,
+              "effective_k": 48,
+              "new_behavior_pair_count": 40,
+              "new_behavior_pair_rate": 0.8333333333333334,
+              "positive_joint_economic_utility": 19.085609070107946,
+              "productive": 19,
+              "productive_precision": 0.3958333333333333
+            },
+            "96": {
+              "admission_rate": 0.6041666666666666,
+              "admitted": 58,
+              "distinct_base_group_count": 30,
+              "effective_k": 96,
+              "new_behavior_pair_count": 81,
+              "new_behavior_pair_rate": 0.84375,
+              "positive_joint_economic_utility": 36.992375642702264,
+              "productive": 41,
+              "productive_precision": 0.4270833333333333
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.4364720394736842,
+            "productive_average_precision": 0.41029947649682824
+          },
+          "top_exact_identities": [
+            "d57bc7fd1d71654f34575d3e7dc1586b9987eafa63080bcd133b7706125074f4",
+            "f1c472f0ef1ab11a218c8a47eb7763880dfad40c6a5270861cd30fa2e5b5a9c5",
+            "739870091be22f60d10b2083bdb293f702ce61537e0de7d8e7040bfb98792dfe",
+            "ea8bc54a6bf51e3ad9c851e0aa31ac2501cdd8c9fb9ff968b04ec8c52e1911e6",
+            "a55107a5fb2db286b179033db6d8c133a25ce3d5412e51a00a34af3b2605985b",
+            "434f86bcbf22dfd2e164675f4af14d0b6b6ff88fa9a79bbb25c0cd2f7e9fc128",
+            "93e0a49585fd97243a92d7be75f30846d42c689959a547b08c0598c76783eb5a",
+            "3455679389b8b461b800e93d8b9895f7b57c4071d43747c9b3b55c90308e94af",
+            "7babcfc4114dacf009b486d9eb43b932b0fd7f6a6307d5f2a7cf0a6b773c0249",
+            "37c4c33679c758e9cfc710a7f0991ccb2a3cd10e6ddaae9cbef19f899b4cc1a2",
+            "28f5aded994a5ab8af45aac7fa0de21bf93e9385840f0d00890b2d1855473d19",
+            "8c93d34e34787c9c4172000b3cc605bb32a51a9278a95a133fe5df4eda2f8580",
+            "6ee9c92a058f904e1b955baaef8ef115713a737d524327ff5945b1cf5f45ee0c",
+            "40f7161847cc725e0ece9199c27eb5a5d5a24d7794768726054cebb4e66d5223",
+            "d1854de0c743230e2d87445194fd9d34d39f2b49197d46688c92117855f41ed2",
+            "5e3eb6b83de4c20630a6df73375ad85f9691bcd439d1f34ecaca0a5a395b887a",
+            "12fef5bc76005208aa81cdbeeba9c7248ca03efb1f5b38bb52e880d793c43f79",
+            "d84d518aedd1af283cf0743f1041616755bdf557e0bc36cf1e54ec817b03dcd1",
+            "45a7faea84c924dde9ed5a165ffd91598b3477e5a037d16a9f473602bfd7e27d",
+            "0308085c6847059896de738addf6c7a73c7fbff578f8f998608737ac6417ed7f",
+            "756b0eeeb887db703ae1ccf084ef5da4b6b19ec77ed2c8a3265e67ca37c4736e",
+            "9ba98840b1193d37c735e35d11a877da4f46a2dc03c21c33adf9e4ba5f5ffaee",
+            "d419433f2ada35fb423f1dd18c25fe9de5c62204951296c7253047f881da9ec0",
+            "e392b391f6fa54a0c138f7ea546e20002b4bc1b6114d31563be89b29ac9a5304"
+          ]
+        },
+        "ORACLE_UPPER_BOUND": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6428571428571429,
+              "admitted": 90,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 115,
+              "new_behavior_pair_rate": 0.8214285714285714,
+              "positive_joint_economic_utility": 57.42341409553602,
+              "productive": 64,
+              "productive_precision": 0.45714285714285713
+            },
+            "24": {
+              "admission_rate": 1.0,
+              "admitted": 24,
+              "distinct_base_group_count": 13,
+              "effective_k": 24,
+              "new_behavior_pair_count": 17,
+              "new_behavior_pair_rate": 0.7083333333333334,
+              "positive_joint_economic_utility": 25.723215597264222,
+              "productive": 23,
+              "productive_precision": 0.9583333333333334
+            },
+            "48": {
+              "admission_rate": 0.9375,
+              "admitted": 45,
+              "distinct_base_group_count": 19,
+              "effective_k": 48,
+              "new_behavior_pair_count": 33,
+              "new_behavior_pair_rate": 0.6875,
+              "positive_joint_economic_utility": 40.96798651751187,
+              "productive": 40,
+              "productive_precision": 0.8333333333333334
+            },
+            "96": {
+              "admission_rate": 0.8125,
+              "admitted": 78,
+              "distinct_base_group_count": 28,
+              "effective_k": 96,
+              "new_behavior_pair_count": 76,
+              "new_behavior_pair_rate": 0.7916666666666666,
+              "positive_joint_economic_utility": 53.90339683325889,
+              "productive": 58,
+              "productive_precision": 0.6041666666666666
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 1.0,
+            "productive_average_precision": 1.0
+          },
+          "top_exact_identities": [
+            "9ba98840b1193d37c735e35d11a877da4f46a2dc03c21c33adf9e4ba5f5ffaee",
+            "18c529fa22e2ec5bfcf1daa36512830238548f96d0bd28f0a99f369f3a99259f",
+            "56a5a89dfbe428e970104d98d3e6da69d643bb7178df2147bb52868483b52a4a",
+            "545ae66c8e83dc49c215581421a20b1eec1f1149deacef7790e461e229ec261f",
+            "3d24320edc01cad5a8247371b6da2516ea3b218095697937f05ca97cd87f6146",
+            "83b92124bb077b785afe8eba36fdbb4173d4d3767a2de86036f6f99a71cfff73",
+            "fc3897516747e47d1f9fbbe8df6cefcf9d080bfe9a0fe5012ac5f1a6ea531c9e",
+            "d57bc7fd1d71654f34575d3e7dc1586b9987eafa63080bcd133b7706125074f4",
+            "9091293d0208eb3059a5a3df63822e5f5f084b8c9aca4e3289f4447cadb5fa33",
+            "da91f9ef04f4909c3a95a19b5222061fa3e007d0e0e7cdfb333c9e4d7b7691e5",
+            "bdeaa1a68f784d5a6330763ac99dfa294bee00a4d9fdddc5e75c2ff40b1171c6",
+            "9be773ce363b8345d9f29f597fecbb6fe9c7cb862eb77545a1cd414b87173fa7",
+            "5394881749e072f8fd2eba2e81c20d211db5f2ecf7a896430e0f6236bdd49f9a",
+            "614526e83144819d58482a10b113a9d9c870b5e69961e68a53ca3f6c9a52c22a",
+            "8670a209b8e75d3835aa9864ab0bb73c8e69d8106e849cd58d55febd3a048f15",
+            "9a203d0b7d20f0b5fcc6902785db0a7630b65e2774a9ea81b6c05c916b4250ce",
+            "1e806cfb26ca5d89baf0cb832d160ed70041c597d5ea8a8cadcdfdf2758f332c",
+            "15f2bb304ca86b37756e29a26c320bdbd94b88c219cc3b3edecf839a9c9a6c0d",
+            "cd83dd8b65ce72c5fc706df5753932ed6bc36d5e1f7bbfbfdc38ef2da00a7aa0",
+            "0308085c6847059896de738addf6c7a73c7fbff578f8f998608737ac6417ed7f",
+            "8bf6427919ad958ba08daf3b1225ca70c7eb5aae540c396b506c40bce9581f6b",
+            "30dc145f8b4e5571e2b7600750ec6c5da6515631da727818e2b08a2b6bbd38bd",
+            "6b6cab9ff66bdbe5e07e39b162b58a75adf8bba2566ee1e1d21a01f37a3f0cda",
+            "65d5b7e99ca1757d1f6788c9bd7e062b08997ee13b60369e324ac87597806832"
+          ]
+        },
+        "STRUCTURED_EXTRATREES_V1": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6428571428571429,
+              "admitted": 90,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 115,
+              "new_behavior_pair_rate": 0.8214285714285714,
+              "positive_joint_economic_utility": 57.42341409553603,
+              "productive": 64,
+              "productive_precision": 0.45714285714285713
+            },
+            "24": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 16,
+              "distinct_base_group_count": 7,
+              "effective_k": 24,
+              "new_behavior_pair_count": 21,
+              "new_behavior_pair_rate": 0.875,
+              "positive_joint_economic_utility": 21.69147935517828,
+              "productive": 16,
+              "productive_precision": 0.6666666666666666
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 12,
+              "effective_k": 48,
+              "new_behavior_pair_count": 37,
+              "new_behavior_pair_rate": 0.7708333333333334,
+              "positive_joint_economic_utility": 36.425876311916475,
+              "productive": 30,
+              "productive_precision": 0.625
+            },
+            "96": {
+              "admission_rate": 0.6770833333333334,
+              "admitted": 65,
+              "distinct_base_group_count": 26,
+              "effective_k": 96,
+              "new_behavior_pair_count": 77,
+              "new_behavior_pair_rate": 0.8020833333333334,
+              "positive_joint_economic_utility": 52.413745193818734,
+              "productive": 52,
+              "productive_precision": 0.5416666666666666
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8312088815789473,
+            "productive_average_precision": 0.8522064704695937
+          },
+          "top_exact_identities": [
+            "3cd8cdfdebd1d5b4158298c3f0956d521fc8ebd18c9c19f919e467516abc18c0",
+            "7c98d0ee7ee1a638c97fdd2143db0ceaa2fa408933388882f0ea7cca18ea167a",
+            "56a5a89dfbe428e970104d98d3e6da69d643bb7178df2147bb52868483b52a4a",
+            "8c839222abbd8dfe95b4933b41d177cacbc635638a1eef277356e3bb38be4151",
+            "48d24279088b7b5c5a31927a26a46cf7be5858413ff7dae87ccf5595e7c36305",
+            "83b92124bb077b785afe8eba36fdbb4173d4d3767a2de86036f6f99a71cfff73",
+            "8bf6427919ad958ba08daf3b1225ca70c7eb5aae540c396b506c40bce9581f6b",
+            "9ba98840b1193d37c735e35d11a877da4f46a2dc03c21c33adf9e4ba5f5ffaee",
+            "f2a6bcbb15ab75f7570d2d922c9b65563244d80e083fe8b1dc96374b676e4ba4",
+            "65d5b7e99ca1757d1f6788c9bd7e062b08997ee13b60369e324ac87597806832",
+            "5e86b0d9c28e4374e3f9b43bb398f3001882af3e93e383129b272b9873588c34",
+            "3d24320edc01cad5a8247371b6da2516ea3b218095697937f05ca97cd87f6146",
+            "5394881749e072f8fd2eba2e81c20d211db5f2ecf7a896430e0f6236bdd49f9a",
+            "e1e4e9a59dbd765931e7ff35e2a723749891160449f5b88977974640cee5ab2a",
+            "102f3c5a75e144238076a983cd9bc5f62f016087405517a27ad4f1283e2db4ec",
+            "d419433f2ada35fb423f1dd18c25fe9de5c62204951296c7253047f881da9ec0",
+            "da91f9ef04f4909c3a95a19b5222061fa3e007d0e0e7cdfb333c9e4d7b7691e5",
+            "28f5aded994a5ab8af45aac7fa0de21bf93e9385840f0d00890b2d1855473d19",
+            "f1ad741687f5f0f4e648097b43a0db2f8c4dc8afc5a9bc5249673e5bf5c25a67",
+            "0308085c6847059896de738addf6c7a73c7fbff578f8f998608737ac6417ed7f",
+            "fc3897516747e47d1f9fbbe8df6cefcf9d080bfe9a0fe5012ac5f1a6ea531c9e",
+            "8670a209b8e75d3835aa9864ab0bb73c8e69d8106e849cd58d55febd3a048f15",
+            "1a90a71e73e261c0579fdabb1605e1c0c2b0a759e5ce552c95eecfc3e9545c01",
+            "1e806cfb26ca5d89baf0cb832d160ed70041c597d5ea8a8cadcdfdf2758f332c"
+          ]
+        },
+        "TRAINED_MULTIHEAD_V2": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6428571428571429,
+              "admitted": 90,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 115,
+              "new_behavior_pair_rate": 0.8214285714285714,
+              "positive_joint_economic_utility": 57.42341409553603,
+              "productive": 64,
+              "productive_precision": 0.45714285714285713
+            },
+            "24": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 16,
+              "distinct_base_group_count": 10,
+              "effective_k": 24,
+              "new_behavior_pair_count": 22,
+              "new_behavior_pair_rate": 0.9166666666666666,
+              "positive_joint_economic_utility": 19.043641514545637,
+              "productive": 15,
+              "productive_precision": 0.625
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 17,
+              "effective_k": 48,
+              "new_behavior_pair_count": 37,
+              "new_behavior_pair_rate": 0.7708333333333334,
+              "positive_joint_economic_utility": 35.891221056847044,
+              "productive": 30,
+              "productive_precision": 0.625
+            },
+            "96": {
+              "admission_rate": 0.6770833333333334,
+              "admitted": 65,
+              "distinct_base_group_count": 26,
+              "effective_k": 96,
+              "new_behavior_pair_count": 76,
+              "new_behavior_pair_rate": 0.7916666666666666,
+              "positive_joint_economic_utility": 51.684887931375656,
+              "productive": 54,
+              "productive_precision": 0.5625
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.85546875,
+            "productive_average_precision": 0.8686446754685491
+          },
+          "top_exact_identities": [
+            "102f3c5a75e144238076a983cd9bc5f62f016087405517a27ad4f1283e2db4ec",
+            "7c98d0ee7ee1a638c97fdd2143db0ceaa2fa408933388882f0ea7cca18ea167a",
+            "56a5a89dfbe428e970104d98d3e6da69d643bb7178df2147bb52868483b52a4a",
+            "8c839222abbd8dfe95b4933b41d177cacbc635638a1eef277356e3bb38be4151",
+            "3d24320edc01cad5a8247371b6da2516ea3b218095697937f05ca97cd87f6146",
+            "83b92124bb077b785afe8eba36fdbb4173d4d3767a2de86036f6f99a71cfff73",
+            "8bf6427919ad958ba08daf3b1225ca70c7eb5aae540c396b506c40bce9581f6b",
+            "9ba98840b1193d37c735e35d11a877da4f46a2dc03c21c33adf9e4ba5f5ffaee",
+            "2094b719b4c6fa4e589d14057500cb8bf71125b163a26de38de50d85cac009cc",
+            "65d5b7e99ca1757d1f6788c9bd7e062b08997ee13b60369e324ac87597806832",
+            "a1afc14548498306540a15ed9fa8c97d5b921279cbe1c704cb26e224d695d4db",
+            "f1ad741687f5f0f4e648097b43a0db2f8c4dc8afc5a9bc5249673e5bf5c25a67",
+            "0308085c6847059896de738addf6c7a73c7fbff578f8f998608737ac6417ed7f",
+            "e1e4e9a59dbd765931e7ff35e2a723749891160449f5b88977974640cee5ab2a",
+            "3cd8cdfdebd1d5b4158298c3f0956d521fc8ebd18c9c19f919e467516abc18c0",
+            "1a90a71e73e261c0579fdabb1605e1c0c2b0a759e5ce552c95eecfc3e9545c01",
+            "3114a1bdd1dfbcf52aa9a40534248015aece1be015cf66b05ead5a1c3c3f2275",
+            "15f2bb304ca86b37756e29a26c320bdbd94b88c219cc3b3edecf839a9c9a6c0d",
+            "912e25539caa31dc352884a638146216d32dac841d91a32d5f074a058e56e733",
+            "5394881749e072f8fd2eba2e81c20d211db5f2ecf7a896430e0f6236bdd49f9a",
+            "fc3897516747e47d1f9fbbe8df6cefcf9d080bfe9a0fe5012ac5f1a6ea531c9e",
+            "fb7c2a467c00424284225f47b57c16a0395c0a637c4a9d4875d1cc374c426555",
+            "43f040202bd3d2ac9cbe4bc210220688fe6e029b7d82815e86014516a9d7537c",
+            "1e806cfb26ca5d89baf0cb832d160ed70041c597d5ea8a8cadcdfdf2758f332c"
+          ]
+        },
+        "UNIFORM_HASH": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6428571428571429,
+              "admitted": 90,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 115,
+              "new_behavior_pair_rate": 0.8214285714285714,
+              "positive_joint_economic_utility": 57.423414095536,
+              "productive": 64,
+              "productive_precision": 0.45714285714285713
+            },
+            "24": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 16,
+              "distinct_base_group_count": 15,
+              "effective_k": 24,
+              "new_behavior_pair_count": 21,
+              "new_behavior_pair_rate": 0.875,
+              "positive_joint_economic_utility": 9.114486525552906,
+              "productive": 12,
+              "productive_precision": 0.5
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 23,
+              "effective_k": 48,
+              "new_behavior_pair_count": 42,
+              "new_behavior_pair_rate": 0.875,
+              "positive_joint_economic_utility": 19.752447087781114,
+              "productive": 22,
+              "productive_precision": 0.4583333333333333
+            },
+            "96": {
+              "admission_rate": 0.625,
+              "admitted": 60,
+              "distinct_base_group_count": 28,
+              "effective_k": 96,
+              "new_behavior_pair_count": 82,
+              "new_behavior_pair_rate": 0.8541666666666666,
+              "positive_joint_economic_utility": 37.02036632988051,
+              "productive": 42,
+              "productive_precision": 0.4375
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.5049342105263157,
+            "productive_average_precision": 0.4664256427141639
+          },
+          "top_exact_identities": [
+            "bdb6e66e7a8ccc0083a0ef05b367583333a4d7d518a3928cd62557b2a0ede0ab",
+            "6b6cab9ff66bdbe5e07e39b162b58a75adf8bba2566ee1e1d21a01f37a3f0cda",
+            "f71491ba530f38347753f30558e57dcfbc628670baf66284a209b965c24f426e",
+            "8c839222abbd8dfe95b4933b41d177cacbc635638a1eef277356e3bb38be4151",
+            "f1ad741687f5f0f4e648097b43a0db2f8c4dc8afc5a9bc5249673e5bf5c25a67",
+            "5b7b81a79b9bc7d66c4754c4f1d4699ac4ca1c45e71ff1128226b350184fba76",
+            "c6ebd85236b83c5a74505eba2976102b9f2f5fdae08cd692a135c7c6c8a3576a",
+            "b3193c42612dc3f9c021429879f3b31a56f6fe150df64f3cbf8ad5c248486fdb",
+            "f2a6bcbb15ab75f7570d2d922c9b65563244d80e083fe8b1dc96374b676e4ba4",
+            "d8de8c98914bf59cbd3829970da30a36781a05ad854315b044cc6902808c3abd",
+            "0d168f5e0df87b628c505d49f59cf1449a8a75eebd620faab34941f65eb31885",
+            "7d92747eef78a43320079fda57df47a814638dbfb8bccf882eb606b9a42de5bb",
+            "f5c36a1b7145ad5ba773de9e47753c6e5ad4c1221eb69b7ee1636f06e7306846",
+            "5976beff6142d3db7d6c9933f7240315d911d545ace6cec1e8d59bb0d71e53fb",
+            "2a37da40560f0649141f14f382b460b2b192224a7c8e8706256a520614028c39",
+            "43f040202bd3d2ac9cbe4bc210220688fe6e029b7d82815e86014516a9d7537c",
+            "ccd77acf886e79abf9f68b993f9d544e730ba8e1370a8ac5f12f8886923ca338",
+            "bdeaa1a68f784d5a6330763ac99dfa294bee00a4d9fdddc5e75c2ff40b1171c6",
+            "3d24320edc01cad5a8247371b6da2516ea3b218095697937f05ca97cd87f6146",
+            "ca237f6f8c7cd99f34682abdce93964e0508571208dddcb170f8ba6e30ade1b3",
+            "e44a9cd70b94d9acf1c4e1bc729a3b2afe8b01d865448226e09d66864807647c",
+            "8670a209b8e75d3835aa9864ab0bb73c8e69d8106e849cd58d55febd3a048f15",
+            "edcbd4fb6f38eb28f73699d8a695ddfdc41ee3b23876a996c11f9daf7a8ef3be",
+            "37c4c33679c758e9cfc710a7f0991ccb2a3cd10e6ddaae9cbef19f899b4cc1a2"
+          ]
+        }
+      },
+      "test_cohort": "D1_FRESH",
+      "test_count": 140,
+      "test_productive": 64,
+      "train_count": 890,
+      "train_productive": 340
+    },
+    {
+      "fold_id": "TRAIN_BEFORE_D1_CONTINUATION_B_TEST_D1_CONTINUATION_B",
+      "model_metadata": {
+        "TRAINED_MULTIHEAD_V2": {
+          "beta": 0.75,
+          "return_scale": 0.257239087409352,
+          "reward_scale": 1.1838965649839905
+        },
+        "catboost_available": false,
+        "catboost_status": "CATBOOST_UNAVAILABLE",
+        "lightgbm_available": false,
+        "lightgbm_lambdarank_status": "LIGHTGBM_UNAVAILABLE",
+        "xgboost_available": false,
+        "xgboost_lambdamart_status": "XGBOOST_UNAVAILABLE"
+      },
+      "policies": {
+        "HISTORICAL_EXECUTION_ORDER": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6714285714285714,
+              "admitted": 94,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 100,
+              "new_behavior_pair_rate": 0.7142857142857143,
+              "positive_joint_economic_utility": 53.11915139064745,
+              "productive": 63,
+              "productive_precision": 0.45
+            },
+            "24": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 16,
+              "distinct_base_group_count": 19,
+              "effective_k": 24,
+              "new_behavior_pair_count": 15,
+              "new_behavior_pair_rate": 0.625,
+              "positive_joint_economic_utility": 6.305271054883878,
+              "productive": 9,
+              "productive_precision": 0.375
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 25,
+              "effective_k": 48,
+              "new_behavior_pair_count": 31,
+              "new_behavior_pair_rate": 0.6458333333333334,
+              "positive_joint_economic_utility": 14.81882460206846,
+              "productive": 21,
+              "productive_precision": 0.4375
+            },
+            "96": {
+              "admission_rate": 0.6354166666666666,
+              "admitted": 61,
+              "distinct_base_group_count": 32,
+              "effective_k": 96,
+              "new_behavior_pair_count": 69,
+              "new_behavior_pair_rate": 0.71875,
+              "positive_joint_economic_utility": 27.405470852349772,
+              "productive": 40,
+              "productive_precision": 0.4166666666666667
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.44506287363430225,
+            "productive_average_precision": 0.4661984455852748
+          },
+          "top_exact_identities": [
+            "5d7b51842ced37e8ef61deba80154b5afbb6a62310c22ad2713d3bf88a55f267",
+            "202b48622681ea7d096bf38ca38414ac16e6534dbf72de7db20a2fc5bf35e6be",
+            "448245e33b7b9b489f0d8d76ab91890a3b1babf454c54af211bfcf04eccb4b46",
+            "a1fec843527246b7a8cff7005da3e0cbf1a9fe4bdef0a4e9b10f9ee1fd4befab",
+            "95941842fba51df9e46fad91a3062e9d81a0bb087c59ed3e5e9e0751a28ae866",
+            "7fb2b842fe401265e24961abc3a25397865bc1d4582419288ceaa4de53eb36d3",
+            "95731ce1f21f070030227934086ef40b5e294ffe3e9b4f6acfcacf309dce51b9",
+            "9130aa806c7f7e5215d28e296e6a609c33f052bb1fb8a6d8d1c9b5879a434c12",
+            "7e7787494cafaff1cb76c96e2c131ef01b5ad36a7d2a970b11a92eed605659bc",
+            "4a1741b823f39657c5ca6c2f199efed7dc1612622ca552bf52f93fdcafc03c19",
+            "44f50aef8743e284c2cf27e92ab07931efe7088132be49701d87c792a7fe6980",
+            "b556d331cf16336e58b8194979b3bbe2d3ad638b7b7e23a4aba2f97a17bbc2a5",
+            "9f4ef13a848c4a176f2e247e719f48a04df5c23c4d6bb26be6604be1964832d7",
+            "8a4145f628658ed20f9401b1d4521a2bfd9d6d2905daf0e72af5904a43776eb7",
+            "7cd4aa5d711d9216b710f33d03312d96bd4725c79a1eb2dbf25fc3e9822a1e7c",
+            "281e8ff1c27ca7e2d110821523d1ba7bbcf7a17809e6af6151db57290b7afea2",
+            "77b0a943e162f7bc44eced1647340b4c76631653fa3a3284de0ae745df21e8eb",
+            "594bce45b4a888c3e9d6a0ab44c5157d852eb7d713b002c1b43fc944d89f1087",
+            "534193bf3bd42a97cf1ff9915bb9331e729be1bdb9ac0d17633f06be18e83e93",
+            "403a113bfd725f82730df6d2842f5dc15eb51cedb42715df878682948c6a6cf7",
+            "472655e297fba60b71c6c382369d556c3d3a0720afa458f23559b5e20cf4419d",
+            "05803a6c0af60c8ab4c648bd2df09a9b27adf81cb6c07921dd7b84eac9e6a969",
+            "a25e03a7f680e1bab49c145423817ff11bd5a7332fcbbf668fa0e8aab8d89791",
+            "17ed9b835cd4a8b4f9685da4765a3ed0e593a510acd01f2c81fe20aaee5aff8a"
+          ]
+        },
+        "ORACLE_UPPER_BOUND": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6714285714285714,
+              "admitted": 94,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 100,
+              "new_behavior_pair_rate": 0.7142857142857143,
+              "positive_joint_economic_utility": 53.119151390647446,
+              "productive": 63,
+              "productive_precision": 0.45
+            },
+            "24": {
+              "admission_rate": 1.0,
+              "admitted": 24,
+              "distinct_base_group_count": 12,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 24.639846912604398,
+              "productive": 24,
+              "productive_precision": 1.0
+            },
+            "48": {
+              "admission_rate": 1.0,
+              "admitted": 48,
+              "distinct_base_group_count": 21,
+              "effective_k": 48,
+              "new_behavior_pair_count": 32,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 40.68380378080085,
+              "productive": 42,
+              "productive_precision": 0.875
+            },
+            "96": {
+              "admission_rate": 0.84375,
+              "admitted": 81,
+              "distinct_base_group_count": 30,
+              "effective_k": 96,
+              "new_behavior_pair_count": 68,
+              "new_behavior_pair_rate": 0.7083333333333334,
+              "positive_joint_economic_utility": 51.75507575362998,
+              "productive": 59,
+              "productive_precision": 0.6145833333333334
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 1.0,
+            "productive_average_precision": 0.9999999999999998
+          },
+          "top_exact_identities": [
+            "40871b17126624869d26c641e3eb079c6d56df683bde5953be9f35f65d7f09de",
+            "e91406eca46828ffff7bf564401afc473ff79782e697f7dd651aefd0ddfc544f",
+            "0db382f68e70e08da5c39557875563511384567a5b3a253dc04b70c97335bd71",
+            "3ba5f4dc30a5cc883da937cb79634d0867a4af08d933135a5c6132a0f09e1131",
+            "1920604eb98851c07728cfce9549d5ca3dd08c5e40c5151a11a0255f37a70ed7",
+            "3fb1bee6e398007802a72292e2be4171049e732d88ac802b47ee0146c418f5b4",
+            "31b86c06fdad65e88a178bcdd805b08fd464e818ede1f6b6c03ca536e5d60b78",
+            "85582e3ffac0e0e9ee6a78dcf26c39d2cb18599633c682d72a8d09f0e4ef55c2",
+            "2ad1f80a79f7052f7587992283fe63a660b4fcfa117bf9d82e19d97ad9a25e54",
+            "448245e33b7b9b489f0d8d76ab91890a3b1babf454c54af211bfcf04eccb4b46",
+            "964032bd6c564e738568038c7f3c2878b7fd308e23eea22139f427a048bfe457",
+            "b295dc2020fa1b6c55c151f26f85759c7ccf6cde097e6599e3c522ad01129291",
+            "b4c1928a710152e6466a9027777d51e8baf89ccd345badd0763dffe94c77c61c",
+            "3e27d8e9ca37201f43f5fb5c079087dc0bcad64de64320f94b80c6d590841e57",
+            "bf8c13a7c3629aff6790f2f37549554a97b0418ae8a13924ab307e38b08005c2",
+            "202b48622681ea7d096bf38ca38414ac16e6534dbf72de7db20a2fc5bf35e6be",
+            "835632321bc7676b58d6f222a5da7d46760ac2b7db22b88015200e7713f81d6e",
+            "9bee54793e629a6133bcb3885a1314437731e25c6aa555a6e8985c83d259fe62",
+            "4cd96acc2cdbe5ef209490fa9114a65900ddcdb572281ec38d87a41b1e02be55",
+            "6305648304c77d4d2baadf8fd31299c64c048a2fa1dd788d71d2399e08ffa56d",
+            "b8be492faee2b979fb1e7ef4c51e63d262771a64e94242de0e5d84d67f02196b",
+            "784fbad4f5d06f77420892284051e5c1410128809f912cdea1fb8fb8151c2aee",
+            "aeaf21f9fdf7764c10673ddc8df090d3e33c53c7e4eb4fc596f21e32d57e2e79",
+            "6e439dd0489153934fc2121e2d3ec6d95002f2a8b91f6b2f1b7fb65dd4b4b853"
+          ]
+        },
+        "STRUCTURED_EXTRATREES_V1": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6714285714285714,
+              "admitted": 94,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 100,
+              "new_behavior_pair_rate": 0.7142857142857143,
+              "positive_joint_economic_utility": 53.11915139064746,
+              "productive": 63,
+              "productive_precision": 0.45
+            },
+            "24": {
+              "admission_rate": 0.5833333333333334,
+              "admitted": 14,
+              "distinct_base_group_count": 10,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 18.954300548478077,
+              "productive": 13,
+              "productive_precision": 0.5416666666666666
+            },
+            "48": {
+              "admission_rate": 0.7083333333333334,
+              "admitted": 34,
+              "distinct_base_group_count": 18,
+              "effective_k": 48,
+              "new_behavior_pair_count": 35,
+              "new_behavior_pair_rate": 0.7291666666666666,
+              "positive_joint_economic_utility": 36.180601006955214,
+              "productive": 30,
+              "productive_precision": 0.625
+            },
+            "96": {
+              "admission_rate": 0.6875,
+              "admitted": 66,
+              "distinct_base_group_count": 29,
+              "effective_k": 96,
+              "new_behavior_pair_count": 69,
+              "new_behavior_pair_rate": 0.71875,
+              "positive_joint_economic_utility": 48.75997394288734,
+              "productive": 50,
+              "productive_precision": 0.5208333333333334
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8065347351061636,
+            "productive_average_precision": 0.8081903542433047
+          },
+          "top_exact_identities": [
+            "40871b17126624869d26c641e3eb079c6d56df683bde5953be9f35f65d7f09de",
+            "6f86274f8c579116eb1db41172a2c616005f03f580bdfacaea38912831add7e5",
+            "e38d263f6624dd0435c5cbfc9d106cf2e2ec853ddd7d54e955d1d247343dfec6",
+            "3ed9ba6f6dccb72c68cd20d1c6459d56d57011ae8bafa2890812d027a86a3eba",
+            "f22e4c0504ffef89d018f7c2e9ab11f7d85c8e70fa0c43fd49e058f95502915f",
+            "6305648304c77d4d2baadf8fd31299c64c048a2fa1dd788d71d2399e08ffa56d",
+            "3fc71fda896388141d1140f448dbd38ad3795c38b5e83a69b2fe2dbf766a1c31",
+            "d273c05cab44c66426fee2b4772409d9f2b7fe30ded65018bc6d07e8cf68c97f",
+            "84d65072598db1f9211bdb1881d6c153618a07ea9f15e121eae00922af6fc5a4",
+            "0db382f68e70e08da5c39557875563511384567a5b3a253dc04b70c97335bd71",
+            "e506ece8c4ddcd44d0c5bfaae946eda1a724d8e9dc861ecb30e9a5b9ef6349ee",
+            "b060b98fa457d04f865683c5f3b18124f96fbb8e4fa69dab5c0f13599dc6d04c",
+            "3fb1bee6e398007802a72292e2be4171049e732d88ac802b47ee0146c418f5b4",
+            "b8be492faee2b979fb1e7ef4c51e63d262771a64e94242de0e5d84d67f02196b",
+            "51ae43603d1c17097674cc2031e7527b07677c3d3e053c50012ab6a5bc263645",
+            "e91406eca46828ffff7bf564401afc473ff79782e697f7dd651aefd0ddfc544f",
+            "488486d14e8a75b3afd0c3a299d91fd8359f6e5b246831298eb60470c6e9c7c4",
+            "3ba5f4dc30a5cc883da937cb79634d0867a4af08d933135a5c6132a0f09e1131",
+            "1920604eb98851c07728cfce9549d5ca3dd08c5e40c5151a11a0255f37a70ed7",
+            "b4c1928a710152e6466a9027777d51e8baf89ccd345badd0763dffe94c77c61c",
+            "3e27d8e9ca37201f43f5fb5c079087dc0bcad64de64320f94b80c6d590841e57",
+            "4891509ab59ed09c69015a9fa2f6bc0d4a7d59f22da46a9eb20574565f1fafab",
+            "37f7c716e4d31b6635dedb2d54beb2603cf2b05d7c503e85a09534cc46deaaab",
+            "77b0a943e162f7bc44eced1647340b4c76631653fa3a3284de0ae745df21e8eb"
+          ]
+        },
+        "TRAINED_MULTIHEAD_V2": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6714285714285714,
+              "admitted": 94,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 100,
+              "new_behavior_pair_rate": 0.7142857142857143,
+              "positive_joint_economic_utility": 53.119151390647446,
+              "productive": 63,
+              "productive_precision": 0.45
+            },
+            "24": {
+              "admission_rate": 0.7083333333333334,
+              "admitted": 17,
+              "distinct_base_group_count": 13,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 18.538279350378815,
+              "productive": 15,
+              "productive_precision": 0.625
+            },
+            "48": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 32,
+              "distinct_base_group_count": 19,
+              "effective_k": 48,
+              "new_behavior_pair_count": 31,
+              "new_behavior_pair_rate": 0.6458333333333334,
+              "positive_joint_economic_utility": 34.67714004944424,
+              "productive": 28,
+              "productive_precision": 0.5833333333333334
+            },
+            "96": {
+              "admission_rate": 0.75,
+              "admitted": 72,
+              "distinct_base_group_count": 30,
+              "effective_k": 96,
+              "new_behavior_pair_count": 67,
+              "new_behavior_pair_rate": 0.6979166666666666,
+              "positive_joint_economic_utility": 50.791646826443824,
+              "productive": 56,
+              "productive_precision": 0.5833333333333334
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8325087610801896,
+            "productive_average_precision": 0.8340886259595548
+          },
+          "top_exact_identities": [
+            "40871b17126624869d26c641e3eb079c6d56df683bde5953be9f35f65d7f09de",
+            "aeaf21f9fdf7764c10673ddc8df090d3e33c53c7e4eb4fc596f21e32d57e2e79",
+            "0db382f68e70e08da5c39557875563511384567a5b3a253dc04b70c97335bd71",
+            "3ed9ba6f6dccb72c68cd20d1c6459d56d57011ae8bafa2890812d027a86a3eba",
+            "1920604eb98851c07728cfce9549d5ca3dd08c5e40c5151a11a0255f37a70ed7",
+            "6305648304c77d4d2baadf8fd31299c64c048a2fa1dd788d71d2399e08ffa56d",
+            "8a4145f628658ed20f9401b1d4521a2bfd9d6d2905daf0e72af5904a43776eb7",
+            "d273c05cab44c66426fee2b4772409d9f2b7fe30ded65018bc6d07e8cf68c97f",
+            "6f86274f8c579116eb1db41172a2c616005f03f580bdfacaea38912831add7e5",
+            "e38d263f6624dd0435c5cbfc9d106cf2e2ec853ddd7d54e955d1d247343dfec6",
+            "3ba5f4dc30a5cc883da937cb79634d0867a4af08d933135a5c6132a0f09e1131",
+            "450d97072965c3872af3197322cca51e5c710e66bc557edcc32278c5881e30df",
+            "3fb1bee6e398007802a72292e2be4171049e732d88ac802b47ee0146c418f5b4",
+            "95731ce1f21f070030227934086ef40b5e294ffe3e9b4f6acfcacf309dce51b9",
+            "4891509ab59ed09c69015a9fa2f6bc0d4a7d59f22da46a9eb20574565f1fafab",
+            "37f7c716e4d31b6635dedb2d54beb2603cf2b05d7c503e85a09534cc46deaaab",
+            "488486d14e8a75b3afd0c3a299d91fd8359f6e5b246831298eb60470c6e9c7c4",
+            "e506ece8c4ddcd44d0c5bfaae946eda1a724d8e9dc861ecb30e9a5b9ef6349ee",
+            "f22e4c0504ffef89d018f7c2e9ab11f7d85c8e70fa0c43fd49e058f95502915f",
+            "b4c1928a710152e6466a9027777d51e8baf89ccd345badd0763dffe94c77c61c",
+            "b8be492faee2b979fb1e7ef4c51e63d262771a64e94242de0e5d84d67f02196b",
+            "85582e3ffac0e0e9ee6a78dcf26c39d2cb18599633c682d72a8d09f0e4ef55c2",
+            "e91406eca46828ffff7bf564401afc473ff79782e697f7dd651aefd0ddfc544f",
+            "fe48e9192e151450414639004f0c12be466bed06de0cd074c38c3b269c9575ae"
+          ]
+        },
+        "UNIFORM_HASH": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6714285714285714,
+              "admitted": 94,
+              "distinct_base_group_count": 32,
+              "effective_k": 140,
+              "new_behavior_pair_count": 100,
+              "new_behavior_pair_rate": 0.7142857142857143,
+              "positive_joint_economic_utility": 53.119151390647446,
+              "productive": 63,
+              "productive_precision": 0.45
+            },
+            "24": {
+              "admission_rate": 0.75,
+              "admitted": 18,
+              "distinct_base_group_count": 14,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 11.64499996213829,
+              "productive": 13,
+              "productive_precision": 0.5416666666666666
+            },
+            "48": {
+              "admission_rate": 0.75,
+              "admitted": 36,
+              "distinct_base_group_count": 23,
+              "effective_k": 48,
+              "new_behavior_pair_count": 33,
+              "new_behavior_pair_rate": 0.6875,
+              "positive_joint_economic_utility": 19.312458294595956,
+              "productive": 23,
+              "productive_precision": 0.4791666666666667
+            },
+            "96": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 62,
+              "distinct_base_group_count": 29,
+              "effective_k": 96,
+              "new_behavior_pair_count": 71,
+              "new_behavior_pair_rate": 0.7395833333333334,
+              "positive_joint_economic_utility": 36.24131136413803,
+              "productive": 42,
+              "productive_precision": 0.4375
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.5180375180375181,
+            "productive_average_precision": 0.5115814675386567
+          },
+          "top_exact_identities": [
+            "7cd4aa5d711d9216b710f33d03312d96bd4725c79a1eb2dbf25fc3e9822a1e7c",
+            "a25e03a7f680e1bab49c145423817ff11bd5a7332fcbbf668fa0e8aab8d89791",
+            "f608bbf5399197315b064be273c63abeb29dd910d733a2a3d93f2ddb18f6276c",
+            "f83cbddbe64cbb1ef41393beddce62cc42cd1841f1912c9c9d9de84b598b7f3b",
+            "450d97072965c3872af3197322cca51e5c710e66bc557edcc32278c5881e30df",
+            "6305648304c77d4d2baadf8fd31299c64c048a2fa1dd788d71d2399e08ffa56d",
+            "3fc71fda896388141d1140f448dbd38ad3795c38b5e83a69b2fe2dbf766a1c31",
+            "40871b17126624869d26c641e3eb079c6d56df683bde5953be9f35f65d7f09de",
+            "7eb2a7865496684b2b6fadecc3e511394f9f137861c76b3d366a7c9041ed9a93",
+            "3547ed74e6cbc0e73a4cd93f458559805ee4026300ba1c40b0a78dabc1166cb7",
+            "378f527e1e46c2cf5c249a7e000a2753fc09a31a085505102905a775cd2179dc",
+            "32c4b5d6c8e1c905b90cb2c6ca8ff192d0e0a2c0154c582992e6a170619a8a7b",
+            "85dc39cafa5da7ecd0ce3d3d6f7787ab4896a8a22c41ed2da1e58c63726c1efa",
+            "8202362602b05690fb30371cc0c7f0abf424ae112886c18213b31c0442262185",
+            "daf7faa1c5333b38e3a7a49219eda1a404ca7c1655e75046d8a750a322020cd5",
+            "c8227a4274f9d29bde943d1c17978ebb05e730cc5d984ff16d17c9d697c1e18c",
+            "835632321bc7676b58d6f222a5da7d46760ac2b7db22b88015200e7713f81d6e",
+            "4f9f8b9c28e6faf542f83fe13f0ad7946053162312b61ea6e9dd73c7d3a67420",
+            "b042a417f26b72d8afd6e1d104b92ceb5e78e5509601468893fa7fe1d5740b49",
+            "3fb1bee6e398007802a72292e2be4171049e732d88ac802b47ee0146c418f5b4",
+            "721e88ccd27d0ba033677f1dcaccff2dd9eef2fe0862478f584dbf9835b8f4eb",
+            "51ae43603d1c17097674cc2031e7527b07677c3d3e053c50012ab6a5bc263645",
+            "84d65072598db1f9211bdb1881d6c153618a07ea9f15e121eae00922af6fc5a4",
+            "4a1741b823f39657c5ca6c2f199efed7dc1612622ca552bf52f93fdcafc03c19"
+          ]
+        }
+      },
+      "test_cohort": "D1_CONTINUATION_B",
+      "test_count": 140,
+      "test_productive": 63,
+      "train_count": 1030,
+      "train_productive": 404
+    },
+    {
+      "fold_id": "TRAIN_BEFORE_D1_CONTINUATION_C_TEST_D1_CONTINUATION_C",
+      "model_metadata": {
+        "TRAINED_MULTIHEAD_V2": {
+          "beta": 0.75,
+          "return_scale": 0.2570304238606097,
+          "reward_scale": 1.1724145200701754
+        },
+        "catboost_available": false,
+        "catboost_status": "CATBOOST_UNAVAILABLE",
+        "lightgbm_available": false,
+        "lightgbm_lambdarank_status": "LIGHTGBM_UNAVAILABLE",
+        "xgboost_available": false,
+        "xgboost_lambdamart_status": "XGBOOST_UNAVAILABLE"
+      },
+      "policies": {
+        "HISTORICAL_EXECUTION_ORDER": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6642857142857143,
+              "admitted": 93,
+              "distinct_base_group_count": 31,
+              "effective_k": 140,
+              "new_behavior_pair_count": 106,
+              "new_behavior_pair_rate": 0.7571428571428571,
+              "positive_joint_economic_utility": 49.67091249449056,
+              "productive": 67,
+              "productive_precision": 0.4785714285714286
+            },
+            "24": {
+              "admission_rate": 0.5416666666666666,
+              "admitted": 13,
+              "distinct_base_group_count": 14,
+              "effective_k": 24,
+              "new_behavior_pair_count": 19,
+              "new_behavior_pair_rate": 0.7916666666666666,
+              "positive_joint_economic_utility": 4.945038951933433,
+              "productive": 7,
+              "productive_precision": 0.2916666666666667
+            },
+            "48": {
+              "admission_rate": 0.5416666666666666,
+              "admitted": 26,
+              "distinct_base_group_count": 21,
+              "effective_k": 48,
+              "new_behavior_pair_count": 38,
+              "new_behavior_pair_rate": 0.7916666666666666,
+              "positive_joint_economic_utility": 11.268773684970359,
+              "productive": 18,
+              "productive_precision": 0.375
+            },
+            "96": {
+              "admission_rate": 0.625,
+              "admitted": 60,
+              "distinct_base_group_count": 30,
+              "effective_k": 96,
+              "new_behavior_pair_count": 73,
+              "new_behavior_pair_rate": 0.7604166666666666,
+              "positive_joint_economic_utility": 26.145655536148666,
+              "productive": 41,
+              "productive_precision": 0.4270833333333333
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.3651604988754856,
+            "productive_average_precision": 0.40715225252574094
+          },
+          "top_exact_identities": [
+            "61f396738ec1e7ce6785614d3405bc0144e57813c65275928af520ecd552cb2d",
+            "5b93e9f798358a76645ef71a92d23206013c598ef675656793fa2aae7c1f8720",
+            "af74efceee19742c9ee84a9b6f73eff32025d071c6576652f66f448d3578a7f9",
+            "e5966aa372229f8eccc2b01ffed67d017137b8a4366ada928994a57123c76fc1",
+            "139a5a8ad87f18e1835f2dcb845124965783fe1facf0feb01c1bf453bad81e14",
+            "77700126415c2f88d4ef92a8f3d7a5bb6bf05e838089ffdb40fb1b8c756e7f15",
+            "97241739a0fc4fc9349166e8c4c48ce9257c212d6c0077cca04dd00e51fd38f1",
+            "f0aaf142cb51c5c40ad7c0b4f9d26696753f3f75d9e292e40869c44f56d0da80",
+            "89a229527091e60056e7bd88614d4538ddb14667c5069d4af84c979a2c454d96",
+            "5cf9f6580a04a61f1c86a2ac2457aacaffd414178f3224761c3b6afed4d39950",
+            "68ec5285ca96bf870be33ab93bdc8cbb64812c29ff2240e28d5aced27fc64f07",
+            "f3c0172acfc35838111a5ec1cc86b01d673d977d8458ffdfd2c3826070eafdf9",
+            "e30581bc6a67d18922d3ab26ed6cac9c869bda9d5fd686366887739a0e390f4f",
+            "d4353dd1ac7ccab5ef0bc82c842bc5fb06abad2f8d9070d306ef4128db805003",
+            "0fc6b991029ff4a0f411661fee010c51d0c474c326072f31a595bccbd54a6ab9",
+            "2b5323c9f04add8fc2129a23f1d6a6949fc82b72c768328595fddde8dbfe1565",
+            "df9d33baba914d75b938048b0b3f096929dc9ddfd7f7aa1b53bfe558971f8537",
+            "d769c9889611dd09afa84637f9597553186d77f300e653a66036eafe4b2e864d",
+            "e601cd7245b50f7d370221fe9523402638656a15b59c94a20fc7fedf3f0e2f9a",
+            "6132b6618c592fde183432fbcc968164698fbf2ee5cf34c8d71d322ed576fc8e",
+            "354158b11aacb8d26c9ea18821f19d8093c0db9f7a6f8d26f090d3550df99e31",
+            "ed51b1fac2366b4dffaca4e2f272e1d448b9e5b01b82374d1612f3d42c392ba1",
+            "166b59e7de976879fefbc57381fd77cfa14fa2f271bbb872a76cc8dcc42b4151",
+            "bdb83973ce7fa1132bfb6d034fbcdaa6b261b5d3a9a42fd9423fb45c83a8b1f4"
+          ]
+        },
+        "ORACLE_UPPER_BOUND": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6642857142857143,
+              "admitted": 93,
+              "distinct_base_group_count": 31,
+              "effective_k": 140,
+              "new_behavior_pair_count": 106,
+              "new_behavior_pair_rate": 0.7571428571428571,
+              "positive_joint_economic_utility": 49.67091249449055,
+              "productive": 67,
+              "productive_precision": 0.4785714285714286
+            },
+            "24": {
+              "admission_rate": 1.0,
+              "admitted": 24,
+              "distinct_base_group_count": 10,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 24.6887357760523,
+              "productive": 24,
+              "productive_precision": 1.0
+            },
+            "48": {
+              "admission_rate": 0.9791666666666666,
+              "admitted": 47,
+              "distinct_base_group_count": 16,
+              "effective_k": 48,
+              "new_behavior_pair_count": 36,
+              "new_behavior_pair_rate": 0.75,
+              "positive_joint_economic_utility": 38.32440459748699,
+              "productive": 44,
+              "productive_precision": 0.9166666666666666
+            },
+            "96": {
+              "admission_rate": 0.84375,
+              "admitted": 81,
+              "distinct_base_group_count": 28,
+              "effective_k": 96,
+              "new_behavior_pair_count": 74,
+              "new_behavior_pair_rate": 0.7708333333333334,
+              "positive_joint_economic_utility": 48.286512955486415,
+              "productive": 63,
+              "productive_precision": 0.65625
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 1.0,
+            "productive_average_precision": 1.0
+          },
+          "top_exact_identities": [
+            "3bef331ca9acef76fc5685e032dffc2ef8d6da618fd6d3a4da1f79f507def8ae",
+            "b76a986c4a9e40ae61522ba60e289803976c4c7c607c9f8e479d9117dc3fb6e5",
+            "edb4ce6525acee884d1ee7ebb484be0855991da6e329716bc681f823ec38f74c",
+            "3c4c7e23fae549953a91a16d544854814cf1303e0572dac171c65d18d5f57a2f",
+            "4fd60b629dce4fd2c21ea89aed9b7a7133abc6fa3fa6b562a677c436b9adbcf4",
+            "a07497e37f9204bba182d304f61131cbc94e4ab38e798e8d4608a1fe08f8ba33",
+            "3b0d06364520581ec88aab8b18841f13ddd0e2c4d4108447c9eafe07d2d06402",
+            "37aa423be49db6daf1f7e927d35aaee10b1f6ad955ec25458238bd677ab6d7da",
+            "795d074031595366d6380f15721f6752bcd6aafd23f46d6f51774371d2cb4165",
+            "1d1c502e9055cfe9550f576f9531981e0d9e04fb7f037bc064cb73a4dae8b479",
+            "0dfa595aa9c4499a80034869ff6c0884645eb55f5eb26880007617b887dd06dd",
+            "9b2de9baa0b562c22e151e3c6964d10dcdf626ecdabd741243a979f88ed226cd",
+            "9bb9f5b7794cb63fe1ac593c9fea6531a09c4a29ec536d070fe3544dbda4169e",
+            "b4122c2fc6fa5d0f991e104280a1cc75d42d642b375400f425bc92640774d2e5",
+            "954f39dbd71f0cd3152f654f7517b93f1fb5e3eed2a4c7cac31ebc599cd5c34e",
+            "a593a7dabfed0525b62e13f0e70e0f45921a2232534add3418f3dbf9fd231627",
+            "9e57508e5d019eddf9db9a9084d8a123a899dc2983bdbd7c7ca8c35eb8222682",
+            "41c6904ae818340cd46abe7f1e19fb43b08b5a914e6338c179772a1a4a50d636",
+            "f3c8068d144f4658c8ad9d425929789028a35005e67c2895ba8c5511c47c3155",
+            "e30581bc6a67d18922d3ab26ed6cac9c869bda9d5fd686366887739a0e390f4f",
+            "a9add5d51f37acc4b6b7e63257d60744e302600d72f902ff030bff0550dfe622",
+            "696a2e0a31650adfa88f7434f3f1307898e433632e352cef79bd9f8c2618c2df",
+            "5750cb59f5d46aaf9cff358cac8ad2b372f8266f7fd55cc1b206ef58fe2d5787",
+            "df9d33baba914d75b938048b0b3f096929dc9ddfd7f7aa1b53bfe558971f8537"
+          ]
+        },
+        "STRUCTURED_EXTRATREES_V1": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6642857142857143,
+              "admitted": 93,
+              "distinct_base_group_count": 31,
+              "effective_k": 140,
+              "new_behavior_pair_count": 106,
+              "new_behavior_pair_rate": 0.7571428571428571,
+              "positive_joint_economic_utility": 49.67091249449055,
+              "productive": 67,
+              "productive_precision": 0.4785714285714286
+            },
+            "24": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 16,
+              "distinct_base_group_count": 9,
+              "effective_k": 24,
+              "new_behavior_pair_count": 16,
+              "new_behavior_pair_rate": 0.6666666666666666,
+              "positive_joint_economic_utility": 18.36765910327143,
+              "productive": 15,
+              "productive_precision": 0.625
+            },
+            "48": {
+              "admission_rate": 0.7708333333333334,
+              "admitted": 37,
+              "distinct_base_group_count": 13,
+              "effective_k": 48,
+              "new_behavior_pair_count": 34,
+              "new_behavior_pair_rate": 0.7083333333333334,
+              "positive_joint_economic_utility": 32.6583645717336,
+              "productive": 35,
+              "productive_precision": 0.7291666666666666
+            },
+            "96": {
+              "admission_rate": 0.7395833333333334,
+              "admitted": 71,
+              "distinct_base_group_count": 27,
+              "effective_k": 96,
+              "new_behavior_pair_count": 74,
+              "new_behavior_pair_rate": 0.7708333333333334,
+              "positive_joint_economic_utility": 45.2650785042711,
+              "productive": 57,
+              "productive_precision": 0.59375
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8084236352484155,
+            "productive_average_precision": 0.81702128225283
+          },
+          "top_exact_identities": [
+            "98c48b2ef2489444f6d5ff9d85d4277bdb82b61ea468c906226f2e67a0409505",
+            "98e3ff6749e5d5a65b780ca9045508f2c9db15289e586bb782b3a40f87379460",
+            "9e57508e5d019eddf9db9a9084d8a123a899dc2983bdbd7c7ca8c35eb8222682",
+            "49d40e54e11fb6979c097059c568a8145a95a17d094ac7dd55e900ba1a595330",
+            "4fd60b629dce4fd2c21ea89aed9b7a7133abc6fa3fa6b562a677c436b9adbcf4",
+            "a07497e37f9204bba182d304f61131cbc94e4ab38e798e8d4608a1fe08f8ba33",
+            "3b0d06364520581ec88aab8b18841f13ddd0e2c4d4108447c9eafe07d2d06402",
+            "3bef331ca9acef76fc5685e032dffc2ef8d6da618fd6d3a4da1f79f507def8ae",
+            "758ecfdb29cc1b266e4b6a2bf7050b199b1594d613d3e8f41c2d00b2b529964f",
+            "e98d3cdc10cabaf04e29b314309025ea8e5a4f8ad46f81262c3d68140270bba4",
+            "d9837ed1cd22c0b8c3cd1ce63459554b445cb6b09bcdfff711aec056cce202c1",
+            "f3c8068d144f4658c8ad9d425929789028a35005e67c2895ba8c5511c47c3155",
+            "9bb9f5b7794cb63fe1ac593c9fea6531a09c4a29ec536d070fe3544dbda4169e",
+            "a9add5d51f37acc4b6b7e63257d60744e302600d72f902ff030bff0550dfe622",
+            "a2b4ed8e718e4bf6bc3afba52f73b0365b867cd2d9e582e529c30aa9fb219b0e",
+            "795d074031595366d6380f15721f6752bcd6aafd23f46d6f51774371d2cb4165",
+            "232e601432a948171a082830241baf77bd4151511ef3063fac00f30bb27c2051",
+            "d89a3bd5c9ca5cff16b0b57837496ca970d28f28898dcdb4348870b22d7a310d",
+            "07eb35a0832cda89cc01adc70f8c47798b8bbdb358ee5626edc893ac09113aaa",
+            "e30581bc6a67d18922d3ab26ed6cac9c869bda9d5fd686366887739a0e390f4f",
+            "234b375b41fff43e761e25d3d50ead0c98c2ea13a73ab165e6754e73c231d148",
+            "954f39dbd71f0cd3152f654f7517b93f1fb5e3eed2a4c7cac31ebc599cd5c34e",
+            "5750cb59f5d46aaf9cff358cac8ad2b372f8266f7fd55cc1b206ef58fe2d5787",
+            "edb4ce6525acee884d1ee7ebb484be0855991da6e329716bc681f823ec38f74c"
+          ]
+        },
+        "TRAINED_MULTIHEAD_V2": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6642857142857143,
+              "admitted": 93,
+              "distinct_base_group_count": 31,
+              "effective_k": 140,
+              "new_behavior_pair_count": 106,
+              "new_behavior_pair_rate": 0.7571428571428571,
+              "positive_joint_economic_utility": 49.670912494490544,
+              "productive": 67,
+              "productive_precision": 0.4785714285714286
+            },
+            "24": {
+              "admission_rate": 0.875,
+              "admitted": 21,
+              "distinct_base_group_count": 10,
+              "effective_k": 24,
+              "new_behavior_pair_count": 17,
+              "new_behavior_pair_rate": 0.7083333333333334,
+              "positive_joint_economic_utility": 16.702701328015632,
+              "productive": 19,
+              "productive_precision": 0.7916666666666666
+            },
+            "48": {
+              "admission_rate": 0.8125,
+              "admitted": 39,
+              "distinct_base_group_count": 12,
+              "effective_k": 48,
+              "new_behavior_pair_count": 34,
+              "new_behavior_pair_rate": 0.7083333333333334,
+              "positive_joint_economic_utility": 33.4431007409182,
+              "productive": 37,
+              "productive_precision": 0.7708333333333334
+            },
+            "96": {
+              "admission_rate": 0.7395833333333334,
+              "admitted": 71,
+              "distinct_base_group_count": 25,
+              "effective_k": 96,
+              "new_behavior_pair_count": 75,
+              "new_behavior_pair_rate": 0.78125,
+              "positive_joint_economic_utility": 46.023092737357096,
+              "productive": 59,
+              "productive_precision": 0.6145833333333334
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.8507462686567164,
+            "productive_average_precision": 0.8585676155678037
+          },
+          "top_exact_identities": [
+            "98c48b2ef2489444f6d5ff9d85d4277bdb82b61ea468c906226f2e67a0409505",
+            "795d074031595366d6380f15721f6752bcd6aafd23f46d6f51774371d2cb4165",
+            "9e57508e5d019eddf9db9a9084d8a123a899dc2983bdbd7c7ca8c35eb8222682",
+            "d89a3bd5c9ca5cff16b0b57837496ca970d28f28898dcdb4348870b22d7a310d",
+            "4fd60b629dce4fd2c21ea89aed9b7a7133abc6fa3fa6b562a677c436b9adbcf4",
+            "a07497e37f9204bba182d304f61131cbc94e4ab38e798e8d4608a1fe08f8ba33",
+            "354158b11aacb8d26c9ea18821f19d8093c0db9f7a6f8d26f090d3550df99e31",
+            "954f39dbd71f0cd3152f654f7517b93f1fb5e3eed2a4c7cac31ebc599cd5c34e",
+            "c4eb3e7cce45f78daf5a066c25a296e1d95e29d69904e351f564e3c18a1aec3c",
+            "e98d3cdc10cabaf04e29b314309025ea8e5a4f8ad46f81262c3d68140270bba4",
+            "49d40e54e11fb6979c097059c568a8145a95a17d094ac7dd55e900ba1a595330",
+            "07eb35a0832cda89cc01adc70f8c47798b8bbdb358ee5626edc893ac09113aaa",
+            "9bb9f5b7794cb63fe1ac593c9fea6531a09c4a29ec536d070fe3544dbda4169e",
+            "234b375b41fff43e761e25d3d50ead0c98c2ea13a73ab165e6754e73c231d148",
+            "696a2e0a31650adfa88f7434f3f1307898e433632e352cef79bd9f8c2618c2df",
+            "b76a986c4a9e40ae61522ba60e289803976c4c7c607c9f8e479d9117dc3fb6e5",
+            "23597ce1e3e95df6424574a6520c8cc97148ef6068d49f84f3e7e739fc25437f",
+            "41c6904ae818340cd46abe7f1e19fb43b08b5a914e6338c179772a1a4a50d636",
+            "9b2de9baa0b562c22e151e3c6964d10dcdf626ecdabd741243a979f88ed226cd",
+            "846194d6c8c050d80b0b400f66f22e87f9ff05645366fe5685e20363c81e89d8",
+            "5b65e8ea5b5f6189cd555a46865b018b14c76de80faa4052793d6054e2da59ad",
+            "16633a51a0cf81d78f993dbf755119e593011cb714df7b9b8182b613eed553bb",
+            "5750cb59f5d46aaf9cff358cac8ad2b372f8266f7fd55cc1b206ef58fe2d5787",
+            "738aaf1b84a0cd3450aaa538f7c4b703131cb1e92f66c5489c507b054cc17226"
+          ]
+        },
+        "UNIFORM_HASH": {
+          "budgets": {
+            "168": {
+              "admission_rate": 0.6642857142857143,
+              "admitted": 93,
+              "distinct_base_group_count": 31,
+              "effective_k": 140,
+              "new_behavior_pair_count": 106,
+              "new_behavior_pair_rate": 0.7571428571428571,
+              "positive_joint_economic_utility": 49.67091249449054,
+              "productive": 67,
+              "productive_precision": 0.4785714285714286
+            },
+            "24": {
+              "admission_rate": 0.75,
+              "admitted": 18,
+              "distinct_base_group_count": 13,
+              "effective_k": 24,
+              "new_behavior_pair_count": 20,
+              "new_behavior_pair_rate": 0.8333333333333334,
+              "positive_joint_economic_utility": 4.443741315390872,
+              "productive": 11,
+              "productive_precision": 0.4583333333333333
+            },
+            "48": {
+              "admission_rate": 0.6458333333333334,
+              "admitted": 31,
+              "distinct_base_group_count": 23,
+              "effective_k": 48,
+              "new_behavior_pair_count": 36,
+              "new_behavior_pair_rate": 0.75,
+              "positive_joint_economic_utility": 13.582373573144924,
+              "productive": 22,
+              "productive_precision": 0.4583333333333333
+            },
+            "96": {
+              "admission_rate": 0.6666666666666666,
+              "admitted": 64,
+              "distinct_base_group_count": 26,
+              "effective_k": 96,
+              "new_behavior_pair_count": 73,
+              "new_behavior_pair_rate": 0.7604166666666666,
+              "positive_joint_economic_utility": 31.875887255608752,
+              "productive": 45,
+              "productive_precision": 0.46875
+            }
+          },
+          "rank_quality": {
+            "productive_auc": 0.4960130852586383,
+            "productive_average_precision": 0.511693240300778
+          },
+          "top_exact_identities": [
+            "ed51b1fac2366b4dffaca4e2f272e1d448b9e5b01b82374d1612f3d42c392ba1",
+            "ee5d43d83331f66b7a523df8661984744b99f6502da4e74bf96fe8dce477f42b",
+            "30d3c25fa561b0678f1862a3549db68febdbd8fecf74f46335098da0a7b52205",
+            "5b8d6d0697f38fc30969e15283b81c4d93d1fd21233a5f88e3e07bfc5ea72193",
+            "4abbbd8c914b669e4bd1bcf0272d7e0eaa3de542f9ad5af964bb27ca15c88eea",
+            "039a69181ab3c89907a653b118c032b52b5def4b6e9ae6bd9bb02f8a9d84cae3",
+            "354158b11aacb8d26c9ea18821f19d8093c0db9f7a6f8d26f090d3550df99e31",
+            "b1560c9eaedbc03e9aa26c8715f7aacbe55dcd300ceb97727447bf9adceb1e2c",
+            "166b59e7de976879fefbc57381fd77cfa14fa2f271bbb872a76cc8dcc42b4151",
+            "e98d3cdc10cabaf04e29b314309025ea8e5a4f8ad46f81262c3d68140270bba4",
+            "41c6904ae818340cd46abe7f1e19fb43b08b5a914e6338c179772a1a4a50d636",
+            "c01a8d7468c0d30d6ab1894e1743d461cda9dc6650b1f4f9330206e07c01898b",
+            "6132b6618c592fde183432fbcc968164698fbf2ee5cf34c8d71d322ed576fc8e",
+            "97241739a0fc4fc9349166e8c4c48ce9257c212d6c0077cca04dd00e51fd38f1",
+            "ab10a2fbe3fc97be3fbc2ffd24d8fb24685df2c18a161791c63c9963d76503ce",
+            "b76a986c4a9e40ae61522ba60e289803976c4c7c607c9f8e479d9117dc3fb6e5",
+            "d9a04409069a98738d76dda28e4630d6cd88fccfe64bf92b548bd55f64eda07b",
+            "3c4c7e23fae549953a91a16d544854814cf1303e0572dac171c65d18d5f57a2f",
+            "feae607c7fc4703a5fe949edbdd1e6dedb2d62620c7a035ab2f07a70b3ad77f1",
+            "72557a5239f48286e19836eac5502ae9b405da7e0d7f35d8f51ca3727dc3d86c",
+            "8afd6bfa399b2cafc742bf7007fe4f5ef5e41a21d6d540abf8aebf073d82e498",
+            "9bfebcc0b31ddb1a8fa8a006b3ac4d8677877c0aafa2494f453124881c455eb9",
+            "a593a7dabfed0525b62e13f0e70e0f45921a2232534add3418f3dbf9fd231627",
+            "ccfbb6734ee56b79e72f9b881574a7d84fa7d7b901aa41c39cd7c96c976e5b7f"
+          ]
+        }
+      },
+      "test_cohort": "D1_CONTINUATION_C",
+      "test_count": 140,
+      "test_productive": 67,
+      "train_count": 1170,
+      "train_productive": 467
+    }
+  ],
+  "forward_2026_reads": 0,
+  "forward_B_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_reads": 0,
+  "promotion_authorized": false,
+  "qualified_trained_policy_leader": "TRAINED_MULTIHEAD_V2",
+  "qualified_trained_policy_leader_is_fresh_search_authority": false,
+  "replay_payload_sha256": "ece4702ba6a01c0b5b10b53fac78d37e1de178f8f976f32a15fff9ab4d6066a4",
+  "schema_version": "cn_program_optimizer_search_core_replay_v2",
+  "status": "OFFLINE_WALK_FORWARD_SEARCH_CORE_REPLAY_COMPLETE",
+  "trained_policy_qualification": {
+    "STRUCTURED_EXTRATREES_V1": {
+      "aggregate_top24_precision_delta_vs_uniform": 0.07291666666666663,
+      "aggregate_top48_precision_delta_vs_uniform": 0.17708333333333337,
+      "checks": {
+        "aggregate_top24_delta_ge_0p05": true,
+        "aggregate_top48_delta_ge_0p03": true,
+        "mean_productive_auc_ge_0p55": true,
+        "top24_fold_wins_ge_3": false,
+        "top24_worst_fold_delta_ge_minus_0p10": true
+      },
+      "qualified": false,
+      "top24_fold_precision_deltas_vs_uniform": [
+        -0.04166666666666663,
+        0.16666666666666663,
+        0.0,
+        0.16666666666666669
+      ],
+      "top24_fold_wins_vs_uniform": 2,
+      "top24_worst_fold_precision_delta_vs_uniform": -0.04166666666666663,
+      "top48_fold_precision_deltas_vs_uniform": [
+        0.12499999999999994,
+        0.16666666666666669,
+        0.14583333333333331,
+        0.2708333333333333
+      ]
+    },
+    "TRAINED_MULTIHEAD_V2": {
+      "aggregate_top24_precision_delta_vs_uniform": 0.16666666666666663,
+      "aggregate_top48_precision_delta_vs_uniform": 0.203125,
+      "checks": {
+        "aggregate_top24_delta_ge_0p05": true,
+        "aggregate_top48_delta_ge_0p03": true,
+        "mean_productive_auc_ge_0p55": true,
+        "top24_fold_wins_ge_3": true,
+        "top24_worst_fold_delta_ge_minus_0p10": true
+      },
+      "qualified": true,
+      "top24_fold_precision_deltas_vs_uniform": [
+        0.125,
+        0.125,
+        0.08333333333333337,
+        0.3333333333333333
+      ],
+      "top24_fold_wins_vs_uniform": 4,
+      "top24_worst_fold_precision_delta_vs_uniform": 0.08333333333333337,
+      "top48_fold_precision_deltas_vs_uniform": [
+        0.22916666666666669,
+        0.16666666666666669,
+        0.10416666666666669,
+        0.31250000000000006
+      ]
+    }
+  },
+  "trained_policy_qualification_contract": {
+    "aggregate_top24_precision_delta_vs_uniform_minimum": 0.05,
+    "aggregate_top48_precision_delta_vs_uniform_minimum": 0.03,
+    "all_conditions_required": true,
+    "minimum_mean_productive_auc": 0.55,
+    "minimum_top24_fold_wins_vs_uniform": 3,
+    "minimum_top24_worst_fold_precision_delta_vs_uniform": -0.1
+  },
+  "trained_policy_replay_leader": "TRAINED_MULTIHEAD_V2",
+  "trained_policy_replay_leader_is_fresh_search_authority": false,
+  "validation_reads": 0
+}

@@ -1,0 +1,853 @@
+{
+  "component_exact": {
+    "base|05cdc6fc379c146aa5770a7ceab56d904eca464ff7601d787f4f691d1ad1d45f": {
+      "admitted": 31,
+      "matched_return_sum": 0.6615882338128303,
+      "matched_reward_sum": 29.663090677429068,
+      "n": 50,
+      "productive": 17
+    },
+    "base|0e724b0bd0aa24f1383bec7a3d46dac29ded6d4f25f6152bdd22cde9bbbffeda": {
+      "admitted": 19,
+      "matched_return_sum": 8.99701761141978,
+      "matched_reward_sum": 40.18515505129004,
+      "n": 43,
+      "productive": 19
+    },
+    "base|0fd237ce442758d6de8c81a8475def169044c1a8ca4d96bd4e6ee73b1507403f": {
+      "admitted": 23,
+      "matched_return_sum": -3.2679714252732954,
+      "matched_reward_sum": -11.595656703018808,
+      "n": 38,
+      "productive": 5
+    },
+    "base|3396a3338b7185cafb38dba6feb38cd7be7c57a6a6a4acaaf9f46dcdc7fb82af": {
+      "admitted": 26,
+      "matched_return_sum": 3.7236102168136798,
+      "matched_reward_sum": 24.403377697326746,
+      "n": 46,
+      "productive": 22
+    },
+    "base|3fc4f5d4bf768b48493f5fc0432073eda917ebf5d0d539d7c9b7761d4d0cf620": {
+      "admitted": 18,
+      "matched_return_sum": 15.38088529200366,
+      "matched_reward_sum": 66.02907856248753,
+      "n": 44,
+      "productive": 18
+    },
+    "base|4eef1bc967211af46f7cc3683e861c81036ef818b154542fc87ab50a11029179": {
+      "admitted": 20,
+      "matched_return_sum": 20.394237770489834,
+      "matched_reward_sum": 82.9625864659791,
+      "n": 38,
+      "productive": 20
+    },
+    "base|54f8ae4d5f93b09b3c0f958aac5ab1ab544937dffb083992e897f994ee3dc1cb": {
+      "admitted": 20,
+      "matched_return_sum": 4.359390189457112,
+      "matched_reward_sum": 25.49722623865246,
+      "n": 41,
+      "productive": 19
+    },
+    "base|5619393354e925109774d51f50fed43c4f5517cd68fa92a0ef28949264ec635f": {
+      "admitted": 32,
+      "matched_return_sum": -1.5102117441834764,
+      "matched_reward_sum": 17.76055240600551,
+      "n": 49,
+      "productive": 10
+    },
+    "base|58575ea3d4a51e07feabf766cabec6ba78cbf021c4b8ea942099fc5956f2b530": {
+      "admitted": 20,
+      "matched_return_sum": 9.520387152803993,
+      "matched_reward_sum": 38.97958685356159,
+      "n": 41,
+      "productive": 20
+    },
+    "base|598b43252681d8b0ed6413c60fdae8e0931c982bec45df63bd7d6d2c0a388037": {
+      "admitted": 31,
+      "matched_return_sum": -0.08858841412190466,
+      "matched_reward_sum": 21.388378568819224,
+      "n": 42,
+      "productive": 12
+    },
+    "base|5a04a81b83ae588d568b523f540ef3609992439d62da2fefc580398a8c62144e": {
+      "admitted": 29,
+      "matched_return_sum": -5.408593596113197,
+      "matched_reward_sum": -14.03705512068798,
+      "n": 47,
+      "productive": 3
+    },
+    "base|6af256b97a08314806615ffe1002657225f3f1234a2c7b64855a0edc8ce65508": {
+      "admitted": 27,
+      "matched_return_sum": 13.480697645088307,
+      "matched_reward_sum": 56.28817700463521,
+      "n": 52,
+      "productive": 27
+    },
+    "base|762a17f592b8c9c0e479255d8d3b5163429df0599d523dfc0d96710f51d761e4": {
+      "admitted": 25,
+      "matched_return_sum": -1.6051752714514522,
+      "matched_reward_sum": 10.699127438979705,
+      "n": 40,
+      "productive": 8
+    },
+    "base|7cadd287acee4d73073b23850850cea27acd9cc8373ac11b7aabb549e7710198": {
+      "admitted": 22,
+      "matched_return_sum": 10.052516799525177,
+      "matched_reward_sum": 39.21537306677137,
+      "n": 42,
+      "productive": 22
+    },
+    "base|86f7591f617ba39374474cf6a4a32abea6c40b18ada85eb716a2fa5d15e048eb": {
+      "admitted": 33,
+      "matched_return_sum": 4.391301380312427,
+      "matched_reward_sum": 46.86596437074367,
+      "n": 51,
+      "productive": 26
+    },
+    "base|89f6d690aaea2e497c957495a14f2864923793114a5b6f0d91f71edb7a141e0d": {
+      "admitted": 23,
+      "matched_return_sum": 3.7005357096924403,
+      "matched_reward_sum": 23.442131000483467,
+      "n": 38,
+      "productive": 19
+    },
+    "base|9650a65bc1f3f3789744b6d7855b7b3a4748c929cfbc91edb04f12b4bcfbe9f9": {
+      "admitted": 21,
+      "matched_return_sum": 6.562718090740324,
+      "matched_reward_sum": 26.87663583358431,
+      "n": 40,
+      "productive": 21
+    },
+    "base|a62f2d43d7941de6b5a527e0e5b544c491e215406bef3717d8a3de76538be4c8": {
+      "admitted": 31,
+      "matched_return_sum": -3.724126008446868,
+      "matched_reward_sum": 9.457815233782313,
+      "n": 39,
+      "productive": 6
+    },
+    "base|aa29fc740dad43c36d42f955bd99508c14a9a27cbdc0e319fa02935eb58c4ec3": {
+      "admitted": 31,
+      "matched_return_sum": 0.6427134303770665,
+      "matched_reward_sum": 22.868602782285343,
+      "n": 38,
+      "productive": 12
+    },
+    "base|acdb3ff9f87e4e7f962fbea48d2e368c9e6b2ca9ea0869c9fc93f226c6cb2994": {
+      "admitted": 29,
+      "matched_return_sum": 9.780270200685038,
+      "matched_reward_sum": 38.0547970500669,
+      "n": 44,
+      "productive": 29
+    },
+    "base|b571e0605cffcab429901338246a2af22e28e1358410e4a982fac18736fdac46": {
+      "admitted": 25,
+      "matched_return_sum": -1.9067860067629372,
+      "matched_reward_sum": 2.3744860263143184,
+      "n": 44,
+      "productive": 8
+    },
+    "base|ba2955815800c37ca1be76b17894834aea9ddc4b845423ee663caec30fef9aed": {
+      "admitted": 31,
+      "matched_return_sum": -0.00914017727713512,
+      "matched_reward_sum": 22.217837671610322,
+      "n": 44,
+      "productive": 14
+    },
+    "base|bb16290f5111b05cd1ec13c146105136ecfc68d6c0df12a759a872d0447df8ef": {
+      "admitted": 28,
+      "matched_return_sum": 19.408947334513776,
+      "matched_reward_sum": 80.87889801464799,
+      "n": 53,
+      "productive": 28
+    },
+    "base|bcdbd8f81d9ccb3c4c0b7f1ce0b4d1760806a1e67f38deeea76d1f517e36f6d0": {
+      "admitted": 25,
+      "matched_return_sum": 11.677521720537985,
+      "matched_reward_sum": 45.94201375355168,
+      "n": 52,
+      "productive": 25
+    },
+    "base|be4f57aff9509e6fe227f667d2b7406c3e9a15539dd74df55c5663ac6687729e": {
+      "admitted": 30,
+      "matched_return_sum": 3.432687786947088,
+      "matched_reward_sum": 23.186799326378555,
+      "n": 44,
+      "productive": 23
+    },
+    "base|c43fa748ac1155dd737ecf0e76a117e1b46fa27fd39af26347b33f0e7ff0b7b0": {
+      "admitted": 33,
+      "matched_return_sum": -6.136274543131035,
+      "matched_reward_sum": -8.12872269871477,
+      "n": 46,
+      "productive": 6
+    },
+    "base|d5cfd5fcc556a1e4dffd987242b57253fb2f922c71f3c3696a0e08a8a608b9d6": {
+      "admitted": 20,
+      "matched_return_sum": 0.029952652548147718,
+      "matched_reward_sum": 13.037730439802283,
+      "n": 36,
+      "productive": 10
+    },
+    "base|f05b35fc59ff113a3f40575deaa574e47f4181903c1fa527a2a531aaf1ca9542": {
+      "admitted": 25,
+      "matched_return_sum": 7.769741841399446,
+      "matched_reward_sum": 34.026929403786184,
+      "n": 43,
+      "productive": 25
+    },
+    "base|f1f95fbeca4aea86ef080a0d76f3fc14dda316f6f252695c9ce529085c237208": {
+      "admitted": 23,
+      "matched_return_sum": -0.5926820977129121,
+      "matched_reward_sum": 8.27616232433169,
+      "n": 38,
+      "productive": 10
+    },
+    "base|f3134ff3cbe51b7d3d7c10da31ed8ebc55367ba7d268ac75c3bb48bebc4cfb80": {
+      "admitted": 3,
+      "matched_return_sum": 0.007984282660909114,
+      "matched_reward_sum": 1.511260049442308,
+      "n": 46,
+      "productive": 2
+    },
+    "base|fb62f34f8c9aa71492c6d9df8a13096aa19bf6f565162ceb205af96756e49ab5": {
+      "admitted": 29,
+      "matched_return_sum": -2.0194402114480274,
+      "matched_reward_sum": -7.728440727831471,
+      "n": 43,
+      "productive": 8
+    },
+    "base|ff33ed20129c4ced3ca52cbdd05d33ec64753317c0e4de321c9e5cf22bc880b1": {
+      "admitted": 28,
+      "matched_return_sum": 6.427698382869712,
+      "matched_reward_sum": 28.90776167441043,
+      "n": 40,
+      "productive": 25
+    },
+    "event|0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2": {
+      "admitted": 13,
+      "matched_return_sum": 1.1497868385254708,
+      "matched_reward_sum": 3.870623616929797,
+      "n": 48,
+      "productive": 12
+    },
+    "event|3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5": {
+      "admitted": 33,
+      "matched_return_sum": 5.077468387696848,
+      "matched_reward_sum": 67.24012901932204,
+      "n": 48,
+      "productive": 21
+    },
+    "event|3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79": {
+      "admitted": 34,
+      "matched_return_sum": 4.349876053224571,
+      "matched_reward_sum": 64.42316518382394,
+      "n": 48,
+      "productive": 17
+    },
+    "event|5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989": {
+      "admitted": 29,
+      "matched_return_sum": 8.445517694793818,
+      "matched_reward_sum": 21.011544075119314,
+      "n": 48,
+      "productive": 24
+    },
+    "event|67578b74abec5a372f60e515379fe4c29be73bf61d7e7b19cf32b966aaa53c7c": {
+      "admitted": 0,
+      "matched_return_sum": 0.0,
+      "matched_reward_sum": 0.0,
+      "n": 6,
+      "productive": 0
+    },
+    "event|72550a20788e1d9e3864b8381f19defd8cd721cab4a59e8e78e9184fc8461926": {
+      "admitted": 10,
+      "matched_return_sum": 1.5601525499918298,
+      "matched_reward_sum": 15.85113551782531,
+      "n": 10,
+      "productive": 6
+    },
+    "event|7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81": {
+      "admitted": 4,
+      "matched_return_sum": -0.6011746081287371,
+      "matched_reward_sum": -1.972949144029208,
+      "n": 69,
+      "productive": 1
+    },
+    "event|8b170f7d80ce7e43062aa07d359b2ad5ea5fd5edff96bd181877ed625b152348": {
+      "admitted": 111,
+      "matched_return_sum": 19.261369841383946,
+      "matched_reward_sum": 185.88810832321224,
+      "n": 135,
+      "productive": 76
+    },
+    "event|9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969": {
+      "admitted": 121,
+      "matched_return_sum": 13.593551689100483,
+      "matched_reward_sum": 109.73819608758545,
+      "n": 189,
+      "productive": 68
+    },
+    "event|b34a995b0e20a7553c57924c3c5794411dec6b724b08eeb7782d5c1022a5508d": {
+      "admitted": 0,
+      "matched_return_sum": 0.0,
+      "matched_reward_sum": 0.0,
+      "n": 15,
+      "productive": 0
+    },
+    "event|ba83a679240a8efb9383ef1ef39ce1cd6eb129cc535e5cf5fecd7d29b0ce41d6": {
+      "admitted": 7,
+      "matched_return_sum": 1.025416542850071,
+      "matched_reward_sum": 7.492398540485884,
+      "n": 10,
+      "productive": 4
+    },
+    "event|bc4928f0fac5b5bb541e11d33e6bd83de6188e83a4655df46b4293b22aa30998": {
+      "admitted": 36,
+      "matched_return_sum": 3.2085054287190884,
+      "matched_reward_sum": 8.596697799951592,
+      "n": 62,
+      "productive": 20
+    },
+    "event|c715afb60074792fc045a033eeb8f769540c7125c35d69b596aed98753595657": {
+      "admitted": 8,
+      "matched_return_sum": 0.26082979225311276,
+      "matched_reward_sum": 7.170148425366316,
+      "n": 8,
+      "productive": 4
+    },
+    "event|d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc": {
+      "admitted": 139,
+      "matched_return_sum": 56.53444344508681,
+      "matched_reward_sum": 238.58076780611057,
+      "n": 144,
+      "productive": 126
+    },
+    "event|d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20": {
+      "admitted": 33,
+      "matched_return_sum": 0.7866539157319169,
+      "matched_reward_sum": 11.690110006833622,
+      "n": 48,
+      "productive": 18
+    },
+    "event|df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1": {
+      "admitted": 37,
+      "matched_return_sum": 7.279930285719871,
+      "matched_reward_sum": 18.900539166551194,
+      "n": 48,
+      "productive": 21
+    },
+    "event|e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f": {
+      "admitted": 14,
+      "matched_return_sum": 2.5670593446061565,
+      "matched_reward_sum": 28.531181633260456,
+      "n": 48,
+      "productive": 10
+    },
+    "event|e24c3f38f50b08bf286f20946eb902cf1bb5ad761d5b939217e657b96c11b6ee": {
+      "admitted": 26,
+      "matched_return_sum": 6.157775280973652,
+      "matched_reward_sum": 27.932629389728255,
+      "n": 48,
+      "productive": 19
+    },
+    "market|1b66a332e2b2d03fab7c04627d61f8e745508508c593ba775273574decf3174a": {
+      "admitted": 54,
+      "matched_return_sum": 10.172974725487133,
+      "matched_reward_sum": 87.11815894994714,
+      "n": 57,
+      "productive": 36
+    },
+    "market|2381df10b41747b0e67a938d9db0ed588abd54d080d3b654555ef93ca67e89d2": {
+      "admitted": 39,
+      "matched_return_sum": 6.951824183540305,
+      "matched_reward_sum": 71.70844383132464,
+      "n": 58,
+      "productive": 29
+    },
+    "market|29d197121381647e3560b6ef4cbbe34bbea3dbc2bdead81dc20128ff66649f95": {
+      "admitted": 62,
+      "matched_return_sum": 7.225920652353164,
+      "matched_reward_sum": 65.9174030652981,
+      "n": 125,
+      "productive": 33
+    },
+    "market|2ba72a8ec1baa9b9564c944e8ac60ccb744550c0e7aeb2e54ee00f1097af903a": {
+      "admitted": 6,
+      "matched_return_sum": -0.4482284970688749,
+      "matched_reward_sum": -1.0790320339341894,
+      "n": 21,
+      "productive": 1
+    },
+    "market|31d3c5f0d8948c95bbb24f7d9886e55080b0f75b7600c370573e7f86a79e1942": {
+      "admitted": 22,
+      "matched_return_sum": 1.3181260205872363,
+      "matched_reward_sum": 9.397262493570494,
+      "n": 32,
+      "productive": 11
+    },
+    "market|3fb90b56c886522fb13deb950ecb52ba8c9893a37bf8156910d1210e469641ab": {
+      "admitted": 17,
+      "matched_return_sum": 0.7360802229927433,
+      "matched_reward_sum": 3.1554012201776227,
+      "n": 26,
+      "productive": 9
+    },
+    "market|575b8960e4ec9e19474eb05641412b8292e1e196fd26000ae6609e5c790c67a0": {
+      "admitted": 13,
+      "matched_return_sum": -0.4033829373730772,
+      "matched_reward_sum": 3.594067299953741,
+      "n": 35,
+      "productive": 2
+    },
+    "market|6548b7412c6fe2a630738ceb569da35d192853de4cde947117a7d4f776a00a83": {
+      "admitted": 2,
+      "matched_return_sum": -0.6722563597774638,
+      "matched_reward_sum": -1.517359800329559,
+      "n": 6,
+      "productive": 0
+    },
+    "market|69e1d218486e1649066f0694a274862e498e8719b76f208498802750b9b6547a": {
+      "admitted": 43,
+      "matched_return_sum": 1.0851212950844586,
+      "matched_reward_sum": -1.189870120104076,
+      "n": 120,
+      "productive": 19
+    },
+    "temporal|038e563f584a3f7376dd57b45e783c168b5c46ac4b9bb5147e53de3f1fd66121": {
+      "admitted": 25,
+      "matched_return_sum": 2.945844397447015,
+      "matched_reward_sum": 19.007159939298493,
+      "n": 44,
+      "productive": 17
+    },
+    "temporal|064498eb469a50b8cf3d75cfac041cdd6f710d3d6a677b80669da4742fd83013": {
+      "admitted": 21,
+      "matched_return_sum": 3.9805080111589826,
+      "matched_reward_sum": 28.9412652158207,
+      "n": 44,
+      "productive": 11
+    },
+    "temporal|1edb218ff355e3888e40c413c036b4ab477a7727d98450d7205e43fc1294b52f": {
+      "admitted": 3,
+      "matched_return_sum": -0.4784810851830904,
+      "matched_reward_sum": -2.2849449348546056,
+      "n": 41,
+      "productive": 1
+    },
+    "temporal|27382c96dbea53ff5dc59ead3ad73163f91a862154eeafed8bbf985f138fe775": {
+      "admitted": 40,
+      "matched_return_sum": 1.563602380267549,
+      "matched_reward_sum": 1.0950748147505294,
+      "n": 79,
+      "productive": 18
+    },
+    "temporal|39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3": {
+      "admitted": 112,
+      "matched_return_sum": 39.72349414604712,
+      "matched_reward_sum": 183.75382631412953,
+      "n": 143,
+      "productive": 87
+    },
+    "temporal|3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d": {
+      "admitted": 129,
+      "matched_return_sum": 23.27781239904141,
+      "matched_reward_sum": 152.39743339342473,
+      "n": 165,
+      "productive": 95
+    },
+    "temporal|52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c": {
+      "admitted": 52,
+      "matched_return_sum": 10.627817302750811,
+      "matched_reward_sum": 43.06084780191622,
+      "n": 100,
+      "productive": 36
+    },
+    "temporal|6752950fa9fc490c840ad94ffeaac30a8359abf5e9ca508e0d5d75c3504e590b": {
+      "admitted": 31,
+      "matched_return_sum": 7.725609259440944,
+      "matched_reward_sum": 43.31647564876161,
+      "n": 44,
+      "productive": 25
+    },
+    "temporal|6cd9144f824dc624a8e173d59fb7e5c317fde8f53cde2d50a2e18288ccba749a": {
+      "admitted": 19,
+      "matched_return_sum": 3.4000416462358203,
+      "matched_reward_sum": 10.808380144169323,
+      "n": 44,
+      "productive": 15
+    },
+    "temporal|6d58beb74d98e07d4fc4b0ce414a639deedbfea9e0b9fb3542ac640fd5beee57": {
+      "admitted": 22,
+      "matched_return_sum": 0.7361604510344939,
+      "matched_reward_sum": 21.406245284869055,
+      "n": 24,
+      "productive": 11
+    },
+    "temporal|6e7c17dc06964076067b7ffb744cb7b2ab77d2d0a642e0cb89692e15f20023ce": {
+      "admitted": 57,
+      "matched_return_sum": 10.156302533804293,
+      "matched_reward_sum": 55.45761947164689,
+      "n": 151,
+      "productive": 33
+    },
+    "temporal|8950cafc4339712d3d09c419f5a0fafbd073b227ff5be9690a25f634083577e2": {
+      "admitted": 18,
+      "matched_return_sum": 1.791372502970708,
+      "matched_reward_sum": 10.556676051323418,
+      "n": 39,
+      "productive": 15
+    },
+    "temporal|8a6d66962619b868380ab7d498e21c216bde3b77c443372827c8c9d5e56d9a4f": {
+      "admitted": 1,
+      "matched_return_sum": -0.3498070243233822,
+      "matched_reward_sum": -0.6595020665916076,
+      "n": 15,
+      "productive": 0
+    },
+    "temporal|90d19a782209b4679c9b67cbdb95b2f3cc71303f220d11c406d727f25a0e18ad": {
+      "admitted": 45,
+      "matched_return_sum": 3.243147469305757,
+      "matched_reward_sum": 28.826566120190762,
+      "n": 75,
+      "productive": 24
+    },
+    "temporal|95b4a5183905d88c33e01783b202459c0a94f59aa312a3faf80c8272c60f73bf": {
+      "admitted": 13,
+      "matched_return_sum": 0.302103866370526,
+      "matched_reward_sum": 1.326171603154233,
+      "n": 24,
+      "productive": 5
+    }
+  },
+  "component_route": {
+    "base|SLOW_CROSS_SECTIONAL_LEVEL": {
+      "admitted": 811,
+      "matched_return_sum": 134.1334142287764,
+      "matched_reward_sum": 839.5076597369057,
+      "n": 1392,
+      "productive": 519
+    },
+    "event|DISCLOSURE_EVENT": {
+      "admitted": 655,
+      "matched_return_sum": 130.65716248252878,
+      "matched_reward_sum": 814.9444254480765,
+      "n": 1032,
+      "productive": 447
+    },
+    "market|MARKET_REGIME_CONDITION": {
+      "admitted": 258,
+      "matched_return_sum": 25.966179305825623,
+      "matched_reward_sum": 237.10447490590374,
+      "n": 480,
+      "productive": 140
+    },
+    "temporal|SLOW_TEMPORAL_CHANGE": {
+      "admitted": 588,
+      "matched_return_sum": 108.64552825636886,
+      "matched_reward_sum": 597.0092948020083,
+      "n": 1032,
+      "productive": 393
+    }
+  },
+  "component_skeleton": {
+    "base|cn.comp.v2.slow_cross_sectional_level.cross_family_interaction": {
+      "admitted": 95,
+      "matched_return_sum": 32.659736046858555,
+      "matched_reward_sum": 177.4513448734518,
+      "n": 171,
+      "productive": 56
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.fundamental_cap_condition": {
+      "admitted": 110,
+      "matched_return_sum": 21.740241906099474,
+      "matched_reward_sum": 120.64153169410805,
+      "n": 180,
+      "productive": 84
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.fundamental_level": {
+      "admitted": 98,
+      "matched_return_sum": 25.873164422622565,
+      "matched_reward_sum": 113.27233558222753,
+      "n": 178,
+      "productive": 76
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.fundamental_ratio": {
+      "admitted": 121,
+      "matched_return_sum": 34.223232345888306,
+      "matched_reward_sum": 188.66826221774392,
+      "n": 186,
+      "productive": 95
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.fundamental_residual": {
+      "admitted": 116,
+      "matched_return_sum": -7.8534726068289284,
+      "matched_reward_sum": 23.494190852691045,
+      "n": 175,
+      "productive": 42
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.masked_normalized_level": {
+      "admitted": 103,
+      "matched_return_sum": 5.437607964646702,
+      "matched_reward_sum": 61.2341129084321,
+      "n": 164,
+      "productive": 53
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.size_residual_level": {
+      "admitted": 75,
+      "matched_return_sum": 7.2622432597622115,
+      "matched_reward_sum": 71.08871700025797,
+      "n": 172,
+      "productive": 50
+    },
+    "base|cn.comp.v2.slow_cross_sectional_level.winsorized_level": {
+      "admitted": 93,
+      "matched_return_sum": 14.790660889727592,
+      "matched_reward_sum": 83.65716460799376,
+      "n": 166,
+      "productive": 63
+    },
+    "event|cn.comp.v2.disclosure_event.event_age": {
+      "admitted": 49,
+      "matched_return_sum": 4.35829226724456,
+      "matched_reward_sum": 12.467321416881388,
+      "n": 110,
+      "productive": 32
+    },
+    "event|cn.comp.v2.disclosure_event.event_first_hit": {
+      "admitted": 194,
+      "matched_return_sum": 71.13773642085428,
+      "matched_reward_sum": 287.5249412709582,
+      "n": 240,
+      "productive": 169
+    },
+    "event|cn.comp.v2.disclosure_event.event_prior_condition": {
+      "admitted": 0,
+      "matched_return_sum": 0.0,
+      "matched_reward_sum": 0.0,
+      "n": 6,
+      "productive": 0
+    },
+    "event|cn.comp.v2.disclosure_event.event_pulse": {
+      "admitted": 139,
+      "matched_return_sum": 15.559436425577907,
+      "matched_reward_sum": 136.29642857681665,
+      "n": 306,
+      "productive": 79
+    },
+    "event|cn.comp.v2.disclosure_event.post_maturity_state": {
+      "admitted": 18,
+      "matched_return_sum": 1.8209823422449425,
+      "matched_reward_sum": 23.02128394319163,
+      "n": 18,
+      "productive": 10
+    },
+    "event|cn.comp.v2.disclosure_event.pre_event_path": {
+      "admitted": 118,
+      "matched_return_sum": 20.286786384234013,
+      "matched_reward_sum": 193.38050686369814,
+      "n": 160,
+      "productive": 80
+    },
+    "event|cn.comp.v2.disclosure_event.repeated_event_suppression": {
+      "admitted": 137,
+      "matched_return_sum": 17.493928642373213,
+      "matched_reward_sum": 162.25394337653069,
+      "n": 192,
+      "productive": 77
+    },
+    "market|cn.comp.v2.market_regime_condition.payload_regime_residual": {
+      "admitted": 6,
+      "matched_return_sum": -0.4482284970688749,
+      "matched_reward_sum": -1.0790320339341894,
+      "n": 21,
+      "productive": 1
+    },
+    "market|cn.comp.v2.market_regime_condition.regime_conditioned_path": {
+      "admitted": 37,
+      "matched_return_sum": 0.24248672343669542,
+      "matched_reward_sum": 11.473969993194675,
+      "n": 73,
+      "productive": 13
+    },
+    "market|cn.comp.v2.market_regime_condition.regime_maturity_payload": {
+      "admitted": 79,
+      "matched_return_sum": 7.962000875345906,
+      "matched_reward_sum": 69.07280428547575,
+      "n": 151,
+      "productive": 42
+    },
+    "market|cn.comp.v2.market_regime_condition.regime_persistence_gate": {
+      "admitted": 97,
+      "matched_return_sum": 11.258096020571589,
+      "matched_reward_sum": 85.92828882984304,
+      "n": 177,
+      "productive": 55
+    },
+    "market|cn.comp.v2.market_regime_condition.regime_transition_response": {
+      "admitted": 39,
+      "matched_return_sum": 6.951824183540305,
+      "matched_reward_sum": 71.70844383132464,
+      "n": 58,
+      "productive": 29
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.acceleration": {
+      "admitted": 19,
+      "matched_return_sum": 3.4000416462358203,
+      "matched_reward_sum": 10.808380144169323,
+      "n": 44,
+      "productive": 15
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.change_level_interaction": {
+      "admitted": 109,
+      "matched_return_sum": 20.7841198365551,
+      "matched_reward_sum": 98.51846727356313,
+      "n": 251,
+      "productive": 69
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.change_persistence": {
+      "admitted": 25,
+      "matched_return_sum": 2.945844397447015,
+      "matched_reward_sum": 19.007159939298493,
+      "n": 44,
+      "productive": 17
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.cross_change_interaction": {
+      "admitted": 157,
+      "matched_return_sum": 42.966641615352884,
+      "matched_reward_sum": 212.58039243432023,
+      "n": 218,
+      "productive": 111
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.delta": {
+      "admitted": 61,
+      "matched_return_sum": 5.544110391426529,
+      "matched_reward_sum": 30.03634003057123,
+      "n": 123,
+      "productive": 29
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.reported_change": {
+      "admitted": 62,
+      "matched_return_sum": 9.819085628782174,
+      "matched_reward_sum": 55.19932330323927,
+      "n": 107,
+      "productive": 45
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.short_long_change": {
+      "admitted": 151,
+      "matched_return_sum": 24.0139728500759,
+      "matched_reward_sum": 173.80367867829375,
+      "n": 189,
+      "productive": 106
+    },
+    "temporal|cn.comp.v2.slow_temporal_change.slope": {
+      "admitted": 4,
+      "matched_return_sum": -0.8282881095064726,
+      "matched_reward_sum": -2.944447001446213,
+      "n": 56,
+      "productive": 1
+    }
+  },
+  "financial_evaluation_performed_by_builder": false,
+  "forward_2026_reads": 0,
+  "global": {
+    "admitted": 811,
+    "matched_return_sum": 134.1334142287764,
+    "matched_reward_sum": 839.5076597369057,
+    "n": 1392,
+    "productive": 519
+  },
+  "holdout_reads": 0,
+  "role": {
+    "base": {
+      "admitted": 811,
+      "matched_return_sum": 134.1334142287764,
+      "matched_reward_sum": 839.5076597369057,
+      "n": 1392,
+      "productive": 519
+    },
+    "event": {
+      "admitted": 655,
+      "matched_return_sum": 130.65716248252878,
+      "matched_reward_sum": 814.9444254480765,
+      "n": 1032,
+      "productive": 447
+    },
+    "market": {
+      "admitted": 258,
+      "matched_return_sum": 25.966179305825623,
+      "matched_reward_sum": 237.10447490590374,
+      "n": 480,
+      "productive": 140
+    },
+    "temporal": {
+      "admitted": 588,
+      "matched_return_sum": 108.64552825636886,
+      "matched_reward_sum": 597.0092948020083,
+      "n": 1032,
+      "productive": 393
+    }
+  },
+  "schema_version": "cn_stage_c_primitive_credit_stats_v1",
+  "source_component_pool": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_tournament_batch_feasibility_retry_20260815_11c5d08\\prefinancial_freeze_stage01\\phase_c_session_executable_component_pool.jsonl",
+  "source_counts": {
+    "large": 840,
+    "stage_a": 288,
+    "stage_b": 264
+  },
+  "stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+  "status": "SPENT_DEVELOPMENT_PRIMITIVE_CREDIT_STATS_FROZEN",
+  "template": {
+    "BASE_EVENT": {
+      "admitted": 66,
+      "matched_return_sum": 7.560418264517775,
+      "matched_reward_sum": 66.77971880553588,
+      "n": 120,
+      "productive": 35
+    },
+    "BASE_MARKET": {
+      "admitted": 60,
+      "matched_return_sum": 0.5303384493605638,
+      "matched_reward_sum": 13.55033917943811,
+      "n": 120,
+      "productive": 23
+    },
+    "BASE_MARKET_EVENT": {
+      "admitted": 97,
+      "matched_return_sum": 17.3971292585292,
+      "matched_reward_sum": 162.16830694992296,
+      "n": 120,
+      "productive": 68
+    },
+    "BASE_TEMPORAL": {
+      "admitted": 53,
+      "matched_return_sum": 1.8607920018025417,
+      "matched_reward_sum": 12.202765229495258,
+      "n": 120,
+      "productive": 30
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "admitted": 434,
+      "matched_return_sum": 98.74602465663048,
+      "matched_reward_sum": 523.4207007959709,
+      "n": 672,
+      "productive": 314
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "admitted": 43,
+      "matched_return_sum": 1.0851212950844586,
+      "matched_reward_sum": -1.189870120104076,
+      "n": 120,
+      "productive": 19
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "admitted": 58,
+      "matched_return_sum": 6.953590302851408,
+      "matched_reward_sum": 62.5756988966469,
+      "n": 120,
+      "productive": 30
+    }
+  },
+  "unique_program_exact_count": 1392,
+  "unique_program_exact_identities_sha256": "48c24509303e3e99d9bcd30f14f7555974e229a5e19547283e885ce80d530216",
+  "validation_reads": 0
+}
