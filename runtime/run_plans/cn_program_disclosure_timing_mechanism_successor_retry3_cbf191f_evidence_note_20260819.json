@@ -1,0 +1,169 @@
+{
+  "classification": "LOCAL_PRIMITIVE_WIN_NOT_SYSTEMATIC_EVENT_FAMILY",
+  "conversion_policy": {
+    "allowed_future_design_if_separately_authorized": [
+      "Freeze the anchor primitive exactly for one independent prospective/confirmatory test",
+      "Treat repeated_event_suppression and non-balance FirstHit siblings only as separate hypotheses, not as validated family members",
+      "Require each future hypothesis to retain its matched control and pre-registered decision rule"
+    ],
+    "anchor_expression": "FirstHit($fund_disclosure_balance_pulse,20)",
+    "anchor_primitive_status": "DEVELOPMENT_LOCAL_MECHANISM_CANDIDATE",
+    "do_not_do": [
+      "Do not label generic DISCLOSURE_EVENT as a systematic alpha family",
+      "Do not launch frozen Stage B after Stage A FAIL",
+      "Do not merge sibling results adaptively into the anchor",
+      "Do not open validation/OOS or promote from development evidence"
+    ],
+    "family_status": "NOT_QUALIFIED"
+  },
+  "evidence_payload_sha256": "cde0a7a39a7d9201247f59e5e27fe922072253ce4b3cd33a88ddb562689f6b24",
+  "oos_authority": "NONE",
+  "promotion_authorized": false,
+  "pulse_summary": {
+    "balance": {
+      "admission_rate": 0.5972222222222222,
+      "admitted": 43,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.020907946520178466,
+      "median_matched_net_reward_increment": 0.40072398581298585,
+      "productive": 24,
+      "productive_rate": 0.3333333333333333
+    },
+    "cashflow": {
+      "admission_rate": 0.7291666666666666,
+      "admitted": 35,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.08750062543281589,
+      "median_matched_net_reward_increment": 0.6852156055632443,
+      "productive": 21,
+      "productive_rate": 0.4375
+    },
+    "holder": {
+      "admission_rate": 0.4583333333333333,
+      "admitted": 33,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+      "median_matched_net_reward_increment": 0.6248510477850584,
+      "productive": 21,
+      "productive_rate": 0.2916666666666667
+    },
+    "profit": {
+      "admission_rate": 0.5972222222222222,
+      "admitted": 43,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.11558368030062494,
+      "median_matched_net_reward_increment": 1.1748463685119612,
+      "productive": 26,
+      "productive_rate": 0.3611111111111111
+    }
+  },
+  "representation_summary": {
+    "event_age": {
+      "admission_rate": 0.4791666666666667,
+      "admitted": 23,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.0638475097385025,
+      "median_matched_net_reward_increment": 0.2553413406153432,
+      "productive": 14,
+      "productive_rate": 0.2916666666666667
+    },
+    "event_first_hit": {
+      "admission_rate": 0.6041666666666666,
+      "admitted": 29,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+      "median_matched_net_reward_increment": 0.8501637005783222,
+      "productive": 21,
+      "productive_rate": 0.4375
+    },
+    "event_pulse": {
+      "admission_rate": 0.4027777777777778,
+      "admitted": 29,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.03335795248304363,
+      "median_matched_net_reward_increment": 0.8819490079022447,
+      "productive": 17,
+      "productive_rate": 0.2361111111111111
+    },
+    "repeated_event_suppression": {
+      "admission_rate": 0.7604166666666666,
+      "admitted": 73,
+      "evaluated": 96,
+      "median_matched_cumulative_net_return_increment": 0.040046205378076793,
+      "median_matched_net_reward_increment": 0.7723203807231743,
+      "productive": 40,
+      "productive_rate": 0.4166666666666667
+    }
+  },
+  "schema_version": "cn_program_disclosure_timing_mechanism_successor_retry3_evidence_note_v1",
+  "source_independent_audit_payload_sha256": "7ab82671077a6b5f8c12995af90a98825e9a027aff6b27ad88d7a9f3f147d7f5",
+  "source_outcome_payload_sha256": "23d7430512bff368a2883a628eb0a7034a30616f71c8243f6d5ac5090b970f7b",
+  "stage_b_not_run": true,
+  "status": "EVIDENCE_NOTE_FROZEN",
+  "strongest_sibling_hypotheses": [
+    {
+      "evaluated": 24,
+      "expression": "SafeDiv(EventCount($fund_disclosure_cashflow_pulse,5),Add(EventCount($fund_disclosure_cashflow_pulse,20),1),1)",
+      "median_matched_return": 0.1240035501231409,
+      "median_matched_reward": 1.3198442966457933,
+      "productive": 13,
+      "productive_rate": 0.5416666666666666,
+      "pulse": "cashflow",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "evaluated": 24,
+      "expression": "SafeDiv(EventCount($fund_disclosure_profit_pulse,5),Add(EventCount($fund_disclosure_profit_pulse,20),1),1)",
+      "median_matched_return": 0.052562472154498774,
+      "median_matched_reward": 2.107392552653658,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "profit",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "evaluated": 24,
+      "expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+      "median_matched_return": 0.3301250481509528,
+      "median_matched_reward": 0.8469730687991037,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "holder",
+      "representation": "event_first_hit"
+    },
+    {
+      "evaluated": 24,
+      "expression": "EventCount($fund_disclosure_balance_pulse,1)",
+      "median_matched_return": 0.028601131943725933,
+      "median_matched_reward": 0.5124649650827483,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "balance",
+      "representation": "event_pulse"
+    },
+    {
+      "evaluated": 24,
+      "expression": "FirstHit($fund_disclosure_profit_pulse,20)",
+      "median_matched_return": 0.18649647191362007,
+      "median_matched_reward": 0.8501637005783222,
+      "productive": 10,
+      "productive_rate": 0.4166666666666667,
+      "pulse": "profit",
+      "representation": "event_first_hit"
+    }
+  ],
+  "validation_feedback_used": false,
+  "what_failed_to_generalize": {
+    "leave_one_event_out_passed": false,
+    "median_matched_return_positive": true,
+    "median_matched_reward_positive": true,
+    "pulse_breadth_passed": false,
+    "representation_breadth_passed": false,
+    "required_minimum": 0.45,
+    "sibling_event_aggregate_productive_rate": 0.3484848484848485
+  },
+  "what_is_not_random_anymore": [
+    "The original BASE_TEMPORAL_EVENT development result was stable across macros, bases, temporal branches, arms and combination policies before this falsification.",
+    "The exact anchor primitive remains strong under the fixed Stage A replication: productive_rate=0.875."
+  ]
+}

@@ -1,0 +1,570 @@
+{
+  "artifacts_ok": true,
+  "audit_payload_sha256": "7ab82671077a6b5f8c12995af90a98825e9a027aff6b27ad88d7a9f3f147d7f5",
+  "chain_ok": true,
+  "checkpoint_count": 12,
+  "checkpoint_summary": [
+    {
+      "artifacts_ok": true,
+      "checkpoint": 0,
+      "fresh_records": 0,
+      "fresh_records_dir": false,
+      "previous_ok": true,
+      "recovered_records": 24,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_RECOVERED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 1,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 2,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 3,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 4,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 5,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 6,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 7,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 8,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 9,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 10,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    },
+    {
+      "artifacts_ok": true,
+      "checkpoint": 11,
+      "fresh_records": 24,
+      "fresh_records_dir": true,
+      "previous_ok": true,
+      "recovered_records": 0,
+      "results": 24,
+      "self_hash_ok": true,
+      "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+    }
+  ],
+  "classification": "LOCAL_PRIMITIVE_WIN_NOT_SYSTEMATIC_EVENT_FAMILY",
+  "closure_hash_ok": true,
+  "fresh_264_ok": true,
+  "gate_recompute_ok": true,
+  "leave_one_event_min": 0.32916666666666666,
+  "pulse_metrics": {
+    "balance": {
+      "admission_rate": 0.5972222222222222,
+      "admitted": 43,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.020907946520178466,
+      "median_matched_net_reward_increment": 0.40072398581298585,
+      "productive": 24,
+      "productive_rate": 0.3333333333333333
+    },
+    "cashflow": {
+      "admission_rate": 0.7291666666666666,
+      "admitted": 35,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.08750062543281589,
+      "median_matched_net_reward_increment": 0.6852156055632443,
+      "productive": 21,
+      "productive_rate": 0.4375
+    },
+    "holder": {
+      "admission_rate": 0.4583333333333333,
+      "admitted": 33,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+      "median_matched_net_reward_increment": 0.6248510477850584,
+      "productive": 21,
+      "productive_rate": 0.2916666666666667
+    },
+    "profit": {
+      "admission_rate": 0.5972222222222222,
+      "admitted": 43,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.11558368030062494,
+      "median_matched_net_reward_increment": 1.1748463685119612,
+      "productive": 26,
+      "productive_rate": 0.3611111111111111
+    }
+  },
+  "recovery_ok": true,
+  "representation_metrics": {
+    "event_age": {
+      "admission_rate": 0.4791666666666667,
+      "admitted": 23,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.0638475097385025,
+      "median_matched_net_reward_increment": 0.2553413406153432,
+      "productive": 14,
+      "productive_rate": 0.2916666666666667
+    },
+    "event_first_hit": {
+      "admission_rate": 0.6041666666666666,
+      "admitted": 29,
+      "evaluated": 48,
+      "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+      "median_matched_net_reward_increment": 0.8501637005783222,
+      "productive": 21,
+      "productive_rate": 0.4375
+    },
+    "event_pulse": {
+      "admission_rate": 0.4027777777777778,
+      "admitted": 29,
+      "evaluated": 72,
+      "median_matched_cumulative_net_return_increment": 0.03335795248304363,
+      "median_matched_net_reward_increment": 0.8819490079022447,
+      "productive": 17,
+      "productive_rate": 0.2361111111111111
+    },
+    "repeated_event_suppression": {
+      "admission_rate": 0.7604166666666666,
+      "admitted": 73,
+      "evaluated": 96,
+      "median_matched_cumulative_net_return_increment": 0.040046205378076793,
+      "median_matched_net_reward_increment": 0.7723203807231743,
+      "productive": 40,
+      "productive_rate": 0.4166666666666667
+    }
+  },
+  "restricted_reads_zero": true,
+  "sibling_events_ranked": [
+    {
+      "admitted": 19,
+      "evaluated": 24,
+      "event_component_id": "3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5",
+      "expression": "SafeDiv(EventCount($fund_disclosure_cashflow_pulse,5),Add(EventCount($fund_disclosure_cashflow_pulse,20),1),1)",
+      "median_matched_return": 0.1240035501231409,
+      "median_matched_reward": 1.3198442966457933,
+      "productive": 13,
+      "productive_rate": 0.5416666666666666,
+      "pulse": "cashflow",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "admitted": 20,
+      "evaluated": 24,
+      "event_component_id": "3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79",
+      "expression": "SafeDiv(EventCount($fund_disclosure_profit_pulse,5),Add(EventCount($fund_disclosure_profit_pulse,20),1),1)",
+      "median_matched_return": 0.052562472154498774,
+      "median_matched_reward": 2.107392552653658,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "profit",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "admitted": 14,
+      "evaluated": 24,
+      "event_component_id": "5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989",
+      "expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+      "median_matched_return": 0.3301250481509528,
+      "median_matched_reward": 0.8469730687991037,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "holder",
+      "representation": "event_first_hit"
+    },
+    {
+      "admitted": 20,
+      "evaluated": 24,
+      "event_component_id": "9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969",
+      "expression": "EventCount($fund_disclosure_balance_pulse,1)",
+      "median_matched_return": 0.028601131943725933,
+      "median_matched_reward": 0.5124649650827483,
+      "productive": 11,
+      "productive_rate": 0.4583333333333333,
+      "pulse": "balance",
+      "representation": "event_pulse"
+    },
+    {
+      "admitted": 15,
+      "evaluated": 24,
+      "event_component_id": "e24c3f38f50b08bf286f20946eb902cf1bb5ad761d5b939217e657b96c11b6ee",
+      "expression": "FirstHit($fund_disclosure_profit_pulse,20)",
+      "median_matched_return": 0.18649647191362007,
+      "median_matched_reward": 0.8501637005783222,
+      "productive": 10,
+      "productive_rate": 0.4166666666666667,
+      "pulse": "profit",
+      "representation": "event_first_hit"
+    },
+    {
+      "admitted": 18,
+      "evaluated": 24,
+      "event_component_id": "df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1",
+      "expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+      "median_matched_return": 0.027747616159011668,
+      "median_matched_reward": 0.11320150262193363,
+      "productive": 9,
+      "productive_rate": 0.375,
+      "pulse": "holder",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "admitted": 16,
+      "evaluated": 24,
+      "event_component_id": "bc4928f0fac5b5bb541e11d33e6bd83de6188e83a4655df46b4293b22aa30998",
+      "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_cashflow_pulse),1),1)",
+      "median_matched_return": 0.020038849278900817,
+      "median_matched_reward": 0.11099318138284933,
+      "productive": 8,
+      "productive_rate": 0.3333333333333333,
+      "pulse": "cashflow",
+      "representation": "event_age"
+    },
+    {
+      "admitted": 16,
+      "evaluated": 24,
+      "event_component_id": "d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20",
+      "expression": "SafeDiv(EventCount($fund_disclosure_balance_pulse,5),Add(EventCount($fund_disclosure_balance_pulse,20),1),1)",
+      "median_matched_return": -0.07321401994219134,
+      "median_matched_reward": 0.345433310935833,
+      "productive": 7,
+      "productive_rate": 0.2916666666666667,
+      "pulse": "balance",
+      "representation": "repeated_event_suppression"
+    },
+    {
+      "admitted": 7,
+      "evaluated": 24,
+      "event_component_id": "0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2",
+      "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_balance_pulse),1),1)",
+      "median_matched_return": 0.0638475097385025,
+      "median_matched_reward": 0.39076284776970294,
+      "productive": 6,
+      "productive_rate": 0.25,
+      "pulse": "balance",
+      "representation": "event_age"
+    },
+    {
+      "admitted": 8,
+      "evaluated": 24,
+      "event_component_id": "e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f",
+      "expression": "EventCount($fund_disclosure_profit_pulse,1)",
+      "median_matched_return": 0.06850683848551625,
+      "median_matched_reward": 1.2134009865495106,
+      "productive": 5,
+      "productive_rate": 0.20833333333333334,
+      "pulse": "profit",
+      "representation": "event_pulse"
+    },
+    {
+      "admitted": 1,
+      "evaluated": 24,
+      "event_component_id": "7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81",
+      "expression": "EventCount($fund_disclosure_holder_pulse,1)",
+      "median_matched_return": 0.31637571066921566,
+      "median_matched_reward": 1.0736306437776089,
+      "productive": 1,
+      "productive_rate": 0.041666666666666664,
+      "pulse": "holder",
+      "representation": "event_pulse"
+    }
+  ],
+  "stage_a_gate": {
+    "anchor": {
+      "admission_rate": 1.0,
+      "admitted": 24,
+      "evaluated": 24,
+      "median_matched_cumulative_net_return_increment": 0.3871953195162753,
+      "median_matched_net_reward_increment": 1.741070802423831,
+      "productive": 21,
+      "productive_rate": 0.875
+    },
+    "by_event_component": {
+      "0632beb6651b31f6a57809da7dd7727254271037eb980c8b1ff76fb9b2cfaad2": {
+        "admission_rate": 0.2916666666666667,
+        "admitted": 7,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.0638475097385025,
+        "median_matched_net_reward_increment": 0.39076284776970294,
+        "productive": 6,
+        "productive_rate": 0.25
+      },
+      "3478fa97c271428ceb0cc518faa7759944be61187c097b8d1d3af0d389058ca5": {
+        "admission_rate": 0.7916666666666666,
+        "admitted": 19,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.1240035501231409,
+        "median_matched_net_reward_increment": 1.3198442966457933,
+        "productive": 13,
+        "productive_rate": 0.5416666666666666
+      },
+      "3891ec63d393dd4e4e24b4c2dd5189e68f2aa5f70d6b5dcf725d341874513c79": {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 20,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.052562472154498774,
+        "median_matched_net_reward_increment": 2.107392552653658,
+        "productive": 11,
+        "productive_rate": 0.4583333333333333
+      },
+      "5170c2a84b3f44264287cc800007f5fe1df0c09321c5222fcaa7385b5ef67989": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 14,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.3301250481509528,
+        "median_matched_net_reward_increment": 0.8469730687991037,
+        "productive": 11,
+        "productive_rate": 0.4583333333333333
+      },
+      "7406c079702fc100509f56a1f33a21d519c3d04ed4eb3e237b0acc2d3b862c81": {
+        "admission_rate": 0.041666666666666664,
+        "admitted": 1,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.31637571066921566,
+        "median_matched_net_reward_increment": 1.0736306437776089,
+        "productive": 1,
+        "productive_rate": 0.041666666666666664
+      },
+      "9db8b5dd45b1f8095c7500def3c3553db1f6cddf618a4565c9fca90a8ca76969": {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 20,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.028601131943725933,
+        "median_matched_net_reward_increment": 0.5124649650827483,
+        "productive": 11,
+        "productive_rate": 0.4583333333333333
+      },
+      "bc4928f0fac5b5bb541e11d33e6bd83de6188e83a4655df46b4293b22aa30998": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 16,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.020038849278900817,
+        "median_matched_net_reward_increment": 0.11099318138284933,
+        "productive": 8,
+        "productive_rate": 0.3333333333333333
+      },
+      "d8ff5e9d8ee742ee0efc6021f00e118107ff63f57350b13357dd92e8d78bae20": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 16,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": -0.07321401994219134,
+        "median_matched_net_reward_increment": 0.345433310935833,
+        "productive": 7,
+        "productive_rate": 0.2916666666666667
+      },
+      "df7d6f9b5b66621ebc59bc3a55f5825bb127918a556410c51bf569024f6939a1": {
+        "admission_rate": 0.75,
+        "admitted": 18,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.027747616159011668,
+        "median_matched_net_reward_increment": 0.11320150262193363,
+        "productive": 9,
+        "productive_rate": 0.375
+      },
+      "e142ee4438220b2bac0993470bfd2b08f46db6998f99ebf2cbffdd33fec8a15f": {
+        "admission_rate": 0.3333333333333333,
+        "admitted": 8,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.06850683848551625,
+        "median_matched_net_reward_increment": 1.2134009865495106,
+        "productive": 5,
+        "productive_rate": 0.20833333333333334
+      },
+      "e24c3f38f50b08bf286f20946eb902cf1bb5ad761d5b939217e657b96c11b6ee": {
+        "admission_rate": 0.625,
+        "admitted": 15,
+        "evaluated": 24,
+        "median_matched_cumulative_net_return_increment": 0.18649647191362007,
+        "median_matched_net_reward_increment": 0.8501637005783222,
+        "productive": 10,
+        "productive_rate": 0.4166666666666667
+      }
+    },
+    "by_pulse_family": {
+      "balance": {
+        "admission_rate": 0.5972222222222222,
+        "admitted": 43,
+        "evaluated": 72,
+        "median_matched_cumulative_net_return_increment": 0.020907946520178466,
+        "median_matched_net_reward_increment": 0.40072398581298585,
+        "productive": 24,
+        "productive_rate": 0.3333333333333333
+      },
+      "cashflow": {
+        "admission_rate": 0.7291666666666666,
+        "admitted": 35,
+        "evaluated": 48,
+        "median_matched_cumulative_net_return_increment": 0.08750062543281589,
+        "median_matched_net_reward_increment": 0.6852156055632443,
+        "productive": 21,
+        "productive_rate": 0.4375
+      },
+      "holder": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 33,
+        "evaluated": 72,
+        "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+        "median_matched_net_reward_increment": 0.6248510477850584,
+        "productive": 21,
+        "productive_rate": 0.2916666666666667
+      },
+      "profit": {
+        "admission_rate": 0.5972222222222222,
+        "admitted": 43,
+        "evaluated": 72,
+        "median_matched_cumulative_net_return_increment": 0.11558368030062494,
+        "median_matched_net_reward_increment": 1.1748463685119612,
+        "productive": 26,
+        "productive_rate": 0.3611111111111111
+      }
+    },
+    "by_representation_family": {
+      "event_age": {
+        "admission_rate": 0.4791666666666667,
+        "admitted": 23,
+        "evaluated": 48,
+        "median_matched_cumulative_net_return_increment": 0.0638475097385025,
+        "median_matched_net_reward_increment": 0.2553413406153432,
+        "productive": 14,
+        "productive_rate": 0.2916666666666667
+      },
+      "event_first_hit": {
+        "admission_rate": 0.6041666666666666,
+        "admitted": 29,
+        "evaluated": 48,
+        "median_matched_cumulative_net_return_increment": 0.27455423362773956,
+        "median_matched_net_reward_increment": 0.8501637005783222,
+        "productive": 21,
+        "productive_rate": 0.4375
+      },
+      "event_pulse": {
+        "admission_rate": 0.4027777777777778,
+        "admitted": 29,
+        "evaluated": 72,
+        "median_matched_cumulative_net_return_increment": 0.03335795248304363,
+        "median_matched_net_reward_increment": 0.8819490079022447,
+        "productive": 17,
+        "productive_rate": 0.2361111111111111
+      },
+      "repeated_event_suppression": {
+        "admission_rate": 0.7604166666666666,
+        "admitted": 73,
+        "evaluated": 96,
+        "median_matched_cumulative_net_return_increment": 0.040046205378076793,
+        "median_matched_net_reward_increment": 0.7723203807231743,
+        "productive": 40,
+        "productive_rate": 0.4166666666666667
+      }
+    },
+    "checks": {
+      "anchor_productive_rate": true,
+      "event_component_breadth": true,
+      "leave_one_event_out": false,
+      "pulse_breadth": false,
+      "representation_breadth": false,
+      "sibling_aggregate_productive_rate": false,
+      "sibling_matched_return_median_positive": true,
+      "sibling_matched_reward_median_positive": true
+    },
+    "leave_one_event_component_out_minimum_productive_rate": 0.32916666666666666,
+    "siblings": {
+      "admission_rate": 0.5833333333333334,
+      "admitted": 154,
+      "evaluated": 264,
+      "median_matched_cumulative_net_return_increment": 0.08908362727695068,
+      "median_matched_net_reward_increment": 0.586044884720369,
+      "productive": 92,
+      "productive_rate": 0.3484848484848485
+    },
+    "status": "FAIL"
+  },
+  "stage_b_never_started": true,
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "terminal_and_lease_ok": true,
+  "unique_288": true
+}
