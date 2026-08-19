@@ -98,6 +98,52 @@ def verify_spent_freeze(path: Path) -> dict[str, Any]:
     return payload
 
 
+def verify_recovery_prefix(path: Path) -> dict[str, Any]:
+    payload = _read_json(path)
+    body = dict(payload)
+    claimed = str(body.pop("recovery_prefix_payload_sha256", ""))
+    if claimed != stable_hash(body):
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_HASH_DRIFT")
+    exacts = list(map(str, payload.get("recovery_exact_identities") or ()))
+    rows = list(payload.get("derived_results") or ())
+    artifacts = list(payload.get("source_record_artifacts") or ())
+    if (
+        payload.get("status") != "RECOVERABLE_SPENT_STAGE_A_PREFIX_FROZEN"
+        or payload.get("recovery_reason") != "ONLY_MATCHED_CONTROL_CONTRACT_METADATA_MISSING"
+        or payload.get("recovery_contract_id") != successor.MATCHED_CONTROL_CONTRACT_ID
+        or payload.get("financial_evaluator_reexecution_authorized") is not False
+        or payload.get("financial_evaluator_reexecution_performed") is not False
+        or payload.get("recovery_derivation_only") is not True
+        or int(payload.get("recovery_record_count") or 0) != CHECKPOINT_SIZE
+        or len(exacts) != CHECKPOINT_SIZE
+        or len(set(exacts)) != CHECKPOINT_SIZE
+        or stable_hash(exacts) != str(payload.get("recovery_exact_identities_sha256") or "")
+        or len(rows) != CHECKPOINT_SIZE
+        or len(artifacts) != CHECKPOINT_SIZE
+        or stable_hash(artifacts) != str(payload.get("source_record_artifacts_sha256") or "")
+        or int(payload.get("derived_admitted_count") or -1) != 7
+        or int(payload.get("derived_productive_count") or -1) != 6
+        or any(int(value) != 0 for value in dict(payload.get("restricted_reads") or {}).values())
+        or payload.get("promotion_authorized") is not False
+        or payload.get("oos_authority") != "NONE"
+    ):
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_CONTRACT_DRIFT")
+    proof = dict(payload.get("proof") or {})
+    if not all(
+        proof.get(key) is True
+        for key in (
+            "all_identity_match",
+            "all_arithmetic_match",
+            "all_derived_pass",
+            "only_contract_metadata_missing",
+        )
+    ):
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_PROOF_DRIFT")
+    if [str(row.get("exact_identity") or "") for row in rows] != exacts:
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_RESULT_ORDER_DRIFT")
+    return payload
+
+
 def _load_authority(
     args: argparse.Namespace,
     *,
@@ -200,6 +246,7 @@ def _fixed_schedule(
         "generation_arm": PHYSICAL_GENERATION_ARM,
         "absolute_admission_head_eligible": True,
         "conditional_uplift_head_eligible": True,
+        "matched_control_contract_id": successor.MATCHED_CONTROL_CONTRACT_ID,
         "mechanism_stage": str(candidate["stage"]),
         "mechanism_exact_identity": exact,
     }
@@ -308,12 +355,43 @@ def prefinancial_rehearsal(
     schedules = reconstruct_prefrozen_schedules(
         prefreeze, spent_freeze, authority=authority
     )
+    if any(
+        str(schedule.get("matched_control_contract_id") or "")
+        != successor.MATCHED_CONTROL_CONTRACT_ID
+        for stage_schedules in schedules.values()
+        for schedule in stage_schedules
+    ):
+        raise RuntimeError("MECHANISM_PREFLIGHT_MATCHED_CONTROL_CONTRACT_DRIFT")
+    recovery = None
+    effective_spent_count = len(spent_freeze["combined_spent_exact_identities"])
+    if getattr(args, "recovery_prefix", None) is not None:
+        recovery = verify_recovery_prefix(args.recovery_prefix)
+        recovery_exacts = list(map(str, recovery["recovery_exact_identities"]))
+        stage_a_exacts = [
+            str(row["mechanism_exact_identity"]) for row in schedules[STAGE_A]
+        ]
+        spent = set(map(str, spent_freeze["combined_spent_exact_identities"]))
+        if (
+            recovery_exacts != stage_a_exacts[:CHECKPOINT_SIZE]
+            or spent.intersection(recovery_exacts)
+            or len(spent.union(recovery_exacts)) != 2174
+        ):
+            raise RuntimeError("MECHANISM_PREFLIGHT_RECOVERY_PREFIX_DRIFT")
+        if set(stage_a_exacts[CHECKPOINT_SIZE:]).intersection(
+            spent.union(recovery_exacts)
+        ) or set(
+            str(row["mechanism_exact_identity"]) for row in schedules[STAGE_B]
+        ).intersection(spent.union(recovery_exacts)):
+            raise RuntimeError("MECHANISM_PREFLIGHT_EFFECTIVE_SPENT_OVERLAP")
+        effective_spent_count = 2174
     return {
         "status": "ZERO_FINANCIAL_PREFLIGHT_READY",
         "stage_a_schedule_count": len(schedules[STAGE_A]),
         "stage_b_schedule_count": len(schedules[STAGE_B]),
         "combined_schedule_count": len(schedules[STAGE_A]) + len(schedules[STAGE_B]),
         "spent_exact_count": len(spent_freeze["combined_spent_exact_identities"]),
+        "recovery_prefix_count": 0 if recovery is None else CHECKPOINT_SIZE,
+        "effective_spent_exact_count": effective_spent_count,
         "field_column_count": len(prefreeze["resource_preview"]["union_field_columns"]),
         "field_columns_sha256": prefreeze["resource_preview"][
             "union_field_columns_sha256"
@@ -349,6 +427,46 @@ def _result_record(
         "validation_feedback_used": False,
     }
     payload["result_payload_sha256"] = stable_hash(payload)
+    return payload
+
+
+def _recovered_result_record(
+    derived: Mapping[str, Any], schedule: Mapping[str, Any]
+) -> dict[str, Any]:
+    if str(derived.get("exact_identity") or "") != str(
+        schedule["mechanism_exact_identity"]
+    ):
+        raise RuntimeError("MECHANISM_RECOVERY_RESULT_EXACT_DRIFT")
+    payload = {
+        "schema_version": "cn_program_disclosure_timing_mechanism_result_v1",
+        "mechanism_stage": str(schedule["mechanism_stage"]),
+        "mechanism_stage_ordinal": int(schedule["mechanism_stage_ordinal"]),
+        "exact_identity": str(schedule["mechanism_exact_identity"]),
+        "event_component_id": str(schedule["event_component_id"]),
+        "temporal_component_id": str(schedule["temporal_component_id"]),
+        "base_component_id": str(schedule["base_component_id"]),
+        "event_representation_family": str(schedule["event_representation_family"]),
+        "event_pulse_family": str(schedule["event_pulse_family"]),
+        "event_expression": str(schedule["event_expression"]),
+        "temporal_expression": str(schedule["temporal_expression"]),
+        "combination_policy": dict(schedule["combination_policy"]),
+        "admission": dict(derived["derived_admission"]),
+        "uplift": (
+            None
+            if derived.get("derived_uplift") is None
+            else dict(derived["derived_uplift"])
+        ),
+        "source_record_payload_sha256": str(derived["record_payload_sha256"]),
+        "optimizer_selection_used": False,
+        "validation_feedback_used": False,
+        "recovered_from_spent_prefix": True,
+        "financial_evaluator_reexecuted": False,
+        "recovery_contract_id": successor.MATCHED_CONTROL_CONTRACT_ID,
+        "source_record_file_sha256": str(derived["record_file_sha256"]),
+    }
+    payload["result_payload_sha256"] = stable_hash(payload)
+    if _productive(payload) != bool(derived["productive"]):
+        raise RuntimeError("MECHANISM_RECOVERY_RESULT_PRODUCTIVE_DRIFT")
     return payload
 
 
@@ -530,6 +648,7 @@ def _close_checkpoint(
     previous_manifest_file_sha256: str,
     stage: str,
     checkpoint_ordinal: int,
+    recovered: bool = False,
 ) -> str:
     artifacts = [
         successor._artifact(path, inflight)
@@ -539,8 +658,13 @@ def _close_checkpoint(
     manifest = engine._self_hashed(
         {
             "schema_version": "cn_program_disclosure_timing_checkpoint_manifest_v1",
-            "status": "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE",
+            "status": (
+                "MECHANISM_CHECKPOINT_RECOVERED_IMMUTABLE"
+                if recovered
+                else "MECHANISM_CHECKPOINT_CLOSED_IMMUTABLE"
+            ),
             "stage": stage,
+            "financial_evaluator_reexecuted": False if recovered else None,
             "checkpoint_ordinal": int(checkpoint_ordinal),
             "previous_checkpoint_manifest_file_sha256": str(
                 previous_manifest_file_sha256
@@ -554,6 +678,129 @@ def _close_checkpoint(
         raise RuntimeError("MECHANISM_CLOSED_CHECKPOINT_ALREADY_EXISTS")
     inflight.replace(closed)
     return engine._sha256(closed / "checkpoint_manifest.json")
+
+
+def _materialize_recovered_prefix_checkpoint(
+    schedules: Sequence[Mapping[str, Any]],
+    recovery_prefix: Mapping[str, Any],
+    *,
+    root: Path,
+    previous_manifest_file_sha256: str,
+) -> tuple[list[dict[str, Any]], str, int]:
+    batch = [dict(row) for row in schedules[:CHECKPOINT_SIZE]]
+    exacts = [str(row["mechanism_exact_identity"]) for row in batch]
+    frozen_exacts = list(map(str, recovery_prefix["recovery_exact_identities"]))
+    if len(batch) != CHECKPOINT_SIZE or exacts != frozen_exacts:
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_SCHEDULE_DRIFT")
+    if any(
+        str(row.get("matched_control_contract_id") or "")
+        != successor.MATCHED_CONTROL_CONTRACT_ID
+        for row in batch
+    ):
+        raise RuntimeError("MECHANISM_RECOVERY_SCHEDULE_CONTRACT_DRIFT")
+
+    source_root = Path(str(recovery_prefix["source_output_root"])).resolve()
+    source_checkpoint = (
+        source_root / Path(str(recovery_prefix["source_checkpoint_relative_path"]))
+    ).resolve()
+    if not source_checkpoint.is_relative_to(source_root) or not source_checkpoint.is_dir():
+        raise RuntimeError("MECHANISM_RECOVERY_SOURCE_CHECKPOINT_MISSING")
+    bound_files = (
+        (
+            source_root / ".project_control_execution" / "execution_identity.json",
+            "source_execution_identity_file_sha256",
+        ),
+        (source_root / "input_binding.json", "source_input_binding_file_sha256"),
+        (source_root / "prefreeze_binding.json", "source_prefreeze_binding_file_sha256"),
+        (source_root / "resource_canary.json", "source_resource_canary_file_sha256"),
+        (
+            source_checkpoint / "selected_schedule.jsonl",
+            "source_selected_schedule_file_sha256",
+        ),
+    )
+    for source_path, hash_key in bound_files:
+        if (
+            not source_path.is_file()
+            or engine._sha256(source_path) != str(recovery_prefix[hash_key])
+        ):
+            raise RuntimeError("MECHANISM_RECOVERY_SOURCE_ARTIFACT_DRIFT")
+
+    derived_by_ordinal = {
+        int(row["main_record_ordinal"]): dict(row)
+        for row in recovery_prefix["derived_results"]
+    }
+    artifact_by_ordinal = {
+        int(row["main_record_ordinal"]): dict(row)
+        for row in recovery_prefix["source_record_artifacts"]
+    }
+    if set(derived_by_ordinal) != set(range(CHECKPOINT_SIZE)) or set(
+        artifact_by_ordinal
+    ) != set(range(CHECKPOINT_SIZE)):
+        raise RuntimeError("MECHANISM_RECOVERY_PREFIX_ORDINAL_DRIFT")
+
+    inflight = root / "checkpoint_0000.inflight"
+    closed = root / "checkpoint_0000"
+    if inflight.exists() or closed.exists():
+        raise RuntimeError("MECHANISM_RECOVERY_CHECKPOINT_PATH_NOT_FRESH")
+    inflight.mkdir(parents=False, exist_ok=False)
+    engine._write_jsonl(inflight / "selected_schedule.jsonl", batch)
+    recovered_record_root = inflight / "recovered_records"
+    recovered_record_root.mkdir(parents=False, exist_ok=False)
+    results: list[dict[str, Any]] = []
+    for schedule in batch:
+        ordinal = int(schedule["main_record_ordinal"])
+        artifact = artifact_by_ordinal[ordinal]
+        derived = derived_by_ordinal[ordinal]
+        source_record = source_checkpoint / "records" / str(artifact["name"])
+        if (
+            not source_record.is_file()
+            or engine._sha256(source_record) != str(artifact["file_sha256"])
+        ):
+            raise RuntimeError("MECHANISM_RECOVERY_SOURCE_RECORD_FILE_DRIFT")
+        source_payload = _read_json(source_record)
+        if (
+            str(source_payload.get("record_payload_sha256") or "")
+            != str(artifact["record_payload_sha256"])
+            or str(derived["record_payload_sha256"])
+            != str(artifact["record_payload_sha256"])
+            or str(derived["record_file_sha256"]) != str(artifact["file_sha256"])
+        ):
+            raise RuntimeError("MECHANISM_RECOVERY_SOURCE_RECORD_PAYLOAD_DRIFT")
+        destination = recovered_record_root / str(artifact["name"])
+        destination.write_bytes(source_record.read_bytes())
+        if engine._sha256(destination) != str(artifact["file_sha256"]):
+            raise RuntimeError("MECHANISM_RECOVERY_RECORD_COPY_DRIFT")
+        results.append(_recovered_result_record(derived, schedule))
+    engine._write_jsonl(inflight / "candidate_results.jsonl", results)
+    engine._write_json(
+        inflight / "recovery_binding.json",
+        {
+            "schema_version": "cn_program_disclosure_timing_recovery_binding_v1",
+            "status": "SPENT_PREFIX_DERIVATION_RECOVERED_WITHOUT_EVALUATOR",
+            "recovery_prefix_payload_sha256": str(
+                recovery_prefix["recovery_prefix_payload_sha256"]
+            ),
+            "recovery_exact_identities_sha256": str(
+                recovery_prefix["recovery_exact_identities_sha256"]
+            ),
+            "recovery_record_count": CHECKPOINT_SIZE,
+            "source_output_root": str(source_root),
+            "source_checkpoint_relative_path": str(
+                recovery_prefix["source_checkpoint_relative_path"]
+            ),
+            "financial_evaluator_reexecuted": False,
+            "recovery_contract_id": successor.MATCHED_CONTROL_CONTRACT_ID,
+        },
+    )
+    manifest_sha = _close_checkpoint(
+        inflight=inflight,
+        closed=closed,
+        previous_manifest_file_sha256=previous_manifest_file_sha256,
+        stage=STAGE_A,
+        checkpoint_ordinal=0,
+        recovered=True,
+    )
+    return results, manifest_sha, 1
 
 
 def _run_stage(
@@ -624,12 +871,30 @@ def run(
 
     prefreeze = verify_prefreeze(args.mechanism_prefreeze)
     spent_freeze = verify_spent_freeze(args.spent_exact_freeze)
+    recovery_prefix = verify_recovery_prefix(args.recovery_prefix)
     authority = _load_authority(
         args, authorization=authorization, repo_sha=str(admission["repo_sha"])
     )
     schedules = reconstruct_prefrozen_schedules(
         prefreeze, spent_freeze, authority=authority
     )
+    stage_a_exacts = [
+        str(row["mechanism_exact_identity"]) for row in schedules[STAGE_A]
+    ]
+    stage_b_exacts = [
+        str(row["mechanism_exact_identity"]) for row in schedules[STAGE_B]
+    ]
+    recovery_exacts = list(map(str, recovery_prefix["recovery_exact_identities"]))
+    spent = set(map(str, spent_freeze["combined_spent_exact_identities"]))
+    effective_spent = spent.union(recovery_exacts)
+    if (
+        recovery_exacts != stage_a_exacts[:CHECKPOINT_SIZE]
+        or spent.intersection(recovery_exacts)
+        or len(effective_spent) != 2174
+        or set(stage_a_exacts[CHECKPOINT_SIZE:]).intersection(effective_spent)
+        or set(stage_b_exacts).intersection(effective_spent)
+    ):
+        raise RuntimeError("MECHANISM_RECOVERY_EFFECTIVE_SPENT_DRIFT")
     engine._write_json(root / "input_binding.json", authority["input_binding"])
     engine._write_json(
         root / "prefreeze_binding.json",
@@ -637,10 +902,16 @@ def run(
             "schema_version": "cn_program_disclosure_timing_prefreeze_binding_v1",
             "prefreeze_payload_sha256": prefreeze["prefreeze_payload_sha256"],
             "spent_freeze_payload_sha256": spent_freeze["freeze_payload_sha256"],
+            "recovery_prefix_payload_sha256": recovery_prefix[
+                "recovery_prefix_payload_sha256"
+            ],
+            "recovery_prefix_count": CHECKPOINT_SIZE,
+            "effective_spent_exact_count": len(effective_spent),
             "stage_a_count": len(schedules[STAGE_A]),
             "stage_b_count": len(schedules[STAGE_B]),
             "stage_b_candidate_set_frozen_before_stage_a": True,
             "optimizer_selection_used": False,
+            "recovered_prefix_financial_evaluator_reexecuted": False,
         },
     )
     input_hash = str(authority["input_binding"]["input_binding_sha256"])
@@ -666,16 +937,26 @@ def run(
 
     started = time.perf_counter()
     previous_manifest = "GENESIS"
-    checkpoint_ordinal = 0
-    stage_a_results, previous_manifest, checkpoint_ordinal = _run_stage(
+    stage_a_results, previous_manifest, checkpoint_ordinal = (
+        _materialize_recovered_prefix_checkpoint(
+            schedules[STAGE_A],
+            recovery_prefix,
+            root=root,
+            previous_manifest_file_sha256=previous_manifest,
+        )
+    )
+    fresh_stage_a_results, previous_manifest, checkpoint_ordinal = _run_stage(
         STAGE_A,
-        schedules[STAGE_A],
+        schedules[STAGE_A][CHECKPOINT_SIZE:],
         root=root,
         authority=authority,
         input_hash=input_hash,
         previous_manifest_file_sha256=previous_manifest,
         starting_checkpoint_ordinal=checkpoint_ordinal,
     )
+    stage_a_results.extend(fresh_stage_a_results)
+    if len(stage_a_results) != 288:
+        raise RuntimeError("MECHANISM_RECOVERED_STAGE_A_COUNT_DRIFT")
     stage_a_gate = _stage_a_gate(stage_a_results, dict(prefreeze["gates"]))
     engine._write_json(root / "stage_a_gate.json", stage_a_gate)
     if stage_a_gate["status"] != "PASS":
@@ -708,6 +989,18 @@ def run(
             ),
             "prefreeze_payload_sha256": str(prefreeze["prefreeze_payload_sha256"]),
             "spent_freeze_payload_sha256": str(spent_freeze["freeze_payload_sha256"]),
+            "recovery_prefix_payload_sha256": str(
+                recovery_prefix["recovery_prefix_payload_sha256"]
+            ),
+            "recovered_stage_a_prefix_count": CHECKPOINT_SIZE,
+            "recovered_stage_a_admitted": int(
+                recovery_prefix["derived_admitted_count"]
+            ),
+            "recovered_stage_a_productive": int(
+                recovery_prefix["derived_productive_count"]
+            ),
+            "recovered_prefix_financial_evaluator_reexecuted": False,
+            "fresh_stage_a_evaluator_count": len(fresh_stage_a_results),
             "classification": classification,
             "stage_a_gate": stage_a_gate,
             "stage_b_gate": stage_b_gate,
@@ -744,6 +1037,7 @@ def run(
 __all__ = [
     "verify_prefreeze",
     "verify_spent_freeze",
+    "verify_recovery_prefix",
     "reconstruct_prefrozen_schedules",
     "prefinancial_rehearsal",
     "_stage_a_gate",

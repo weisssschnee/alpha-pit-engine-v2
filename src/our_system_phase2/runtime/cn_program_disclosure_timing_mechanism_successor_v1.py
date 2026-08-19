@@ -109,6 +109,59 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
     ):
         raise ValueError("spent exact freeze binding drift")
 
+    recovery_binding = dict(payload["recovery_prefix"])
+    recovery_path = _bound_path(root, recovery_binding, label="recovery prefix")
+    recovery = _verify_self_hash(
+        recovery_path,
+        field="recovery_prefix_payload_sha256",
+        expected=str(recovery_binding["payload_sha256"]),
+        label="recovery prefix",
+    )
+    if (
+        recovery.get("status") != "RECOVERABLE_SPENT_STAGE_A_PREFIX_FROZEN"
+        or recovery_binding.get("source_repo_sha")
+        != "fc7b901f93c8435aecb07898d65caadade75005c"
+        or recovery.get("source_repo_sha") != recovery_binding.get("source_repo_sha")
+        or recovery.get("source_output_root") != recovery_binding.get("source_output_root")
+        or int(recovery_binding.get("recovery_record_count") or 0) != 24
+        or int(recovery.get("recovery_record_count") or 0) != 24
+        or recovery_binding.get("recovery_exact_identities_sha256")
+        != recovery.get("recovery_exact_identities_sha256")
+        or int(recovery_binding.get("derived_admitted_count") or -1) != 7
+        or int(recovery_binding.get("derived_productive_count") or -1) != 6
+        or recovery_binding.get("financial_evaluator_reexecution_authorized") is not False
+        or recovery.get("financial_evaluator_reexecution_authorized") is not False
+        or recovery.get("financial_evaluator_reexecution_performed") is not False
+        or recovery_binding.get("recovery_derivation_only") is not True
+        or recovery.get("recovery_derivation_only") is not True
+    ):
+        raise ValueError("recovery prefix binding drift")
+    recovery_audit_path = (
+        root / Path(str(recovery_binding["audit_relative_path"]))
+    ).resolve()
+    if (
+        not recovery_audit_path.is_relative_to(root)
+        or not recovery_audit_path.is_file()
+        or sha256_file(recovery_audit_path)
+        != str(recovery_binding["audit_file_sha256"])
+    ):
+        raise ValueError("recovery prefix audit file drift")
+    recovery_audit = _verify_self_hash(
+        recovery_audit_path,
+        field="audit_payload_sha256",
+        expected=str(recovery_binding["audit_payload_sha256"]),
+        label="recovery prefix audit",
+    )
+    proof = dict(recovery.get("proof") or {})
+    if (
+        recovery_audit.get("only_contract_metadata_missing") is not True
+        or str(proof.get("spent_prefix_audit_payload_sha256") or "")
+        != str(recovery_binding["audit_payload_sha256"])
+        or str(proof.get("spent_prefix_audit_file_sha256") or "")
+        != str(recovery_binding["audit_file_sha256"])
+    ):
+        raise ValueError("recovery prefix proof drift")
+
     audit_binding = dict(payload["systematicity_supply_audit"])
     audit_path = _bound_path(root, audit_binding, label="systematicity supply audit")
     audit = _verify_self_hash(
@@ -202,6 +255,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--campaign-authorization", type=Path, required=True)
     parser.add_argument("--mechanism-prefreeze", type=Path, required=True)
     parser.add_argument("--spent-exact-freeze", type=Path, required=True)
+    parser.add_argument("--recovery-prefix", type=Path, required=True)
     parser.add_argument("--source-freeze-root", type=Path, required=True)
     parser.add_argument("--prior-exact-freeze", type=Path, required=True)
     parser.add_argument("--execution-contract", type=Path, required=True)
@@ -228,10 +282,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     expected_spent = (
         repo_root / authorization["spent_exact_freeze"]["relative_path"]
     ).resolve()
+    expected_recovery = (
+        repo_root / authorization["recovery_prefix"]["relative_path"]
+    ).resolve()
     if args.mechanism_prefreeze.resolve() != expected_prefreeze:
         raise ProjectControlDenied("mechanism prefreeze path outside authorization")
     if args.spent_exact_freeze.resolve() != expected_spent:
         raise ProjectControlDenied("spent exact freeze path outside authorization")
+    if args.recovery_prefix.resolve() != expected_recovery:
+        raise ProjectControlDenied("recovery prefix path outside authorization")
     validate_node_resource_lease_receipt(
         args.node_resource_lease_receipt.resolve(),
         expected_role="SEARCH",

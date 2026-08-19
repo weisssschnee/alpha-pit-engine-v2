@@ -41,15 +41,25 @@ def build(repo: Path) -> dict[str, Any]:
     base_path = repo / "runtime/run_plans/cn_program_optimizer_large_fresh_development_v2.json"
     prefreeze_path = repo / "runtime/run_plans/cn_disclosure_timing_mechanism_successor_prefreeze_20260819.json"
     spent_path = repo / "runtime/run_plans/cn_disclosure_timing_mechanism_spent_exact_freeze_20260819.json"
+    recovery_path = repo / "runtime/run_plans/cn_disclosure_timing_mechanism_recovery_prefix_fc7b901_20260819.json"
+    recovery_audit_path = repo / "runtime/run_plans/cn_disclosure_timing_mechanism_spent_prefix_audit_fc7b901_20260819.json"
     audit_path = repo / "runtime/run_plans/cn_large_fresh_systematicity_supply_audit_20260819.json"
     large_audit_path = repo / "runtime/run_plans/cn_program_optimizer_large_fresh_v2_retry_5b58c29_independent_audit_20260819.json"
     base = _read(base_path)
     prefreeze = _read(prefreeze_path)
     spent = _read(spent_path)
+    recovery = _read(recovery_path)
+    recovery_audit = _read(recovery_audit_path)
     audit = _read(audit_path)
     large_audit = _read(large_audit_path)
     prefreeze_hash = _verify_self_hash(prefreeze, "prefreeze_payload_sha256", "prefreeze")
     spent_hash = _verify_self_hash(spent, "freeze_payload_sha256", "spent freeze")
+    recovery_hash = _verify_self_hash(
+        recovery, "recovery_prefix_payload_sha256", "recovery prefix"
+    )
+    recovery_audit_hash = _verify_self_hash(
+        recovery_audit, "audit_payload_sha256", "recovery prefix audit"
+    )
     audit_hash = _verify_self_hash(audit, "audit_payload_sha256", "systematicity audit")
     large_audit_hash = _verify_self_hash(large_audit, "audit_payload_sha256", "large fresh audit")
     if base.get("authorization_payload_sha256") != "7988660dd053e9cc5429893acd878454815b907a1b259c9295de3e1dfcf57774":
@@ -60,6 +70,26 @@ def build(repo: Path) -> dict[str, Any]:
         raise ValueError("mechanism prefreeze not frozen")
     if spent.get("status") != "SPENT_EXACT_DENY_SET_FROZEN":
         raise ValueError("mechanism spent freeze not frozen")
+    if (
+        recovery.get("status") != "RECOVERABLE_SPENT_STAGE_A_PREFIX_FROZEN"
+        or recovery.get("source_repo_sha")
+        != "fc7b901f93c8435aecb07898d65caadade75005c"
+        or int(recovery.get("recovery_record_count") or 0) != 24
+        or recovery.get("financial_evaluator_reexecution_authorized") is not False
+        or recovery.get("financial_evaluator_reexecution_performed") is not False
+        or recovery.get("recovery_derivation_only") is not True
+        or int(recovery.get("derived_admitted_count") or -1) != 7
+        or int(recovery.get("derived_productive_count") or -1) != 6
+    ):
+        raise ValueError("mechanism recovery prefix not frozen")
+    proof = dict(recovery.get("proof") or {})
+    if (
+        recovery_audit_hash != str(proof.get("spent_prefix_audit_payload_sha256") or "")
+        or _sha(recovery_audit_path)
+        != str(proof.get("spent_prefix_audit_file_sha256") or "")
+        or recovery_audit.get("only_contract_metadata_missing") is not True
+    ):
+        raise ValueError("mechanism recovery prefix audit drift")
     if audit.get("status") != "ZERO_FINANCIAL_SYSTEMATICITY_AND_SUPPLY_AUDIT_COMPLETE":
         raise ValueError("systematicity supply audit not complete")
     program_space = dict(base["program_space"])
@@ -105,6 +135,24 @@ def build(repo: Path) -> dict[str, Any]:
             "payload_sha256": spent_hash,
             "combined_spent_exact_count": int(spent["combined_spent_exact_count"]),
             "combined_spent_exact_identities_sha256": str(spent["combined_spent_exact_identities_sha256"]),
+        },
+        "recovery_prefix": {
+            "relative_path": "runtime/run_plans/cn_disclosure_timing_mechanism_recovery_prefix_fc7b901_20260819.json",
+            "file_sha256": _sha(recovery_path),
+            "payload_sha256": recovery_hash,
+            "source_repo_sha": str(recovery["source_repo_sha"]),
+            "source_output_root": str(recovery["source_output_root"]),
+            "recovery_record_count": int(recovery["recovery_record_count"]),
+            "recovery_exact_identities_sha256": str(
+                recovery["recovery_exact_identities_sha256"]
+            ),
+            "derived_admitted_count": int(recovery["derived_admitted_count"]),
+            "derived_productive_count": int(recovery["derived_productive_count"]),
+            "financial_evaluator_reexecution_authorized": False,
+            "recovery_derivation_only": True,
+            "audit_relative_path": "runtime/run_plans/cn_disclosure_timing_mechanism_spent_prefix_audit_fc7b901_20260819.json",
+            "audit_file_sha256": _sha(recovery_audit_path),
+            "audit_payload_sha256": recovery_audit_hash,
         },
         "systematicity_supply_audit": {
             "relative_path": "runtime/run_plans/cn_large_fresh_systematicity_supply_audit_20260819.json",

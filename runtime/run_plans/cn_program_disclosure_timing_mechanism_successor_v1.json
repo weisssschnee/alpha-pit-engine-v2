@@ -1,5 +1,5 @@
 {
-  "authorization_payload_sha256": "74f7453cb37307bb62de1af5c3d4941425f77b693075cd3c5635713616888b31",
+  "authorization_payload_sha256": "a4489d67934042a6c25d93a71b7f1cb5e03b4e1e579aa56420daf682d36952a1",
   "automatic_successor_authorized": false,
   "campaign_id": "CN_PROGRAM_DISCLOSURE_TIMING_MECHANISM_SUCCESSOR_V1",
   "campaign_profile": "cn_program_disclosure_timing_mechanism_successor_v1",
@@ -58,6 +58,22 @@
   ],
   "project_control_route_id": "cn-program-disclosure-timing-mechanism-successor-v1",
   "promotion_authorized": false,
+  "recovery_prefix": {
+    "audit_file_sha256": "b45757e725d734b8c35483346f285c2e5f91babcee2a13ac94cf970633144587",
+    "audit_payload_sha256": "bdf9bf5c6460b1dc7971de33e8dacf47ca30568f678529b5b79e448391873b2c",
+    "audit_relative_path": "runtime/run_plans/cn_disclosure_timing_mechanism_spent_prefix_audit_fc7b901_20260819.json",
+    "derived_admitted_count": 7,
+    "derived_productive_count": 6,
+    "file_sha256": "0ff45bb41768034d262e9640b15d8956647915287ed4ace45c4570494981a45c",
+    "financial_evaluator_reexecution_authorized": false,
+    "payload_sha256": "16d08ddcd9356fe3b39895a0da0e849b21644d792503860a62a2d71ca392def5",
+    "recovery_derivation_only": true,
+    "recovery_exact_identities_sha256": "41ead05f1b3f4575926ad36ae0733b19894031f96a4bb7ef0278df2f36dace0c",
+    "recovery_record_count": 24,
+    "relative_path": "runtime/run_plans/cn_disclosure_timing_mechanism_recovery_prefix_fc7b901_20260819.json",
+    "source_output_root": "D:\\ChengboRemote\\runtime\\cn_program_disclosure_timing_mechanism_successor_retry2_20260819_fc7b901",
+    "source_repo_sha": "fc7b901f93c8435aecb07898d65caadade75005c"
+  },
   "resource_contract": {
     "candidate_evaluation_during_resource_canary": false,
     "cpu_threads": 24,

@@ -1,0 +1,1267 @@
+{
+  "derived_admitted_count": 7,
+  "derived_productive_count": 6,
+  "derived_results": [
+    {
+      "control_program_id": "cn.program.c43eb79c944faef53264218db38ef11e",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.c43eb79c944faef53264218db38ef11e",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 4048,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.22788444719185882,
+          "primary_cumulative_net_return": -0.1189014359494972,
+          "primary_net_return_per_turnover": -0.24882009165812102
+        },
+        "pair_id": "cn.program_pair.7b3574ed4e311d1e7398bcff06dccebd",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.abde444795b0522a34b0c4d2dfdfd43f",
+        "record_payload_sha256": "9e6a6aadf4d90c7ce1038aef205b08e6889044c20082c0d730689b1d921b850d"
+      },
+      "derived_uplift": null,
+      "exact_identity": "3b38a16abe3561964a7568c01843d0c92c83a4e7f83e848a9ffa0504e65893c4",
+      "main_record_ordinal": 0,
+      "pair_id": "cn.program_pair.7b3574ed4e311d1e7398bcff06dccebd",
+      "productive": false,
+      "program_id": "cn.program.abde444795b0522a34b0c4d2dfdfd43f",
+      "record_file_sha256": "f1f63252fc59e355085a3c717353237d9b1deff0a331329dac1ace956dc33282",
+      "record_payload_sha256": "9e6a6aadf4d90c7ce1038aef205b08e6889044c20082c0d730689b1d921b850d"
+    },
+    {
+      "control_program_id": "cn.program.5a510a250d96f670d344020fdea2d448",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.5a510a250d96f670d344020fdea2d448",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 4196,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.32295296115698635,
+          "primary_cumulative_net_return": -0.13911169503125287,
+          "primary_net_return_per_turnover": -0.26232181250543923
+        },
+        "pair_id": "cn.program_pair.6f004e59e843e058f65508021635440b",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.c0a92c72782288afee80c2562c11811e",
+        "record_payload_sha256": "6788fcb2db6bd64c8e248a9e58e38b3670c95dd1db67db587734f321abaf0ca1"
+      },
+      "derived_uplift": null,
+      "exact_identity": "4bc72312c3ec90bda1a1c6f9b3254806513fb9976953b950185a209c874f673a",
+      "main_record_ordinal": 1,
+      "pair_id": "cn.program_pair.6f004e59e843e058f65508021635440b",
+      "productive": false,
+      "program_id": "cn.program.c0a92c72782288afee80c2562c11811e",
+      "record_file_sha256": "f220c9a5d353df00fe9bba194b9b8f7afbc8ae92183d08d8b0906a1e52c5103b",
+      "record_payload_sha256": "6788fcb2db6bd64c8e248a9e58e38b3670c95dd1db67db587734f321abaf0ca1"
+    },
+    {
+      "control_program_id": "cn.program.68fa0464344756bfcfdf450f2860c677",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.68fa0464344756bfcfdf450f2860c677",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2598,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 1.2792184317484365,
+          "primary_cumulative_net_return": 0.3745080939955465,
+          "primary_net_return_per_turnover": 2.257146244287689
+        },
+        "pair_id": "cn.program_pair.db001155eba32aea80818728e45cc130",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.f894b80a1d32c8f0494eea56adeee4ab",
+        "record_payload_sha256": "7eaf782376d206f40c0e148e1e45bc7bdf77b395f1c7daf5205e00cb6be15836"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.68fa0464344756bfcfdf450f2860c677",
+        "pair_id": "cn.program_pair.db001155eba32aea80818728e45cc130",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.3333333333333333,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 1,
+          "lower_tail_window_return_increment": -0.22555091407445693,
+          "matched_cumulative_net_return_increment": 0.09146147094488621,
+          "matched_net_reward_increment": 0.40072398581298585,
+          "robust_median_window_return_increment": -0.07552041587739478,
+          "turnover_differential": 0.1277045749034093,
+          "window_return_increments": [
+            0.260949577806613,
+            -0.22555091407445693,
+            -0.07552041587739478
+          ]
+        },
+        "program_id": "cn.program.f894b80a1d32c8f0494eea56adeee4ab",
+        "record_payload_sha256": "7eaf782376d206f40c0e148e1e45bc7bdf77b395f1c7daf5205e00cb6be15836"
+      },
+      "exact_identity": "069b74310551cd4bdba1f90bad03fdc1065edc7e4c606f7f84220e6608cb3a94",
+      "main_record_ordinal": 2,
+      "pair_id": "cn.program_pair.db001155eba32aea80818728e45cc130",
+      "productive": true,
+      "program_id": "cn.program.f894b80a1d32c8f0494eea56adeee4ab",
+      "record_file_sha256": "12a2a32f55279b8bfd6917dbdcf2c861f2bb0b0924e61f94f3c15b0b69077982",
+      "record_payload_sha256": "7eaf782376d206f40c0e148e1e45bc7bdf77b395f1c7daf5205e00cb6be15836"
+    },
+    {
+      "control_program_id": "cn.program.b82a04f503ddd9e4a0b47a7590e00e3b",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.b82a04f503ddd9e4a0b47a7590e00e3b",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2676,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 1.6993657280884278,
+          "primary_cumulative_net_return": 0.45815726116263944,
+          "primary_net_return_per_turnover": 2.6628221415606914
+        },
+        "pair_id": "cn.program_pair.4d5b015e3b4b7eaeedf6754dce39a81e",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.d8aafdc35e6ed958cb98a4445c4fceef",
+        "record_payload_sha256": "7e27736fc549627b59114b66620ed8d6afe5e97a92cee8f71a81ff57f2203630"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.b82a04f503ddd9e4a0b47a7590e00e3b",
+        "pair_id": "cn.program_pair.4d5b015e3b4b7eaeedf6754dce39a81e",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.6666666666666666,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 2,
+          "lower_tail_window_return_increment": -0.016634634416055505,
+          "matched_cumulative_net_return_increment": 0.16868541608191467,
+          "matched_net_reward_increment": 0.6002916425677092,
+          "robust_median_window_return_increment": 0.03363466840794782,
+          "turnover_differential": 0.1191681210592114,
+          "window_return_increments": [
+            0.09383060278508215,
+            -0.016634634416055505,
+            0.03363466840794782
+          ]
+        },
+        "program_id": "cn.program.d8aafdc35e6ed958cb98a4445c4fceef",
+        "record_payload_sha256": "7e27736fc549627b59114b66620ed8d6afe5e97a92cee8f71a81ff57f2203630"
+      },
+      "exact_identity": "672caa7efeac45bf5f91b28994cc4e0310176ebf0aba88139e41d30f62c7684a",
+      "main_record_ordinal": 3,
+      "pair_id": "cn.program_pair.4d5b015e3b4b7eaeedf6754dce39a81e",
+      "productive": true,
+      "program_id": "cn.program.d8aafdc35e6ed958cb98a4445c4fceef",
+      "record_file_sha256": "c530b6d2d253cbcd3a98b5ead784019c2bbd29c48e747ebe69344cb79aaf582e",
+      "record_payload_sha256": "7e27736fc549627b59114b66620ed8d6afe5e97a92cee8f71a81ff57f2203630"
+    },
+    {
+      "control_program_id": "cn.program.1540b1acc0de02203012a00a384de269",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.1540b1acc0de02203012a00a384de269",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 3923,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.7299537209638324,
+          "primary_cumulative_net_return": -0.19207363574988234,
+          "primary_net_return_per_turnover": -0.4165104515328223
+        },
+        "pair_id": "cn.program_pair.9888cc3e3693e71ab5a9b5b81e61efdd",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.c1a411276cfaeb52df937e6bd1465255",
+        "record_payload_sha256": "a51e4e6323926a07d8f1aa045c71fb5008390b981c7381e8265421feee0e5753"
+      },
+      "derived_uplift": null,
+      "exact_identity": "02294a3af1645968a4d395f5c72a6eb65eaf39dc3963a3554dff1eb414d5518e",
+      "main_record_ordinal": 4,
+      "pair_id": "cn.program_pair.9888cc3e3693e71ab5a9b5b81e61efdd",
+      "productive": false,
+      "program_id": "cn.program.c1a411276cfaeb52df937e6bd1465255",
+      "record_file_sha256": "93618b444feaa7842a6a855f7b8d893453aa59e371ba3a3c6ef6d35d79be6b07",
+      "record_payload_sha256": "a51e4e6323926a07d8f1aa045c71fb5008390b981c7381e8265421feee0e5753"
+    },
+    {
+      "control_program_id": "cn.program.5a510a250d96f670d344020fdea2d448",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.5a510a250d96f670d344020fdea2d448",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 3923,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.7299537209638324,
+          "primary_cumulative_net_return": -0.19207363574988234,
+          "primary_net_return_per_turnover": -0.4165104515328223
+        },
+        "pair_id": "cn.program_pair.c0caf56ed839b751159bf60a9cb5dcd3",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.8df6c8b94bd3243197a3d0eab24e0490",
+        "record_payload_sha256": "daa9200e58b9279712a3898638174c40e07bc5c80b7f3f25051c058a04efdf0f"
+      },
+      "derived_uplift": null,
+      "exact_identity": "79a431a52da2eaa161667a635708626f397df559a07bc3d33b87f8fa2c640c36",
+      "main_record_ordinal": 5,
+      "pair_id": "cn.program_pair.c0caf56ed839b751159bf60a9cb5dcd3",
+      "productive": false,
+      "program_id": "cn.program.8df6c8b94bd3243197a3d0eab24e0490",
+      "record_file_sha256": "786d4b4c29a9f020490b6e9a665b2b8fb5a4ce6d0eafd530ccd96ab53287173d",
+      "record_payload_sha256": "daa9200e58b9279712a3898638174c40e07bc5c80b7f3f25051c058a04efdf0f"
+    },
+    {
+      "control_program_id": "cn.program.f0e24986bce3a991df8d60d92d83da98",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.f0e24986bce3a991df8d60d92d83da98",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2633,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 1.610477531947793,
+          "primary_cumulative_net_return": 0.40148087503909125,
+          "primary_net_return_per_turnover": 2.36251082986065
+        },
+        "pair_id": "cn.program_pair.08a787ed4c6e693516afc5339c16a78c",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.724f88ffdd83ee92152d4c065bff280e",
+        "record_payload_sha256": "90e87f09de8bbd2582b985cac829b44fe243ae4d1b5d3c33780339eebdb994bc"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.f0e24986bce3a991df8d60d92d83da98",
+        "pair_id": "cn.program_pair.08a787ed4c6e693516afc5339c16a78c",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.6666666666666666,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 2,
+          "lower_tail_window_return_increment": -0.06026479278853092,
+          "matched_cumulative_net_return_increment": 0.018654999560291374,
+          "matched_net_reward_increment": 0.39076284776970294,
+          "robust_median_window_return_increment": 0.02273665122913182,
+          "turnover_differential": 0.14472591428605228,
+          "window_return_increments": [
+            0.048810855257416685,
+            0.02273665122913182,
+            -0.06026479278853092
+          ]
+        },
+        "program_id": "cn.program.724f88ffdd83ee92152d4c065bff280e",
+        "record_payload_sha256": "90e87f09de8bbd2582b985cac829b44fe243ae4d1b5d3c33780339eebdb994bc"
+      },
+      "exact_identity": "998d6139fc8fb62f957a154ae1ae66dcca50d7f7e431ab927a275da2c3d159af",
+      "main_record_ordinal": 6,
+      "pair_id": "cn.program_pair.08a787ed4c6e693516afc5339c16a78c",
+      "productive": true,
+      "program_id": "cn.program.724f88ffdd83ee92152d4c065bff280e",
+      "record_file_sha256": "c481efd20f83aa34c8a8618e9a2ceee28483bf081ac201f14bc6c4cd4ef4c2df",
+      "record_payload_sha256": "90e87f09de8bbd2582b985cac829b44fe243ae4d1b5d3c33780339eebdb994bc"
+    },
+    {
+      "control_program_id": "cn.program.2a833627a14df86d492a0971e6c7f684",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.2a833627a14df86d492a0971e6c7f684",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2432,
+          "positive_development_window_count": 3,
+          "primary_continuous_book_net_reward": 1.420781945662541,
+          "primary_cumulative_net_return": 0.30086848035237557,
+          "primary_net_return_per_turnover": 2.257297096293561
+        },
+        "pair_id": "cn.program_pair.d02f311a54d90f459b9402181468e0d6",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.4af7f24f3f84bd5b38ad0f1cd073cc8a",
+        "record_payload_sha256": "ee064b06163390f043c120b6d46383ca5ff7a9d36cdc712dacdf7a798f387e73"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.2a833627a14df86d492a0971e6c7f684",
+        "pair_id": "cn.program_pair.d02f311a54d90f459b9402181468e0d6",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.6666666666666666,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 2,
+          "lower_tail_window_return_increment": -0.12711626134145693,
+          "matched_cumulative_net_return_increment": 0.020907946520178466,
+          "matched_net_reward_increment": 0.28477181438418997,
+          "robust_median_window_return_increment": 0.018508710009631946,
+          "turnover_differential": 0.11207653285844438,
+          "window_return_increments": [
+            0.018508710009631946,
+            0.13306579039503563,
+            -0.12711626134145693
+          ]
+        },
+        "program_id": "cn.program.4af7f24f3f84bd5b38ad0f1cd073cc8a",
+        "record_payload_sha256": "ee064b06163390f043c120b6d46383ca5ff7a9d36cdc712dacdf7a798f387e73"
+      },
+      "exact_identity": "2d843b7a54f368274956ad6ecbfb9333e40ca78d23e68351f436d3ad49190c07",
+      "main_record_ordinal": 7,
+      "pair_id": "cn.program_pair.d02f311a54d90f459b9402181468e0d6",
+      "productive": true,
+      "program_id": "cn.program.4af7f24f3f84bd5b38ad0f1cd073cc8a",
+      "record_file_sha256": "579dd0381d0983d263a5cdff1a368d6ce8360463eb88aa7ee50e927a5422c059",
+      "record_payload_sha256": "ee064b06163390f043c120b6d46383ca5ff7a9d36cdc712dacdf7a798f387e73"
+    },
+    {
+      "control_program_id": "cn.program.5f8f94cc3dbea873274763e79f016136",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.5f8f94cc3dbea873274763e79f016136",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2291,
+          "positive_development_window_count": 0,
+          "primary_continuous_book_net_reward": -0.6245722618201265,
+          "primary_cumulative_net_return": -0.1097864073045084,
+          "primary_net_return_per_turnover": -0.5453566978854463
+        },
+        "pair_id": "cn.program_pair.acc21a9c9ca679f8a7c77387c328cbf2",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.fb39949e62f0c73963fbc4dc8ca6bc06",
+        "record_payload_sha256": "9a75f518d596ace0e5ced2fee88839ba9a20481b5822483f97c394d80551e2a0"
+      },
+      "derived_uplift": null,
+      "exact_identity": "aa02e0a7382dd88d6a1fd80d5d61123a00badfe95d352cc8a5cf7f7e585d24c4",
+      "main_record_ordinal": 8,
+      "pair_id": "cn.program_pair.acc21a9c9ca679f8a7c77387c328cbf2",
+      "productive": false,
+      "program_id": "cn.program.fb39949e62f0c73963fbc4dc8ca6bc06",
+      "record_file_sha256": "e5e18b2c35f2fe8dd770a9b9521614078119607a0208cbd23702fc1a8aa3021a",
+      "record_payload_sha256": "9a75f518d596ace0e5ced2fee88839ba9a20481b5822483f97c394d80551e2a0"
+    },
+    {
+      "control_program_id": "cn.program.ac3473e67079c234b0dacd3309504e7d",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.ac3473e67079c234b0dacd3309504e7d",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2644,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.5314052508146189,
+          "primary_cumulative_net_return": 0.06536402508790284,
+          "primary_net_return_per_turnover": 0.32136263898013556
+        },
+        "pair_id": "cn.program_pair.7cd3c20d4cb14348916fe6e9bbc8757b",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.41993f614c1ff7c2be7a5434d20735dd",
+        "record_payload_sha256": "7680b3d95a691ee6097abcd1234ebb9e049f494bf242f559b51b7ecb088411f8"
+      },
+      "derived_uplift": null,
+      "exact_identity": "a2356fb06eeaa82e015726ca4a66188eafb8b2357c2a1b7e1f9fd53f620972c9",
+      "main_record_ordinal": 9,
+      "pair_id": "cn.program_pair.7cd3c20d4cb14348916fe6e9bbc8757b",
+      "productive": false,
+      "program_id": "cn.program.41993f614c1ff7c2be7a5434d20735dd",
+      "record_file_sha256": "4fcd0c0e940887828c63c447f9c3cc6278de8e8e850ef1382b4941ab55b20869",
+      "record_payload_sha256": "7680b3d95a691ee6097abcd1234ebb9e049f494bf242f559b51b7ecb088411f8"
+    },
+    {
+      "control_program_id": "cn.program.0820c1989c4ede5c98c3fa820e976bb7",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.0820c1989c4ede5c98c3fa820e976bb7",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2494,
+          "positive_development_window_count": 3,
+          "primary_continuous_book_net_reward": 0.7265776637868645,
+          "primary_cumulative_net_return": 0.10441656926798304,
+          "primary_net_return_per_turnover": 0.5016534654419719
+        },
+        "pair_id": "cn.program_pair.033ec7ea0a921f618033aec6b313579f",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.42ece598b6b8a12082a30373bb965c86",
+        "record_payload_sha256": "aad1e5e901816dcae2e058205afa3fefad8f0d805b4c5156e533a634fd3ab5ed"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.0820c1989c4ede5c98c3fa820e976bb7",
+        "pair_id": "cn.program_pair.033ec7ea0a921f618033aec6b313579f",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.0,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 0,
+          "lower_tail_window_return_increment": -0.3145786113958551,
+          "matched_cumulative_net_return_increment": -0.47719382074492644,
+          "matched_net_reward_increment": -2.117305857765425,
+          "robust_median_window_return_increment": -0.07449161245101443,
+          "turnover_differential": 0.20083300275264684,
+          "window_return_increments": [
+            -0.3145786113958551,
+            -0.021172871345793487,
+            -0.07449161245101443
+          ]
+        },
+        "program_id": "cn.program.42ece598b6b8a12082a30373bb965c86",
+        "record_payload_sha256": "aad1e5e901816dcae2e058205afa3fefad8f0d805b4c5156e533a634fd3ab5ed"
+      },
+      "exact_identity": "af2e54a8b0a5f90881d3ea421e0313dd1587db68f18f69586bde95752a8c2f5b",
+      "main_record_ordinal": 10,
+      "pair_id": "cn.program_pair.033ec7ea0a921f618033aec6b313579f",
+      "productive": false,
+      "program_id": "cn.program.42ece598b6b8a12082a30373bb965c86",
+      "record_file_sha256": "d6c93f6d157891228fdb4068de7813646ba3e88d3b369dafefc2ef13ca50bc18",
+      "record_payload_sha256": "aad1e5e901816dcae2e058205afa3fefad8f0d805b4c5156e533a634fd3ab5ed"
+    },
+    {
+      "control_program_id": "cn.program.201a35e5730bbe5e9a07c2abfbb8640a",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.201a35e5730bbe5e9a07c2abfbb8640a",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2228,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.42056243432335566,
+          "primary_cumulative_net_return": 0.05177934404303386,
+          "primary_net_return_per_turnover": 0.25758067772517074
+        },
+        "pair_id": "cn.program_pair.133e81442c2eb5ceab77ddae6d9e5b61",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.ecc4b92e29ad7fb63ba08f0eec22d97e",
+        "record_payload_sha256": "af954a11bbe7af70e5a560070323c47e88a1f1d113e5d7d0fa14941aa02d50ec"
+      },
+      "derived_uplift": null,
+      "exact_identity": "469e7fc0fd57a416394326c08a9322fb2c7b69447801b99cfa44ad1e19e5f5bc",
+      "main_record_ordinal": 11,
+      "pair_id": "cn.program_pair.133e81442c2eb5ceab77ddae6d9e5b61",
+      "productive": false,
+      "program_id": "cn.program.ecc4b92e29ad7fb63ba08f0eec22d97e",
+      "record_file_sha256": "6a5c87d8c0ddf6932638e9d8d232776cb8fd15732c2561a527dda49398370bc4",
+      "record_payload_sha256": "af954a11bbe7af70e5a560070323c47e88a1f1d113e5d7d0fa14941aa02d50ec"
+    },
+    {
+      "control_program_id": "cn.program.04e0fd8867ba4798a8573044197dbfa7",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.04e0fd8867ba4798a8573044197dbfa7",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2667,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 0.1048935247267276,
+          "primary_cumulative_net_return": -0.01677733374962742,
+          "primary_net_return_per_turnover": -0.08128967557009793
+        },
+        "pair_id": "cn.program_pair.fb2f603532a60ce97787342d8b0bdc6c",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.2c153e5d399b7a2cc29fa4106e9c451e",
+        "record_payload_sha256": "96db4d5f5d22758d4d1462ebc97d06267884f6cf320f011f90e13235c94ee913"
+      },
+      "derived_uplift": null,
+      "exact_identity": "e6e5506f1b7c8a081a886c874ec5eaa30bd7ba7e951c13c3d61d282f0ce69c71",
+      "main_record_ordinal": 12,
+      "pair_id": "cn.program_pair.fb2f603532a60ce97787342d8b0bdc6c",
+      "productive": false,
+      "program_id": "cn.program.2c153e5d399b7a2cc29fa4106e9c451e",
+      "record_file_sha256": "5eb2ce4e5183dd5db1360da6f3ee8cf8d462c7f3c16081e51e9fa2469fb16b15",
+      "record_payload_sha256": "96db4d5f5d22758d4d1462ebc97d06267884f6cf320f011f90e13235c94ee913"
+    },
+    {
+      "control_program_id": "cn.program.40bf599ccff2252d79e0ff67c66ced12",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.40bf599ccff2252d79e0ff67c66ced12",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 3010,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.3087688641944533,
+          "primary_cumulative_net_return": -0.11770651509428776,
+          "primary_net_return_per_turnover": -0.4473285635866467
+        },
+        "pair_id": "cn.program_pair.d546236c30c747750a2dd77cf6c155a0",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.c14283840c04f4ed09ededa6bf2b431c",
+        "record_payload_sha256": "720c8b87b9de34fcb391cfaee044e7ab83e08a272713eaa1e3066e1b16803392"
+      },
+      "derived_uplift": null,
+      "exact_identity": "46631d28e7acd59cdacf02b8631faac76d2f2814f7e7c1012b2b66e67b180a3e",
+      "main_record_ordinal": 13,
+      "pair_id": "cn.program_pair.d546236c30c747750a2dd77cf6c155a0",
+      "productive": false,
+      "program_id": "cn.program.c14283840c04f4ed09ededa6bf2b431c",
+      "record_file_sha256": "b43c2cacae0cc2334ad9765793e4ec931c165e5397305d70121ada97d850f633",
+      "record_payload_sha256": "720c8b87b9de34fcb391cfaee044e7ab83e08a272713eaa1e3066e1b16803392"
+    },
+    {
+      "control_program_id": "cn.program.1a018e439025524560defaa73f0a44e6",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.1a018e439025524560defaa73f0a44e6",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2610,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.16611941353529341,
+          "primary_cumulative_net_return": -0.006499080058510409,
+          "primary_net_return_per_turnover": -0.03673889023256553
+        },
+        "pair_id": "cn.program_pair.a5155aa6ba439853521c080677686d7c",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.6764e54269a8e0b15f19d844aa78b151",
+        "record_payload_sha256": "4c9fa354138636e7482db89cd00523d0421c753b97bf569516327a8e4fa1635b"
+      },
+      "derived_uplift": null,
+      "exact_identity": "c9daa436c3e9545d368aa82deb5b22e48734603a15da9204bde419a102841c4e",
+      "main_record_ordinal": 14,
+      "pair_id": "cn.program_pair.a5155aa6ba439853521c080677686d7c",
+      "productive": false,
+      "program_id": "cn.program.6764e54269a8e0b15f19d844aa78b151",
+      "record_file_sha256": "30128ebf7de92d017c59983f640d29390e882ca413bd72e17dfccc7e731b3f2d",
+      "record_payload_sha256": "4c9fa354138636e7482db89cd00523d0421c753b97bf569516327a8e4fa1635b"
+    },
+    {
+      "control_program_id": "cn.program.10efd8a2eec042bbd7fabd23b5e32a04",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.10efd8a2eec042bbd7fabd23b5e32a04",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2610,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.16611941353529341,
+          "primary_cumulative_net_return": -0.006499080058510409,
+          "primary_net_return_per_turnover": -0.03673889023256553
+        },
+        "pair_id": "cn.program_pair.284c4e061176f69c643014053a8b5eba",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.febda67d794beaf075f07c58f51ca343",
+        "record_payload_sha256": "e06c840dd75e52c76506274c558bc8cfae290846aa93a6d3b4b1680dab2904c2"
+      },
+      "derived_uplift": null,
+      "exact_identity": "822eaf3e1a89a37091e61420bf4ff7a85cf9251a688f19779a155b193a8b0b78",
+      "main_record_ordinal": 15,
+      "pair_id": "cn.program_pair.284c4e061176f69c643014053a8b5eba",
+      "productive": false,
+      "program_id": "cn.program.febda67d794beaf075f07c58f51ca343",
+      "record_file_sha256": "134fce5f68ab8cb64ec702c2bdb962ba0517811f7d03fd234c9d71dd5eb7f537",
+      "record_payload_sha256": "e06c840dd75e52c76506274c558bc8cfae290846aa93a6d3b4b1680dab2904c2"
+    },
+    {
+      "control_program_id": "cn.program.75cb775a69fe84df8ef011e08d365452",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.75cb775a69fe84df8ef011e08d365452",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2370,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.48049204409833923,
+          "primary_cumulative_net_return": 0.089437224566985,
+          "primary_net_return_per_turnover": 1.4441217789305612
+        },
+        "pair_id": "cn.program_pair.b19e25a79f5fe2e2a53ea713aaffe6b1",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.9ee2bbddf8a85c19788c1949122e079d",
+        "record_payload_sha256": "fe7efbb5be8acaeafb46be15544860b15f021a3f620180e1748fd94f1e722a97"
+      },
+      "derived_uplift": null,
+      "exact_identity": "be94b520a53cdf13720eec707d8b8ba591a05254e48f11fc38385d5d82419acc",
+      "main_record_ordinal": 16,
+      "pair_id": "cn.program_pair.b19e25a79f5fe2e2a53ea713aaffe6b1",
+      "productive": false,
+      "program_id": "cn.program.9ee2bbddf8a85c19788c1949122e079d",
+      "record_file_sha256": "47be27936bbe3d559be196167ed1799e8cb2062ec356920b35bf349dc5a58fe6",
+      "record_payload_sha256": "fe7efbb5be8acaeafb46be15544860b15f021a3f620180e1748fd94f1e722a97"
+    },
+    {
+      "control_program_id": "cn.program.3338b06ce27664ee3bf6a6cbc1ef7961",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.3338b06ce27664ee3bf6a6cbc1ef7961",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 934,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.8090734740329079,
+          "primary_cumulative_net_return": 0.1767863831928591,
+          "primary_net_return_per_turnover": 3.3637278938414634
+        },
+        "pair_id": "cn.program_pair.56833825b316c44351735387f27c7794",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.d9d4f4bf870a3208bdac298abf3f2b1e",
+        "record_payload_sha256": "962d12be9b6e00c879f9e4ee8ef6fa4f1d53390e09b6a6f0a5b7244152f28a20"
+      },
+      "derived_uplift": null,
+      "exact_identity": "e7c0d90e0942e00e693c3d3fca9b5299781edcb7da14245e30c6a88b62d46d0a",
+      "main_record_ordinal": 17,
+      "pair_id": "cn.program_pair.56833825b316c44351735387f27c7794",
+      "productive": false,
+      "program_id": "cn.program.d9d4f4bf870a3208bdac298abf3f2b1e",
+      "record_file_sha256": "fec846feecec1a89ea5561141d7d1468ea4f65991c99f3b0126a4f9416860e04",
+      "record_payload_sha256": "962d12be9b6e00c879f9e4ee8ef6fa4f1d53390e09b6a6f0a5b7244152f28a20"
+    },
+    {
+      "control_program_id": "cn.program.4f8b3fc2df4edf9c9c0623df24e7b206",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.4f8b3fc2df4edf9c9c0623df24e7b206",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2690,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.26196622156478916,
+          "primary_cumulative_net_return": 0.022533177177656682,
+          "primary_net_return_per_turnover": 0.4307464873196075
+        },
+        "pair_id": "cn.program_pair.b72238261862d57148ac9c1346d9fc8d",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.6d2d84cb7adb89985cc1b116fe777458",
+        "record_payload_sha256": "dec92c0e551882663c076df955b4a4531a41e5bd9fbcb1d50d97a4f50909cde9"
+      },
+      "derived_uplift": null,
+      "exact_identity": "1fed4f407230f765683bebdac3a89750174b069b9456f79543e4026f2295b962",
+      "main_record_ordinal": 18,
+      "pair_id": "cn.program_pair.b72238261862d57148ac9c1346d9fc8d",
+      "productive": false,
+      "program_id": "cn.program.6d2d84cb7adb89985cc1b116fe777458",
+      "record_file_sha256": "a1c153e737b55acf63294e019c9a57ccbaa58704d47c238a70373ef1ef845d50",
+      "record_payload_sha256": "dec92c0e551882663c076df955b4a4531a41e5bd9fbcb1d50d97a4f50909cde9"
+    },
+    {
+      "control_program_id": "cn.program.e5fd76800668af9a3f1263d2819d5453",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.e5fd76800668af9a3f1263d2819d5453",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2153,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.668482723481494,
+          "primary_cumulative_net_return": 0.14212777189097414,
+          "primary_net_return_per_turnover": 2.001497135705593
+        },
+        "pair_id": "cn.program_pair.d3dce4e08c0dcfb2bffa778db4b47b02",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.046fb5512a777e50306b2e2f2f675870",
+        "record_payload_sha256": "41027ba835c23e9da33fd55f95e3da3cda8476273d36ea7cdafc8f6fd7ed158e"
+      },
+      "derived_uplift": null,
+      "exact_identity": "ba9de58329424c468313212e9bfb13bde829c2547ae128519536449b0c6e5d09",
+      "main_record_ordinal": 19,
+      "pair_id": "cn.program_pair.d3dce4e08c0dcfb2bffa778db4b47b02",
+      "productive": false,
+      "program_id": "cn.program.046fb5512a777e50306b2e2f2f675870",
+      "record_file_sha256": "6024c657838985ddf2ba781df1b641c0f86b4048019d2c3118a20e874d9a7c0f",
+      "record_payload_sha256": "41027ba835c23e9da33fd55f95e3da3cda8476273d36ea7cdafc8f6fd7ed158e"
+    },
+    {
+      "control_program_id": "cn.program.8e9ee36217a0a2c77e51ef20d5550f27",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.8e9ee36217a0a2c77e51ef20d5550f27",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2436,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": 0.5018814259434234,
+          "primary_cumulative_net_return": 0.09962946640462178,
+          "primary_net_return_per_turnover": 1.761824188000402
+        },
+        "pair_id": "cn.program_pair.02511dab3a4d9c7aa2398015584fcc0a",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.1454af0503ada2c5568bd9266b6a87c6",
+        "record_payload_sha256": "b40a157ea44638d734c95194fcfb1649d799f6ebc6267f01ac764bea86acb204"
+      },
+      "derived_uplift": null,
+      "exact_identity": "614a34611b137d5d8f521c1b88f4f7ac9c99315ac530dc642cdb9a6174e699b3",
+      "main_record_ordinal": 20,
+      "pair_id": "cn.program_pair.02511dab3a4d9c7aa2398015584fcc0a",
+      "productive": false,
+      "program_id": "cn.program.1454af0503ada2c5568bd9266b6a87c6",
+      "record_file_sha256": "8d7b2daa5f56dbc460d1888d83b47db7a54e871ebd41e4c4b91e58feee0f7652",
+      "record_payload_sha256": "b40a157ea44638d734c95194fcfb1649d799f6ebc6267f01ac764bea86acb204"
+    },
+    {
+      "control_program_id": "cn.program.783c4046cbfc27f635344db78f7faf6f",
+      "derived_admission": {
+        "admitted": false,
+        "control_program_id": "cn.program.783c4046cbfc27f635344db78f7faf6f",
+        "enhancer_credit": null,
+        "failure_reasons": [
+          "PRIMARY_NET_REWARD_NOT_POSITIVE",
+          "PRIMARY_CUMULATIVE_RETURN_NOT_POSITIVE",
+          "TURNOVER_EFFICIENCY_NOT_POSITIVE",
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 4657,
+          "positive_development_window_count": 1,
+          "primary_continuous_book_net_reward": -0.22545070939949646,
+          "primary_cumulative_net_return": -0.14668740316569073,
+          "primary_net_return_per_turnover": -0.25390178457048534
+        },
+        "pair_id": "cn.program_pair.edd99a0a28913e82a2d42cab960838c5",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.35ebb8f0eb64b5e3ac04a178b1f6f652",
+        "record_payload_sha256": "9fcf687eda73a3b4ca73a2069899ad3d0cc66ad40667969cb4a83d1c10c64a08"
+      },
+      "derived_uplift": null,
+      "exact_identity": "05fed727d94384b2aa8489c89ab671c832a6aae39d0b15cc24c53bde4a1f3466",
+      "main_record_ordinal": 21,
+      "pair_id": "cn.program_pair.edd99a0a28913e82a2d42cab960838c5",
+      "productive": false,
+      "program_id": "cn.program.35ebb8f0eb64b5e3ac04a178b1f6f652",
+      "record_file_sha256": "38195d9a7b108c58d584bd8bfe4b574d68e8e471b82fdf531c5d55635e07409b",
+      "record_payload_sha256": "9fcf687eda73a3b4ca73a2069899ad3d0cc66ad40667969cb4a83d1c10c64a08"
+    },
+    {
+      "control_program_id": "cn.program.1abdb8d01cf93e22bf6cf6632cb30f18",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.1abdb8d01cf93e22bf6cf6632cb30f18",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 890,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 0.9841977486063367,
+          "primary_cumulative_net_return": 0.1921088369682673,
+          "primary_net_return_per_turnover": 4.323843137078598
+        },
+        "pair_id": "cn.program_pair.1fe23204340918bbcdf8f283be4924fc",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.0f7b9d7d1fc481eef6f1be3313b10a20",
+        "record_payload_sha256": "ccd1d8a1fc2e0e2a45ac98b07eb06f532b9d5d682d5e28c64c5fcbb3f49e835c"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.1abdb8d01cf93e22bf6cf6632cb30f18",
+        "pair_id": "cn.program_pair.1fe23204340918bbcdf8f283be4924fc",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.6666666666666666,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 2,
+          "lower_tail_window_return_increment": -0.06178107736246452,
+          "matched_cumulative_net_return_increment": 0.0638475097385025,
+          "matched_net_reward_increment": 0.25020190822160093,
+          "robust_median_window_return_increment": 0.02793512369444684,
+          "turnover_differential": 0.02018952284149501,
+          "window_return_increments": [
+            0.02793512369444684,
+            -0.06178107736246452,
+            0.08223539942994473
+          ]
+        },
+        "program_id": "cn.program.0f7b9d7d1fc481eef6f1be3313b10a20",
+        "record_payload_sha256": "ccd1d8a1fc2e0e2a45ac98b07eb06f532b9d5d682d5e28c64c5fcbb3f49e835c"
+      },
+      "exact_identity": "c4d0ba2898f8578e4f9951080151d3db34c736443b40608bf12e0608bf6fb37c",
+      "main_record_ordinal": 22,
+      "pair_id": "cn.program_pair.1fe23204340918bbcdf8f283be4924fc",
+      "productive": true,
+      "program_id": "cn.program.0f7b9d7d1fc481eef6f1be3313b10a20",
+      "record_file_sha256": "f03f78a391c20dfc0c4cdc5b4c3ebb4be2bbfdbaaf8bfb7f7de731ff85a3335f",
+      "record_payload_sha256": "ccd1d8a1fc2e0e2a45ac98b07eb06f532b9d5d682d5e28c64c5fcbb3f49e835c"
+    },
+    {
+      "control_program_id": "cn.program.b7b6333dd52ab5a7baa5adef916eafd6",
+      "derived_admission": {
+        "admitted": true,
+        "control_program_id": "cn.program.b7b6333dd52ab5a7baa5adef916eafd6",
+        "enhancer_credit": "SEPARATE_STAGE_REQUIRED",
+        "failure_reasons": [],
+        "metrics": {
+          "development_window_count": 3,
+          "development_window_ids": [
+            "development_1",
+            "development_2",
+            "development_3"
+          ],
+          "fill_count": 2234,
+          "positive_development_window_count": 2,
+          "primary_continuous_book_net_reward": 2.0948395205037444,
+          "primary_cumulative_net_return": 0.6969543382811867,
+          "primary_net_return_per_turnover": 15.607790570386387
+        },
+        "pair_id": "cn.program_pair.470162669e3b65b46bd15080be05f3ea",
+        "policy_id": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
+        "program_id": "cn.program.259f1d3185e828752f3c64019819cfef",
+        "record_payload_sha256": "9aa4fa79a4b68605a8e16e00b17f9f3d6f38cad4f2ff43f446e0c064dbbcc23f"
+      },
+      "derived_uplift": {
+        "component_attribution_status": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+        "component_credits": null,
+        "control_program_id": "cn.program.b7b6333dd52ab5a7baa5adef916eafd6",
+        "pair_id": "cn.program_pair.470162669e3b65b46bd15080be05f3ea",
+        "policy_id": "CN_SEARCH_V2_CONDITIONAL_FULL_VS_BASE_UPLIFT_V1",
+        "program_credit": {
+          "credit_level": "PROGRAM_OR_TEMPLATE_ONLY",
+          "cross_window_matched_consistency": 0.6666666666666666,
+          "cross_window_matched_increment_count": 3,
+          "cross_window_positive_increment_count": 2,
+          "lower_tail_window_return_increment": -0.22839079404062135,
+          "matched_cumulative_net_return_increment": 0.28941231156298186,
+          "matched_net_reward_increment": 0.9416551180757928,
+          "robust_median_window_return_increment": 0.08704886863958672,
+          "turnover_differential": 0.013810218520592783,
+          "window_return_increments": [
+            0.2280417432643156,
+            -0.22839079404062135,
+            0.08704886863958672
+          ]
+        },
+        "program_id": "cn.program.259f1d3185e828752f3c64019819cfef",
+        "record_payload_sha256": "9aa4fa79a4b68605a8e16e00b17f9f3d6f38cad4f2ff43f446e0c064dbbcc23f"
+      },
+      "exact_identity": "e4ff1d4d6df7507d7a6278e0eb62dee450c98149bbe8fc91324f657e2ce33cd2",
+      "main_record_ordinal": 23,
+      "pair_id": "cn.program_pair.470162669e3b65b46bd15080be05f3ea",
+      "productive": true,
+      "program_id": "cn.program.259f1d3185e828752f3c64019819cfef",
+      "record_file_sha256": "31885e916f772436248d5783dce5e5a8d49cbb7e8f3d8e65a825758e4b7f6247",
+      "record_payload_sha256": "9aa4fa79a4b68605a8e16e00b17f9f3d6f38cad4f2ff43f446e0c064dbbcc23f"
+    }
+  ],
+  "financial_evaluator_reexecution_authorized": false,
+  "financial_evaluator_reexecution_performed": false,
+  "oos_authority": "NONE",
+  "promotion_authorized": false,
+  "proof": {
+    "all_arithmetic_match": true,
+    "all_derived_pass": true,
+    "all_identity_match": true,
+    "observed_contract_values": {
+      "": 24
+    },
+    "only_contract_metadata_missing": true,
+    "spent_prefix_audit_file_sha256": "b45757e725d734b8c35483346f285c2e5f91babcee2a13ac94cf970633144587",
+    "spent_prefix_audit_payload_sha256": "bdf9bf5c6460b1dc7971de33e8dacf47ca30568f678529b5b79e448391873b2c"
+  },
+  "recovery_contract_id": "CANDIDATE_PROGRAM_V1_FULL_VS_BASE_MATCHED_CONTROL",
+  "recovery_derivation_only": true,
+  "recovery_exact_identities": [
+    "3b38a16abe3561964a7568c01843d0c92c83a4e7f83e848a9ffa0504e65893c4",
+    "4bc72312c3ec90bda1a1c6f9b3254806513fb9976953b950185a209c874f673a",
+    "069b74310551cd4bdba1f90bad03fdc1065edc7e4c606f7f84220e6608cb3a94",
+    "672caa7efeac45bf5f91b28994cc4e0310176ebf0aba88139e41d30f62c7684a",
+    "02294a3af1645968a4d395f5c72a6eb65eaf39dc3963a3554dff1eb414d5518e",
+    "79a431a52da2eaa161667a635708626f397df559a07bc3d33b87f8fa2c640c36",
+    "998d6139fc8fb62f957a154ae1ae66dcca50d7f7e431ab927a275da2c3d159af",
+    "2d843b7a54f368274956ad6ecbfb9333e40ca78d23e68351f436d3ad49190c07",
+    "aa02e0a7382dd88d6a1fd80d5d61123a00badfe95d352cc8a5cf7f7e585d24c4",
+    "a2356fb06eeaa82e015726ca4a66188eafb8b2357c2a1b7e1f9fd53f620972c9",
+    "af2e54a8b0a5f90881d3ea421e0313dd1587db68f18f69586bde95752a8c2f5b",
+    "469e7fc0fd57a416394326c08a9322fb2c7b69447801b99cfa44ad1e19e5f5bc",
+    "e6e5506f1b7c8a081a886c874ec5eaa30bd7ba7e951c13c3d61d282f0ce69c71",
+    "46631d28e7acd59cdacf02b8631faac76d2f2814f7e7c1012b2b66e67b180a3e",
+    "c9daa436c3e9545d368aa82deb5b22e48734603a15da9204bde419a102841c4e",
+    "822eaf3e1a89a37091e61420bf4ff7a85cf9251a688f19779a155b193a8b0b78",
+    "be94b520a53cdf13720eec707d8b8ba591a05254e48f11fc38385d5d82419acc",
+    "e7c0d90e0942e00e693c3d3fca9b5299781edcb7da14245e30c6a88b62d46d0a",
+    "1fed4f407230f765683bebdac3a89750174b069b9456f79543e4026f2295b962",
+    "ba9de58329424c468313212e9bfb13bde829c2547ae128519536449b0c6e5d09",
+    "614a34611b137d5d8f521c1b88f4f7ac9c99315ac530dc642cdb9a6174e699b3",
+    "05fed727d94384b2aa8489c89ab671c832a6aae39d0b15cc24c53bde4a1f3466",
+    "c4d0ba2898f8578e4f9951080151d3db34c736443b40608bf12e0608bf6fb37c",
+    "e4ff1d4d6df7507d7a6278e0eb62dee450c98149bbe8fc91324f657e2ce33cd2"
+  ],
+  "recovery_exact_identities_sha256": "41ead05f1b3f4575926ad36ae0733b19894031f96a4bb7ef0278df2f36dace0c",
+  "recovery_prefix_payload_sha256": "16d08ddcd9356fe3b39895a0da0e849b21644d792503860a62a2d71ca392def5",
+  "recovery_reason": "ONLY_MATCHED_CONTROL_CONTRACT_METADATA_MISSING",
+  "recovery_record_count": 24,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_disclosure_timing_mechanism_recovery_prefix_v1",
+  "source_checkpoint_relative_path": "checkpoint_0000.inflight",
+  "source_execution_identity_file_sha256": "3bdc47cd48a4ab3b6894b2cc5fab888a2d791eb2ebeb736e1e0f3a465b41a9ee",
+  "source_failure_stage": "POST_EVALUATOR_PRE_DERIVED_RESULT",
+  "source_input_binding_file_sha256": "1186dbb18d612ce666f6ff599037bc6fc823cd1507cd72c7510d0e8aa9f33c4a",
+  "source_input_binding_payload_sha256": "c1d2da1778a82643a338601a4e129f8cb2972e94d19094df6095d899f29784b3",
+  "source_launch_exit_code": 1,
+  "source_launch_result_file_sha256": "067ad70bb6d1def2481128884ef1d707e8629325342f73ba4390921d7783273f",
+  "source_output_root": "D:\\ChengboRemote\\runtime\\cn_program_disclosure_timing_mechanism_successor_retry2_20260819_fc7b901",
+  "source_prefreeze_binding_file_sha256": "abe2c3e1d3d6a47731a70823b36c88d6d82b7d48193dbc90386ccb072b989b7e",
+  "source_prefreeze_payload_sha256": "34d220a299e394feb74c5b55d4b183178a07e38d70c91eb54c81e8f180b51a4b",
+  "source_record_artifacts": [
+    {
+      "file_sha256": "f1f63252fc59e355085a3c717353237d9b1deff0a331329dac1ace956dc33282",
+      "main_record_ordinal": 0,
+      "name": "record_0000.json",
+      "record_payload_sha256": "9e6a6aadf4d90c7ce1038aef205b08e6889044c20082c0d730689b1d921b850d"
+    },
+    {
+      "file_sha256": "f220c9a5d353df00fe9bba194b9b8f7afbc8ae92183d08d8b0906a1e52c5103b",
+      "main_record_ordinal": 1,
+      "name": "record_0001.json",
+      "record_payload_sha256": "6788fcb2db6bd64c8e248a9e58e38b3670c95dd1db67db587734f321abaf0ca1"
+    },
+    {
+      "file_sha256": "12a2a32f55279b8bfd6917dbdcf2c861f2bb0b0924e61f94f3c15b0b69077982",
+      "main_record_ordinal": 2,
+      "name": "record_0002.json",
+      "record_payload_sha256": "7eaf782376d206f40c0e148e1e45bc7bdf77b395f1c7daf5205e00cb6be15836"
+    },
+    {
+      "file_sha256": "c530b6d2d253cbcd3a98b5ead784019c2bbd29c48e747ebe69344cb79aaf582e",
+      "main_record_ordinal": 3,
+      "name": "record_0003.json",
+      "record_payload_sha256": "7e27736fc549627b59114b66620ed8d6afe5e97a92cee8f71a81ff57f2203630"
+    },
+    {
+      "file_sha256": "93618b444feaa7842a6a855f7b8d893453aa59e371ba3a3c6ef6d35d79be6b07",
+      "main_record_ordinal": 4,
+      "name": "record_0004.json",
+      "record_payload_sha256": "a51e4e6323926a07d8f1aa045c71fb5008390b981c7381e8265421feee0e5753"
+    },
+    {
+      "file_sha256": "786d4b4c29a9f020490b6e9a665b2b8fb5a4ce6d0eafd530ccd96ab53287173d",
+      "main_record_ordinal": 5,
+      "name": "record_0005.json",
+      "record_payload_sha256": "daa9200e58b9279712a3898638174c40e07bc5c80b7f3f25051c058a04efdf0f"
+    },
+    {
+      "file_sha256": "c481efd20f83aa34c8a8618e9a2ceee28483bf081ac201f14bc6c4cd4ef4c2df",
+      "main_record_ordinal": 6,
+      "name": "record_0006.json",
+      "record_payload_sha256": "90e87f09de8bbd2582b985cac829b44fe243ae4d1b5d3c33780339eebdb994bc"
+    },
+    {
+      "file_sha256": "579dd0381d0983d263a5cdff1a368d6ce8360463eb88aa7ee50e927a5422c059",
+      "main_record_ordinal": 7,
+      "name": "record_0007.json",
+      "record_payload_sha256": "ee064b06163390f043c120b6d46383ca5ff7a9d36cdc712dacdf7a798f387e73"
+    },
+    {
+      "file_sha256": "e5e18b2c35f2fe8dd770a9b9521614078119607a0208cbd23702fc1a8aa3021a",
+      "main_record_ordinal": 8,
+      "name": "record_0008.json",
+      "record_payload_sha256": "9a75f518d596ace0e5ced2fee88839ba9a20481b5822483f97c394d80551e2a0"
+    },
+    {
+      "file_sha256": "4fcd0c0e940887828c63c447f9c3cc6278de8e8e850ef1382b4941ab55b20869",
+      "main_record_ordinal": 9,
+      "name": "record_0009.json",
+      "record_payload_sha256": "7680b3d95a691ee6097abcd1234ebb9e049f494bf242f559b51b7ecb088411f8"
+    },
+    {
+      "file_sha256": "d6c93f6d157891228fdb4068de7813646ba3e88d3b369dafefc2ef13ca50bc18",
+      "main_record_ordinal": 10,
+      "name": "record_0010.json",
+      "record_payload_sha256": "aad1e5e901816dcae2e058205afa3fefad8f0d805b4c5156e533a634fd3ab5ed"
+    },
+    {
+      "file_sha256": "6a5c87d8c0ddf6932638e9d8d232776cb8fd15732c2561a527dda49398370bc4",
+      "main_record_ordinal": 11,
+      "name": "record_0011.json",
+      "record_payload_sha256": "af954a11bbe7af70e5a560070323c47e88a1f1d113e5d7d0fa14941aa02d50ec"
+    },
+    {
+      "file_sha256": "5eb2ce4e5183dd5db1360da6f3ee8cf8d462c7f3c16081e51e9fa2469fb16b15",
+      "main_record_ordinal": 12,
+      "name": "record_0012.json",
+      "record_payload_sha256": "96db4d5f5d22758d4d1462ebc97d06267884f6cf320f011f90e13235c94ee913"
+    },
+    {
+      "file_sha256": "b43c2cacae0cc2334ad9765793e4ec931c165e5397305d70121ada97d850f633",
+      "main_record_ordinal": 13,
+      "name": "record_0013.json",
+      "record_payload_sha256": "720c8b87b9de34fcb391cfaee044e7ab83e08a272713eaa1e3066e1b16803392"
+    },
+    {
+      "file_sha256": "30128ebf7de92d017c59983f640d29390e882ca413bd72e17dfccc7e731b3f2d",
+      "main_record_ordinal": 14,
+      "name": "record_0014.json",
+      "record_payload_sha256": "4c9fa354138636e7482db89cd00523d0421c753b97bf569516327a8e4fa1635b"
+    },
+    {
+      "file_sha256": "134fce5f68ab8cb64ec702c2bdb962ba0517811f7d03fd234c9d71dd5eb7f537",
+      "main_record_ordinal": 15,
+      "name": "record_0015.json",
+      "record_payload_sha256": "e06c840dd75e52c76506274c558bc8cfae290846aa93a6d3b4b1680dab2904c2"
+    },
+    {
+      "file_sha256": "47be27936bbe3d559be196167ed1799e8cb2062ec356920b35bf349dc5a58fe6",
+      "main_record_ordinal": 16,
+      "name": "record_0016.json",
+      "record_payload_sha256": "fe7efbb5be8acaeafb46be15544860b15f021a3f620180e1748fd94f1e722a97"
+    },
+    {
+      "file_sha256": "fec846feecec1a89ea5561141d7d1468ea4f65991c99f3b0126a4f9416860e04",
+      "main_record_ordinal": 17,
+      "name": "record_0017.json",
+      "record_payload_sha256": "962d12be9b6e00c879f9e4ee8ef6fa4f1d53390e09b6a6f0a5b7244152f28a20"
+    },
+    {
+      "file_sha256": "a1c153e737b55acf63294e019c9a57ccbaa58704d47c238a70373ef1ef845d50",
+      "main_record_ordinal": 18,
+      "name": "record_0018.json",
+      "record_payload_sha256": "dec92c0e551882663c076df955b4a4531a41e5bd9fbcb1d50d97a4f50909cde9"
+    },
+    {
+      "file_sha256": "6024c657838985ddf2ba781df1b641c0f86b4048019d2c3118a20e874d9a7c0f",
+      "main_record_ordinal": 19,
+      "name": "record_0019.json",
+      "record_payload_sha256": "41027ba835c23e9da33fd55f95e3da3cda8476273d36ea7cdafc8f6fd7ed158e"
+    },
+    {
+      "file_sha256": "8d7b2daa5f56dbc460d1888d83b47db7a54e871ebd41e4c4b91e58feee0f7652",
+      "main_record_ordinal": 20,
+      "name": "record_0020.json",
+      "record_payload_sha256": "b40a157ea44638d734c95194fcfb1649d799f6ebc6267f01ac764bea86acb204"
+    },
+    {
+      "file_sha256": "38195d9a7b108c58d584bd8bfe4b574d68e8e471b82fdf531c5d55635e07409b",
+      "main_record_ordinal": 21,
+      "name": "record_0021.json",
+      "record_payload_sha256": "9fcf687eda73a3b4ca73a2069899ad3d0cc66ad40667969cb4a83d1c10c64a08"
+    },
+    {
+      "file_sha256": "f03f78a391c20dfc0c4cdc5b4c3ebb4be2bbfdbaaf8bfb7f7de731ff85a3335f",
+      "main_record_ordinal": 22,
+      "name": "record_0022.json",
+      "record_payload_sha256": "ccd1d8a1fc2e0e2a45ac98b07eb06f532b9d5d682d5e28c64c5fcbb3f49e835c"
+    },
+    {
+      "file_sha256": "31885e916f772436248d5783dce5e5a8d49cbb7e8f3d8e65a825758e4b7f6247",
+      "main_record_ordinal": 23,
+      "name": "record_0023.json",
+      "record_payload_sha256": "9aa4fa79a4b68605a8e16e00b17f9f3d6f38cad4f2ff43f446e0c064dbbcc23f"
+    }
+  ],
+  "source_record_artifacts_sha256": "25fb2e9be7c2b5e08d6fba0499ba21eb02f00820707f8fd99561476359cf239e",
+  "source_repo_sha": "fc7b901f93c8435aecb07898d65caadade75005c",
+  "source_resource_canary_file_sha256": "70c0cadb88934c509c434f90db6747ad773ee9d21a1b124a014d397f96bd8aa5",
+  "source_resource_canary_status": "PASS_ZERO_CANDIDATE_EVALUATION_RESOURCE_CANARY",
+  "source_selected_schedule_file_sha256": "8b819d5e08fa225ad189513aaeb928c9dcfe9625797192c0e385f02ed9e630b5",
+  "status": "RECOVERABLE_SPENT_STAGE_A_PREFIX_FROZEN"
+}

@@ -20,6 +20,7 @@ REPO = Path(__file__).resolve().parents[1]
 AUTH = REPO / runtime.AUTHORIZATION_RELATIVE_PATH
 PREFREEZE = REPO / "runtime/run_plans/cn_disclosure_timing_mechanism_successor_prefreeze_20260819.json"
 SPENT = REPO / "runtime/run_plans/cn_disclosure_timing_mechanism_spent_exact_freeze_20260819.json"
+RECOVERY = REPO / "runtime/run_plans/cn_disclosure_timing_mechanism_recovery_prefix_fc7b901_20260819.json"
 
 
 def _row(*, event: str, temporal: str, rep: str, pulse: str, productive: bool) -> dict:
@@ -53,15 +54,23 @@ def test_frozen_authorization_prefreeze_and_spent_set_verify() -> None:
     authorization = runtime.verify_authorization(AUTH, repo_root=REPO)
     prefreeze = runner.verify_prefreeze(PREFREEZE)
     spent = runner.verify_spent_freeze(SPENT)
+    recovery = runner.verify_recovery_prefix(RECOVERY)
     assert authorization["mechanism_prefreeze"]["stage_a_records"] == 288
     assert authorization["mechanism_prefreeze"]["stage_b_records"] == 264
     assert prefreeze["resource_preview"]["union_field_count"] == 42
     assert len(prefreeze["candidates"]["stage_a"]) == 288
     assert len(prefreeze["candidates"]["stage_b"]) == 264
     assert len(spent["combined_spent_exact_identities"]) == 2150
+    assert authorization["recovery_prefix"]["recovery_record_count"] == 24
+    assert recovery["derived_admitted_count"] == 7
+    assert recovery["derived_productive_count"] == 6
+    assert recovery["financial_evaluator_reexecution_performed"] is False
+    stage_a_exacts = [row["exact_identity"] for row in prefreeze["candidates"]["stage_a"]]
+    assert recovery["recovery_exact_identities"] == stage_a_exacts[:24]
     assert set(row["exact_identity"] for row in prefreeze["candidates"]["stage_a"] + prefreeze["candidates"]["stage_b"]).isdisjoint(
         spent["combined_spent_exact_identities"]
     )
+    assert len(set(spent["combined_spent_exact_identities"]) | set(recovery["recovery_exact_identities"])) == 2174
 
 
 def test_stage_a_gate_fails_single_primitive_lottery() -> None:
@@ -161,6 +170,7 @@ def test_runtime_injects_frozen_executor_workers(monkeypatch: pytest.MonkeyPatch
         "--campaign-authorization", str(AUTH),
         "--mechanism-prefreeze", str(PREFREEZE),
         "--spent-exact-freeze", str(SPENT),
+        "--recovery-prefix", str(RECOVERY),
         "--source-freeze-root", str(tmp_path / "source"),
         "--prior-exact-freeze", str(tmp_path / "prior.json"),
         "--execution-contract", str(tmp_path / "execution.json"),
