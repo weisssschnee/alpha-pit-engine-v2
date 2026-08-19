@@ -1,0 +1,649 @@
+{
+  "cross_run_true_fresh_evaluated": 816,
+  "evolution_raw": {
+    "admission_rate": 0.6055555555555555,
+    "admitted": 436,
+    "evaluated": 720,
+    "matched_credit_observations": 436,
+    "median_matched_cumulative_return_increment": 0.11103306882205999,
+    "median_matched_net_reward_increment": 0.9626547543603534,
+    "median_primary_cumulative_return": 0.11145279421991194,
+    "median_primary_net_reward": 0.7372225637246723,
+    "median_turnover_efficiency": 0.6831499674363359,
+    "productive": 275,
+    "productive_efficiency": 0.3819444444444444,
+    "productive_given_admitted": 0.6307339449541285,
+    "productive_rate_wilson95": [
+      0.34716993981620253,
+      0.41797204704943197
+    ]
+  },
+  "evolution_true_fresh": {
+    "admission_rate": 0.6055555555555555,
+    "admitted": 436,
+    "evaluated": 720,
+    "matched_credit_observations": 436,
+    "median_matched_cumulative_return_increment": 0.11103306882205999,
+    "median_matched_net_reward_increment": 0.9626547543603534,
+    "median_primary_cumulative_return": 0.11145279421991194,
+    "median_primary_net_reward": 0.7372225637246723,
+    "median_turnover_efficiency": 0.6831499674363359,
+    "productive": 275,
+    "productive_efficiency": 0.3819444444444444,
+    "productive_given_admitted": 0.6307339449541285,
+    "productive_rate_wilson95": [
+      0.34716993981620253,
+      0.41797204704943197
+    ]
+  },
+  "formal_evaluated": 840,
+  "formal_run_status": "LARGE_FRESH_DEVELOPMENT_SEARCH_V2_COMPLETE",
+  "fresh_template_standardized_arm_comparison": {
+    "absolute_difference": 0.08333333333333337,
+    "evolution_template_standardized_productive_rate": 0.39583333333333337,
+    "relative_ratio": 1.2666666666666668,
+    "template_cells": [
+      {
+        "evolution_n": 96,
+        "evolution_productive_rate": 0.3229166666666667,
+        "template": "BASE_EVENT",
+        "uniform_mix_weight": 0.25,
+        "uniform_n": 24,
+        "uniform_productive_rate": 0.16666666666666666
+      },
+      {
+        "evolution_n": 96,
+        "evolution_productive_rate": 0.20833333333333334,
+        "template": "BASE_MARKET",
+        "uniform_mix_weight": 0.25,
+        "uniform_n": 24,
+        "uniform_productive_rate": 0.125
+      },
+      {
+        "evolution_n": 96,
+        "evolution_productive_rate": 0.8645833333333334,
+        "template": "BASE_TEMPORAL_EVENT",
+        "uniform_mix_weight": 0.25,
+        "uniform_n": 24,
+        "uniform_productive_rate": 0.9166666666666666
+      },
+      {
+        "evolution_n": 96,
+        "evolution_productive_rate": 0.1875,
+        "template": "BASE_TEMPORAL_MARKET",
+        "uniform_mix_weight": 0.25,
+        "uniform_n": 24,
+        "uniform_productive_rate": 0.041666666666666664
+      }
+    ],
+    "uniform_productive_rate": 0.3125
+  },
+  "independent_audit_payload_sha256": "7f6be295bb1b9185c2e3467e021aed2f324ef3c9d748e5b050259433d9d1cbe9",
+  "independent_audit_status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "mechanism_interpretation": {
+    "base_maximum_component_share": 0.03333333333333333,
+    "base_unique_component_ids": 32,
+    "canonical_expression": "FirstHit($fund_disclosure_balance_pulse,20)",
+    "control_canonical_expression": "TimeSince($fund_disclosure_balance_pulse)",
+    "event_component_exact_identity": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+    "event_component_exposure_count_in_large_fresh": 120,
+    "event_component_productive_count_in_large_fresh": 105,
+    "event_component_route_id": "DISCLOSURE_EVENT",
+    "event_component_skeleton_id": "cn.comp.v2.disclosure_event.event_first_hit",
+    "evolution_evaluated_count": 96,
+    "evolution_productive_count": 83,
+    "interpretation": "The 87.5% template yield is primarily a disclosure-timing event-core effect shared by both arms, not an Evolution-only effect. Base variation is broad; temporal variation is narrow and should be expanded before claiming a broad event-family mechanism.",
+    "mechanism_summary": "Disclosure first-hit timing is the invariant event core; performance remains high across 32 broad base components and three fundamental temporal-state components. This supports a disclosure-timing-conditioned-fundamental-state mechanism hypothesis, but the single event component means the broader DISCLOSURE_EVENT family is not yet established.",
+    "source_family": "canonical_fundamental_disclosure_timing_staleness",
+    "template_id": "BASE_TEMPORAL_EVENT",
+    "temporal_components": [
+      {
+        "canonical_expression": "CSRank(Sub(ZScore(Delta($fund_pr_deduct_parent_netprofit_slope,2)),ZScore(Delta($fund_pr_deduct_parent_netprofit_slope,10))))",
+        "evaluated": 69,
+        "exact_identity": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d",
+        "financial_hypothesis": "short and long change horizons diverge",
+        "productive": 57
+      },
+      {
+        "canonical_expression": "CSRank(Mul(ZScore(Delta($fund_pr_parent_netprofit_source_yoy,5)),ZScore(Delta($fund_ca_netcash_finance_acceleration,5))))",
+        "evaluated": 47,
+        "exact_identity": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3",
+        "financial_hypothesis": "changes from independent fundamental families interact",
+        "productive": 44
+      },
+      {
+        "canonical_expression": "CSRank(Mul(ZScore($fund_ba_total_current_assets_source_yoy),ZScore($ctx_hfq_pb)))",
+        "evaluated": 4,
+        "exact_identity": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c",
+        "financial_hypothesis": "fundamental change has different meaning conditional on valuation level",
+        "productive": 4
+      }
+    ],
+    "temporal_maximum_component_share": 0.575,
+    "temporal_unique_component_ids": 3,
+    "uniform_evaluated_count": 24,
+    "uniform_productive_count": 22
+  },
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "75e5f8310aeda573d029daac5559b06a065098464bbaf5d98323b215007b4005",
+  "promotion_authorized": false,
+  "raw_admitted": 492,
+  "raw_productive": 310,
+  "repo_sha": "5b58c29f4839243463a617d881fa6f18bf25d9c8",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "retry_replay_evaluated": 24,
+  "schema_version": "cn_program_optimizer_large_fresh_v2_retry_outcome_v1",
+  "status": "LARGE_FRESH_V2_RETRY_CLOSED_AUDITED",
+  "stop_reason": "HARD_CAP_REACHED",
+  "strongest_template_productive_efficiency_raw": 0.875,
+  "strongest_template_raw": "BASE_TEMPORAL_EVENT",
+  "temporal_event": {
+    "behavior_diversity": {
+      "BASE_TEMPORAL_EVENT": {
+        "behavior_duplicate_rate": 0.1,
+        "behavior_duplicate_rows": 12,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 93,
+        "unique_behavior_pairs": 104
+      }
+    },
+    "combination_policy_count": 8,
+    "combination_policy_frequencies": {
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"ADD\"}": 34,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MAX\"}": 6,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MIN\"}": 20,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"SUBTRACT\"}": 15,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"ADD\"}": 11,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MAX\"}": 6,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MIN\"}": 12,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"SUBTRACT\"}": 16
+    },
+    "component_concentration": {
+      "base": {
+        "maximum_component_exposure": 4,
+        "maximum_component_share": 0.03333333333333333,
+        "productive_unique_component_ids": 31,
+        "top_components": [
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "05cdc6fc379c146aa5770a7ceab56d904eca464ff7601d787f4f691d1ad1d45f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.04815832042234236,
+            "median_matched_net_reward_increment": 0.5999950656966614,
+            "median_primary_cumulative_return": 0.30740638274296916,
+            "median_primary_net_reward": 1.605291870396604,
+            "median_turnover_efficiency": 1.656030802643116,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "0fd237ce442758d6de8c81a8475def169044c1a8ca4d96bd4e6ee73b1507403f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": -0.3972323420349464,
+            "median_matched_net_reward_increment": -1.6269644978737807,
+            "median_primary_cumulative_return": 0.1843780479779631,
+            "median_primary_net_reward": 1.2169190236785086,
+            "median_turnover_efficiency": 1.066882542787646,
+            "productive": 1,
+            "productive_efficiency": 0.25,
+            "productive_given_admitted": 0.25,
+            "productive_rate_wilson95": [
+              0.045586062644636216,
+              0.6993639475573634
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "3396a3338b7185cafb38dba6feb38cd7be7c57a6a6a4acaaf9f46dcdc7fb82af",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.2912170558989785,
+            "median_matched_net_reward_increment": 1.4362565602689519,
+            "median_primary_cumulative_return": 0.4000820702559177,
+            "median_primary_net_reward": 2.093817925954433,
+            "median_turnover_efficiency": 2.247582282164193,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 0.75,
+            "admitted": 3,
+            "component_id": "3fc4f5d4bf768b48493f5fc0432073eda917ebf5d0d539d7c9b7761d4d0cf620",
+            "evaluated": 4,
+            "matched_credit_observations": 3,
+            "median_matched_cumulative_return_increment": 0.9722055537346999,
+            "median_matched_net_reward_increment": 3.6604546652742243,
+            "median_primary_cumulative_return": 0.14767102548430733,
+            "median_primary_net_reward": 0.8040602634474883,
+            "median_turnover_efficiency": 0.5565778611532944,
+            "productive": 3,
+            "productive_efficiency": 0.75,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.3006360524426366,
+              0.9544139373553637
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "4eef1bc967211af46f7cc3683e861c81036ef818b154542fc87ab50a11029179",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 1.0793298390548485,
+            "median_matched_net_reward_increment": 4.077456686841058,
+            "median_primary_cumulative_return": 0.24663429924309688,
+            "median_primary_net_reward": 1.254644452710203,
+            "median_turnover_efficiency": 1.3156710605456838,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "5619393354e925109774d51f50fed43c4f5517cd68fa92a0ef28949264ec635f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.2855105451514398,
+            "median_matched_net_reward_increment": 1.7487763756194368,
+            "median_primary_cumulative_return": 0.596489034916481,
+            "median_primary_net_reward": 2.724356507348156,
+            "median_turnover_efficiency": 3.851911678870131,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "5a04a81b83ae588d568b523f540ef3609992439d62da2fefc580398a8c62144e",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": -0.3218383446952334,
+            "median_matched_net_reward_increment": -1.288884136382849,
+            "median_primary_cumulative_return": 0.16417293827449642,
+            "median_primary_net_reward": 1.131706164309822,
+            "median_turnover_efficiency": 0.9619342582632227,
+            "productive": 1,
+            "productive_efficiency": 0.25,
+            "productive_given_admitted": 0.25,
+            "productive_rate_wilson95": [
+              0.045586062644636216,
+              0.6993639475573634
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "762a17f592b8c9c0e479255d8d3b5163429df0599d523dfc0d96710f51d761e4",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.42489155288731983,
+            "median_matched_net_reward_increment": 1.9855904089180652,
+            "median_primary_cumulative_return": 0.8666736069636447,
+            "median_primary_net_reward": 3.190763196577773,
+            "median_turnover_efficiency": 6.474817946502335,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          }
+        ],
+        "unique_component_ids": 32
+      },
+      "event": {
+        "maximum_component_exposure": 120,
+        "maximum_component_share": 1.0,
+        "productive_unique_component_ids": 1,
+        "top_components": [
+          {
+            "admission_rate": 0.9583333333333334,
+            "admitted": 115,
+            "component_id": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+            "evaluated": 120,
+            "matched_credit_observations": 115,
+            "median_matched_cumulative_return_increment": 0.35605602589837027,
+            "median_matched_net_reward_increment": 1.7435430428273455,
+            "median_primary_cumulative_return": 0.41466406620424723,
+            "median_primary_net_reward": 2.1472864861160836,
+            "median_turnover_efficiency": 2.213465700385979,
+            "productive": 105,
+            "productive_efficiency": 0.875,
+            "productive_given_admitted": 0.9130434782608695,
+            "productive_rate_wilson95": [
+              0.8039690855177497,
+              0.9227657111903032
+            ]
+          }
+        ],
+        "unique_component_ids": 1
+      },
+      "temporal": {
+        "maximum_component_exposure": 69,
+        "maximum_component_share": 0.575,
+        "productive_unique_component_ids": 3,
+        "top_components": [
+          {
+            "admission_rate": 0.9710144927536232,
+            "admitted": 67,
+            "component_id": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d",
+            "evaluated": 69,
+            "matched_credit_observations": 67,
+            "median_matched_cumulative_return_increment": 0.26526656056310394,
+            "median_matched_net_reward_increment": 1.4873918778079909,
+            "median_primary_cumulative_return": 0.3553894365414918,
+            "median_primary_net_reward": 1.7770808662614346,
+            "median_turnover_efficiency": 1.8292109585152148,
+            "productive": 57,
+            "productive_efficiency": 0.8260869565217391,
+            "productive_given_admitted": 0.8507462686567164,
+            "productive_rate_wilson95": [
+              0.7201615375755637,
+              0.89761731406965
+            ]
+          },
+          {
+            "admission_rate": 0.9361702127659575,
+            "admitted": 44,
+            "component_id": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3",
+            "evaluated": 47,
+            "matched_credit_observations": 44,
+            "median_matched_cumulative_return_increment": 0.5860559344677987,
+            "median_matched_net_reward_increment": 2.413828354167597,
+            "median_primary_cumulative_return": 0.6553623788715792,
+            "median_primary_net_reward": 2.9115933581703195,
+            "median_turnover_efficiency": 4.291803406363599,
+            "productive": 44,
+            "productive_efficiency": 0.9361702127659575,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.828371220656221,
+              0.9780550129792271
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.6161487963457997,
+            "median_matched_net_reward_increment": 2.2539334969535756,
+            "median_primary_cumulative_return": 0.5000438798943928,
+            "median_primary_net_reward": 2.2115027320147487,
+            "median_turnover_efficiency": 4.247421386776793,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          }
+        ],
+        "unique_component_ids": 3
+      }
+    },
+    "fresh": {
+      "admission_rate": 0.9583333333333334,
+      "admitted": 115,
+      "evaluated": 120,
+      "matched_credit_observations": 115,
+      "median_matched_cumulative_return_increment": 0.35605602589837027,
+      "median_matched_net_reward_increment": 1.7435430428273455,
+      "median_primary_cumulative_return": 0.41466406620424723,
+      "median_primary_net_reward": 2.1472864861160836,
+      "median_turnover_efficiency": 2.213465700385979,
+      "productive": 105,
+      "productive_efficiency": 0.875,
+      "productive_given_admitted": 0.9130434782608695,
+      "productive_rate_wilson95": [
+        0.8039690855177497,
+        0.9227657111903032
+      ]
+    },
+    "per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.96875,
+        "admitted": 93,
+        "evaluated": 96,
+        "matched_credit_observations": 93,
+        "median_matched_cumulative_return_increment": 0.32994923631875994,
+        "median_matched_net_reward_increment": 1.6999513028643611,
+        "median_primary_cumulative_return": 0.422325425684667,
+        "median_primary_net_reward": 2.1767308603010185,
+        "median_turnover_efficiency": 2.214151220250547,
+        "productive": 83,
+        "productive_efficiency": 0.8645833333333334,
+        "productive_given_admitted": 0.8924731182795699,
+        "productive_rate_wilson95": [
+          0.7819868570932831,
+          0.9191237020323721
+        ]
+      },
+      "UNIFORM_CONTROL": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      }
+    },
+    "per_macro": {
+      "0": {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 23,
+        "evaluated": 24,
+        "matched_credit_observations": 23,
+        "median_matched_cumulative_return_increment": 0.2799772075942901,
+        "median_matched_net_reward_increment": 1.4873918778079909,
+        "median_primary_cumulative_return": 0.38531749715083974,
+        "median_primary_net_reward": 2.006825941035442,
+        "median_turnover_efficiency": 1.8971057016167825,
+        "productive": 21,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.6899571185214243,
+          0.9565574496068442
+        ]
+      },
+      "1": {
+        "admission_rate": 1.0,
+        "admitted": 24,
+        "evaluated": 24,
+        "matched_credit_observations": 24,
+        "median_matched_cumulative_return_increment": 0.3837633807934931,
+        "median_matched_net_reward_increment": 1.662348512740301,
+        "median_primary_cumulative_return": 0.40221361462608374,
+        "median_primary_net_reward": 2.1632907158611743,
+        "median_turnover_efficiency": 2.1126241267487,
+        "productive": 23,
+        "productive_efficiency": 0.9583333333333334,
+        "productive_given_admitted": 0.9583333333333334,
+        "productive_rate_wilson95": [
+          0.7975777375115778,
+          0.992606734645195
+        ]
+      },
+      "2": {
+        "admission_rate": 1.0,
+        "admitted": 24,
+        "evaluated": 24,
+        "matched_credit_observations": 24,
+        "median_matched_cumulative_return_increment": 0.4022159758524322,
+        "median_matched_net_reward_increment": 2.044567260631469,
+        "median_primary_cumulative_return": 0.5104768244959222,
+        "median_primary_net_reward": 2.268321845261274,
+        "median_turnover_efficiency": 3.4502517261829904,
+        "productive": 20,
+        "productive_efficiency": 0.8333333333333334,
+        "productive_given_admitted": 0.8333333333333334,
+        "productive_rate_wilson95": [
+          0.6414652961213058,
+          0.9332143199927109
+        ]
+      },
+      "3": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.43200430436645054,
+        "median_matched_net_reward_increment": 2.0634595436816254,
+        "median_primary_cumulative_return": 0.4661974066093657,
+        "median_primary_net_reward": 2.2430239706935162,
+        "median_turnover_efficiency": 2.3376951778073347,
+        "productive": 19,
+        "productive_efficiency": 0.7916666666666666,
+        "productive_given_admitted": 0.8636363636363636,
+        "productive_rate_wilson95": [
+          0.5952915551476452,
+          0.9075531089521192
+        ]
+      },
+      "4": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      }
+    },
+    "raw": {
+      "admission_rate": 0.9583333333333334,
+      "admitted": 115,
+      "evaluated": 120,
+      "matched_credit_observations": 115,
+      "median_matched_cumulative_return_increment": 0.35605602589837027,
+      "median_matched_net_reward_increment": 1.7435430428273455,
+      "median_primary_cumulative_return": 0.41466406620424723,
+      "median_primary_net_reward": 2.1472864861160836,
+      "median_turnover_efficiency": 2.213465700385979,
+      "productive": 105,
+      "productive_efficiency": 0.875,
+      "productive_given_admitted": 0.9130434782608695,
+      "productive_rate_wilson95": [
+        0.8039690855177497,
+        0.9227657111903032
+      ]
+    },
+    "top_route_signatures": [
+      {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 115,
+        "evaluated": 120,
+        "matched_credit_observations": 115,
+        "median_matched_cumulative_return_increment": 0.35605602589837027,
+        "median_matched_net_reward_increment": 1.7435430428273455,
+        "median_primary_cumulative_return": 0.41466406620424723,
+        "median_primary_net_reward": 2.1472864861160836,
+        "median_turnover_efficiency": 2.213465700385979,
+        "productive": 105,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.8039690855177497,
+          0.9227657111903032
+        ],
+        "route_signature": "base=SLOW_CROSS_SECTIONAL_LEVEL|event=DISCLOSURE_EVENT|temporal=SLOW_TEMPORAL_CHANGE"
+      }
+    ]
+  },
+  "true_fresh_admitted": 484,
+  "true_fresh_productive": 305,
+  "uniform_raw": {
+    "admission_rate": 0.4666666666666667,
+    "admitted": 56,
+    "evaluated": 120,
+    "matched_credit_observations": 56,
+    "median_matched_cumulative_return_increment": 0.18015977534223937,
+    "median_matched_net_reward_increment": 1.175812609255647,
+    "median_primary_cumulative_return": 0.05316573013595649,
+    "median_primary_net_reward": 0.44685459481096057,
+    "median_turnover_efficiency": 0.18514611293808095,
+    "productive": 35,
+    "productive_efficiency": 0.2916666666666667,
+    "productive_given_admitted": 0.625,
+    "productive_rate_wilson95": [
+      0.21781442705981954,
+      0.3784440192134845
+    ]
+  },
+  "uniform_true_fresh": {
+    "admission_rate": 0.5,
+    "admitted": 48,
+    "evaluated": 96,
+    "matched_credit_observations": 48,
+    "median_matched_cumulative_return_increment": 0.23757939728098543,
+    "median_matched_net_reward_increment": 1.1981043194996268,
+    "median_primary_cumulative_return": 0.08199377158122845,
+    "median_primary_net_reward": 0.5611423442993818,
+    "median_turnover_efficiency": 0.33897071634403336,
+    "productive": 30,
+    "productive_efficiency": 0.3125,
+    "productive_given_admitted": 0.625,
+    "productive_rate_wilson95": [
+      0.22850817977225668,
+      0.41092067553454936
+    ]
+  }
+}

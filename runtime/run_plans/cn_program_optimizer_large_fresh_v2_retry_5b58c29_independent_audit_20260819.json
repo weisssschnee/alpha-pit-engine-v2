@@ -1,0 +1,1944 @@
+{
+  "artifact_failures": [],
+  "audit_payload_sha256": "7f6be295bb1b9185c2e3467e021aed2f324ef3c9d748e5b050259433d9d1cbe9",
+  "checkpoint_chain_ok": true,
+  "checkpoint_count": 35,
+  "checkpoint_manifest_chain": [
+    {
+      "arm": "UNIFORM_CONTROL",
+      "artifacts_ok": true,
+      "checkpoint": 0,
+      "manifest_payload_sha256": "64c3716bc3f11be4a34c9488e7e8d49c1a4658a4ef6b6f82373ca395c9d67109",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 1,
+      "manifest_payload_sha256": "015870c7c4722bde7b40322b74f6701615d140a996c3738942899b38a9092bfc",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 2,
+      "manifest_payload_sha256": "866af270e69f3eed616e15d60b745d9d0d578fbc9163311ffa00a2835533fb6d",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 3,
+      "manifest_payload_sha256": "34ba03c1302932d7c9384ac2579c147aec9c6c7b6a3a2f9b128b07d25f0f6414",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 4,
+      "manifest_payload_sha256": "309924967efb31f2ce123d65296a867694734af648c8711d910da11052e91c5f",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 5,
+      "manifest_payload_sha256": "349f87ebae873ea5aa27d6894691eef99f87ea923f21f966412fdb1ebf30d6df",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 6,
+      "manifest_payload_sha256": "179b7f3873450061978e566d836067df2176fe54a1b956ceb90e23aebd7b2a8f",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 7,
+      "manifest_payload_sha256": "0424a9b60f869184d867a9c8565569393a9331ab794c017659d03021bf76f9b9",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL"
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "artifacts_ok": true,
+      "checkpoint": 8,
+      "manifest_payload_sha256": "2df4e396fab92de51918fc2396633e9aa6fca4b9d6493289ac3d3a7c2814c166",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 9,
+      "manifest_payload_sha256": "6384e31dce7f93577029fdd8eee4e0119af3f886c8057819b008482e9762ab89",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 10,
+      "manifest_payload_sha256": "31af4859a2a6702666eb7e8504fd1bfd492647bf9ca054a0b9a6292dc449ed17",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 11,
+      "manifest_payload_sha256": "32db3ba0dcf00409fc1abe5eb9a6fda1d992aef54b720c99119e8b8317abd628",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 12,
+      "manifest_payload_sha256": "d1504a00228a3bd00b6c0f145e6e2ef17041270f7f762e82afb32241f8be6302",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 13,
+      "manifest_payload_sha256": "f41c3b3b664c4a10db8a8d8ce11d6283e926129c41b4a272f4fd04f8e6ea12a0",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 14,
+      "manifest_payload_sha256": "04012cf89d3d9ebd5c6930ada28da9cfededdc34c79e0844dc838f8e08248685",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 15,
+      "manifest_payload_sha256": "9d38804128c073a9f19e3a908063a7049d83f510dab0ae4f54ad10f885e6def7",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET"
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "artifacts_ok": true,
+      "checkpoint": 16,
+      "manifest_payload_sha256": "83b6cfec410f5722998197aad6c1186fe88a667737e5f24236734e93fb55d709",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 17,
+      "manifest_payload_sha256": "57db1cf2d8fff47e81070cf67e8f85bb88e2f920d7d21dbd5899e16ec59227a8",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 18,
+      "manifest_payload_sha256": "5617d74b302c656a348b5a39130b9e4fda0ecfe0adafd08d9a4228cc7b6410d8",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 19,
+      "manifest_payload_sha256": "cd46c30a30e0075df9c6b5775c7adcd47379ec51baa594b1fd088f43f257bf24",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 20,
+      "manifest_payload_sha256": "bc91bd52da63ad4c9b6d5c5063937528695fdc58df36aaaeb597848ef903bbc8",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 21,
+      "manifest_payload_sha256": "0ba484f3f370f0d6130558c9324a9069cddc04dc843d1e57c8ad1be7d91b7314",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 22,
+      "manifest_payload_sha256": "450b4aa4841694853a97d9d65b779eb9daae12454c86281245eb13ebd87e5120",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 23,
+      "manifest_payload_sha256": "29b6183fcc777bc8d6f76efde359b050a99fa8f4b555b1b073fef99745a891b7",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_EVENT"
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "artifacts_ok": true,
+      "checkpoint": 24,
+      "manifest_payload_sha256": "59aa6bb9eed59ac70f5c6f13bdc8718aebb57685b2baed65966a10ad5e308b0a",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 25,
+      "manifest_payload_sha256": "5e0ff0c66b536d503682c1e197b77cc7aac6a366259aed6379244975491ba65a",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 26,
+      "manifest_payload_sha256": "2831d014196c0569a7591e592ef6a89294b41f2a3a0a426c4ffe1076cd5dc056",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 27,
+      "manifest_payload_sha256": "1bb4f1902454481a796d747cf68620fdff7c7d651590b7b9b3a87a4006a1cee5",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 28,
+      "manifest_payload_sha256": "4aa7514e6e8f53bbd55c6d77e39655d1458ed78ec47770a8982d793fa59593a5",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 29,
+      "manifest_payload_sha256": "86d89c9313faaf28e84938e4dc457902e08a6427157a5d988793a3cf58839b5c",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 30,
+      "manifest_payload_sha256": "62873ba682a91b2c0534c8c9b6d024b3f078889df0590284357acdafa973f4aa",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 31,
+      "manifest_payload_sha256": "96724c6935f2e850b13a312197f4ee8e6bee364d6a237470626f62cc31c62242",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET"
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "artifacts_ok": true,
+      "checkpoint": 32,
+      "manifest_payload_sha256": "66d36a8752e4fd8b055211708e9b38c2854bb3dd3bc9b9ccba6d60f772101242",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 33,
+      "manifest_payload_sha256": "32214bcccad4476d6fb77c39b4d2b3486bef7da89bccf216a6da7e0335baaa68",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_MARKET_EVENT"
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "artifacts_ok": true,
+      "checkpoint": 34,
+      "manifest_payload_sha256": "c87d1d45910925d501c30357313547be9f60cda33c97c5665cab32562e457dbb",
+      "manifest_self_hash_ok": true,
+      "previous_manifest_ok": true,
+      "status": "LARGE_FRESH_CHECKPOINT_CLOSED_IMMUTABLE",
+      "template": "BASE_TEMPORAL_MARKET_EVENT"
+    }
+  ],
+  "closure_self_hash_ok": true,
+  "closure_status": "LARGE_FRESH_DEVELOPMENT_SEARCH_V2_COMPLETE",
+  "closure_stop_reason": "HARD_CAP_REACHED",
+  "evaluated_records": 840,
+  "fresh_metrics_excluding_retry_replay": {
+    "behavior_diversity_per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "behavior_duplicate_rate": 0.05277777777777778,
+        "behavior_duplicate_rows": 38,
+        "behavior_pair_observations": 677,
+        "evaluated": 720,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 250,
+        "unique_behavior_pairs": 639
+      },
+      "UNIFORM_CONTROL": {
+        "behavior_duplicate_rate": 0.020833333333333332,
+        "behavior_duplicate_rows": 2,
+        "behavior_pair_observations": 89,
+        "evaluated": 96,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 29,
+        "unique_behavior_pairs": 87
+      }
+    },
+    "behavior_diversity_per_template": {
+      "BASE_EVENT": {
+        "behavior_duplicate_rate": 0.058333333333333334,
+        "behavior_duplicate_rows": 7,
+        "behavior_pair_observations": 117,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 34,
+        "unique_behavior_pairs": 110
+      },
+      "BASE_MARKET": {
+        "behavior_duplicate_rate": 0.06666666666666667,
+        "behavior_duplicate_rows": 8,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 21,
+        "unique_behavior_pairs": 108
+      },
+      "BASE_MARKET_EVENT": {
+        "behavior_duplicate_rate": 0.10833333333333334,
+        "behavior_duplicate_rows": 13,
+        "behavior_pair_observations": 97,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 58,
+        "unique_behavior_pairs": 84
+      },
+      "BASE_TEMPORAL": {
+        "behavior_duplicate_rate": 0.010416666666666666,
+        "behavior_duplicate_rows": 1,
+        "behavior_pair_observations": 92,
+        "evaluated": 96,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 25,
+        "unique_behavior_pairs": 91
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "behavior_duplicate_rate": 0.1,
+        "behavior_duplicate_rows": 12,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 93,
+        "unique_behavior_pairs": 104
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "behavior_duplicate_rate": 0.0,
+        "behavior_duplicate_rows": 0,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 1,
+        "productive_unique_behavior_pairs": 19,
+        "unique_behavior_pairs": 116
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "behavior_duplicate_rate": 0.03333333333333333,
+        "behavior_duplicate_rows": 4,
+        "behavior_pair_observations": 112,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 29,
+        "unique_behavior_pairs": 108
+      }
+    },
+    "overall": {
+      "admission_rate": 0.5931372549019608,
+      "admitted": 484,
+      "evaluated": 816,
+      "matched_credit_observations": 484,
+      "median_matched_cumulative_return_increment": 0.11465492708862124,
+      "median_matched_net_reward_increment": 0.9957547110860643,
+      "median_primary_cumulative_return": 0.11035433627591185,
+      "median_primary_net_reward": 0.7101062929742286,
+      "median_turnover_efficiency": 0.6486712076000364,
+      "productive": 305,
+      "productive_efficiency": 0.3737745098039216,
+      "productive_given_admitted": 0.6301652892561983,
+      "productive_rate_wilson95": [
+        0.34124290703262095,
+        0.4074890431392172
+      ]
+    },
+    "per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.6055555555555555,
+        "admitted": 436,
+        "evaluated": 720,
+        "matched_credit_observations": 436,
+        "median_matched_cumulative_return_increment": 0.11103306882205999,
+        "median_matched_net_reward_increment": 0.9626547543603534,
+        "median_primary_cumulative_return": 0.11145279421991194,
+        "median_primary_net_reward": 0.7372225637246723,
+        "median_turnover_efficiency": 0.6831499674363359,
+        "productive": 275,
+        "productive_efficiency": 0.3819444444444444,
+        "productive_given_admitted": 0.6307339449541285,
+        "productive_rate_wilson95": [
+          0.34716993981620253,
+          0.41797204704943197
+        ]
+      },
+      "UNIFORM_CONTROL": {
+        "admission_rate": 0.5,
+        "admitted": 48,
+        "evaluated": 96,
+        "matched_credit_observations": 48,
+        "median_matched_cumulative_return_increment": 0.23757939728098543,
+        "median_matched_net_reward_increment": 1.1981043194996268,
+        "median_primary_cumulative_return": 0.08199377158122845,
+        "median_primary_net_reward": 0.5611423442993818,
+        "median_turnover_efficiency": 0.33897071634403336,
+        "productive": 30,
+        "productive_efficiency": 0.3125,
+        "productive_given_admitted": 0.625,
+        "productive_rate_wilson95": [
+          0.22850817977225668,
+          0.41092067553454936
+        ]
+      }
+    },
+    "per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.55,
+        "admitted": 66,
+        "evaluated": 120,
+        "matched_credit_observations": 66,
+        "median_matched_cumulative_return_increment": 0.009446204746773046,
+        "median_matched_net_reward_increment": 0.8659111019083252,
+        "median_primary_cumulative_return": 0.08308159708055851,
+        "median_primary_net_reward": 0.6112204070774512,
+        "median_turnover_efficiency": 0.415938460380846,
+        "productive": 35,
+        "productive_efficiency": 0.2916666666666667,
+        "productive_given_admitted": 0.5303030303030303,
+        "productive_rate_wilson95": [
+          0.21781442705981954,
+          0.3784440192134845
+        ]
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 60,
+        "evaluated": 120,
+        "matched_credit_observations": 60,
+        "median_matched_cumulative_return_increment": -0.08831731383247454,
+        "median_matched_net_reward_increment": -0.14654567251851358,
+        "median_primary_cumulative_return": 0.08156537303625266,
+        "median_primary_net_reward": 0.5187759951674112,
+        "median_turnover_efficiency": 0.48165918691586684,
+        "productive": 23,
+        "productive_efficiency": 0.19166666666666668,
+        "productive_given_admitted": 0.38333333333333336,
+        "productive_rate_wilson95": [
+          0.13124933052612614,
+          0.2712131699583638
+        ]
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.8083333333333333,
+        "admitted": 97,
+        "evaluated": 120,
+        "matched_credit_observations": 97,
+        "median_matched_cumulative_return_increment": 0.14066062541041036,
+        "median_matched_net_reward_increment": 1.6162663929866348,
+        "median_primary_cumulative_return": 0.20747001673972854,
+        "median_primary_net_reward": 1.7794007767429965,
+        "median_turnover_efficiency": 1.2552475290475476,
+        "productive": 68,
+        "productive_efficiency": 0.5666666666666667,
+        "productive_given_admitted": 0.7010309278350515,
+        "productive_rate_wilson95": [
+          0.47729757992376215,
+          0.6518997172687806
+        ]
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.46875,
+        "admitted": 45,
+        "evaluated": 96,
+        "matched_credit_observations": 45,
+        "median_matched_cumulative_return_increment": 0.02387159904257863,
+        "median_matched_net_reward_increment": 0.2483065490227082,
+        "median_primary_cumulative_return": 0.09456685370361506,
+        "median_primary_net_reward": 0.5415688217217922,
+        "median_turnover_efficiency": 0.7093623218670155,
+        "productive": 25,
+        "productive_efficiency": 0.2604166666666667,
+        "productive_given_admitted": 0.5555555555555556,
+        "productive_rate_wilson95": [
+          0.18305777843717663,
+          0.35621242556596444
+        ]
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 115,
+        "evaluated": 120,
+        "matched_credit_observations": 115,
+        "median_matched_cumulative_return_increment": 0.35605602589837027,
+        "median_matched_net_reward_increment": 1.7435430428273455,
+        "median_primary_cumulative_return": 0.41466406620424723,
+        "median_primary_net_reward": 2.1472864861160836,
+        "median_turnover_efficiency": 2.213465700385979,
+        "productive": 105,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.8039690855177497,
+          0.9227657111903032
+        ]
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.35833333333333334,
+        "admitted": 43,
+        "evaluated": 120,
+        "matched_credit_observations": 43,
+        "median_matched_cumulative_return_increment": -0.023388367312930702,
+        "median_matched_net_reward_increment": -0.13007265138293,
+        "median_primary_cumulative_return": -0.056816552628582206,
+        "median_primary_net_reward": 0.09227919802242951,
+        "median_turnover_efficiency": -0.21310483188895463,
+        "productive": 19,
+        "productive_efficiency": 0.15833333333333333,
+        "productive_given_admitted": 0.4418604651162791,
+        "productive_rate_wilson95": [
+          0.10376896007675636,
+          0.2340948918114622
+        ]
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.48333333333333334,
+        "admitted": 58,
+        "evaluated": 120,
+        "matched_credit_observations": 58,
+        "median_matched_cumulative_return_increment": 0.01914290223290005,
+        "median_matched_net_reward_increment": 0.7218986672757272,
+        "median_primary_cumulative_return": 0.014988641275210601,
+        "median_primary_net_reward": 0.2056015733490511,
+        "median_turnover_efficiency": 0.079887359197259,
+        "productive": 30,
+        "productive_efficiency": 0.25,
+        "productive_given_admitted": 0.5172413793103449,
+        "productive_rate_wilson95": [
+          0.1810971138452223,
+          0.33441302168274245
+        ]
+      }
+    },
+    "per_template_arm": {
+      "BASE_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.5729166666666666,
+        "admitted": 55,
+        "evaluated": 96,
+        "matched_credit_observations": 55,
+        "median_matched_cumulative_return_increment": 0.01677505165188542,
+        "median_matched_net_reward_increment": 0.907870902662773,
+        "median_primary_cumulative_return": 0.08308159708055851,
+        "median_primary_net_reward": 0.718222080375486,
+        "median_turnover_efficiency": 0.4489060659014044,
+        "productive": 31,
+        "productive_efficiency": 0.3229166666666667,
+        "productive_given_admitted": 0.5636363636363636,
+        "productive_rate_wilson95": [
+          0.23775702086652156,
+          0.4217035647010175
+        ]
+      },
+      "BASE_EVENT::UNIFORM_CONTROL": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 11,
+        "evaluated": 24,
+        "matched_credit_observations": 11,
+        "median_matched_cumulative_return_increment": -0.00845700427938878,
+        "median_matched_net_reward_increment": 0.5749146269686494,
+        "median_primary_cumulative_return": 0.05270313575785357,
+        "median_primary_net_reward": 0.44685459481096057,
+        "median_turnover_efficiency": 0.09733492811481091,
+        "productive": 4,
+        "productive_efficiency": 0.16666666666666666,
+        "productive_given_admitted": 0.36363636363636365,
+        "productive_rate_wilson95": [
+          0.06678568000728924,
+          0.3585347038786943
+        ]
+      },
+      "BASE_MARKET::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.5208333333333334,
+        "admitted": 50,
+        "evaluated": 96,
+        "matched_credit_observations": 50,
+        "median_matched_cumulative_return_increment": -0.09053241070760054,
+        "median_matched_net_reward_increment": -0.13720411944500688,
+        "median_primary_cumulative_return": 0.09105709806677642,
+        "median_primary_net_reward": 0.5415056508572565,
+        "median_turnover_efficiency": 0.6006357634101724,
+        "productive": 20,
+        "productive_efficiency": 0.20833333333333334,
+        "productive_given_admitted": 0.4,
+        "productive_rate_wilson95": [
+          0.13910723657424498,
+          0.30000431612523104
+        ]
+      },
+      "BASE_MARKET::UNIFORM_CONTROL": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 10,
+        "evaluated": 24,
+        "matched_credit_observations": 10,
+        "median_matched_cumulative_return_increment": -0.059886671637551014,
+        "median_matched_net_reward_increment": -0.19749557245203264,
+        "median_primary_cumulative_return": 0.04711913426773484,
+        "median_primary_net_reward": 0.39486717052487524,
+        "median_turnover_efficiency": 0.13126475590648023,
+        "productive": 3,
+        "productive_efficiency": 0.125,
+        "productive_given_admitted": 0.3,
+        "productive_rate_wilson95": [
+          0.04344255039315584,
+          0.3100428814785757
+        ]
+      },
+      "BASE_MARKET_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.8083333333333333,
+        "admitted": 97,
+        "evaluated": 120,
+        "matched_credit_observations": 97,
+        "median_matched_cumulative_return_increment": 0.14066062541041036,
+        "median_matched_net_reward_increment": 1.6162663929866348,
+        "median_primary_cumulative_return": 0.20747001673972854,
+        "median_primary_net_reward": 1.7794007767429965,
+        "median_turnover_efficiency": 1.2552475290475476,
+        "productive": 68,
+        "productive_efficiency": 0.5666666666666667,
+        "productive_given_admitted": 0.7010309278350515,
+        "productive_rate_wilson95": [
+          0.47729757992376215,
+          0.6518997172687806
+        ]
+      },
+      "BASE_TEMPORAL::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.46875,
+        "admitted": 45,
+        "evaluated": 96,
+        "matched_credit_observations": 45,
+        "median_matched_cumulative_return_increment": 0.02387159904257863,
+        "median_matched_net_reward_increment": 0.2483065490227082,
+        "median_primary_cumulative_return": 0.09456685370361506,
+        "median_primary_net_reward": 0.5415688217217922,
+        "median_turnover_efficiency": 0.7093623218670155,
+        "productive": 25,
+        "productive_efficiency": 0.2604166666666667,
+        "productive_given_admitted": 0.5555555555555556,
+        "productive_rate_wilson95": [
+          0.18305777843717663,
+          0.35621242556596444
+        ]
+      },
+      "BASE_TEMPORAL_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.96875,
+        "admitted": 93,
+        "evaluated": 96,
+        "matched_credit_observations": 93,
+        "median_matched_cumulative_return_increment": 0.32994923631875994,
+        "median_matched_net_reward_increment": 1.6999513028643611,
+        "median_primary_cumulative_return": 0.422325425684667,
+        "median_primary_net_reward": 2.1767308603010185,
+        "median_turnover_efficiency": 2.214151220250547,
+        "productive": 83,
+        "productive_efficiency": 0.8645833333333334,
+        "productive_given_admitted": 0.8924731182795699,
+        "productive_rate_wilson95": [
+          0.7819868570932831,
+          0.9191237020323721
+        ]
+      },
+      "BASE_TEMPORAL_EVENT::UNIFORM_CONTROL": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      },
+      "BASE_TEMPORAL_MARKET::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.3958333333333333,
+        "admitted": 38,
+        "evaluated": 96,
+        "matched_credit_observations": 38,
+        "median_matched_cumulative_return_increment": -0.0035190011284834677,
+        "median_matched_net_reward_increment": -0.0770001014317043,
+        "median_primary_cumulative_return": -0.04563797278468884,
+        "median_primary_net_reward": 0.14661470051865705,
+        "median_turnover_efficiency": -0.17639153316985992,
+        "productive": 18,
+        "productive_efficiency": 0.1875,
+        "productive_given_admitted": 0.47368421052631576,
+        "productive_rate_wilson95": [
+          0.12202372252361303,
+          0.2770243696543969
+        ]
+      },
+      "BASE_TEMPORAL_MARKET::UNIFORM_CONTROL": {
+        "admission_rate": 0.20833333333333334,
+        "admitted": 5,
+        "evaluated": 24,
+        "matched_credit_observations": 5,
+        "median_matched_cumulative_return_increment": -0.15516190202149915,
+        "median_matched_net_reward_increment": -0.4439430254688044,
+        "median_primary_cumulative_return": -0.11439853430078228,
+        "median_primary_net_reward": -0.11212269164482377,
+        "median_turnover_efficiency": -0.24370879844872317,
+        "productive": 1,
+        "productive_efficiency": 0.041666666666666664,
+        "productive_given_admitted": 0.2,
+        "productive_rate_wilson95": [
+          0.007393265354805126,
+          0.20242226248842232
+        ]
+      },
+      "BASE_TEMPORAL_MARKET_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.48333333333333334,
+        "admitted": 58,
+        "evaluated": 120,
+        "matched_credit_observations": 58,
+        "median_matched_cumulative_return_increment": 0.01914290223290005,
+        "median_matched_net_reward_increment": 0.7218986672757272,
+        "median_primary_cumulative_return": 0.014988641275210601,
+        "median_primary_net_reward": 0.2056015733490511,
+        "median_turnover_efficiency": 0.079887359197259,
+        "productive": 30,
+        "productive_efficiency": 0.25,
+        "productive_given_admitted": 0.5172413793103449,
+        "productive_rate_wilson95": [
+          0.1810971138452223,
+          0.33441302168274245
+        ]
+      }
+    },
+    "template_standardized_arm_comparison": {
+      "absolute_difference": 0.08333333333333337,
+      "evolution_template_standardized_productive_rate": 0.39583333333333337,
+      "relative_ratio": 1.2666666666666668,
+      "template_cells": [
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.3229166666666667,
+          "template": "BASE_EVENT",
+          "uniform_mix_weight": 0.25,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.16666666666666666
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.20833333333333334,
+          "template": "BASE_MARKET",
+          "uniform_mix_weight": 0.25,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.125
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.8645833333333334,
+          "template": "BASE_TEMPORAL_EVENT",
+          "uniform_mix_weight": 0.25,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.9166666666666666
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.1875,
+          "template": "BASE_TEMPORAL_MARKET",
+          "uniform_mix_weight": 0.25,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.041666666666666664
+        }
+      ],
+      "uniform_productive_rate": 0.3125
+    }
+  },
+  "inflight_checkpoints": [],
+  "interpretation_boundaries": [
+    "DEVELOPMENT_ONLY",
+    "NO_VALIDATION_HOLDOUT_FORWARD_READS",
+    "ADAPTIVE_SEARCH_ROWS_ARE_NOT_IID",
+    "ARM_RAW_RATE_IS_TEMPLATE_MIX_CONFOUNDED",
+    "FIRST_24_UNIFORM_ROWS_ARE_RETRY_REPLAY_NOT_NEW_DISCOVERY",
+    "NO_PROMOTION_OR_OOS_AUTHORITY"
+  ],
+  "prior_exact_count_loaded": 1310,
+  "prior_overlap_count_verified": 0,
+  "raw_metrics": {
+    "behavior_diversity_per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "behavior_duplicate_rate": 0.05277777777777778,
+        "behavior_duplicate_rows": 38,
+        "behavior_pair_observations": 677,
+        "evaluated": 720,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 250,
+        "unique_behavior_pairs": 639
+      },
+      "UNIFORM_CONTROL": {
+        "behavior_duplicate_rate": 0.016666666666666666,
+        "behavior_duplicate_rows": 2,
+        "behavior_pair_observations": 113,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 34,
+        "unique_behavior_pairs": 111
+      }
+    },
+    "behavior_diversity_per_template": {
+      "BASE_EVENT": {
+        "behavior_duplicate_rate": 0.058333333333333334,
+        "behavior_duplicate_rows": 7,
+        "behavior_pair_observations": 117,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 34,
+        "unique_behavior_pairs": 110
+      },
+      "BASE_MARKET": {
+        "behavior_duplicate_rate": 0.06666666666666667,
+        "behavior_duplicate_rows": 8,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 21,
+        "unique_behavior_pairs": 108
+      },
+      "BASE_MARKET_EVENT": {
+        "behavior_duplicate_rate": 0.10833333333333334,
+        "behavior_duplicate_rows": 13,
+        "behavior_pair_observations": 97,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 58,
+        "unique_behavior_pairs": 84
+      },
+      "BASE_TEMPORAL": {
+        "behavior_duplicate_rate": 0.016666666666666666,
+        "behavior_duplicate_rows": 2,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 30,
+        "unique_behavior_pairs": 114
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "behavior_duplicate_rate": 0.1,
+        "behavior_duplicate_rows": 12,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 93,
+        "unique_behavior_pairs": 104
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "behavior_duplicate_rate": 0.0,
+        "behavior_duplicate_rows": 0,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 1,
+        "productive_unique_behavior_pairs": 19,
+        "unique_behavior_pairs": 116
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "behavior_duplicate_rate": 0.03333333333333333,
+        "behavior_duplicate_rows": 4,
+        "behavior_pair_observations": 112,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 2,
+        "productive_unique_behavior_pairs": 29,
+        "unique_behavior_pairs": 108
+      }
+    },
+    "overall": {
+      "admission_rate": 0.5857142857142857,
+      "admitted": 492,
+      "evaluated": 840,
+      "matched_credit_observations": 492,
+      "median_matched_cumulative_return_increment": 0.11465492708862124,
+      "median_matched_net_reward_increment": 0.989739456585061,
+      "median_primary_cumulative_return": 0.10723776716371503,
+      "median_primary_net_reward": 0.6771404724696848,
+      "median_turnover_efficiency": 0.6428747381540137,
+      "productive": 310,
+      "productive_efficiency": 0.36904761904761907,
+      "productive_given_admitted": 0.6300813008130082,
+      "productive_rate_wilson95": [
+        0.33707977049227983,
+        0.40220779248162436
+      ]
+    },
+    "per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.6055555555555555,
+        "admitted": 436,
+        "evaluated": 720,
+        "matched_credit_observations": 436,
+        "median_matched_cumulative_return_increment": 0.11103306882205999,
+        "median_matched_net_reward_increment": 0.9626547543603534,
+        "median_primary_cumulative_return": 0.11145279421991194,
+        "median_primary_net_reward": 0.7372225637246723,
+        "median_turnover_efficiency": 0.6831499674363359,
+        "productive": 275,
+        "productive_efficiency": 0.3819444444444444,
+        "productive_given_admitted": 0.6307339449541285,
+        "productive_rate_wilson95": [
+          0.34716993981620253,
+          0.41797204704943197
+        ]
+      },
+      "UNIFORM_CONTROL": {
+        "admission_rate": 0.4666666666666667,
+        "admitted": 56,
+        "evaluated": 120,
+        "matched_credit_observations": 56,
+        "median_matched_cumulative_return_increment": 0.18015977534223937,
+        "median_matched_net_reward_increment": 1.175812609255647,
+        "median_primary_cumulative_return": 0.05316573013595649,
+        "median_primary_net_reward": 0.44685459481096057,
+        "median_turnover_efficiency": 0.18514611293808095,
+        "productive": 35,
+        "productive_efficiency": 0.2916666666666667,
+        "productive_given_admitted": 0.625,
+        "productive_rate_wilson95": [
+          0.21781442705981954,
+          0.3784440192134845
+        ]
+      }
+    },
+    "per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.55,
+        "admitted": 66,
+        "evaluated": 120,
+        "matched_credit_observations": 66,
+        "median_matched_cumulative_return_increment": 0.009446204746773046,
+        "median_matched_net_reward_increment": 0.8659111019083252,
+        "median_primary_cumulative_return": 0.08308159708055851,
+        "median_primary_net_reward": 0.6112204070774512,
+        "median_turnover_efficiency": 0.415938460380846,
+        "productive": 35,
+        "productive_efficiency": 0.2916666666666667,
+        "productive_given_admitted": 0.5303030303030303,
+        "productive_rate_wilson95": [
+          0.21781442705981954,
+          0.3784440192134845
+        ]
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 60,
+        "evaluated": 120,
+        "matched_credit_observations": 60,
+        "median_matched_cumulative_return_increment": -0.08831731383247454,
+        "median_matched_net_reward_increment": -0.14654567251851358,
+        "median_primary_cumulative_return": 0.08156537303625266,
+        "median_primary_net_reward": 0.5187759951674112,
+        "median_turnover_efficiency": 0.48165918691586684,
+        "productive": 23,
+        "productive_efficiency": 0.19166666666666668,
+        "productive_given_admitted": 0.38333333333333336,
+        "productive_rate_wilson95": [
+          0.13124933052612614,
+          0.2712131699583638
+        ]
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.8083333333333333,
+        "admitted": 97,
+        "evaluated": 120,
+        "matched_credit_observations": 97,
+        "median_matched_cumulative_return_increment": 0.14066062541041036,
+        "median_matched_net_reward_increment": 1.6162663929866348,
+        "median_primary_cumulative_return": 0.20747001673972854,
+        "median_primary_net_reward": 1.7794007767429965,
+        "median_turnover_efficiency": 1.2552475290475476,
+        "productive": 68,
+        "productive_efficiency": 0.5666666666666667,
+        "productive_given_admitted": 0.7010309278350515,
+        "productive_rate_wilson95": [
+          0.47729757992376215,
+          0.6518997172687806
+        ]
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.44166666666666665,
+        "admitted": 53,
+        "evaluated": 120,
+        "matched_credit_observations": 53,
+        "median_matched_cumulative_return_increment": 0.02387159904257863,
+        "median_matched_net_reward_increment": 0.2529708270353308,
+        "median_primary_cumulative_return": 0.06650089889844646,
+        "median_primary_net_reward": 0.42344762126164526,
+        "median_turnover_efficiency": 0.3656259657362452,
+        "productive": 30,
+        "productive_efficiency": 0.25,
+        "productive_given_admitted": 0.5660377358490566,
+        "productive_rate_wilson95": [
+          0.1810971138452223,
+          0.33441302168274245
+        ]
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 115,
+        "evaluated": 120,
+        "matched_credit_observations": 115,
+        "median_matched_cumulative_return_increment": 0.35605602589837027,
+        "median_matched_net_reward_increment": 1.7435430428273455,
+        "median_primary_cumulative_return": 0.41466406620424723,
+        "median_primary_net_reward": 2.1472864861160836,
+        "median_turnover_efficiency": 2.213465700385979,
+        "productive": 105,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.8039690855177497,
+          0.9227657111903032
+        ]
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.35833333333333334,
+        "admitted": 43,
+        "evaluated": 120,
+        "matched_credit_observations": 43,
+        "median_matched_cumulative_return_increment": -0.023388367312930702,
+        "median_matched_net_reward_increment": -0.13007265138293,
+        "median_primary_cumulative_return": -0.056816552628582206,
+        "median_primary_net_reward": 0.09227919802242951,
+        "median_turnover_efficiency": -0.21310483188895463,
+        "productive": 19,
+        "productive_efficiency": 0.15833333333333333,
+        "productive_given_admitted": 0.4418604651162791,
+        "productive_rate_wilson95": [
+          0.10376896007675636,
+          0.2340948918114622
+        ]
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.48333333333333334,
+        "admitted": 58,
+        "evaluated": 120,
+        "matched_credit_observations": 58,
+        "median_matched_cumulative_return_increment": 0.01914290223290005,
+        "median_matched_net_reward_increment": 0.7218986672757272,
+        "median_primary_cumulative_return": 0.014988641275210601,
+        "median_primary_net_reward": 0.2056015733490511,
+        "median_turnover_efficiency": 0.079887359197259,
+        "productive": 30,
+        "productive_efficiency": 0.25,
+        "productive_given_admitted": 0.5172413793103449,
+        "productive_rate_wilson95": [
+          0.1810971138452223,
+          0.33441302168274245
+        ]
+      }
+    },
+    "per_template_arm": {
+      "BASE_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.5729166666666666,
+        "admitted": 55,
+        "evaluated": 96,
+        "matched_credit_observations": 55,
+        "median_matched_cumulative_return_increment": 0.01677505165188542,
+        "median_matched_net_reward_increment": 0.907870902662773,
+        "median_primary_cumulative_return": 0.08308159708055851,
+        "median_primary_net_reward": 0.718222080375486,
+        "median_turnover_efficiency": 0.4489060659014044,
+        "productive": 31,
+        "productive_efficiency": 0.3229166666666667,
+        "productive_given_admitted": 0.5636363636363636,
+        "productive_rate_wilson95": [
+          0.23775702086652156,
+          0.4217035647010175
+        ]
+      },
+      "BASE_EVENT::UNIFORM_CONTROL": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 11,
+        "evaluated": 24,
+        "matched_credit_observations": 11,
+        "median_matched_cumulative_return_increment": -0.00845700427938878,
+        "median_matched_net_reward_increment": 0.5749146269686494,
+        "median_primary_cumulative_return": 0.05270313575785357,
+        "median_primary_net_reward": 0.44685459481096057,
+        "median_turnover_efficiency": 0.09733492811481091,
+        "productive": 4,
+        "productive_efficiency": 0.16666666666666666,
+        "productive_given_admitted": 0.36363636363636365,
+        "productive_rate_wilson95": [
+          0.06678568000728924,
+          0.3585347038786943
+        ]
+      },
+      "BASE_MARKET::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.5208333333333334,
+        "admitted": 50,
+        "evaluated": 96,
+        "matched_credit_observations": 50,
+        "median_matched_cumulative_return_increment": -0.09053241070760054,
+        "median_matched_net_reward_increment": -0.13720411944500688,
+        "median_primary_cumulative_return": 0.09105709806677642,
+        "median_primary_net_reward": 0.5415056508572565,
+        "median_turnover_efficiency": 0.6006357634101724,
+        "productive": 20,
+        "productive_efficiency": 0.20833333333333334,
+        "productive_given_admitted": 0.4,
+        "productive_rate_wilson95": [
+          0.13910723657424498,
+          0.30000431612523104
+        ]
+      },
+      "BASE_MARKET::UNIFORM_CONTROL": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 10,
+        "evaluated": 24,
+        "matched_credit_observations": 10,
+        "median_matched_cumulative_return_increment": -0.059886671637551014,
+        "median_matched_net_reward_increment": -0.19749557245203264,
+        "median_primary_cumulative_return": 0.04711913426773484,
+        "median_primary_net_reward": 0.39486717052487524,
+        "median_turnover_efficiency": 0.13126475590648023,
+        "productive": 3,
+        "productive_efficiency": 0.125,
+        "productive_given_admitted": 0.3,
+        "productive_rate_wilson95": [
+          0.04344255039315584,
+          0.3100428814785757
+        ]
+      },
+      "BASE_MARKET_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.8083333333333333,
+        "admitted": 97,
+        "evaluated": 120,
+        "matched_credit_observations": 97,
+        "median_matched_cumulative_return_increment": 0.14066062541041036,
+        "median_matched_net_reward_increment": 1.6162663929866348,
+        "median_primary_cumulative_return": 0.20747001673972854,
+        "median_primary_net_reward": 1.7794007767429965,
+        "median_turnover_efficiency": 1.2552475290475476,
+        "productive": 68,
+        "productive_efficiency": 0.5666666666666667,
+        "productive_given_admitted": 0.7010309278350515,
+        "productive_rate_wilson95": [
+          0.47729757992376215,
+          0.6518997172687806
+        ]
+      },
+      "BASE_TEMPORAL::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.46875,
+        "admitted": 45,
+        "evaluated": 96,
+        "matched_credit_observations": 45,
+        "median_matched_cumulative_return_increment": 0.02387159904257863,
+        "median_matched_net_reward_increment": 0.2483065490227082,
+        "median_primary_cumulative_return": 0.09456685370361506,
+        "median_primary_net_reward": 0.5415688217217922,
+        "median_turnover_efficiency": 0.7093623218670155,
+        "productive": 25,
+        "productive_efficiency": 0.2604166666666667,
+        "productive_given_admitted": 0.5555555555555556,
+        "productive_rate_wilson95": [
+          0.18305777843717663,
+          0.35621242556596444
+        ]
+      },
+      "BASE_TEMPORAL::UNIFORM_CONTROL": {
+        "admission_rate": 0.3333333333333333,
+        "admitted": 8,
+        "evaluated": 24,
+        "matched_credit_observations": 8,
+        "median_matched_cumulative_return_increment": 0.060024014968522554,
+        "median_matched_net_reward_increment": 0.2779397380825184,
+        "median_primary_cumulative_return": -0.07472212227803104,
+        "median_primary_net_reward": -0.06358149665408167,
+        "median_turnover_efficiency": -0.36409490708621883,
+        "productive": 5,
+        "productive_efficiency": 0.20833333333333334,
+        "productive_given_admitted": 0.625,
+        "productive_rate_wilson95": [
+          0.0924468910478809,
+          0.40470844485235474
+        ]
+      },
+      "BASE_TEMPORAL_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.96875,
+        "admitted": 93,
+        "evaluated": 96,
+        "matched_credit_observations": 93,
+        "median_matched_cumulative_return_increment": 0.32994923631875994,
+        "median_matched_net_reward_increment": 1.6999513028643611,
+        "median_primary_cumulative_return": 0.422325425684667,
+        "median_primary_net_reward": 2.1767308603010185,
+        "median_turnover_efficiency": 2.214151220250547,
+        "productive": 83,
+        "productive_efficiency": 0.8645833333333334,
+        "productive_given_admitted": 0.8924731182795699,
+        "productive_rate_wilson95": [
+          0.7819868570932831,
+          0.9191237020323721
+        ]
+      },
+      "BASE_TEMPORAL_EVENT::UNIFORM_CONTROL": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      },
+      "BASE_TEMPORAL_MARKET::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.3958333333333333,
+        "admitted": 38,
+        "evaluated": 96,
+        "matched_credit_observations": 38,
+        "median_matched_cumulative_return_increment": -0.0035190011284834677,
+        "median_matched_net_reward_increment": -0.0770001014317043,
+        "median_primary_cumulative_return": -0.04563797278468884,
+        "median_primary_net_reward": 0.14661470051865705,
+        "median_turnover_efficiency": -0.17639153316985992,
+        "productive": 18,
+        "productive_efficiency": 0.1875,
+        "productive_given_admitted": 0.47368421052631576,
+        "productive_rate_wilson95": [
+          0.12202372252361303,
+          0.2770243696543969
+        ]
+      },
+      "BASE_TEMPORAL_MARKET::UNIFORM_CONTROL": {
+        "admission_rate": 0.20833333333333334,
+        "admitted": 5,
+        "evaluated": 24,
+        "matched_credit_observations": 5,
+        "median_matched_cumulative_return_increment": -0.15516190202149915,
+        "median_matched_net_reward_increment": -0.4439430254688044,
+        "median_primary_cumulative_return": -0.11439853430078228,
+        "median_primary_net_reward": -0.11212269164482377,
+        "median_turnover_efficiency": -0.24370879844872317,
+        "productive": 1,
+        "productive_efficiency": 0.041666666666666664,
+        "productive_given_admitted": 0.2,
+        "productive_rate_wilson95": [
+          0.007393265354805126,
+          0.20242226248842232
+        ]
+      },
+      "BASE_TEMPORAL_MARKET_EVENT::CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.48333333333333334,
+        "admitted": 58,
+        "evaluated": 120,
+        "matched_credit_observations": 58,
+        "median_matched_cumulative_return_increment": 0.01914290223290005,
+        "median_matched_net_reward_increment": 0.7218986672757272,
+        "median_primary_cumulative_return": 0.014988641275210601,
+        "median_primary_net_reward": 0.2056015733490511,
+        "median_turnover_efficiency": 0.079887359197259,
+        "productive": 30,
+        "productive_efficiency": 0.25,
+        "productive_given_admitted": 0.5172413793103449,
+        "productive_rate_wilson95": [
+          0.1810971138452223,
+          0.33441302168274245
+        ]
+      }
+    },
+    "template_standardized_arm_comparison": {
+      "absolute_difference": 0.07708333333333334,
+      "evolution_template_standardized_productive_rate": 0.36875,
+      "relative_ratio": 1.2642857142857142,
+      "template_cells": [
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.3229166666666667,
+          "template": "BASE_EVENT",
+          "uniform_mix_weight": 0.2,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.16666666666666666
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.20833333333333334,
+          "template": "BASE_MARKET",
+          "uniform_mix_weight": 0.2,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.125
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.2604166666666667,
+          "template": "BASE_TEMPORAL",
+          "uniform_mix_weight": 0.2,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.20833333333333334
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.8645833333333334,
+          "template": "BASE_TEMPORAL_EVENT",
+          "uniform_mix_weight": 0.2,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.9166666666666666
+        },
+        {
+          "evolution_n": 96,
+          "evolution_productive_rate": 0.1875,
+          "template": "BASE_TEMPORAL_MARKET",
+          "uniform_mix_weight": 0.2,
+          "uniform_n": 24,
+          "uniform_productive_rate": 0.041666666666666664
+        }
+      ],
+      "uniform_productive_rate": 0.2916666666666667
+    }
+  },
+  "repo_sha": "5b58c29f4839243463a617d881fa6f18bf25d9c8",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "retry_replay": {
+    "cross_run_exact_overlap_count": 24,
+    "cross_run_fresh_unique_behavior_pairs": 716,
+    "current_unique_behavior_pairs": 740,
+    "expected_overlap_count": 24,
+    "old_failed_run": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_large_fresh_v2_resource_retry_20260819_4c3034d",
+    "old_retry_replay_unique_behavior_pairs": 24,
+    "outcome_mismatch_count": 0,
+    "outcome_mismatches": [],
+    "replay_metrics": {
+      "admission_rate": 0.3333333333333333,
+      "admitted": 8,
+      "evaluated": 24,
+      "matched_credit_observations": 8,
+      "median_matched_cumulative_return_increment": 0.060024014968522554,
+      "median_matched_net_reward_increment": 0.2779397380825184,
+      "median_primary_cumulative_return": -0.07472212227803104,
+      "median_primary_net_reward": -0.06358149665408167,
+      "median_turnover_efficiency": -0.36409490708621883,
+      "productive": 5,
+      "productive_efficiency": 0.20833333333333334,
+      "productive_given_admitted": 0.625,
+      "productive_rate_wilson95": [
+        0.0924468910478809,
+        0.40470844485235474
+      ]
+    },
+    "true_fresh_exact_count": 816,
+    "true_fresh_metrics": {
+      "admission_rate": 0.5931372549019608,
+      "admitted": 484,
+      "evaluated": 816,
+      "matched_credit_observations": 484,
+      "median_matched_cumulative_return_increment": 0.11465492708862124,
+      "median_matched_net_reward_increment": 0.9957547110860643,
+      "median_primary_cumulative_return": 0.11035433627591185,
+      "median_primary_net_reward": 0.7101062929742286,
+      "median_turnover_efficiency": 0.6486712076000364,
+      "productive": 305,
+      "productive_efficiency": 0.3737745098039216,
+      "productive_given_admitted": 0.6301652892561983,
+      "productive_rate_wilson95": [
+        0.34124290703262095,
+        0.4074890431392172
+      ]
+    }
+  },
+  "schema_version": "cn_program_optimizer_large_fresh_v2_retry_independent_audit_v1",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "temporal_event_deep_dive": {
+    "behavior_diversity": {
+      "BASE_TEMPORAL_EVENT": {
+        "behavior_duplicate_rate": 0.1,
+        "behavior_duplicate_rows": 12,
+        "behavior_pair_observations": 116,
+        "evaluated": 120,
+        "maximum_behavior_pair_multiplicity": 3,
+        "productive_unique_behavior_pairs": 93,
+        "unique_behavior_pairs": 104
+      }
+    },
+    "combination_policy_count": 8,
+    "combination_policy_frequencies": {
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"ADD\"}": 34,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MAX\"}": 6,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MIN\"}": 20,
+      "{\"event_application\":\"FILTER\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"SUBTRACT\"}": 15,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"ADD\"}": 11,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MAX\"}": 6,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"MIN\"}": 12,
+      "{\"event_application\":\"GATE\",\"event_episode\":\"SOURCE_ROUTE_EPISODE\",\"market\":\"FILTER\",\"temporal\":\"SUBTRACT\"}": 16
+    },
+    "component_concentration": {
+      "base": {
+        "maximum_component_exposure": 4,
+        "maximum_component_share": 0.03333333333333333,
+        "productive_unique_component_ids": 31,
+        "top_components": [
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "05cdc6fc379c146aa5770a7ceab56d904eca464ff7601d787f4f691d1ad1d45f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.04815832042234236,
+            "median_matched_net_reward_increment": 0.5999950656966614,
+            "median_primary_cumulative_return": 0.30740638274296916,
+            "median_primary_net_reward": 1.605291870396604,
+            "median_turnover_efficiency": 1.656030802643116,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "0fd237ce442758d6de8c81a8475def169044c1a8ca4d96bd4e6ee73b1507403f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": -0.3972323420349464,
+            "median_matched_net_reward_increment": -1.6269644978737807,
+            "median_primary_cumulative_return": 0.1843780479779631,
+            "median_primary_net_reward": 1.2169190236785086,
+            "median_turnover_efficiency": 1.066882542787646,
+            "productive": 1,
+            "productive_efficiency": 0.25,
+            "productive_given_admitted": 0.25,
+            "productive_rate_wilson95": [
+              0.045586062644636216,
+              0.6993639475573634
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "3396a3338b7185cafb38dba6feb38cd7be7c57a6a6a4acaaf9f46dcdc7fb82af",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.2912170558989785,
+            "median_matched_net_reward_increment": 1.4362565602689519,
+            "median_primary_cumulative_return": 0.4000820702559177,
+            "median_primary_net_reward": 2.093817925954433,
+            "median_turnover_efficiency": 2.247582282164193,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 0.75,
+            "admitted": 3,
+            "component_id": "3fc4f5d4bf768b48493f5fc0432073eda917ebf5d0d539d7c9b7761d4d0cf620",
+            "evaluated": 4,
+            "matched_credit_observations": 3,
+            "median_matched_cumulative_return_increment": 0.9722055537346999,
+            "median_matched_net_reward_increment": 3.6604546652742243,
+            "median_primary_cumulative_return": 0.14767102548430733,
+            "median_primary_net_reward": 0.8040602634474883,
+            "median_turnover_efficiency": 0.5565778611532944,
+            "productive": 3,
+            "productive_efficiency": 0.75,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.3006360524426366,
+              0.9544139373553637
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "4eef1bc967211af46f7cc3683e861c81036ef818b154542fc87ab50a11029179",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 1.0793298390548485,
+            "median_matched_net_reward_increment": 4.077456686841058,
+            "median_primary_cumulative_return": 0.24663429924309688,
+            "median_primary_net_reward": 1.254644452710203,
+            "median_turnover_efficiency": 1.3156710605456838,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "5619393354e925109774d51f50fed43c4f5517cd68fa92a0ef28949264ec635f",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.2855105451514398,
+            "median_matched_net_reward_increment": 1.7487763756194368,
+            "median_primary_cumulative_return": 0.596489034916481,
+            "median_primary_net_reward": 2.724356507348156,
+            "median_turnover_efficiency": 3.851911678870131,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "5a04a81b83ae588d568b523f540ef3609992439d62da2fefc580398a8c62144e",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": -0.3218383446952334,
+            "median_matched_net_reward_increment": -1.288884136382849,
+            "median_primary_cumulative_return": 0.16417293827449642,
+            "median_primary_net_reward": 1.131706164309822,
+            "median_turnover_efficiency": 0.9619342582632227,
+            "productive": 1,
+            "productive_efficiency": 0.25,
+            "productive_given_admitted": 0.25,
+            "productive_rate_wilson95": [
+              0.045586062644636216,
+              0.6993639475573634
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "762a17f592b8c9c0e479255d8d3b5163429df0599d523dfc0d96710f51d761e4",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.42489155288731983,
+            "median_matched_net_reward_increment": 1.9855904089180652,
+            "median_primary_cumulative_return": 0.8666736069636447,
+            "median_primary_net_reward": 3.190763196577773,
+            "median_turnover_efficiency": 6.474817946502335,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          }
+        ],
+        "unique_component_ids": 32
+      },
+      "event": {
+        "maximum_component_exposure": 120,
+        "maximum_component_share": 1.0,
+        "productive_unique_component_ids": 1,
+        "top_components": [
+          {
+            "admission_rate": 0.9583333333333334,
+            "admitted": 115,
+            "component_id": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+            "evaluated": 120,
+            "matched_credit_observations": 115,
+            "median_matched_cumulative_return_increment": 0.35605602589837027,
+            "median_matched_net_reward_increment": 1.7435430428273455,
+            "median_primary_cumulative_return": 0.41466406620424723,
+            "median_primary_net_reward": 2.1472864861160836,
+            "median_turnover_efficiency": 2.213465700385979,
+            "productive": 105,
+            "productive_efficiency": 0.875,
+            "productive_given_admitted": 0.9130434782608695,
+            "productive_rate_wilson95": [
+              0.8039690855177497,
+              0.9227657111903032
+            ]
+          }
+        ],
+        "unique_component_ids": 1
+      },
+      "temporal": {
+        "maximum_component_exposure": 69,
+        "maximum_component_share": 0.575,
+        "productive_unique_component_ids": 3,
+        "top_components": [
+          {
+            "admission_rate": 0.9710144927536232,
+            "admitted": 67,
+            "component_id": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d",
+            "evaluated": 69,
+            "matched_credit_observations": 67,
+            "median_matched_cumulative_return_increment": 0.26526656056310394,
+            "median_matched_net_reward_increment": 1.4873918778079909,
+            "median_primary_cumulative_return": 0.3553894365414918,
+            "median_primary_net_reward": 1.7770808662614346,
+            "median_turnover_efficiency": 1.8292109585152148,
+            "productive": 57,
+            "productive_efficiency": 0.8260869565217391,
+            "productive_given_admitted": 0.8507462686567164,
+            "productive_rate_wilson95": [
+              0.7201615375755637,
+              0.89761731406965
+            ]
+          },
+          {
+            "admission_rate": 0.9361702127659575,
+            "admitted": 44,
+            "component_id": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3",
+            "evaluated": 47,
+            "matched_credit_observations": 44,
+            "median_matched_cumulative_return_increment": 0.5860559344677987,
+            "median_matched_net_reward_increment": 2.413828354167597,
+            "median_primary_cumulative_return": 0.6553623788715792,
+            "median_primary_net_reward": 2.9115933581703195,
+            "median_turnover_efficiency": 4.291803406363599,
+            "productive": 44,
+            "productive_efficiency": 0.9361702127659575,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.828371220656221,
+              0.9780550129792271
+            ]
+          },
+          {
+            "admission_rate": 1.0,
+            "admitted": 4,
+            "component_id": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c",
+            "evaluated": 4,
+            "matched_credit_observations": 4,
+            "median_matched_cumulative_return_increment": 0.6161487963457997,
+            "median_matched_net_reward_increment": 2.2539334969535756,
+            "median_primary_cumulative_return": 0.5000438798943928,
+            "median_primary_net_reward": 2.2115027320147487,
+            "median_turnover_efficiency": 4.247421386776793,
+            "productive": 4,
+            "productive_efficiency": 1.0,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.5100999795960008,
+              1
+            ]
+          }
+        ],
+        "unique_component_ids": 3
+      }
+    },
+    "fresh": {
+      "admission_rate": 0.9583333333333334,
+      "admitted": 115,
+      "evaluated": 120,
+      "matched_credit_observations": 115,
+      "median_matched_cumulative_return_increment": 0.35605602589837027,
+      "median_matched_net_reward_increment": 1.7435430428273455,
+      "median_primary_cumulative_return": 0.41466406620424723,
+      "median_primary_net_reward": 2.1472864861160836,
+      "median_turnover_efficiency": 2.213465700385979,
+      "productive": 105,
+      "productive_efficiency": 0.875,
+      "productive_given_admitted": 0.9130434782608695,
+      "productive_rate_wilson95": [
+        0.8039690855177497,
+        0.9227657111903032
+      ]
+    },
+    "per_arm": {
+      "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+        "admission_rate": 0.96875,
+        "admitted": 93,
+        "evaluated": 96,
+        "matched_credit_observations": 93,
+        "median_matched_cumulative_return_increment": 0.32994923631875994,
+        "median_matched_net_reward_increment": 1.6999513028643611,
+        "median_primary_cumulative_return": 0.422325425684667,
+        "median_primary_net_reward": 2.1767308603010185,
+        "median_turnover_efficiency": 2.214151220250547,
+        "productive": 83,
+        "productive_efficiency": 0.8645833333333334,
+        "productive_given_admitted": 0.8924731182795699,
+        "productive_rate_wilson95": [
+          0.7819868570932831,
+          0.9191237020323721
+        ]
+      },
+      "UNIFORM_CONTROL": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      }
+    },
+    "per_macro": {
+      "0": {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 23,
+        "evaluated": 24,
+        "matched_credit_observations": 23,
+        "median_matched_cumulative_return_increment": 0.2799772075942901,
+        "median_matched_net_reward_increment": 1.4873918778079909,
+        "median_primary_cumulative_return": 0.38531749715083974,
+        "median_primary_net_reward": 2.006825941035442,
+        "median_turnover_efficiency": 1.8971057016167825,
+        "productive": 21,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.6899571185214243,
+          0.9565574496068442
+        ]
+      },
+      "1": {
+        "admission_rate": 1.0,
+        "admitted": 24,
+        "evaluated": 24,
+        "matched_credit_observations": 24,
+        "median_matched_cumulative_return_increment": 0.3837633807934931,
+        "median_matched_net_reward_increment": 1.662348512740301,
+        "median_primary_cumulative_return": 0.40221361462608374,
+        "median_primary_net_reward": 2.1632907158611743,
+        "median_turnover_efficiency": 2.1126241267487,
+        "productive": 23,
+        "productive_efficiency": 0.9583333333333334,
+        "productive_given_admitted": 0.9583333333333334,
+        "productive_rate_wilson95": [
+          0.7975777375115778,
+          0.992606734645195
+        ]
+      },
+      "2": {
+        "admission_rate": 1.0,
+        "admitted": 24,
+        "evaluated": 24,
+        "matched_credit_observations": 24,
+        "median_matched_cumulative_return_increment": 0.4022159758524322,
+        "median_matched_net_reward_increment": 2.044567260631469,
+        "median_primary_cumulative_return": 0.5104768244959222,
+        "median_primary_net_reward": 2.268321845261274,
+        "median_turnover_efficiency": 3.4502517261829904,
+        "productive": 20,
+        "productive_efficiency": 0.8333333333333334,
+        "productive_given_admitted": 0.8333333333333334,
+        "productive_rate_wilson95": [
+          0.6414652961213058,
+          0.9332143199927109
+        ]
+      },
+      "3": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.43200430436645054,
+        "median_matched_net_reward_increment": 2.0634595436816254,
+        "median_primary_cumulative_return": 0.4661974066093657,
+        "median_primary_net_reward": 2.2430239706935162,
+        "median_turnover_efficiency": 2.3376951778073347,
+        "productive": 19,
+        "productive_efficiency": 0.7916666666666666,
+        "productive_given_admitted": 0.8636363636363636,
+        "productive_rate_wilson95": [
+          0.5952915551476452,
+          0.9075531089521192
+        ]
+      },
+      "4": {
+        "admission_rate": 0.9166666666666666,
+        "admitted": 22,
+        "evaluated": 24,
+        "matched_credit_observations": 22,
+        "median_matched_cumulative_return_increment": 0.4540142194910771,
+        "median_matched_net_reward_increment": 1.8561755345415547,
+        "median_primary_cumulative_return": 0.3825233440433452,
+        "median_primary_net_reward": 2.0180160402687317,
+        "median_turnover_efficiency": 2.1460020892660787,
+        "productive": 22,
+        "productive_efficiency": 0.9166666666666666,
+        "productive_given_admitted": 1.0,
+        "productive_rate_wilson95": [
+          0.741507847985494,
+          0.9768416721570266
+        ]
+      }
+    },
+    "raw": {
+      "admission_rate": 0.9583333333333334,
+      "admitted": 115,
+      "evaluated": 120,
+      "matched_credit_observations": 115,
+      "median_matched_cumulative_return_increment": 0.35605602589837027,
+      "median_matched_net_reward_increment": 1.7435430428273455,
+      "median_primary_cumulative_return": 0.41466406620424723,
+      "median_primary_net_reward": 2.1472864861160836,
+      "median_turnover_efficiency": 2.213465700385979,
+      "productive": 105,
+      "productive_efficiency": 0.875,
+      "productive_given_admitted": 0.9130434782608695,
+      "productive_rate_wilson95": [
+        0.8039690855177497,
+        0.9227657111903032
+      ]
+    },
+    "top_route_signatures": [
+      {
+        "admission_rate": 0.9583333333333334,
+        "admitted": 115,
+        "evaluated": 120,
+        "matched_credit_observations": 115,
+        "median_matched_cumulative_return_increment": 0.35605602589837027,
+        "median_matched_net_reward_increment": 1.7435430428273455,
+        "median_primary_cumulative_return": 0.41466406620424723,
+        "median_primary_net_reward": 2.1472864861160836,
+        "median_turnover_efficiency": 2.213465700385979,
+        "productive": 105,
+        "productive_efficiency": 0.875,
+        "productive_given_admitted": 0.9130434782608695,
+        "productive_rate_wilson95": [
+          0.8039690855177497,
+          0.9227657111903032
+        ],
+        "route_signature": "base=SLOW_CROSS_SECTIONAL_LEVEL|event=DISCLOSURE_EVENT|temporal=SLOW_TEMPORAL_CHANGE"
+      }
+    ]
+  },
+  "unique_current_exact_count": 840
+}

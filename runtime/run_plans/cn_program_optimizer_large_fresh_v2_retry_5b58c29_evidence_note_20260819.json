@@ -1,0 +1,188 @@
+{
+  "claims": [
+    {
+      "claim": "FORMAL_RETRY_COMPLETED",
+      "evidence": {
+        "checkpoint_count": 35,
+        "evaluated": 840,
+        "stop_reason": "HARD_CAP_REACHED"
+      }
+    },
+    {
+      "claim": "TRUE_FRESH_COUNT_EXCLUDES_4C_RETRY_REPLAY",
+      "evidence": {
+        "cross_run_overlap": 24,
+        "replay_outcome_mismatches": 0,
+        "true_fresh_exact_count": 816
+      }
+    },
+    {
+      "claim": "EVOLUTION_ADVANTAGE_REQUIRES_TEMPLATE_STANDARDIZATION",
+      "evidence": {
+        "absolute_difference": 0.08333333333333337,
+        "evolution_template_standardized_productive_rate": 0.39583333333333337,
+        "relative_ratio": 1.2666666666666668,
+        "template_cells": [
+          {
+            "evolution_n": 96,
+            "evolution_productive_rate": 0.3229166666666667,
+            "template": "BASE_EVENT",
+            "uniform_mix_weight": 0.25,
+            "uniform_n": 24,
+            "uniform_productive_rate": 0.16666666666666666
+          },
+          {
+            "evolution_n": 96,
+            "evolution_productive_rate": 0.20833333333333334,
+            "template": "BASE_MARKET",
+            "uniform_mix_weight": 0.25,
+            "uniform_n": 24,
+            "uniform_productive_rate": 0.125
+          },
+          {
+            "evolution_n": 96,
+            "evolution_productive_rate": 0.8645833333333334,
+            "template": "BASE_TEMPORAL_EVENT",
+            "uniform_mix_weight": 0.25,
+            "uniform_n": 24,
+            "uniform_productive_rate": 0.9166666666666666
+          },
+          {
+            "evolution_n": 96,
+            "evolution_productive_rate": 0.1875,
+            "template": "BASE_TEMPORAL_MARKET",
+            "uniform_mix_weight": 0.25,
+            "uniform_n": 24,
+            "uniform_productive_rate": 0.041666666666666664
+          }
+        ],
+        "uniform_productive_rate": 0.3125
+      }
+    },
+    {
+      "claim": "TEMPORAL_EVENT_STRENGTH_IS_DECOMPOSED_NOT_JUST_AGGREGATE",
+      "evidence": {
+        "behavior_diversity": {
+          "BASE_TEMPORAL_EVENT": {
+            "behavior_duplicate_rate": 0.1,
+            "behavior_duplicate_rows": 12,
+            "behavior_pair_observations": 116,
+            "evaluated": 120,
+            "maximum_behavior_pair_multiplicity": 3,
+            "productive_unique_behavior_pairs": 93,
+            "unique_behavior_pairs": 104
+          }
+        },
+        "per_arm": {
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+            "admission_rate": 0.96875,
+            "admitted": 93,
+            "evaluated": 96,
+            "matched_credit_observations": 93,
+            "median_matched_cumulative_return_increment": 0.32994923631875994,
+            "median_matched_net_reward_increment": 1.6999513028643611,
+            "median_primary_cumulative_return": 0.422325425684667,
+            "median_primary_net_reward": 2.1767308603010185,
+            "median_turnover_efficiency": 2.214151220250547,
+            "productive": 83,
+            "productive_efficiency": 0.8645833333333334,
+            "productive_given_admitted": 0.8924731182795699,
+            "productive_rate_wilson95": [
+              0.7819868570932831,
+              0.9191237020323721
+            ]
+          },
+          "UNIFORM_CONTROL": {
+            "admission_rate": 0.9166666666666666,
+            "admitted": 22,
+            "evaluated": 24,
+            "matched_credit_observations": 22,
+            "median_matched_cumulative_return_increment": 0.4540142194910771,
+            "median_matched_net_reward_increment": 1.8561755345415547,
+            "median_primary_cumulative_return": 0.3825233440433452,
+            "median_primary_net_reward": 2.0180160402687317,
+            "median_turnover_efficiency": 2.1460020892660787,
+            "productive": 22,
+            "productive_efficiency": 0.9166666666666666,
+            "productive_given_admitted": 1.0,
+            "productive_rate_wilson95": [
+              0.741507847985494,
+              0.9768416721570266
+            ]
+          }
+        },
+        "raw": {
+          "admission_rate": 0.9583333333333334,
+          "admitted": 115,
+          "evaluated": 120,
+          "matched_credit_observations": 115,
+          "median_matched_cumulative_return_increment": 0.35605602589837027,
+          "median_matched_net_reward_increment": 1.7435430428273455,
+          "median_primary_cumulative_return": 0.41466406620424723,
+          "median_primary_net_reward": 2.1472864861160836,
+          "median_turnover_efficiency": 2.213465700385979,
+          "productive": 105,
+          "productive_efficiency": 0.875,
+          "productive_given_admitted": 0.9130434782608695,
+          "productive_rate_wilson95": [
+            0.8039690855177497,
+            0.9227657111903032
+          ]
+        }
+      }
+    }
+  ],
+  "evidence_note_payload_sha256": "b6d9c9040e6baf16da95f327962e078683fc3298a6d884236098540c00dc2ece",
+  "forbidden_inferences": [
+    "No OOS or promotion claim",
+    "No iid p-value interpretation for adaptive rows",
+    "Do not count first 24 Uniform retry replay rows as new discoveries"
+  ],
+  "mechanism_interpretation": {
+    "base_maximum_component_share": 0.03333333333333333,
+    "base_unique_component_ids": 32,
+    "canonical_expression": "FirstHit($fund_disclosure_balance_pulse,20)",
+    "control_canonical_expression": "TimeSince($fund_disclosure_balance_pulse)",
+    "event_component_exact_identity": "d692016e07c0d0ee562a9bd9c060c3c9a6efb7454c1b0803710baf82d0aff2bc",
+    "event_component_exposure_count_in_large_fresh": 120,
+    "event_component_productive_count_in_large_fresh": 105,
+    "event_component_route_id": "DISCLOSURE_EVENT",
+    "event_component_skeleton_id": "cn.comp.v2.disclosure_event.event_first_hit",
+    "evolution_evaluated_count": 96,
+    "evolution_productive_count": 83,
+    "interpretation": "The 87.5% template yield is primarily a disclosure-timing event-core effect shared by both arms, not an Evolution-only effect. Base variation is broad; temporal variation is narrow and should be expanded before claiming a broad event-family mechanism.",
+    "mechanism_summary": "Disclosure first-hit timing is the invariant event core; performance remains high across 32 broad base components and three fundamental temporal-state components. This supports a disclosure-timing-conditioned-fundamental-state mechanism hypothesis, but the single event component means the broader DISCLOSURE_EVENT family is not yet established.",
+    "source_family": "canonical_fundamental_disclosure_timing_staleness",
+    "template_id": "BASE_TEMPORAL_EVENT",
+    "temporal_components": [
+      {
+        "canonical_expression": "CSRank(Sub(ZScore(Delta($fund_pr_deduct_parent_netprofit_slope,2)),ZScore(Delta($fund_pr_deduct_parent_netprofit_slope,10))))",
+        "evaluated": 69,
+        "exact_identity": "3a9582891c6e6b4af723bd5278c5068d486b2757364e96e18aac8ed1b711023d",
+        "financial_hypothesis": "short and long change horizons diverge",
+        "productive": 57
+      },
+      {
+        "canonical_expression": "CSRank(Mul(ZScore(Delta($fund_pr_parent_netprofit_source_yoy,5)),ZScore(Delta($fund_ca_netcash_finance_acceleration,5))))",
+        "evaluated": 47,
+        "exact_identity": "39ee8374404ecbc4fa5eb7f0654789172e5456a34373d5ba9be63f2a1d3477a3",
+        "financial_hypothesis": "changes from independent fundamental families interact",
+        "productive": 44
+      },
+      {
+        "canonical_expression": "CSRank(Mul(ZScore($fund_ba_total_current_assets_source_yoy),ZScore($ctx_hfq_pb)))",
+        "evaluated": 4,
+        "exact_identity": "52dd8507eba1578fc64681e44bd8e146956813746f3b1dec66db158669f7906c",
+        "financial_hypothesis": "fundamental change has different meaning conditional on valuation level",
+        "productive": 4
+      }
+    ],
+    "temporal_maximum_component_share": 0.575,
+    "temporal_unique_component_ids": 3,
+    "uniform_evaluated_count": 24,
+    "uniform_productive_count": 22
+  },
+  "repo_sha": "5b58c29f4839243463a617d881fa6f18bf25d9c8",
+  "schema_version": "cn_program_optimizer_large_fresh_v2_retry_evidence_note_v1",
+  "status": "EVIDENCE_NOTE_FROZEN"
+}
