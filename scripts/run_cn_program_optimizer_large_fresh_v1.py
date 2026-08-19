@@ -59,6 +59,7 @@ MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 RESOURCE_CANARY_FIELD_COLUMNS: tuple[str, ...] | None = None
 RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL = True
 RESOURCE_CANARY_PROBE_SECONDS = 1.0
+RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT = False
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -119,6 +120,84 @@ def _ask_rows(*, macro_index: int, template_index: int, checkpoint_ordinal: int,
     return output
 
 
+def _preview_first_checkpoint_field_columns(
+    authority: Mapping[str, Any],
+    bandit: ProgramOptimizerTournamentV1,
+) -> tuple[str, ...]:
+    before = bandit.snapshot()
+    preview_state = engine._selection_state()
+    arm = _checkpoint_arm(0, 0)
+    asks = _ask_rows(
+        macro_index=0,
+        template_index=0,
+        checkpoint_ordinal=0,
+        start_ordinal=0,
+        arm=arm,
+    )
+    schedules, _ = tournament._select_checkpoint(
+        asks,
+        catalog=authority["catalog"],
+        bandit=bandit,
+        state=preview_state,
+        components_by_id=authority["components_by_id"],
+        adapter=authority["adapter"],
+        compiler=authority["compiler"],
+        prior_exact_identities=tuple(map(str, authority["prior_ids"])),
+    )
+    if bandit.snapshot() != before:
+        raise RuntimeError("LARGE_FRESH_RESOURCE_PREVIEW_MUTATED_OPTIMIZER")
+    if len(schedules) != CHECKPOINT_BATCH_SIZE:
+        raise RuntimeError("LARGE_FRESH_RESOURCE_PREVIEW_SCHEDULE_CARDINALITY_DRIFT")
+    return engine._checkpoint_field_columns(schedules)
+
+
+def _resource_canary_field_plan(
+    authority: Mapping[str, Any],
+    bandit: ProgramOptimizerTournamentV1,
+) -> tuple[tuple[str, ...] | None, dict[str, Any]]:
+    historical = tuple(sorted(map(str, RESOURCE_CANARY_FIELD_COLUMNS or ())))
+    if not RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT:
+        return RESOURCE_CANARY_FIELD_COLUMNS, {
+            "mode": "STATIC_OR_FULL_FIELD_LEGACY",
+            "historical_field_columns": list(historical),
+            "historical_field_column_count": len(historical),
+            "historical_field_columns_sha256": stable_hash(list(historical)),
+            "preview_field_columns": [],
+            "preview_field_column_count": 0,
+            "preview_field_columns_sha256": stable_hash([]),
+            "effective_field_columns": (
+                None if RESOURCE_CANARY_FIELD_COLUMNS is None else list(historical)
+            ),
+            "effective_field_column_count": (
+                None if RESOURCE_CANARY_FIELD_COLUMNS is None else len(historical)
+            ),
+            "effective_field_columns_sha256": (
+                None
+                if RESOURCE_CANARY_FIELD_COLUMNS is None
+                else stable_hash(list(historical))
+            ),
+            "candidate_evaluation_executed": False,
+        }
+
+    preview = tuple(sorted(_preview_first_checkpoint_field_columns(authority, bandit)))
+    effective = tuple(sorted(set(historical).union(preview)))
+    if not effective:
+        raise RuntimeError("LARGE_FRESH_RESOURCE_PREVIEW_FIELD_SET_EMPTY")
+    return effective, {
+        "mode": "FIRST_CHECKPOINT_PREVIEW_UNION_HISTORICAL_MAX",
+        "historical_field_columns": list(historical),
+        "historical_field_column_count": len(historical),
+        "historical_field_columns_sha256": stable_hash(list(historical)),
+        "preview_field_columns": list(preview),
+        "preview_field_column_count": len(preview),
+        "preview_field_columns_sha256": stable_hash(list(preview)),
+        "effective_field_columns": list(effective),
+        "effective_field_column_count": len(effective),
+        "effective_field_columns_sha256": stable_hash(list(effective)),
+        "candidate_evaluation_executed": False,
+    }
+
+
 def _resource_probe(delay: float) -> dict[str, int]:
     time.sleep(float(delay))
     process = psutil.Process()
@@ -136,7 +215,12 @@ def _resource_probe(delay: float) -> dict[str, int]:
     }
 
 
-def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int) -> dict[str, Any]:
+def _resource_canary(
+    authority: Mapping[str, Any],
+    input_hash: str,
+    workers: int,
+    field_columns: tuple[str, ...] | None,
+) -> dict[str, Any]:
     before_children = {child.pid for child in psutil.Process().children(recursive=True)}
     before = engine._runtime_resource_snapshot()
     engine._require_runtime_resource_safety(before)
@@ -151,7 +235,7 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
         authority["windows"],
         authority["field_manifest_file_sha"],
         authority["field_manifest_payload_sha"],
-        RESOURCE_CANARY_FIELD_COLUMNS,
+        field_columns,
     )
     results: list[dict[str, int]] = []
     started = time.perf_counter()
@@ -225,16 +309,8 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
         "status": "PASS_ZERO_CANDIDATE_EVALUATION_RESOURCE_CANARY",
         "requested_workers": int(workers),
         "distinct_worker_pids": pids,
-        "field_columns": (
-            None
-            if RESOURCE_CANARY_FIELD_COLUMNS is None
-            else list(RESOURCE_CANARY_FIELD_COLUMNS)
-        ),
-        "field_column_count": (
-            None
-            if RESOURCE_CANARY_FIELD_COLUMNS is None
-            else len(RESOURCE_CANARY_FIELD_COLUMNS)
-        ),
+        "field_columns": None if field_columns is None else list(field_columns),
+        "field_column_count": None if field_columns is None else len(field_columns),
         "minimum_free_memory_bytes": minimum_free,
         "minimum_commit_headroom_bytes": minimum_commit_headroom,
         "maximum_committed_bytes": maximum_committed,
@@ -255,11 +331,16 @@ def _resource_canary(authority: Mapping[str, Any], input_hash: str, workers: int
     }
 
 
-def _choose_executor_workers(authority: Mapping[str, Any], input_hash: str) -> tuple[int, dict[str, Any]]:
+def _choose_executor_workers(
+    authority: Mapping[str, Any],
+    input_hash: str,
+    field_columns: tuple[str, ...] | None,
+    field_plan: Mapping[str, Any],
+) -> tuple[int, dict[str, Any]]:
     attempts = []
     for workers in (PRIMARY_EXECUTOR_WORKERS, RESOURCE_FALLBACK_EXECUTOR_WORKERS):
         try:
-            receipt = _resource_canary(authority, input_hash, workers)
+            receipt = _resource_canary(authority, input_hash, workers, field_columns)
             attempts.append(receipt)
             return int(workers), {
                 "schema_version": "cn_program_optimizer_large_fresh_resource_decision_v1",
@@ -267,6 +348,7 @@ def _choose_executor_workers(authority: Mapping[str, Any], input_hash: str) -> t
                 "selected_executor_workers": int(workers),
                 "attempts": attempts,
                 "fallback_applied": int(workers) != PRIMARY_EXECUTOR_WORKERS,
+                "field_plan": dict(field_plan),
                 "fallback_reason": (
                     None if int(workers) == PRIMARY_EXECUTOR_WORKERS
                     else "PRIMARY_ZERO_EVALUATION_RESOURCE_CANARY_FAILED"
@@ -478,10 +560,25 @@ def run(
     input_hash = str(input_binding["input_binding_sha256"])
     _write_json(root / "input_binding.json", input_binding)
 
-    workers, resource_decision = _choose_executor_workers(authority, input_hash)
-    _write_json(root / "resource_canary.json", resource_decision)
     bandit = _filtered_bandit(authority)
     state = engine._selection_state()
+    canary_field_columns, field_plan = _resource_canary_field_plan(authority, bandit)
+    if RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT:
+        frozen_resource = dict(authorization.get("resource_evidence") or {})
+        if (
+            int(frozen_resource.get("field_column_count") or 0)
+            != int(field_plan["effective_field_column_count"])
+            or str(frozen_resource.get("field_columns_sha256") or "")
+            != str(field_plan["effective_field_columns_sha256"])
+        ):
+            raise RuntimeError("LARGE_FRESH_RESOURCE_PREVIEW_AUTHORIZATION_DRIFT")
+    workers, resource_decision = _choose_executor_workers(
+        authority,
+        input_hash,
+        canary_field_columns,
+        field_plan,
+    )
+    _write_json(root / "resource_canary.json", resource_decision)
     _write_json(root / "optimizer_state_genesis.json", bandit.snapshot())
     _write_json(root / "selection_state_genesis.json", _selection_state_record(state))
 

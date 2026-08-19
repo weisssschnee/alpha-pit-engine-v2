@@ -88,6 +88,7 @@ def _configure_base_runner() -> None:
     base.RESOURCE_CANARY_FIELD_COLUMNS = RESOURCE_CANARY_FIELD_COLUMNS
     base.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL = False
     base.RESOURCE_CANARY_PROBE_SECONDS = RESOURCE_CANARY_PROBE_SECONDS
+    base.RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT = True
     base._checkpoint_arm = _checkpoint_arm_v2
     base._filtered_bandit = _filtered_bandit_v2
 
@@ -105,6 +106,7 @@ _BASE_RUNNER_MUTABLE_FIELDS = (
     "RESOURCE_CANARY_FIELD_COLUMNS",
     "RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL",
     "RESOURCE_CANARY_PROBE_SECONDS",
+    "RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT",
     "_checkpoint_arm",
     "_filtered_bandit",
 )

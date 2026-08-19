@@ -121,6 +121,32 @@ def test_large_fresh_v2_uses_realistic_24_worker_resource_canary() -> None:
     assert base_runner.RESOURCE_CANARY_FIELD_COLUMNS is None
     assert base_runner.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL is True
     assert base_runner.RESOURCE_CANARY_PROBE_SECONDS == 1.0
+    assert base_runner.RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT is False
+
+
+def test_resource_canary_field_plan_unions_preview_with_historical(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        base_runner, "RESOURCE_CANARY_FIELD_COLUMNS", ("hist_only", "shared")
+    )
+    monkeypatch.setattr(
+        base_runner, "RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT", True
+    )
+    monkeypatch.setattr(
+        base_runner,
+        "_preview_first_checkpoint_field_columns",
+        lambda authority, bandit: ("preview_only", "shared"),
+    )
+    fields, plan = base_runner._resource_canary_field_plan({}, object())
+    assert fields == ("hist_only", "preview_only", "shared")
+    assert plan["mode"] == "FIRST_CHECKPOINT_PREVIEW_UNION_HISTORICAL_MAX"
+    assert plan["historical_field_column_count"] == 2
+    assert plan["preview_field_column_count"] == 2
+    assert plan["effective_field_column_count"] == 3
+    assert plan["effective_field_columns"] == list(fields)
+    assert plan["candidate_evaluation_executed"] is False
+
 
 
 def test_large_fresh_v2_is_six_evolution_one_rotating_uniform() -> None:
@@ -207,6 +233,7 @@ def test_large_fresh_v2_restores_v1_runner_globals_on_failure(
         assert base_runner.RESOURCE_CANARY_FIELD_COLUMNS == RESOURCE_CANARY_FIELD_COLUMNS
         assert base_runner.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL is False
         assert base_runner.RESOURCE_CANARY_PROBE_SECONDS == 30.0
+        assert base_runner.RESOURCE_CANARY_PREVIEW_FIRST_CHECKPOINT is True
         raise RuntimeError("synthetic-v2-failure")
 
     monkeypatch.setattr(base_runner, "run", fail_run)
