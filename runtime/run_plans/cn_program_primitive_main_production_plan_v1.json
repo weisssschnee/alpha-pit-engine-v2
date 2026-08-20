@@ -1,0 +1,162 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_evaluation_executed": false,
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "fresh_supply": {
+    "effective_spent_exact_count": 6734,
+    "effective_spent_exact_identities_sha256": "d60dff81c11d7b7494f6f92fb87d80b4c03686c082ab7bd18a6d398b170b9138",
+    "file_sha256": "d425abdf0b833dd156f1809aae1edcb56f3a6eb89b1dcc9103054e4fd1d61abc",
+    "fresh_exact_identities_sha256": "e0e1fbed616c6c4da3c6591d5989963effb81af348e33b7dc45548b7b637983a",
+    "fresh_unique_count": 3576,
+    "payload_sha256": "b39148c7146a64cffaeeb7511f77026fe17f8d4ba1790e87760a89ecb836ac95",
+    "per_template_fresh": {
+      "BASE_EVENT": 512,
+      "BASE_MARKET": 512,
+      "BASE_MARKET_EVENT": 512,
+      "BASE_TEMPORAL": 512,
+      "BASE_TEMPORAL_EVENT": 504,
+      "BASE_TEMPORAL_MARKET": 512,
+      "BASE_TEMPORAL_MARKET_EVENT": 512
+    },
+    "raw_ordinal_offset": 1536,
+    "raw_records_per_template": 512,
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_fresh_supply_134227f_20260820.json"
+  },
+  "oos_authority": "NONE",
+  "plan_payload_sha256": "250b6475f1b59f08343744ad728952660b1205fed9372f7c013259e6b6c55491",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "cpu_threads": 24,
+    "pre_evaluation_fallback_executor_workers": 16,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24",
+    "resource_canary_financial_candidate_evaluation": false,
+    "resource_canary_required_before_first_candidate_evaluation": true
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_main_production_plan_v1",
+  "search_authority": {
+    "decision": "PRIMITIVE_PRIMARY_UNIFORM_RESERVE_EVOLUTION_CHALLENGER",
+    "primitive_stats_file_sha256": "b3d1c8c2320236b27d541df451292ccdf1959405b920d90d9d81b8b05ee422c4",
+    "primitive_stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "primitive_stats_relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "qualification_file_sha256": "7ebe1e7602dc54489a3a54d840392be98db78d2c8e361fa9f446d04dbd922f4e",
+    "qualification_payload_sha256": "0a976836d897f6f432a973b431c098f4c04fd91f3caba3e30ee7284e254edc5c",
+    "qualification_relative_path": "runtime/run_plans/cn_program_primitive_main_search_qualification_v1.json",
+    "stage_c_results_in_stats": 0,
+    "stage_d_results_in_stats": 0
+  },
+  "search_design": {
+    "checkpoint_batch_size": 24,
+    "hard_cap_logical_records": 840,
+    "macro_count": 5,
+    "maximum_variants_per_base_group_per_template": 4,
+    "minimum_distinct_base_groups_per_template": 16,
+    "primitive_checkpoints_per_macro": 5,
+    "primitive_cross_campaign_stats_mutation": false,
+    "primitive_online_retraining": false,
+    "records_per_macro": 168,
+    "rotation_by_macro": {
+      "0": {
+        "arms": [
+          "UNIFORM_CONTROL",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1"
+        ],
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "1": {
+        "arms": [
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "UNIFORM_CONTROL",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1"
+        ],
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "2": {
+        "arms": [
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "UNIFORM_CONTROL",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1"
+        ],
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "3": {
+        "arms": [
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "UNIFORM_CONTROL",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2"
+        ],
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "4": {
+        "arms": [
+          "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "UNIFORM_CONTROL",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1"
+        ],
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      }
+    },
+    "template_order": [
+      "BASE_TEMPORAL",
+      "BASE_MARKET",
+      "BASE_EVENT",
+      "BASE_TEMPORAL_MARKET",
+      "BASE_TEMPORAL_EVENT",
+      "BASE_MARKET_EVENT",
+      "BASE_TEMPORAL_MARKET_EVENT"
+    ],
+    "template_order_or_budget_changes_after_results": "FORBIDDEN",
+    "typed_evolution_challenger_checkpoints_per_macro": 1,
+    "uniform_reserve_checkpoints_per_macro": 1
+  },
+  "status": "PRIMITIVE_MAIN_PRODUCTION_PLAN_FROZEN_NOT_RUN",
+  "stopping_contract": {
+    "automatic_extension_beyond_hard_cap": false,
+    "hard_cap_logical_records": 840,
+    "lookback_macros": 2,
+    "minimum_macros_before_value_collapse_test": 4,
+    "new_behavior_pair_rate_collapse_max": 0.05,
+    "productive_efficiency_collapse_max": 0.15,
+    "successor_requires_new_fresh_interval_and_new_authorization": true,
+    "value_collapse_rule": "BOTH_THRESHOLDS_TRUE_IN_EACH_OF_LAST_TWO_MACROS"
+  },
+  "validation_feedback_used": false
+}
