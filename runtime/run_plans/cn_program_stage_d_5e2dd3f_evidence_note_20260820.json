@@ -1,0 +1,26 @@
+{
+  "boundary": {
+    "alpha_qualification_granted": false,
+    "evaluation_data_role": "DEVELOPMENT_ONLY",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "promotion_authorized": false,
+    "validation_reads": 0
+  },
+  "conclusion": "UNCHANGED_PRE_STAGE_C_PRIMITIVE_LOCAL_POLICY_CONFIRMED_AT_LARGE_SCALE_ON_DISJOINT_FRESH_POOL",
+  "confirmatory_evidence": {
+    "independent_audit_payload_sha256": "bb2326c6550a7d2f8f2382756d1cce1de7ccfeb1e0ced9223b80209f3b3c67ed",
+    "primitive_1008": 355,
+    "stage_d_outcome_payload_sha256": "173c486098344cd072c831537d56f17c26620190bae08c0d84e16a2d3939d2da",
+    "templates_won_evolution": 6,
+    "templates_won_uniform": 7,
+    "typed_evolution_1008": 296,
+    "uniform_mean_1008": 254.0
+  },
+  "evidence_note_payload_sha256": "dd7f09a799302b9f7e0e50c16ee25e4cf52c52c99184939adf59b4d28c103a99",
+  "schema_version": "cn_program_stage_d_primitive_confirmation_evidence_note_v1",
+  "stage_c_results_used_for_scoring": false,
+  "stage_c_results_used_only_for_spent_lineage": true,
+  "status": "STAGE_D_TERMINAL_EVIDENCE_FROZEN",
+  "system_search_interpretation": "The same primitive-local ranking, using only the pre-Stage-C 1392-program credit statistics and unchanged scoring code, independently beat both eight-seed Uniform and causal Typed Evolution on a disjoint 2016-program, seven-template fresh cohort."
+}

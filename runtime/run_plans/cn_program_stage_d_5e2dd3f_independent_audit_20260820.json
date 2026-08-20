@@ -1,0 +1,1135 @@
+{
+  "audit_payload_sha256": "bb2326c6550a7d2f8f2382756d1cce1de7ccfeb1e0ced9223b80209f3b3c67ed",
+  "budget1008": {
+    "per_template_budget": 144,
+    "primitive_distinct_behavior_pair_rate": 0.7351190476190477,
+    "primitive_local": {
+      "admission_rate": 0.4146825396825397,
+      "admitted": 418,
+      "distinct_behavior_pair_count": 741,
+      "evaluated": 1008,
+      "productive": 355,
+      "productive_rate": 0.3521825396825397
+    },
+    "primitive_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.6597222222222222,
+        "admitted": 95,
+        "distinct_behavior_pair_count": 122,
+        "evaluated": 144,
+        "productive": 81,
+        "productive_rate": 0.5625
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.4791666666666667,
+        "admitted": 69,
+        "distinct_behavior_pair_count": 118,
+        "evaluated": 144,
+        "productive": 46,
+        "productive_rate": 0.3194444444444444
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4236111111111111,
+        "admitted": 61,
+        "distinct_behavior_pair_count": 50,
+        "evaluated": 144,
+        "productive": 53,
+        "productive_rate": 0.3680555555555556
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.2152777777777778,
+        "admitted": 31,
+        "distinct_behavior_pair_count": 139,
+        "evaluated": 144,
+        "productive": 23,
+        "productive_rate": 0.1597222222222222
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.5694444444444444,
+        "admitted": 82,
+        "distinct_behavior_pair_count": 93,
+        "evaluated": 144,
+        "productive": 75,
+        "productive_rate": 0.5208333333333334
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.375,
+        "admitted": 54,
+        "distinct_behavior_pair_count": 109,
+        "evaluated": 144,
+        "productive": 51,
+        "productive_rate": 0.3541666666666667
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.18055555555555555,
+        "admitted": 26,
+        "distinct_behavior_pair_count": 110,
+        "evaluated": 144,
+        "productive": 26,
+        "productive_rate": 0.18055555555555555
+      }
+    },
+    "primitive_positive_gain_max_template_fraction": 0.3502475247524752,
+    "primitive_templates_won_vs_evolution": 6,
+    "primitive_templates_won_vs_uniform_mean": 7,
+    "primitive_vs_evolution_productive_delta": 59.0,
+    "primitive_vs_evolution_productive_ratio": 1.1993243243243243,
+    "primitive_vs_uniform_behavior_ratio": 0.8915626409986465,
+    "primitive_vs_uniform_productive_delta": 101.0,
+    "primitive_vs_uniform_productive_ratio": 1.3976377952755905,
+    "typed_evolution": {
+      "admission_rate": 0.4880952380952381,
+      "admitted": 492,
+      "distinct_behavior_pair_count": 802,
+      "evaluated": 1008,
+      "productive": 296,
+      "productive_rate": 0.29365079365079366
+    },
+    "typed_evolution_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.6597222222222222,
+        "admitted": 95,
+        "distinct_behavior_pair_count": 123,
+        "evaluated": 144,
+        "productive": 58,
+        "productive_rate": 0.4027777777777778
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5138888888888888,
+        "admitted": 74,
+        "distinct_behavior_pair_count": 120,
+        "evaluated": 144,
+        "productive": 37,
+        "productive_rate": 0.2569444444444444
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4930555555555556,
+        "admitted": 71,
+        "distinct_behavior_pair_count": 73,
+        "evaluated": 144,
+        "productive": 47,
+        "productive_rate": 0.3263888888888889
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 60,
+        "distinct_behavior_pair_count": 137,
+        "evaluated": 144,
+        "productive": 27,
+        "productive_rate": 0.1875
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.6319444444444444,
+        "admitted": 91,
+        "distinct_behavior_pair_count": 111,
+        "evaluated": 144,
+        "productive": 69,
+        "productive_rate": 0.4791666666666667
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.4791666666666667,
+        "admitted": 69,
+        "distinct_behavior_pair_count": 117,
+        "evaluated": 144,
+        "productive": 37,
+        "productive_rate": 0.2569444444444444
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.2222222222222222,
+        "admitted": 32,
+        "distinct_behavior_pair_count": 121,
+        "evaluated": 144,
+        "productive": 21,
+        "productive_rate": 0.14583333333333334
+      }
+    },
+    "uniform_per_template_mean_productive": {
+      "BASE_EVENT": 45.625,
+      "BASE_MARKET": 28.375,
+      "BASE_MARKET_EVENT": 44.125,
+      "BASE_TEMPORAL": 20.125,
+      "BASE_TEMPORAL_EVENT": 61.875,
+      "BASE_TEMPORAL_MARKET": 37.875,
+      "BASE_TEMPORAL_MARKET_EVENT": 16.0
+    },
+    "uniform_seed_mean_distinct_behavior_pair_count": 831.125,
+    "uniform_seed_mean_productive_count": 254.0,
+    "uniform_seed_metrics": {
+      "104729": {
+        "admission_rate": 0.45337301587301587,
+        "admitted": 457,
+        "distinct_behavior_pair_count": 827,
+        "evaluated": 1008,
+        "productive": 257,
+        "productive_rate": 0.25496031746031744
+      },
+      "130363": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 456,
+        "distinct_behavior_pair_count": 832,
+        "evaluated": 1008,
+        "productive": 247,
+        "productive_rate": 0.24503968253968253
+      },
+      "155921": {
+        "admission_rate": 0.44742063492063494,
+        "admitted": 451,
+        "distinct_behavior_pair_count": 823,
+        "evaluated": 1008,
+        "productive": 249,
+        "productive_rate": 0.24702380952380953
+      },
+      "1729": {
+        "admission_rate": 0.44543650793650796,
+        "admitted": 449,
+        "distinct_behavior_pair_count": 823,
+        "evaluated": 1008,
+        "productive": 248,
+        "productive_rate": 0.24603174603174602
+      },
+      "196613": {
+        "admission_rate": 0.45337301587301587,
+        "admitted": 457,
+        "distinct_behavior_pair_count": 830,
+        "evaluated": 1008,
+        "productive": 264,
+        "productive_rate": 0.2619047619047619
+      },
+      "2718": {
+        "admission_rate": 0.4573412698412698,
+        "admitted": 461,
+        "distinct_behavior_pair_count": 840,
+        "evaluated": 1008,
+        "productive": 251,
+        "productive_rate": 0.2490079365079365
+      },
+      "31415": {
+        "admission_rate": 0.45634920634920634,
+        "admitted": 460,
+        "distinct_behavior_pair_count": 844,
+        "evaluated": 1008,
+        "productive": 272,
+        "productive_rate": 0.2698412698412698
+      },
+      "65537": {
+        "admission_rate": 0.4375,
+        "admitted": 441,
+        "distinct_behavior_pair_count": 830,
+        "evaluated": 1008,
+        "productive": 244,
+        "productive_rate": 0.24206349206349206
+      }
+    }
+  },
+  "budget168": {
+    "per_template_budget": 24,
+    "primitive_distinct_behavior_pair_rate": 0.7559523809523809,
+    "primitive_local": {
+      "admission_rate": 0.47023809523809523,
+      "admitted": 79,
+      "distinct_behavior_pair_count": 127,
+      "evaluated": 168,
+      "productive": 77,
+      "productive_rate": 0.4583333333333333
+    },
+    "primitive_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.875,
+        "admitted": 21,
+        "distinct_behavior_pair_count": 18,
+        "evaluated": 24,
+        "productive": 21,
+        "productive_rate": 0.875
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 12,
+        "distinct_behavior_pair_count": 21,
+        "evaluated": 24,
+        "productive": 10,
+        "productive_rate": 0.4166666666666667
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 11,
+        "distinct_behavior_pair_count": 6,
+        "evaluated": 24,
+        "productive": 11,
+        "productive_rate": 0.4583333333333333
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.20833333333333334,
+        "admitted": 5,
+        "distinct_behavior_pair_count": 24,
+        "evaluated": 24,
+        "productive": 5,
+        "productive_rate": 0.20833333333333334
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.5416666666666666,
+        "admitted": 13,
+        "distinct_behavior_pair_count": 17,
+        "evaluated": 24,
+        "productive": 13,
+        "productive_rate": 0.5416666666666666
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.5416666666666666,
+        "admitted": 13,
+        "distinct_behavior_pair_count": 19,
+        "evaluated": 24,
+        "productive": 13,
+        "productive_rate": 0.5416666666666666
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.16666666666666666,
+        "admitted": 4,
+        "distinct_behavior_pair_count": 22,
+        "evaluated": 24,
+        "productive": 4,
+        "productive_rate": 0.16666666666666666
+      }
+    },
+    "primitive_positive_gain_max_template_fraction": 0.4059040590405904,
+    "primitive_templates_won_vs_evolution": 7,
+    "primitive_templates_won_vs_uniform_mean": 7,
+    "primitive_vs_evolution_productive_delta": 41.0,
+    "primitive_vs_evolution_productive_ratio": 2.138888888888889,
+    "primitive_vs_uniform_behavior_ratio": 0.8206785137318255,
+    "primitive_vs_uniform_productive_delta": 33.875,
+    "primitive_vs_uniform_productive_ratio": 1.7855072463768116,
+    "typed_evolution": {
+      "admission_rate": 0.4107142857142857,
+      "admitted": 69,
+      "distinct_behavior_pair_count": 154,
+      "evaluated": 168,
+      "productive": 36,
+      "productive_rate": 0.21428571428571427
+    },
+    "typed_evolution_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 16,
+        "distinct_behavior_pair_count": 23,
+        "evaluated": 24,
+        "productive": 6,
+        "productive_rate": 0.25
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 12,
+        "distinct_behavior_pair_count": 23,
+        "evaluated": 24,
+        "productive": 5,
+        "productive_rate": 0.20833333333333334
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 10,
+        "distinct_behavior_pair_count": 18,
+        "evaluated": 24,
+        "productive": 5,
+        "productive_rate": 0.20833333333333334
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.3333333333333333,
+        "admitted": 8,
+        "distinct_behavior_pair_count": 24,
+        "evaluated": 24,
+        "productive": 3,
+        "productive_rate": 0.125
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 11,
+        "distinct_behavior_pair_count": 23,
+        "evaluated": 24,
+        "productive": 10,
+        "productive_rate": 0.4166666666666667
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 10,
+        "distinct_behavior_pair_count": 21,
+        "evaluated": 24,
+        "productive": 6,
+        "productive_rate": 0.25
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.08333333333333333,
+        "admitted": 2,
+        "distinct_behavior_pair_count": 22,
+        "evaluated": 24,
+        "productive": 1,
+        "productive_rate": 0.041666666666666664
+      }
+    },
+    "uniform_per_template_mean_productive": {
+      "BASE_EVENT": 7.25,
+      "BASE_MARKET": 3.5,
+      "BASE_MARKET_EVENT": 8.125,
+      "BASE_TEMPORAL": 3.5,
+      "BASE_TEMPORAL_EVENT": 11.0,
+      "BASE_TEMPORAL_MARKET": 6.375,
+      "BASE_TEMPORAL_MARKET_EVENT": 3.375
+    },
+    "uniform_seed_mean_distinct_behavior_pair_count": 154.75,
+    "uniform_seed_mean_productive_count": 43.125,
+    "uniform_seed_metrics": {
+      "104729": {
+        "admission_rate": 0.44642857142857145,
+        "admitted": 75,
+        "distinct_behavior_pair_count": 156,
+        "evaluated": 168,
+        "productive": 48,
+        "productive_rate": 0.2857142857142857
+      },
+      "130363": {
+        "admission_rate": 0.47023809523809523,
+        "admitted": 79,
+        "distinct_behavior_pair_count": 155,
+        "evaluated": 168,
+        "productive": 37,
+        "productive_rate": 0.22023809523809523
+      },
+      "155921": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 76,
+        "distinct_behavior_pair_count": 157,
+        "evaluated": 168,
+        "productive": 46,
+        "productive_rate": 0.27380952380952384
+      },
+      "1729": {
+        "admission_rate": 0.47023809523809523,
+        "admitted": 79,
+        "distinct_behavior_pair_count": 156,
+        "evaluated": 168,
+        "productive": 39,
+        "productive_rate": 0.23214285714285715
+      },
+      "196613": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 76,
+        "distinct_behavior_pair_count": 153,
+        "evaluated": 168,
+        "productive": 47,
+        "productive_rate": 0.27976190476190477
+      },
+      "2718": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 76,
+        "distinct_behavior_pair_count": 156,
+        "evaluated": 168,
+        "productive": 39,
+        "productive_rate": 0.23214285714285715
+      },
+      "31415": {
+        "admission_rate": 0.4642857142857143,
+        "admitted": 78,
+        "distinct_behavior_pair_count": 152,
+        "evaluated": 168,
+        "productive": 47,
+        "productive_rate": 0.27976190476190477
+      },
+      "65537": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 70,
+        "distinct_behavior_pair_count": 153,
+        "evaluated": 168,
+        "productive": 42,
+        "productive_rate": 0.25
+      }
+    }
+  },
+  "budget336": {
+    "per_template_budget": 48,
+    "primitive_distinct_behavior_pair_rate": 0.7351190476190477,
+    "primitive_local": {
+      "admission_rate": 0.44345238095238093,
+      "admitted": 149,
+      "distinct_behavior_pair_count": 247,
+      "evaluated": 336,
+      "productive": 139,
+      "productive_rate": 0.41369047619047616
+    },
+    "primitive_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 40,
+        "distinct_behavior_pair_count": 39,
+        "evaluated": 48,
+        "productive": 40,
+        "productive_rate": 0.8333333333333334
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5,
+        "admitted": 24,
+        "distinct_behavior_pair_count": 36,
+        "evaluated": 48,
+        "productive": 18,
+        "productive_rate": 0.375
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.5208333333333334,
+        "admitted": 25,
+        "distinct_behavior_pair_count": 11,
+        "evaluated": 48,
+        "productive": 21,
+        "productive_rate": 0.4375
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.125,
+        "admitted": 6,
+        "distinct_behavior_pair_count": 47,
+        "evaluated": 48,
+        "productive": 6,
+        "productive_rate": 0.125
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.5208333333333334,
+        "admitted": 25,
+        "distinct_behavior_pair_count": 34,
+        "evaluated": 48,
+        "productive": 25,
+        "productive_rate": 0.5208333333333334
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.375,
+        "admitted": 18,
+        "distinct_behavior_pair_count": 38,
+        "evaluated": 48,
+        "productive": 18,
+        "productive_rate": 0.375
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.22916666666666666,
+        "admitted": 11,
+        "distinct_behavior_pair_count": 42,
+        "evaluated": 48,
+        "productive": 11,
+        "productive_rate": 0.22916666666666666
+      }
+    },
+    "primitive_positive_gain_max_template_fraction": 0.45785876993166286,
+    "primitive_templates_won_vs_evolution": 6,
+    "primitive_templates_won_vs_uniform_mean": 6,
+    "primitive_vs_evolution_productive_delta": 48.0,
+    "primitive_vs_evolution_productive_ratio": 1.5274725274725274,
+    "primitive_vs_uniform_behavior_ratio": 0.8131687242798354,
+    "primitive_vs_uniform_productive_delta": 53.375,
+    "primitive_vs_uniform_productive_ratio": 1.6233576642335767,
+    "typed_evolution": {
+      "admission_rate": 0.4791666666666667,
+      "admitted": 161,
+      "distinct_behavior_pair_count": 296,
+      "evaluated": 336,
+      "productive": 91,
+      "productive_rate": 0.2708333333333333
+    },
+    "typed_evolution_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.6458333333333334,
+        "admitted": 31,
+        "distinct_behavior_pair_count": 44,
+        "evaluated": 48,
+        "productive": 17,
+        "productive_rate": 0.3541666666666667
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 28,
+        "distinct_behavior_pair_count": 45,
+        "evaluated": 48,
+        "productive": 14,
+        "productive_rate": 0.2916666666666667
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4791666666666667,
+        "admitted": 23,
+        "distinct_behavior_pair_count": 31,
+        "evaluated": 48,
+        "productive": 14,
+        "productive_rate": 0.2916666666666667
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 20,
+        "distinct_behavior_pair_count": 47,
+        "evaluated": 48,
+        "productive": 8,
+        "productive_rate": 0.16666666666666666
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.5625,
+        "admitted": 27,
+        "distinct_behavior_pair_count": 46,
+        "evaluated": 48,
+        "productive": 20,
+        "productive_rate": 0.4166666666666667
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.4791666666666667,
+        "admitted": 23,
+        "distinct_behavior_pair_count": 41,
+        "evaluated": 48,
+        "productive": 12,
+        "productive_rate": 0.25
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.1875,
+        "admitted": 9,
+        "distinct_behavior_pair_count": 42,
+        "evaluated": 48,
+        "productive": 6,
+        "productive_rate": 0.125
+      }
+    },
+    "uniform_per_template_mean_productive": {
+      "BASE_EVENT": 14.875,
+      "BASE_MARKET": 8.125,
+      "BASE_MARKET_EVENT": 16.25,
+      "BASE_TEMPORAL": 7.5,
+      "BASE_TEMPORAL_EVENT": 21.0,
+      "BASE_TEMPORAL_MARKET": 12.25,
+      "BASE_TEMPORAL_MARKET_EVENT": 5.625
+    },
+    "uniform_seed_mean_distinct_behavior_pair_count": 303.75,
+    "uniform_seed_mean_productive_count": 85.625,
+    "uniform_seed_metrics": {
+      "104729": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 154,
+        "distinct_behavior_pair_count": 309,
+        "evaluated": 336,
+        "productive": 94,
+        "productive_rate": 0.27976190476190477
+      },
+      "130363": {
+        "admission_rate": 0.47023809523809523,
+        "admitted": 158,
+        "distinct_behavior_pair_count": 296,
+        "evaluated": 336,
+        "productive": 84,
+        "productive_rate": 0.25
+      },
+      "155921": {
+        "admission_rate": 0.47619047619047616,
+        "admitted": 160,
+        "distinct_behavior_pair_count": 304,
+        "evaluated": 336,
+        "productive": 91,
+        "productive_rate": 0.2708333333333333
+      },
+      "1729": {
+        "admission_rate": 0.45535714285714285,
+        "admitted": 153,
+        "distinct_behavior_pair_count": 300,
+        "evaluated": 336,
+        "productive": 80,
+        "productive_rate": 0.23809523809523808
+      },
+      "196613": {
+        "admission_rate": 0.43452380952380953,
+        "admitted": 146,
+        "distinct_behavior_pair_count": 306,
+        "evaluated": 336,
+        "productive": 86,
+        "productive_rate": 0.25595238095238093
+      },
+      "2718": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 152,
+        "distinct_behavior_pair_count": 306,
+        "evaluated": 336,
+        "productive": 80,
+        "productive_rate": 0.23809523809523808
+      },
+      "31415": {
+        "admission_rate": 0.47619047619047616,
+        "admitted": 160,
+        "distinct_behavior_pair_count": 304,
+        "evaluated": 336,
+        "productive": 92,
+        "productive_rate": 0.27380952380952384
+      },
+      "65537": {
+        "admission_rate": 0.44345238095238093,
+        "admitted": 149,
+        "distinct_behavior_pair_count": 305,
+        "evaluated": 336,
+        "productive": 78,
+        "productive_rate": 0.23214285714285715
+      }
+    }
+  },
+  "budget504": {
+    "per_template_budget": 72,
+    "primitive_distinct_behavior_pair_rate": 0.7341269841269841,
+    "primitive_local": {
+      "admission_rate": 0.40674603174603174,
+      "admitted": 205,
+      "distinct_behavior_pair_count": 370,
+      "evaluated": 504,
+      "productive": 186,
+      "productive_rate": 0.36904761904761907
+    },
+    "primitive_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.75,
+        "admitted": 54,
+        "distinct_behavior_pair_count": 62,
+        "evaluated": 72,
+        "productive": 52,
+        "productive_rate": 0.7222222222222222
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 33,
+        "distinct_behavior_pair_count": 57,
+        "evaluated": 72,
+        "productive": 26,
+        "productive_rate": 0.3611111111111111
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.4444444444444444,
+        "admitted": 32,
+        "distinct_behavior_pair_count": 19,
+        "evaluated": 72,
+        "productive": 26,
+        "productive_rate": 0.3611111111111111
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.1111111111111111,
+        "admitted": 8,
+        "distinct_behavior_pair_count": 69,
+        "evaluated": 72,
+        "productive": 8,
+        "productive_rate": 0.1111111111111111
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.5833333333333334,
+        "admitted": 42,
+        "distinct_behavior_pair_count": 44,
+        "evaluated": 72,
+        "productive": 38,
+        "productive_rate": 0.5277777777777778
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.3472222222222222,
+        "admitted": 25,
+        "distinct_behavior_pair_count": 57,
+        "evaluated": 72,
+        "productive": 25,
+        "productive_rate": 0.3472222222222222
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.1527777777777778,
+        "admitted": 11,
+        "distinct_behavior_pair_count": 62,
+        "evaluated": 72,
+        "productive": 11,
+        "productive_rate": 0.1527777777777778
+      }
+    },
+    "primitive_positive_gain_max_template_fraction": 0.4851063829787234,
+    "primitive_templates_won_vs_evolution": 6,
+    "primitive_templates_won_vs_uniform_mean": 6,
+    "primitive_vs_evolution_productive_delta": 37.0,
+    "primitive_vs_evolution_productive_ratio": 1.2483221476510067,
+    "primitive_vs_uniform_behavior_ratio": 0.8314606741573034,
+    "primitive_vs_uniform_productive_delta": 55.625,
+    "primitive_vs_uniform_productive_ratio": 1.426653883029722,
+    "typed_evolution": {
+      "admission_rate": 0.49206349206349204,
+      "admitted": 248,
+      "distinct_behavior_pair_count": 432,
+      "evaluated": 504,
+      "productive": 149,
+      "productive_rate": 0.29563492063492064
+    },
+    "typed_evolution_per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.6666666666666666,
+        "admitted": 48,
+        "distinct_behavior_pair_count": 65,
+        "evaluated": 72,
+        "productive": 31,
+        "productive_rate": 0.4305555555555556
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.5277777777777778,
+        "admitted": 38,
+        "distinct_behavior_pair_count": 64,
+        "evaluated": 72,
+        "productive": 20,
+        "productive_rate": 0.2777777777777778
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.5277777777777778,
+        "admitted": 38,
+        "distinct_behavior_pair_count": 43,
+        "evaluated": 72,
+        "productive": 23,
+        "productive_rate": 0.3194444444444444
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.4027777777777778,
+        "admitted": 29,
+        "distinct_behavior_pair_count": 71,
+        "evaluated": 72,
+        "productive": 11,
+        "productive_rate": 0.1527777777777778
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.6111111111111112,
+        "admitted": 44,
+        "distinct_behavior_pair_count": 65,
+        "evaluated": 72,
+        "productive": 36,
+        "productive_rate": 0.5
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.4861111111111111,
+        "admitted": 35,
+        "distinct_behavior_pair_count": 59,
+        "evaluated": 72,
+        "productive": 18,
+        "productive_rate": 0.25
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.2222222222222222,
+        "admitted": 16,
+        "distinct_behavior_pair_count": 65,
+        "evaluated": 72,
+        "productive": 10,
+        "productive_rate": 0.1388888888888889
+      }
+    },
+    "uniform_per_template_mean_productive": {
+      "BASE_EVENT": 23.5,
+      "BASE_MARKET": 12.5,
+      "BASE_MARKET_EVENT": 24.375,
+      "BASE_TEMPORAL": 11.125,
+      "BASE_TEMPORAL_EVENT": 32.625,
+      "BASE_TEMPORAL_MARKET": 18.0,
+      "BASE_TEMPORAL_MARKET_EVENT": 8.25
+    },
+    "uniform_seed_mean_distinct_behavior_pair_count": 445.0,
+    "uniform_seed_mean_productive_count": 130.375,
+    "uniform_seed_metrics": {
+      "104729": {
+        "admission_rate": 0.4384920634920635,
+        "admitted": 221,
+        "distinct_behavior_pair_count": 451,
+        "evaluated": 504,
+        "productive": 130,
+        "productive_rate": 0.25793650793650796
+      },
+      "130363": {
+        "admission_rate": 0.46825396825396826,
+        "admitted": 236,
+        "distinct_behavior_pair_count": 438,
+        "evaluated": 504,
+        "productive": 128,
+        "productive_rate": 0.25396825396825395
+      },
+      "155921": {
+        "admission_rate": 0.4523809523809524,
+        "admitted": 228,
+        "distinct_behavior_pair_count": 443,
+        "evaluated": 504,
+        "productive": 133,
+        "productive_rate": 0.2638888888888889
+      },
+      "1729": {
+        "admission_rate": 0.45436507936507936,
+        "admitted": 229,
+        "distinct_behavior_pair_count": 442,
+        "evaluated": 504,
+        "productive": 121,
+        "productive_rate": 0.2400793650793651
+      },
+      "196613": {
+        "admission_rate": 0.45634920634920634,
+        "admitted": 230,
+        "distinct_behavior_pair_count": 450,
+        "evaluated": 504,
+        "productive": 133,
+        "productive_rate": 0.2638888888888889
+      },
+      "2718": {
+        "admission_rate": 0.45634920634920634,
+        "admitted": 230,
+        "distinct_behavior_pair_count": 451,
+        "evaluated": 504,
+        "productive": 129,
+        "productive_rate": 0.25595238095238093
+      },
+      "31415": {
+        "admission_rate": 0.4722222222222222,
+        "admitted": 238,
+        "distinct_behavior_pair_count": 444,
+        "evaluated": 504,
+        "productive": 138,
+        "productive_rate": 0.27380952380952384
+      },
+      "65537": {
+        "admission_rate": 0.45436507936507936,
+        "admitted": 229,
+        "distinct_behavior_pair_count": 441,
+        "evaluated": 504,
+        "productive": 131,
+        "productive_rate": 0.25992063492063494
+      }
+    }
+  },
+  "checkpoint_summary": [
+    {
+      "checkpoint": 0,
+      "manifest_file_sha256": "332b7561a9697b0c79dbab2c45c555e21a4b8a39b6343c89ffd1595cc4213ca0",
+      "records": 48
+    },
+    {
+      "checkpoint": 1,
+      "manifest_file_sha256": "f2e9a1c11ed9c1ecd7c137926d65b76557995e84ebf137f942d6d88e0c2ee480",
+      "records": 48
+    },
+    {
+      "checkpoint": 2,
+      "manifest_file_sha256": "6f9d51317dac9e1f753dd0dfe054818b0786644ed399331d6e89ea581602e5be",
+      "records": 48
+    },
+    {
+      "checkpoint": 3,
+      "manifest_file_sha256": "d9e34a88801fccbb531a22419aa303a40bef5d73ace66f2d17e64a6f21fe5d58",
+      "records": 48
+    },
+    {
+      "checkpoint": 4,
+      "manifest_file_sha256": "71448d5eb13f07f0d5b7764116409577d69c7d3bddde14a1becf772a79b2c5e9",
+      "records": 48
+    },
+    {
+      "checkpoint": 5,
+      "manifest_file_sha256": "efa67d92de54d3a45575b8a99085dad4a601a648c58db7e294d03c3208e2e6e0",
+      "records": 48
+    },
+    {
+      "checkpoint": 6,
+      "manifest_file_sha256": "ff3f2f7c26b7d3fea8a620049a66a8f93cfd112c052c1da1e5779ac8b81e5604",
+      "records": 48
+    },
+    {
+      "checkpoint": 7,
+      "manifest_file_sha256": "db93b844d7c67712392d95d1e16ed6d89621df3a1f43408a90f0510d533e797c",
+      "records": 48
+    },
+    {
+      "checkpoint": 8,
+      "manifest_file_sha256": "5afd391944340dd4a33310673562111bfc0fccd2f8a22f17d9880bc1be3ab4af",
+      "records": 48
+    },
+    {
+      "checkpoint": 9,
+      "manifest_file_sha256": "3a36f2ca30db50b6274166d8b11bd5bfee7f594e4d21b56dbe87887421a8f97f",
+      "records": 48
+    },
+    {
+      "checkpoint": 10,
+      "manifest_file_sha256": "c32abd3e277324c8380d1477099a0c2bb14d00f8fbaafea42cf1a8ab1d985ac2",
+      "records": 48
+    },
+    {
+      "checkpoint": 11,
+      "manifest_file_sha256": "403ee58e12fc6cf1abe76dd8fbb881603439d682428186cfe4c793ba845e1d80",
+      "records": 48
+    },
+    {
+      "checkpoint": 12,
+      "manifest_file_sha256": "b9cb4448de924785108c0005d326fa9f711c37aca1684f2bbe13a866afe979e0",
+      "records": 48
+    },
+    {
+      "checkpoint": 13,
+      "manifest_file_sha256": "5618fe3d015900ddcd65cbe67c1d0739a1eeffc72c63b8accb0387686e242bcc",
+      "records": 48
+    },
+    {
+      "checkpoint": 14,
+      "manifest_file_sha256": "73fe5fd1edb20b98346d82356a71d3099b65c555067d5cf02ea2b992c84516a8",
+      "records": 48
+    },
+    {
+      "checkpoint": 15,
+      "manifest_file_sha256": "f28443710f6d3eddec19d7cc5952a0ace9242e6ec60c060a51c68a216a92409b",
+      "records": 48
+    },
+    {
+      "checkpoint": 16,
+      "manifest_file_sha256": "ff8d491d72004fc09040c29a6fd2e8001f7b402c1b36772e094567842dfdf83f",
+      "records": 48
+    },
+    {
+      "checkpoint": 17,
+      "manifest_file_sha256": "43f99d93c8629f57fb8339a13c342e26747bde14dda922b146642df8026e431d",
+      "records": 48
+    },
+    {
+      "checkpoint": 18,
+      "manifest_file_sha256": "f4bf502b9713475b9a05e59408b8715d65b3a77d6d3dd58a1d0485e39d10e2ac",
+      "records": 48
+    },
+    {
+      "checkpoint": 19,
+      "manifest_file_sha256": "3fc4fc2dbb45b26ed39dfe858c2aeccf65a83f824b8dbd8cf5213af068213a32",
+      "records": 48
+    },
+    {
+      "checkpoint": 20,
+      "manifest_file_sha256": "d755ca3441f5c4b792b18a74ac0c28148bdc8d9cb177fde8bb552883cb023ec7",
+      "records": 48
+    },
+    {
+      "checkpoint": 21,
+      "manifest_file_sha256": "165e763bb77fd146d47ede2a54ae30808a8ebddef171c19b3488fddcd8497ccd",
+      "records": 48
+    },
+    {
+      "checkpoint": 22,
+      "manifest_file_sha256": "77e2ab92830b6025a48b2e626e076bda69ad195b1ea14615e639588687aa33ec",
+      "records": 48
+    },
+    {
+      "checkpoint": 23,
+      "manifest_file_sha256": "fffd8edb97a65e7e7dc73a31c35732e18ad914a139f0081beb091b0ca79b65c7",
+      "records": 48
+    },
+    {
+      "checkpoint": 24,
+      "manifest_file_sha256": "2c5274c1b72a8c4b1a0acf93f1570a7d1fb1e1c373ce8083edbbcf11f3767f7b",
+      "records": 48
+    },
+    {
+      "checkpoint": 25,
+      "manifest_file_sha256": "df705da14c4333d7376a413822c70df0317e30a85dbf02d7b2ef2c20889c0f25",
+      "records": 48
+    },
+    {
+      "checkpoint": 26,
+      "manifest_file_sha256": "342843abe143783d0187aeb988884d7e386ef3c055cd1252df194aaa4224931b",
+      "records": 48
+    },
+    {
+      "checkpoint": 27,
+      "manifest_file_sha256": "d42873fca85335aaa760388c9e9e806fe6b3d663ced4ed1d52d690021252b002",
+      "records": 48
+    },
+    {
+      "checkpoint": 28,
+      "manifest_file_sha256": "cc646a768f4747887c49dcd7ff5d0f010c906fda080fabafd8cf3e7b4f8354c9",
+      "records": 48
+    },
+    {
+      "checkpoint": 29,
+      "manifest_file_sha256": "5f75e90cba351a0401eec8a2125bca416788663f3f5753c4e5163f51501e9e54",
+      "records": 48
+    },
+    {
+      "checkpoint": 30,
+      "manifest_file_sha256": "2f36fb8f5b15b074af63b7bdcc3ba72b35648c3da9c13751930357f5dc1c52f2",
+      "records": 48
+    },
+    {
+      "checkpoint": 31,
+      "manifest_file_sha256": "23c43b07a094e60f4affca057980646caec038e312fb8c8b4d4b62da5d722abf",
+      "records": 48
+    },
+    {
+      "checkpoint": 32,
+      "manifest_file_sha256": "a0179991d97b645e2c05aebf6103185548a58784b38bbe5aa29a767c999fcabc",
+      "records": 48
+    },
+    {
+      "checkpoint": 33,
+      "manifest_file_sha256": "a804897394489289add1b22442d1991a2d5775668f5bd76b77b8afd4f71dab08",
+      "records": 48
+    },
+    {
+      "checkpoint": 34,
+      "manifest_file_sha256": "c767fd88dabd8a17a678dac55fa879d4addb55fba36b7ab675958209cf166cf0",
+      "records": 48
+    },
+    {
+      "checkpoint": 35,
+      "manifest_file_sha256": "94af5a2c46aeb6e144ed88731351877a5910057e5839baf6373f5620777a3e40",
+      "records": 48
+    },
+    {
+      "checkpoint": 36,
+      "manifest_file_sha256": "4cb59e7ed91cabdeb96bd292a67bfe673ce0a262cb04c605a9cf84fad5cb7dcd",
+      "records": 48
+    },
+    {
+      "checkpoint": 37,
+      "manifest_file_sha256": "79be067a84c7614e75aaec58270c1b4a60559467cb5a5d6dc4ddb4fa65d35c86",
+      "records": 48
+    },
+    {
+      "checkpoint": 38,
+      "manifest_file_sha256": "ed5b94cfc119ebda9caf72f27a4964e040ecfab90139e724119f31ab102a132c",
+      "records": 48
+    },
+    {
+      "checkpoint": 39,
+      "manifest_file_sha256": "3a1ff2f789c492735ad84b2913f832c9fde3437f92f6e046d15679f451c95525",
+      "records": 48
+    },
+    {
+      "checkpoint": 40,
+      "manifest_file_sha256": "17979e4091861a8dd21e69de9fda9acb637fb04970de8605a1ad7e7cbe04ecac",
+      "records": 48
+    },
+    {
+      "checkpoint": 41,
+      "manifest_file_sha256": "8cafdf78172e435a829659a58f91636e2bf6d22fe78cef668683ccd41e5d1c86",
+      "records": 48
+    }
+  ],
+  "checks_failed": [],
+  "closure_payload_sha256": "2abacbaa290fbca01fb5b451237e15c121ffaa57d22822764f1f6c8a59f5dbe4",
+  "confirmation_status": "PRIMITIVE_LOCAL_LARGE_SCALE_CONFIRMATION_PASS_STAGE_D",
+  "full_stage_d_metric": {
+    "admission_rate": 0.4548611111111111,
+    "admitted": 917,
+    "distinct_behavior_pair_count": 1465,
+    "evaluated": 2016,
+    "productive": 503,
+    "productive_rate": 0.24950396825396826
+  },
+  "primitive_source_no_stage_c_training": true,
+  "repo_sha": "5e2dd3f9309d1f81238006ab70eb0ea4f2bab591",
+  "restricted_reads_zero": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_stage_d_primitive_confirmation_independent_audit_v1",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "terminal_and_lease_ok": true,
+  "victory_checks": {
+    "behavior_absolute_floor_1008": true,
+    "behavior_relative_floor_1008": true,
+    "gain_concentration_1008": true,
+    "primitive_vs_evolution_delta_1008": true,
+    "primitive_vs_evolution_ratio_1008": true,
+    "primitive_vs_uniform_ratio_1008": true,
+    "primitive_vs_uniform_ratio_168": true,
+    "primitive_vs_uniform_ratio_336": true,
+    "primitive_vs_uniform_ratio_504": true,
+    "template_wins_evolution_1008": true,
+    "template_wins_uniform_1008": true
+  }
+}
