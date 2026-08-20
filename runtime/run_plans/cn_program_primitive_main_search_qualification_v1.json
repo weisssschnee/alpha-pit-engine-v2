@@ -1,0 +1,156 @@
+{
+  "bootstrap_primitive_stats": {
+    "file_sha256": "b3d1c8c2320236b27d541df451292ccdf1959405b920d90d9d81b8b05ee422c4",
+    "payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "source_counts": {
+      "large": 840,
+      "stage_a": 288,
+      "stage_b": 264
+    },
+    "stage_c_results_imported": false,
+    "stage_d_results_imported": false,
+    "unique_program_exact_count": 1392
+  },
+  "decision": "PRIMITIVE_PRIMARY_UNIFORM_RESERVE_EVOLUTION_CHALLENGER",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "evidence_role": "DEVELOPMENT_SEARCH_POLICY_QUALIFICATION_ONLY",
+  "execution_authorized_by_qualification": false,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "implementation": {
+    "large_fresh_v3_bandit_file_sha256": "f1764c73d4140f8b2e79773da853212220c0eedfd279c9c9c9d9aa653e7ecf32",
+    "large_fresh_v3_bandit_relative_path": "src/our_system_phase2/services/program_optimizer_large_fresh_v3.py",
+    "large_fresh_v3_runner_file_sha256": "f8a1e148321cdae5c1e4e36271730e95050d1e552f89c401c7654dc84abfaaf8",
+    "large_fresh_v3_runner_relative_path": "scripts/run_cn_program_optimizer_large_fresh_v3.py",
+    "primitive_scorer_file_sha256": "79a6885a008791c5a289a237bc57044aa511c5526b7b596b0e94017ae5f4ae4e",
+    "primitive_scorer_relative_path": "src/our_system_phase2/services/program_search_primitive_credit_v1.py"
+  },
+  "old_v2_catalog_launch_authorized": false,
+  "online_feedback_contract": {
+    "primitive_prior_mutated_within_campaign": false,
+    "primitive_tell_mode": "FROZEN_PRIOR_AUDIT_ONLY",
+    "typed_evolution_learning": true,
+    "uniform_learning": false
+  },
+  "oos_authority": "NONE",
+  "production_equivalence": {
+    "all_template_orders_match": true,
+    "numeric_max_abs_error": 0.0,
+    "stage_d_candidate_count": 2016,
+    "template_order_match": {
+      "BASE_EVENT": true,
+      "BASE_MARKET": true,
+      "BASE_MARKET_EVENT": true,
+      "BASE_TEMPORAL": true,
+      "BASE_TEMPORAL_EVENT": true,
+      "BASE_TEMPORAL_MARKET": true,
+      "BASE_TEMPORAL_MARKET_EVENT": true
+    }
+  },
+  "promotion_authorized": false,
+  "qualification_payload_sha256": "0a976836d897f6f432a973b431c098f4c04fd91f3caba3e30ee7284e254edc5c",
+  "real_catalog_rehearsal": {
+    "candidate_evaluation_executed": false,
+    "file_sha256": "cd23c35ac46fdda4dfa7d1bbf3e42bc087d2b6d0cdbf172fa0965fdcfc1b9b03",
+    "payload_sha256": "fb7f24797cfe1e8a1c56b7701b8cadd757b2b72e51bc7a6127e71e4ed643585b",
+    "preview_asks": 24,
+    "preview_state_unchanged": true,
+    "program_space_entries": 2274,
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_real_catalog_rehearsal_20260820.json"
+  },
+  "reason_old_v2_catalog_launch_not_authorized": "SPENT_AUTHORITY_MUST_BE_REFRESHED_BEFORE_NEXT_FINANCIAL_CAMPAIGN",
+  "schema_version": "cn_program_primitive_main_search_qualification_v1",
+  "stage_d_confirmation": {
+    "confirmation_status": "PRIMITIVE_LOCAL_LARGE_SCALE_CONFIRMATION_PASS_STAGE_D",
+    "file_sha256": "a7604f01a4aa19037943247100116b9f006f9549546c8feb0d4ba940a3735f11",
+    "payload_sha256": "bb2326c6550a7d2f8f2382756d1cce1de7ccfeb1e0ced9223b80209f3b3c67ed",
+    "primitive_productive_at_1008": 355,
+    "primitive_vs_evolution_ratio_at_1008": 1.1993243243243243,
+    "primitive_vs_uniform_ratio_at_1008": 1.3976377952755905,
+    "relative_path": "runtime/run_plans/cn_program_stage_d_5e2dd3f_independent_audit_20260820.json",
+    "templates_won_vs_evolution_at_1008": 6,
+    "templates_won_vs_uniform_at_1008": 7,
+    "typed_evolution_productive_at_1008": 296,
+    "uniform_seed_mean_productive_at_1008": 254.0
+  },
+  "status": "PRIMITIVE_LOCAL_MAIN_SEARCH_QUALIFIED_V1",
+  "v3_budget_scheduler": {
+    "primitive_checkpoints_per_7_template_macro": 5,
+    "rotation_verified_macros": {
+      "0": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "1": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "10": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "11": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "12": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "13": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "2": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "3": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "4": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "5": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "6": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "7": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "8": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      },
+      "9": {
+        "evolution": 1,
+        "primitive": 5,
+        "uniform": 1
+      }
+    },
+    "typed_evolution_challenger_checkpoints_per_macro": 1,
+    "uniform_reserve_checkpoints_per_macro": 1
+  },
+  "validation_reads": 0
+}

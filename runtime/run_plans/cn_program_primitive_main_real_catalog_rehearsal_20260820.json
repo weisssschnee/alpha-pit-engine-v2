@@ -1,0 +1,19 @@
+{
+  "candidate_evaluation_executed": false,
+  "first_preview_exact": "7bb87ae555146e9dd26f7221bb914d14aabbee3920a79289eacf29326d0e4aaf",
+  "first_preview_score": 0.49751713496246114,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "metadata_entries": 2274,
+  "preview_asks": 24,
+  "preview_state_unchanged": true,
+  "preview_template": "BASE_EVENT",
+  "primitive_stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+  "program_space_entries": 2274,
+  "rehearsal_payload_sha256": "fb7f24797cfe1e8a1c56b7701b8cadd757b2b72e51bc7a6127e71e4ed643585b",
+  "schema_version": "cn_program_primitive_main_real_catalog_rehearsal_v1",
+  "source_repo_sha": "5e2dd3f9309d1f81238006ab70eb0ea4f2bab591",
+  "status": "ZERO_FINANCIAL_PRIMITIVE_MAIN_REAL_CATALOG_REHEARSAL_PASS",
+  "tie_break_unique": 2274,
+  "validation_reads": 0
+}
