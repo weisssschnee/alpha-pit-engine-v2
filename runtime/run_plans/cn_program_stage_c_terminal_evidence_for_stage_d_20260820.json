@@ -1,0 +1,31 @@
+{
+  "evidence_payload_sha256": "2028460d24f08dbd53a74b6fd46b281df82f2a7dc835ad0bf5871f7a50ae773c",
+  "evidence_role": "MOTIVATION_AND_SPENT_LINEAGE_ONLY_NOT_POLICY_TRAINING",
+  "primitive_1008": {
+    "admission_rate": 0.42063492063492064,
+    "admitted": 424,
+    "distinct_behavior_pair_count": 733,
+    "evaluated": 1008,
+    "productive": 346,
+    "productive_rate": 0.34325396825396826
+  },
+  "schema_version": "cn_program_stage_c_terminal_evidence_for_stage_d_v1",
+  "source_audit_file_sha256": "2a46c4038222e620738fc3aae40a2969b5777fbe182d80aeb3b1b0839e09d2ae",
+  "source_audit_relative_path": "runtime/run_plans/cn_program_stage_c_cbaaaee_independent_audit_20260820.json",
+  "source_audit_reported_payload_sha256": "55afd0e79abae59a5d5f8561642328de5338980b21d400994412d11e02c619ea",
+  "source_audit_status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "stage_c_evaluated": 2016,
+  "stage_c_primary_policy_reclassified": false,
+  "stage_d_policy_training_stage_c_results_used": false,
+  "status": "STAGE_C_TERMINAL_EVIDENCE_FROZEN",
+  "system_search_status": "NO_SYSTEM_LARGE_SCALE_SEARCH_VICTORY",
+  "typed_evolution_1008": {
+    "admission_rate": 0.4593253968253968,
+    "admitted": 463,
+    "distinct_behavior_pair_count": 837,
+    "evaluated": 1008,
+    "productive": 295,
+    "productive_rate": 0.2926587301587302
+  },
+  "uniform_seed_mean_productive_count_1008": 242.625
+}
