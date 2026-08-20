@@ -1,0 +1,137 @@
+{
+  "authorization_payload_sha256": "2450845b8ab198c274e095b12918cb92709986c42eda158ae59acd79d03b863d",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_STAGE_D_PRIMITIVE_CONFIRMATION_V1",
+  "campaign_profile": "cn_program_stage_d_primitive_confirmation_v1",
+  "confirmation_contract": {
+    "budgets_per_template": [
+      24,
+      48,
+      72,
+      144
+    ],
+    "classification": {
+      "fail": "PRIMITIVE_LOCAL_LARGE_SCALE_CONFIRMATION_FAIL_STAGE_D",
+      "pass": "PRIMITIVE_LOCAL_LARGE_SCALE_CONFIRMATION_PASS_STAGE_D"
+    },
+    "confirmatory_victory_gate": {
+      "all_restricted_reads_zero": true,
+      "maximum_single_template_fraction_of_positive_productive_gain": 0.5,
+      "minimum_distinct_behavior_pair_count_vs_uniform_mean_ratio_at_1008": 0.8,
+      "minimum_distinct_behavior_pair_rate_at_1008": 0.6666666666666666,
+      "minimum_templates_won_vs_evolution_at_1008": 4,
+      "minimum_templates_won_vs_uniform_mean_at_1008": 5,
+      "primitive_vs_typed_evolution_min_absolute_delta_at_1008": 5,
+      "primitive_vs_typed_evolution_min_ratio_at_1008": 1.05,
+      "primitive_vs_uniform_mean_min_ratio": {
+        "1008": 1.08,
+        "168": 1.15,
+        "336": 1.12,
+        "504": 1.1
+      }
+    },
+    "primary_total_budget": 1008,
+    "total_budgets": [
+      168,
+      336,
+      504,
+      1008
+    ]
+  },
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "official_resource_canary": {
+    "field_column_count": 50,
+    "field_columns_sha256": "ca79227ec6e560a3c3630890f19a5a8d79ae1e0a5c4e0937ddda7f337e6febad",
+    "file_sha256": "6683f3f225f4207691e5129618bc0e3130ab7cda272a213c5ef9c3573699d94a",
+    "payload_sha256": "22a5e4f6c893a7e61a8d9402cbf299393e9d9e10e4563fd2c98d2a8bf6c53483",
+    "runner_source_file_sha256": "0cc724d8ccee977d341fe183b6f36f4f44b294670d37969e28cce90acb9efb72"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "prefinancial_rehearsal": {
+    "field_column_count": 50,
+    "field_columns_sha256": "ca79227ec6e560a3c3630890f19a5a8d79ae1e0a5c4e0937ddda7f337e6febad",
+    "file_sha256": "ce4158dd3e6bba29797f58a8ff6f001b81161525b99384c43911c9a3d0a6da35",
+    "payload_sha256": "c130c68135ad2e19687f26861397a10132492cb8b61d22052e30021563e94733",
+    "relative_path": "runtime/run_plans/cn_program_stage_d_prefinancial_rehearsal_20260820.json",
+    "schedule_count": 2016
+  },
+  "primitive_stats": {
+    "file_sha256": "b3d1c8c2320236b27d541df451292ccdf1959405b920d90d9d81b8b05ee422c4",
+    "payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "rows": 1392,
+    "stage_c_results_in_stats": 0
+  },
+  "project_control_route_id": "cn-program-stage-d-primitive-confirmation-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_size": 48,
+    "cpu_threads": 24,
+    "executor_workers": 24,
+    "field_column_count": 50,
+    "field_columns_sha256": "ca79227ec6e560a3c3630890f19a5a8d79ae1e0a5c4e0937ddda7f337e6febad",
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_stage_d_primitive_confirmation_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_stage_c_authorization": {
+    "file_sha256": "f0bbb6cbd2deb4b6335beddf5715c863bf1ccce12d853699e5ad21c2ebdc5e8e",
+    "payload_sha256": "4ea4b7e2edbbdde0e9c6168185e00ef77712fd4935ad84e68b07164a56bb62f8",
+    "relative_path": "runtime/run_plans/cn_program_stage_c_system_search_authorization_v1.json"
+  },
+  "stage_c_terminal_evidence": {
+    "file_sha256": "6f2b1068db2efb8380dad73a4040f376c89cd3ff06e1f02cf76f0f9aa1b54416",
+    "payload_sha256": "2028460d24f08dbd53a74b6fd46b281df82f2a7dc835ad0bf5871f7a50ae773c",
+    "policy_training_stage_c_results_used": false,
+    "relative_path": "runtime/run_plans/cn_program_stage_c_terminal_evidence_for_stage_d_20260820.json",
+    "system_search_status": "NO_SYSTEM_LARGE_SCALE_SEARCH_VICTORY"
+  },
+  "stage_d_prefreeze": {
+    "cohort_exact_identities_sha256": "48a0e01f20d6e35f1bba339699beab85ffac4635b8e5da22be162b3cef4c8ac5",
+    "file_sha256": "41c4e1ed803ae12e97ec9098d3eb6dc553aba7109c27cc5d7d619d017dac3f2b",
+    "payload_sha256": "dacdc9ebf8af12ae6e500e23aa719745683bd59265c91ca7da2fa191503955a3",
+    "relative_path": "runtime/run_plans/cn_program_stage_d_primitive_confirmation_prefreeze_v1.json",
+    "stage_c_results_in_stats": 0,
+    "total_records": 2016
+  },
+  "stage_d_supply_audit": {
+    "effective_spent_exact_count": 4718,
+    "file_sha256": "dc631c96928dd474134e0142aadc3acf606f017a7bc45eb1e76f482400bce28a",
+    "fresh_unique_count": 3584,
+    "payload_sha256": "d76ba4ab65057a31203afa5b7d76154781e0ccc43da7b3c5a6964c7c9a9b4f09",
+    "raw_ordinal_offset": 1024,
+    "relative_path": "runtime/run_plans/cn_stage_d_expanded_supply_audit_cbaaaee_20260820.json"
+  },
+  "status": "STAGE_D_PRIMITIVE_CONFIRMATION_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
