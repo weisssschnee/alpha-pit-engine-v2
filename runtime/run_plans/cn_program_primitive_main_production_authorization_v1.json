@@ -1,0 +1,93 @@
+{
+  "authorization_payload_sha256": "eb8f598677ad030bbcb82628966e47957bcd04d706e74cad82c1ea62318f6610",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_PRIMITIVE_MAIN_PRODUCTION_V1",
+  "campaign_profile": "cn_program_primitive_main_production_v1",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "fresh_supply": {
+    "effective_spent_exact_count": 6734,
+    "file_sha256": "d425abdf0b833dd156f1809aae1edcb56f3a6eb89b1dcc9103054e4fd1d61abc",
+    "fresh_unique_count": 3576,
+    "payload_sha256": "b39148c7146a64cffaeeb7511f77026fe17f8d4ba1790e87760a89ecb836ac95",
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_fresh_supply_134227f_20260820.json"
+  },
+  "main_search_qualification": {
+    "decision": "PRIMITIVE_PRIMARY_UNIFORM_RESERVE_EVOLUTION_CHALLENGER",
+    "file_sha256": "7ebe1e7602dc54489a3a54d840392be98db78d2c8e361fa9f446d04dbd922f4e",
+    "payload_sha256": "0a976836d897f6f432a973b431c098f4c04fd91f3caba3e30ee7284e254edc5c",
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_search_qualification_v1.json"
+  },
+  "official_resource_canary": {
+    "field_column_count": 53,
+    "field_columns_sha256": "de20ecc7ece503c1f463ae42d055c7efe2df023bef609bfe5a594ddd910dcfc2",
+    "file_sha256": "73e632fa15c2edbc151894bfc6252eaf53498f7ba04b33f5de1702a20e9cb0da",
+    "payload_sha256": "8a7f23c79e0636bdf4aecec59efd988f139916d99a74b18542f55dfcabbe50e5",
+    "runner_source_file_sha256": "eb02e3d33407412281b23ce42e6c971f23cd57fb4109d8e8f4a20047ed17251f"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "primitive_stats": {
+    "file_sha256": "b3d1c8c2320236b27d541df451292ccdf1959405b920d90d9d81b8b05ee422c4",
+    "payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "rows": 1392,
+    "stage_c_results_in_stats": 0,
+    "stage_d_results_in_stats": 0
+  },
+  "production_plan": {
+    "file_sha256": "910b4b71f7e4811c676308227320efb1d193468b9c854d2acdd58aa826fe65f7",
+    "payload_sha256": "250b6475f1b59f08343744ad728952660b1205fed9372f7c013259e6b6c55491",
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_production_plan_v1.json"
+  },
+  "project_control_route_id": "cn-program-primitive-main-production-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "fallback_executor_workers": 16,
+    "field_column_count": 53,
+    "field_columns_sha256": "de20ecc7ece503c1f463ae42d055c7efe2df023bef609bfe5a594ddd910dcfc2",
+    "hard_cap_logical_records": 840,
+    "macro_count": 5,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_main_production_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_mechanism_authorization": {
+    "file_sha256": "0263b9d7040d715e9ddf0112e962706e84ef1f82a332fc144c44bde3ecbcdba9",
+    "payload_sha256": "a4489d67934042a6c25d93a71b7f1cb5e03b4e1e579aa56420daf682d36952a1",
+    "relative_path": "runtime/run_plans/cn_program_disclosure_timing_mechanism_successor_v1.json"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "status": "PRIMITIVE_MAIN_PRODUCTION_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
