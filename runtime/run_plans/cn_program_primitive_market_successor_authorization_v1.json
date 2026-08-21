@@ -1,0 +1,85 @@
+{
+  "authorization_payload_sha256": "0e2686d0ec2a373b84dbf9665a759189c83424e68662d87adda049786dea28ce",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_PRIMITIVE_MARKET_SUCCESSOR_V1",
+  "campaign_profile": "cn_program_primitive_market_successor_v1",
+  "diversity_contract_changed": false,
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "fresh_supply": {
+    "effective_spent_exact_count": 7574,
+    "file_sha256": "d42deec307ff60f738e6581e1d282ceb5797186361fc0c62a8497957ae90b3f6",
+    "fresh_unique_count": 3430,
+    "payload_sha256": "8a0b3051a0b3572534dd76fa3c8e59d20f5bea05382b7d50431f2c453f4db59c",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json"
+  },
+  "implementation": {
+    "runner_source_file_sha256": "1d4496c865e81ff8be19178fca56d5a90fcb680fedf9ef7142f2a66395af4e0a"
+  },
+  "official_resource_canary": {
+    "field_column_count": 53,
+    "field_columns_sha256": "605c27ba170587bf0d13030823282b98c287be5090b73b67c6bb8e897c4843d5",
+    "file_sha256": "d19c61fff2127bb1806c5c6e97abd2c211f176ee76b2f02543bb4eb1195a0f79",
+    "payload_sha256": "072f89091360739a4819179b9f4a4f35e4c9da017903847cb10f7a560c3d47c5",
+    "runner_source_file_sha256": "1d4496c865e81ff8be19178fca56d5a90fcb680fedf9ef7142f2a66395af4e0a"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "production_feedback_imported_into_primitive_stats": false,
+  "project_control_route_id": "cn-program-primitive-market-successor-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_count": 15,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "fallback_executor_workers": 16,
+    "field_column_count": 53,
+    "field_columns_sha256": "605c27ba170587bf0d13030823282b98c287be5090b73b67c6bb8e897c4843d5",
+    "hard_cap_logical_records": 360,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_production_authorization": {
+    "file_sha256": "e50f0d25938a118277b7508b041ddc284b78c86b487089c1dcb48aeb1b4bc6d1",
+    "payload_sha256": "0b8d12868f04abbc962709fd4fe1e9e9eaedd4732a6e940024f01edfa59e6ed6",
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_production_authorization_v1.json"
+  },
+  "status": "PRIMITIVE_MARKET_SUCCESSOR_AUTHORIZED_NOT_RUN",
+  "successor_plan": {
+    "file_sha256": "f659badc5c8115d399c0e30064d347ced1cb4207731f8f8a4afc8419dc1f3ea0",
+    "hard_cap_logical_records": 360,
+    "payload_sha256": "941f3eb0455ce85749f3ec4d8ae5feda858414786bd5952efed18c4019c28cfc",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_plan_v1.json"
+  },
+  "validation_feedback_used": false
+}
