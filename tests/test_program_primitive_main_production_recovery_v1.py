@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import app
 from scripts import run_cn_program_primitive_main_production_recovery_v1 as recovery
+from scripts import run_cn_program_primitive_main_production_v1 as production
 from our_system_phase2.services.candidate_program_proposal_v0 import GENERATION_ARMS, ProgramProposalReceiptV0
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -26,3 +27,8 @@ def test_recovery_prefix_is_frozen_24_plus_816_equals_840():
     assert p['financial_evaluator_reexecution_performed'] is False
     assert p['source_checkpoint1_generation_arm']=='PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1'
     assert p['source_checkpoint1_candidate_records']==0
+
+
+def test_recovery_template_sequence_matches_production():
+    assert recovery.TEMPLATES == production.TEMPLATES
+    assert recovery.TEMPLATES[1] == production.TEMPLATES[1]
