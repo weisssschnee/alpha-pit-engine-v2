@@ -1,0 +1,75 @@
+{
+  "audit_payload_sha256": "2f4696edccadc1287c7450f3f3815392658afe115b08783b900bebb2648a4da9",
+  "checks": {
+    "behavior_recompute": true,
+    "checkpoint_count": true,
+    "checkpoint_hash_chain": true,
+    "closure_self_hash": true,
+    "closure_spent_overlap_zero": true,
+    "original_prospective_gate_recompute": true,
+    "productive_recompute": true,
+    "record_geometry": true,
+    "record_self_hash": true,
+    "restricted_reads_zero": true,
+    "schedule_binding": true,
+    "selected_in_fresh_supply": true,
+    "selected_unique": true
+  },
+  "closure_payload_sha256": "c6785ea4739499b123f471cf707760f92f9e5db42df420d7064f9dd1c48f2952",
+  "core_controls": {
+    "admitted": 52,
+    "evaluated": 96,
+    "productive": 22,
+    "productive_rate": 0.22916666666666666,
+    "stable_uplift_2of3": 19,
+    "stable_uplift_2of3_rate": 0.19791666666666666
+  },
+  "core_primitive": {
+    "admitted": 78,
+    "evaluated": 144,
+    "productive": 60,
+    "productive_rate": 0.4166666666666667,
+    "stable_uplift_2of3": 45,
+    "stable_uplift_2of3_rate": 0.3125
+  },
+  "core_productive_rate_ratio": 1.8181818181818183,
+  "core_stable_uplift_rate_ratio": 1.5789473684210527,
+  "counts": {
+    "behavior_pairs": 289,
+    "productive": 127,
+    "records": 360,
+    "selected_unique": 360
+  },
+  "oos_authority": "NONE",
+  "original_gate_checks": {
+    "behavior_pair_rate": true,
+    "core_primitive_rate": true,
+    "core_vs_controls_ratio": true,
+    "each_core_template": true,
+    "total_productive": true
+  },
+  "per_core_primitive": {
+    "BASE_MARKET": {
+      "admitted": 31,
+      "evaluated": 72,
+      "productive": 21
+    },
+    "BASE_MARKET_EVENT": {
+      "admitted": 47,
+      "evaluated": 72,
+      "productive": 39
+    }
+  },
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v1_independent_terminal_audit_v1",
+  "source_repo_sha": "c38fe0a5d153506ae084c9d4aa0b1dc519d9e021",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_market_successor_20260821_c38fe0a",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT"
+}

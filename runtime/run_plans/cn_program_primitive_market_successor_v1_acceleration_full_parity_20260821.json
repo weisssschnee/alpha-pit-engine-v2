@@ -1,0 +1,19 @@
+{
+  "accelerated_mean_checkpoint_wall_seconds": 106.39306475333093,
+  "accelerated_run_classification": "DIAGNOSTIC_PARITY_REPLAY_ONLY",
+  "accelerated_wall_seconds": 1680.1996117000235,
+  "audit_payload_sha256": "d74826122f3391dacf24dfac0f6f65ccbb2dc2b623bdbefe5c056c983401d20e",
+  "behavior_a": 289,
+  "behavior_b": 289,
+  "economic_drift_count": 0,
+  "economic_drift_examples": [],
+  "gate_a": "PRIMITIVE_MARKET_SUCCESSOR_TRANSFER_PASS",
+  "gate_b": "PRIMITIVE_MARKET_SUCCESSOR_TRANSFER_PASS",
+  "old_wall_seconds": 2117.6935476999497,
+  "productive_a": 127,
+  "productive_b": 127,
+  "records_a": 360,
+  "records_b": 360,
+  "selected_set_reused_for_search_evidence": false,
+  "status": "PASS_FULL_360_ECONOMIC_PARITY"
+}
