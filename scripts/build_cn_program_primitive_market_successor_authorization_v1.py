@@ -1,0 +1,27 @@
+from __future__ import annotations
+import argparse,hashlib,json
+from pathlib import Path
+from typing import Any
+from our_system_phase2.runtime import cn_program_primitive_main_production_v1 as source_runtime
+from our_system_phase2.runtime import cn_program_primitive_market_successor_v1 as runtime
+from our_system_phase2.services.project_control_admission import ACTION_LAUNCH,ACTION_RETRY,sha256_file
+from our_system_phase2.services.unified_capability_registry import stable_hash
+
+def read(p:Path)->dict[str,Any]:return json.loads(p.read_text(encoding='utf-8-sig'))
+def selfhash(p:Path,field:str)->tuple[dict[str,Any],str]:
+ x=read(p);body=dict(x);claim=str(body.pop(field,''))
+ if not claim or stable_hash(body)!=claim:raise ValueError(f'self-hash drift:{p}')
+ return x,claim
+
+def build(repo:Path,canary:Path)->dict[str,Any]:
+ repo=repo.resolve();source_path=repo/source_runtime.AUTHORIZATION_RELATIVE_PATH;source=source_runtime.verify_authorization(source_path,repo_root=repo);plan_path=repo/runtime.PLAN_RELATIVE_PATH;plan,plan_hash=selfhash(plan_path,'plan_payload_sha256');supply_path=repo/Path(plan['fresh_supply']['relative_path']);supply,supply_hash=selfhash(supply_path,'audit_payload_sha256')
+ raw=canary.resolve().read_bytes();can_file=hashlib.sha256(raw).hexdigest();c=json.loads(raw.decode('utf-8-sig'));body=dict(c);can_hash=str(body.pop('official_canary_payload_sha256',''))
+ if not can_hash or stable_hash(body)!=can_hash or c.get('status')!='PASS' or c.get('candidate_evaluation_executed') is not False or int(c.get('preview_selected_count') or 0)!=360:raise ValueError('market successor canary not PASS')
+ runner=repo/'scripts/run_cn_program_primitive_market_successor_v1.py';runner_sha=sha256_file(runner)
+ if c.get('runner_source_file_sha256')!=runner_sha or c.get('successor_plan_payload_sha256')!=plan_hash or c.get('fresh_supply_payload_sha256')!=supply_hash:raise ValueError('market successor canary binding drift')
+ p={'schema_version':runtime.AUTHORIZATION_SCHEMA,'status':'PRIMITIVE_MARKET_SUCCESSOR_AUTHORIZED_NOT_RUN','execution_authorized':True,'campaign_id':runtime.CAMPAIGN_ID,'campaign_profile':runtime.CAMPAIGN_PROFILE,'project_control_route_id':runtime.ROUTE_ID,'permitted_project_control_actions':[ACTION_LAUNCH,ACTION_RETRY],'evaluation_data_role':'DEVELOPMENT_ONLY','source_production_authorization':{'relative_path':str(source_runtime.AUTHORIZATION_RELATIVE_PATH).replace('\\','/'),'file_sha256':sha256_file(source_path),'payload_sha256':source['authorization_payload_sha256']},'source_prior_exact':dict(source['source_prior_exact']),'source_evaluator_authority':dict(source['source_evaluator_authority']),'successor_plan':{'relative_path':str(runtime.PLAN_RELATIVE_PATH).replace('\\','/'),'file_sha256':sha256_file(plan_path),'payload_sha256':plan_hash,'hard_cap_logical_records':360},'fresh_supply':{'relative_path':str(plan['fresh_supply']['relative_path']),'file_sha256':sha256_file(supply_path),'payload_sha256':supply_hash,'effective_spent_exact_count':7574,'fresh_unique_count':3430},'implementation':{'runner_source_file_sha256':runner_sha},'resource_contract':{'profile':'SEARCH_DUAL_24','cpu_threads':24,'primary_executor_workers':24,'fallback_executor_workers':16,'checkpoint_size':24,'checkpoint_count':15,'hard_cap_logical_records':360,'field_column_count':int(c['field_column_count']),'field_columns_sha256':str(c['field_columns_sha256']),'candidate_evaluation_during_canary':False},'official_resource_canary':{'file_sha256':can_file,'payload_sha256':can_hash,'runner_source_file_sha256':runner_sha,'field_column_count':int(c['field_column_count']),'field_columns_sha256':str(c['field_columns_sha256'])},'production_feedback_imported_into_primitive_stats':False,'diversity_contract_changed':False,'restricted_reads':{'validation':0,'holdout':0,'historical_2023':0,'forward_b':0,'forward_2026':0},'validation_feedback_used':False,'oos_authority':'NONE','promotion_authorized':False,'automatic_successor_authorized':False}
+ p['authorization_payload_sha256']=stable_hash(p);return p
+
+def main(argv=None):
+ q=argparse.ArgumentParser();q.add_argument('--repo-root',type=Path,default=Path(__file__).resolve().parents[1]);q.add_argument('--official-resource-canary',type=Path,required=True);q.add_argument('--output',type=Path,default=runtime.AUTHORIZATION_RELATIVE_PATH);a=q.parse_args(argv);p=build(a.repo_root,a.official_resource_canary);out=a.output if a.output.is_absolute() else a.repo_root/a.output;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(p,ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8');print(json.dumps({'status':p['status'],'authorization_payload_sha256':p['authorization_payload_sha256'],'output':str(out.resolve())},sort_keys=True))
+if __name__=='__main__':main()

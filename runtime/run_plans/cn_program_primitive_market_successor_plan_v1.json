@@ -1,0 +1,257 @@
+{
+  "automatic_successor_authorized": false,
+  "budget": {
+    "checkpoint_count": 15,
+    "checkpoint_size": 24,
+    "core_template_records": 240,
+    "exploration_records": 120,
+    "hard_cap_logical_records": 360,
+    "primitive_records": 264,
+    "typed_evolution_records": 48,
+    "uniform_records": 48
+  },
+  "candidate_evaluation_executed": false,
+  "core_templates": [
+    "BASE_MARKET",
+    "BASE_MARKET_EVENT"
+  ],
+  "design_reason": "Production search showed strong template heterogeneity: unchanged Primitive scored 42/96 productive on BASE_MARKET and 36/96 on BASE_MARKET_EVENT, versus 43/408 across all other Primitive templates and 0/72 on BASE_TEMPORAL. This successor changes only budget allocation; scorer, primitive stats, evaluator, diversity contract and component universe remain frozen.",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "excluded_from_successor": [
+    "BASE_TEMPORAL",
+    "BASE_TEMPORAL_MARKET"
+  ],
+  "exploration_templates": [
+    "BASE_EVENT",
+    "BASE_TEMPORAL_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT"
+  ],
+  "fresh_supply": {
+    "effective_spent_exact_count": 7574,
+    "file_sha256": "d42deec307ff60f738e6581e1d282ceb5797186361fc0c62a8497957ae90b3f6",
+    "fresh_exact_identities_sha256": "9617d4433eb77cc0a6cd6ec69e7783f06f559238213200471597125ac9e86551",
+    "fresh_unique_count": 3430,
+    "payload_sha256": "8a0b3051a0b3572534dd76fa3c8e59d20f5bea05382b7d50431f2c453f4db59c",
+    "raw_ordinal_offset": 2048,
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json"
+  },
+  "oos_authority": "NONE",
+  "plan_payload_sha256": "941f3eb0455ce85749f3ec4d8ae5feda858414786bd5952efed18c4019c28cfc",
+  "production_evidence": {
+    "primitive_base_temporal": {
+      "evaluated": 72,
+      "productive": 0,
+      "rate": 0.0
+    },
+    "primitive_core_market": {
+      "base_market": {
+        "evaluated": 96,
+        "productive": 42
+      },
+      "base_market_event": {
+        "evaluated": 96,
+        "productive": 36
+      },
+      "evaluated": 192,
+      "productive": 78,
+      "rate": 0.40625
+    },
+    "primitive_noncore": {
+      "evaluated": 408,
+      "productive": 43,
+      "rate": 0.1053921568627451
+    },
+    "primitive_total": {
+      "evaluated": 600,
+      "productive": 121,
+      "rate": 0.20166666666666666
+    },
+    "production_labels_used_to_mutate_scorer": false,
+    "source_terminal_evidence_commit": "03bc18b72eabfb075bf60108a4f8c666ffc4c945",
+    "total_productive": 162,
+    "total_records": 840,
+    "typed_evolution_total": {
+      "evaluated": 120,
+      "productive": 21,
+      "rate": 0.175
+    },
+    "uniform_total": {
+      "evaluated": 120,
+      "productive": 20,
+      "rate": 0.16666666666666666
+    }
+  },
+  "promotion_authorized": false,
+  "prospective_gate": {
+    "behavior_pair_rate_min": 0.7,
+    "core_primitive_productive_rate_min": 0.28,
+    "core_primitive_to_combined_core_controls_rate_ratio_min": 1.15,
+    "each_core_template_primitive_productive_rate_min": 0.25,
+    "effective_spent_overlap_count_required": 0,
+    "restricted_reads_required_zero": true,
+    "total_productive_count_min": 70
+  },
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "fallback_executor_workers": 16,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schedule": [
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 0,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 0,
+      "template": "BASE_MARKET",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 1,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 24,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 2,
+      "checkpoint_size": 24,
+      "role": "EXPLORATION",
+      "start_ordinal": 48,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 3,
+      "checkpoint_size": 24,
+      "role": "CORE_CONTROL",
+      "start_ordinal": 72,
+      "template": "BASE_MARKET",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 4,
+      "checkpoint_size": 24,
+      "role": "CORE_CONTROL",
+      "start_ordinal": 96,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 5,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 120,
+      "template": "BASE_MARKET",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 6,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 144,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 7,
+      "checkpoint_size": 24,
+      "role": "EXPLORATION",
+      "start_ordinal": 168,
+      "template": "BASE_TEMPORAL_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 8,
+      "checkpoint_size": 24,
+      "role": "CORE_CONTROL",
+      "start_ordinal": 192,
+      "template": "BASE_MARKET",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 9,
+      "checkpoint_size": 24,
+      "role": "CORE_CONTROL",
+      "start_ordinal": 216,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 10,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 240,
+      "template": "BASE_MARKET",
+      "template_start_ordinal": 96
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 11,
+      "checkpoint_size": 24,
+      "role": "CORE",
+      "start_ordinal": 264,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 96
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 12,
+      "checkpoint_size": 24,
+      "role": "EXPLORATION",
+      "start_ordinal": 288,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 13,
+      "checkpoint_size": 24,
+      "role": "EXPLORATION",
+      "start_ordinal": 312,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 14,
+      "checkpoint_size": 24,
+      "role": "EXPLORATION",
+      "start_ordinal": 336,
+      "template": "BASE_TEMPORAL_EVENT",
+      "template_start_ordinal": 24
+    }
+  ],
+  "schema_version": "cn_program_primitive_market_successor_plan_v1",
+  "search_authority": {
+    "diversity_contract_changed": false,
+    "max_variants_per_base_per_template": 4,
+    "primitive_stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "primitive_stats_relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "production_feedback_imported_into_primitive_stats": false,
+    "production_results_in_stats": 0,
+    "stage_c_results_in_stats": 0,
+    "stage_d_results_in_stats": 0
+  },
+  "status": "PRIMITIVE_MARKET_SUCCESSOR_PLAN_FROZEN_NOT_RUN",
+  "validation_feedback_used": false
+}
