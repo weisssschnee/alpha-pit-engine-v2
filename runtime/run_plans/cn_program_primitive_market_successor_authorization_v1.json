@@ -1,5 +1,11 @@
 {
-  "authorization_payload_sha256": "0e2686d0ec2a373b84dbf9665a759189c83424e68662d87adda049786dea28ce",
+  "acceleration_accuracy_audit": {
+    "file_sha256": "578ed41011d4884b30de1f91d2620ff411250dd5e173792808ea722b96dec460",
+    "payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json",
+    "status": "PASS_SUCCESSOR_REAUTH_ELIGIBLE"
+  },
+  "authorization_payload_sha256": "660bc96fdd69cf3d9b1b67b4dc8e5265178d9d91de7acb25eef2f453bf06fa51",
   "automatic_successor_authorized": false,
   "campaign_id": "CN_PROGRAM_PRIMITIVE_MARKET_SUCCESSOR_V1",
   "campaign_profile": "cn_program_primitive_market_successor_v1",
@@ -14,14 +20,16 @@
     "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json"
   },
   "implementation": {
-    "runner_source_file_sha256": "1d4496c865e81ff8be19178fca56d5a90fcb680fedf9ef7142f2a66395af4e0a"
+    "runner_source_file_sha256": "d5beed51a2113088ac3988a7ceafa113fcc9d08ddf6e8071bbfd3b20286831e7"
   },
   "official_resource_canary": {
+    "acceleration_accuracy_audit_payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
     "field_column_count": 53,
     "field_columns_sha256": "605c27ba170587bf0d13030823282b98c287be5090b73b67c6bb8e897c4843d5",
-    "file_sha256": "d19c61fff2127bb1806c5c6e97abd2c211f176ee76b2f02543bb4eb1195a0f79",
-    "payload_sha256": "072f89091360739a4819179b9f4a4f35e4c9da017903847cb10f7a560c3d47c5",
-    "runner_source_file_sha256": "1d4496c865e81ff8be19178fca56d5a90fcb680fedf9ef7142f2a66395af4e0a"
+    "file_sha256": "e10f74cf9a1abf2918cd5ab3d20fa8dbe3b8ae017191f56d8de77e1abae73399",
+    "payload_sha256": "6f31d79920fde62fca041d86b971a477eda83149f2f6b7ffb7f0212054172918",
+    "runner_source_file_sha256": "d5beed51a2113088ac3988a7ceafa113fcc9d08ddf6e8071bbfd3b20286831e7"
   },
   "oos_authority": "NONE",
   "permitted_project_control_actions": [
@@ -36,12 +44,17 @@
     "checkpoint_count": 15,
     "checkpoint_size": 24,
     "cpu_threads": 24,
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
     "fallback_executor_workers": 16,
     "field_column_count": 53,
     "field_columns_sha256": "605c27ba170587bf0d13030823282b98c287be5090b73b67c6bb8e897c4843d5",
     "hard_cap_logical_records": 360,
+    "minimum_free_memory_bytes": 25769803776,
+    "minimum_records_per_hour_after_first_checkpoint": 650.0,
+    "persistent_pool_record_hash_parity_required": true,
     "primary_executor_workers": 24,
-    "profile": "SEARCH_DUAL_24"
+    "profile": "SEARCH_DUAL_24",
+    "wall_clock_budget_minutes": 50
   },
   "restricted_reads": {
     "forward_2026": 0,
@@ -76,9 +89,9 @@
   },
   "status": "PRIMITIVE_MARKET_SUCCESSOR_AUTHORIZED_NOT_RUN",
   "successor_plan": {
-    "file_sha256": "f659badc5c8115d399c0e30064d347ced1cb4207731f8f8a4afc8419dc1f3ea0",
+    "file_sha256": "2dbfc55addf6c93be85b418508542910dafe93b4316fdbb4beb5412d2f955f4f",
     "hard_cap_logical_records": 360,
-    "payload_sha256": "941f3eb0455ce85749f3ec4d8ae5feda858414786bd5952efed18c4019c28cfc",
+    "payload_sha256": "c2e96dce0ba7762a3f1e5b4dc4c6228ea330af58bea8eab88682922286f44ba2",
     "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_plan_v1.json"
   },
   "validation_feedback_used": false
