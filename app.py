@@ -83,6 +83,7 @@ ROUTES: dict[str, str] = {
     "cn-program-stage-c-system-search-v1": "our_system_phase2.runtime.cn_program_stage_c_system_search_v1",
     "cn-program-stage-d-primitive-confirmation-v1": "our_system_phase2.runtime.cn_program_stage_d_primitive_confirmation_v1",
     "cn-program-primitive-main-production-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_v1",
+    "cn-program-primitive-main-production-recovery-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_recovery_v1",
     "cn-program-optimizer-d1-report-only-validation-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_report_only_validation_v1",
     "cn-program-optimizer-d1-transfer-prospective-validation-v1": "our_system_phase2.runtime.cn_program_optimizer_d1_transfer_prospective_validation_v1",
     "cn-typed-candidate-program-v1-smoke": "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke",
@@ -162,6 +163,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-primitive-main-production-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
+    ),
+    "cn-program-primitive-main-production-recovery-v1": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-optimizer-d1-report-only-validation-v1": frozenset(
