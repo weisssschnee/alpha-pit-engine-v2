@@ -1,0 +1,117 @@
+{
+  "acceleration_accuracy_audit": {
+    "file_sha256": "578ed41011d4884b30de1f91d2620ff411250dd5e173792808ea722b96dec460",
+    "payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json",
+    "status": "PASS_SUCCESSOR_REAUTH_ELIGIBLE"
+  },
+  "authorization_payload_sha256": "f89a43d27447da9c688dde8659aeac7b5c0c25f7e1c4202608d744b7bee54454",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_PRIMITIVE_MARKET_SUCCESSOR_V2",
+  "campaign_profile": "cn_program_primitive_market_successor_v2",
+  "diversity_contract_changed": false,
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "fresh_supply": {
+    "effective_spent_exact_count": 7934,
+    "file_sha256": "f267f8fc78fd8274049bc8670254871f3ca841529bd5813ba5bb048cd19c4ee1",
+    "fresh_unique_count": 3139,
+    "payload_sha256": "224aa804da4f37b2ed6d8ec7f1d8b2b2fb0279e85c975664fa5a46c0b9c393d6",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v2_fresh_supply_20260821.json"
+  },
+  "implementation": {
+    "runner_source_file_sha256": "697d5252a7d42033055645dd075398048d21c04a74f70c8e3ed70bbb0d5854b7"
+  },
+  "official_resource_canary": {
+    "acceleration_accuracy_audit_payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
+    "field_column_count": 53,
+    "field_columns_sha256": "9bff98dcea7dc846f5ab5607054c59359d080ac801a8a1671ea9b969ed8517fb",
+    "file_sha256": "90bd088cd257d0582f62e1ee9c182309c4d6bc62c61833c8b58d12032e805abd",
+    "payload_sha256": "762c0fb5ad42416883c85a56881bd5159e7a7cd49db483fb9d0c606e8982db61",
+    "runner_source_file_sha256": "697d5252a7d42033055645dd075398048d21c04a74f70c8e3ed70bbb0d5854b7",
+    "source_v1_acceleration_full_parity_payload_sha256": "d74826122f3391dacf24dfac0f6f65ccbb2dc2b623bdbefe5c056c983401d20e",
+    "source_v1_terminal_audit_payload_sha256": "2f4696edccadc1287c7450f3f3815392658afe115b08783b900bebb2648a4da9"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "production_feedback_imported_into_primitive_stats": false,
+  "project_control_route_id": "cn-program-primitive-market-successor-v2",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_count": 15,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
+    "fallback_executor_workers": 16,
+    "field_column_count": 53,
+    "field_columns_sha256": "9bff98dcea7dc846f5ab5607054c59359d080ac801a8a1671ea9b969ed8517fb",
+    "hard_cap_logical_records": 360,
+    "minimum_free_memory_bytes": 25769803776,
+    "minimum_records_per_hour_after_first_checkpoint": 650.0,
+    "persistent_pool_record_hash_parity_required": true,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24",
+    "throughput_enforcement_after_warm_checkpoints": 2,
+    "wall_clock_budget_minutes": 50
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v2_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_production_authorization": {
+    "file_sha256": "e50f0d25938a118277b7508b041ddc284b78c86b487089c1dcb48aeb1b4bc6d1",
+    "payload_sha256": "0b8d12868f04abbc962709fd4fe1e9e9eaedd4732a6e940024f01edfa59e6ed6",
+    "relative_path": "runtime/run_plans/cn_program_primitive_main_production_authorization_v1.json"
+  },
+  "source_v1_acceleration_full_parity": {
+    "accelerated_run_classification": "DIAGNOSTIC_PARITY_REPLAY_ONLY",
+    "accelerated_run_search_evidence_authorized": false,
+    "economic_drift_count": 0,
+    "file_sha256": "474d587dd5f436a54d810349be7008dc965cac9303b02b0d63c1dad8e9ec4769",
+    "payload_sha256": "d74826122f3391dacf24dfac0f6f65ccbb2dc2b623bdbefe5c056c983401d20e",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v1_acceleration_full_parity_20260821.json"
+  },
+  "source_v1_terminal_audit": {
+    "closure_payload_sha256": "c6785ea4739499b123f471cf707760f92f9e5db42df420d7064f9dd1c48f2952",
+    "file_sha256": "e0dee58a52eff1bb3741cba60486c5fa73bf6216d7114025733d9931b2287fb6",
+    "payload_sha256": "2f4696edccadc1287c7450f3f3815392658afe115b08783b900bebb2648a4da9",
+    "records": 360,
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v1_independent_audit_c38fe0a_20260821.json"
+  },
+  "status": "PRIMITIVE_MARKET_SUCCESSOR_V2_AUTHORIZED_NOT_RUN",
+  "successor_plan": {
+    "file_sha256": "78633d1bdded6dc7187f9940498567be4286b3e829a97e41149106c991d268ab",
+    "hard_cap_logical_records": 360,
+    "payload_sha256": "3b6ea89070450a171e9ecf0386af0ef6b3ff6c47230880463e1cd71582534020",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v2_plan.json"
+  },
+  "v1_successor_feedback_imported_into_primitive_stats": false,
+  "validation_feedback_used": false
+}
