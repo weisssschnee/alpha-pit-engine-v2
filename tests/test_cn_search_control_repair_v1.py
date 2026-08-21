@@ -1092,7 +1092,21 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
             and isinstance(statement.value.func, ast.Attribute)
             and statement.value.func.attr == "parse_args"
         )
-        target_check = main.body[parse_index + 1]
+        target_indices = [
+            index
+            for index, statement in enumerate(main.body)
+            if isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == "verify_consumed_admission_target"
+        ]
+        assert len(target_indices) == 1
+        target_index = target_indices[0]
+        assert target_index > parse_index
+        for statement in main.body[parse_index + 1 : target_index]:
+            assert isinstance(statement, ast.Assign)
+            assert not any(isinstance(node, ast.Call) for node in ast.walk(statement))
+        target_check = main.body[target_index]
         assert isinstance(target_check, ast.Expr)
         assert isinstance(target_check.value, ast.Call)
         assert isinstance(target_check.value.func, ast.Name)
