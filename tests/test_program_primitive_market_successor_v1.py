@@ -19,6 +19,11 @@ def test_plan_is_frozen_360_and_stats_unchanged():
  assert p['search_authority']['diversity_contract_changed'] is False
  assert p['fresh_supply']['effective_spent_exact_count']==7574
  assert p['fresh_supply']['fresh_unique_count']==3430
+ assert p['acceleration_accuracy_audit']['status']=='PASS_SUCCESSOR_REAUTH_ELIGIBLE'
+ assert p['resource_contract']['evaluator_pool_lifetime']=='PERSISTENT_RUN_SCOPE'
+ assert p['resource_contract']['primary_executor_workers']==24
+ assert p['resource_contract']['fallback_executor_workers']==16
+ assert p['resource_contract']['minimum_records_per_hour_after_first_checkpoint']==650.0
 
 def test_schedule_core_and_exploration_geometry():
  p=r.verify_plan(PLAN); s=p['schedule']
@@ -47,3 +52,37 @@ def test_core_gate_is_prospective_and_non_oos():
  assert p['validation_feedback_used'] is False
  assert p['oos_authority']=='NONE'
  assert p['automatic_successor_authorized'] is False
+
+
+def test_persistent_executor_uses_full_frozen_field_union():
+ authority={'execution_contract_path':'contract','train_field_root':'fields','train_price_root':'prices','price_manifest':{'x':1},'price_manifest_path':'price_manifest','registry_path':'registry','windows':({'window_id':'w'},),'field_manifest_file_sha':'f','field_manifest_payload_sha':'p'}
+ fields=('trade_time','code','close','open','ctx_sent_uplimit_num')
+ opts=r._persistent_executor_options(authority,'inputhash',24,fields)
+ assert opts['max_workers']==24
+ assert opts['initializer'] is r.engine._initialize_worker
+ assert opts['initargs'][-1]==fields
+ assert opts['initargs'][6]=='inputhash'
+
+def test_input_binding_declares_persistent_run_scope_executor():
+ source=(ROOT/'scripts/run_cn_program_primitive_market_successor_v1.py').read_text(encoding='utf-8')
+ assert "'evaluator_pool_lifetime':'PERSISTENT_RUN_SCOPE'" in source
+ assert "'executor_lifetime':'PERSISTENT_RUN_SCOPE'" in source
+ assert 'evaluator_telemetry.json' in source
+
+
+def test_uplift_stable_metric_requires_productive_and_two_positive_windows():
+ row={'absolute_admission':{'admitted':True},'enhancer_credit':{'program_credit':{'matched_cumulative_net_return_increment':0.1,'matched_net_reward_increment':0.2,'cross_window_positive_increment_count':2}}}
+ assert r._uplift_stable_2of3(row) is True
+ row['enhancer_credit']['program_credit']['cross_window_positive_increment_count']=1
+ assert r._uplift_stable_2of3(row) is False
+ row['enhancer_credit']['program_credit']['cross_window_positive_increment_count']=3
+ row['absolute_admission']['admitted']=False
+ assert r._uplift_stable_2of3(row) is False
+
+def test_plan_freezes_prospective_uplift_stability_gates():
+ p=r.verify_plan(PLAN);g=p['prospective_gate'];e=p['production_evidence']
+ assert g['core_primitive_uplift_stable_2of3_rate_min']==0.20
+ assert g['core_primitive_to_combined_core_controls_uplift_stable_rate_ratio_min']==1.50
+ assert g['each_core_template_primitive_uplift_stable_2of3_rate_min']==0.15
+ assert e['primitive_core_market']['uplift_stable_2of3']==60
+ assert e['combined_core_controls']['uplift_stable_2of3']==4

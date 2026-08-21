@@ -1,4 +1,10 @@
 {
+  "acceleration_accuracy_audit": {
+    "file_sha256": "578ed41011d4884b30de1f91d2620ff411250dd5e173792808ea722b96dec460",
+    "payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json",
+    "status": "PASS_SUCCESSOR_REAUTH_ELIGIBLE"
+  },
   "automatic_successor_authorized": false,
   "budget": {
     "checkpoint_count": 15,
@@ -36,8 +42,15 @@
     "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json"
   },
   "oos_authority": "NONE",
-  "plan_payload_sha256": "941f3eb0455ce85749f3ec4d8ae5feda858414786bd5952efed18c4019c28cfc",
+  "plan_payload_sha256": "c2e96dce0ba7762a3f1e5b4dc4c6228ea330af58bea8eab88682922286f44ba2",
   "production_evidence": {
+    "combined_core_controls": {
+      "evaluated": 48,
+      "productive": 9,
+      "rate": 0.1875,
+      "uplift_stable_2of3": 4,
+      "uplift_stable_2of3_rate": 0.08333333333333333
+    },
     "primitive_base_temporal": {
       "evaluated": 72,
       "productive": 0,
@@ -46,15 +59,21 @@
     "primitive_core_market": {
       "base_market": {
         "evaluated": 96,
-        "productive": 42
+        "productive": 42,
+        "uplift_stable_2of3": 37,
+        "uplift_stable_2of3_rate": 0.3854166666666667
       },
       "base_market_event": {
         "evaluated": 96,
-        "productive": 36
+        "productive": 36,
+        "uplift_stable_2of3": 23,
+        "uplift_stable_2of3_rate": 0.23958333333333334
       },
       "evaluated": 192,
       "productive": 78,
-      "rate": 0.40625
+      "rate": 0.40625,
+      "uplift_stable_2of3": 60,
+      "uplift_stable_2of3_rate": 0.3125
     },
     "primitive_noncore": {
       "evaluated": 408,
@@ -86,16 +105,29 @@
     "behavior_pair_rate_min": 0.7,
     "core_primitive_productive_rate_min": 0.28,
     "core_primitive_to_combined_core_controls_rate_ratio_min": 1.15,
+    "core_primitive_to_combined_core_controls_uplift_stable_rate_ratio_min": 1.5,
+    "core_primitive_uplift_stable_2of3_rate_min": 0.2,
     "each_core_template_primitive_productive_rate_min": 0.25,
+    "each_core_template_primitive_uplift_stable_2of3_rate_min": 0.15,
     "effective_spent_overlap_count_required": 0,
     "restricted_reads_required_zero": true,
     "total_productive_count_min": 70
   },
   "resource_contract": {
+    "canary_page_in_out_required_zero": true,
     "candidate_evaluation_during_canary": false,
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
     "fallback_executor_workers": 16,
+    "minimum_free_memory_bytes": 25769803776,
+    "minimum_records_per_hour_after_first_checkpoint": 650.0,
+    "persistent_24_speedup_vs_16": 1.2214290023403258,
+    "persistent_pool_ab_speedup_vs_old": 1.1059338668084857,
+    "persistent_pool_record_hash_parity_required": true,
     "primary_executor_workers": 24,
-    "profile": "SEARCH_DUAL_24"
+    "profile": "SEARCH_DUAL_24",
+    "saturated_compute_requirement": "COUNTERFACTUAL_24_VS_16_THROUGHPUT_PASS",
+    "throughput_enforcement_after_warm_checkpoints": 2,
+    "wall_clock_budget_minutes": 50
   },
   "restricted_reads": {
     "forward_2026": 0,

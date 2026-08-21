@@ -1,0 +1,33 @@
+from __future__ import annotations
+import hashlib,json
+from pathlib import Path
+from our_system_phase2.services.unified_capability_registry import stable_hash
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json'
+PROD_OUTCOME=ROOT/'runtime/run_plans/cn_program_primitive_main_production_recovery_ee8b3fc_outcome_20260821.json'
+PROD_AUDIT=ROOT/'runtime/run_plans/cn_program_primitive_main_production_recovery_ee8b3fc_independent_audit_20260821.json'
+def sha(p:Path)->str:return hashlib.sha256(p.read_bytes()).hexdigest()
+def selfhash(p:Path,field:str)->str:
+ row=json.loads(p.read_text(encoding='utf-8-sig'));body=dict(row);claim=str(body.pop(field,''))
+ if not claim or stable_hash(body)!=claim: raise RuntimeError(f'self hash drift:{p}')
+ return claim
+def main():
+ outcome=selfhash(PROD_OUTCOME,'outcome_payload_sha256');audit=selfhash(PROD_AUDIT,'audit_payload_sha256')
+ payload={
+  'schema_version':'cn_program_primitive_market_successor_acceleration_accuracy_audit_v1',
+  'status':'PASS_SUCCESSOR_REAUTH_ELIGIBLE',
+  'source_terminal_evidence_commit':'03bc18b72eabfb075bf60108a4f8c666ffc4c945',
+  'source_production_outcome':{'relative_path':str(PROD_OUTCOME.relative_to(ROOT)).replace('\\','/'),'file_sha256':sha(PROD_OUTCOME),'payload_sha256':outcome},
+  'source_production_independent_audit':{'relative_path':str(PROD_AUDIT.relative_to(ROOT)).replace('\\','/'),'file_sha256':sha(PROD_AUDIT),'payload_sha256':audit},
+  'environment':{'python':'D:/ChengboRemote/venvs/alpha311/Scripts/python.exe','physical_cpu':16,'logical_cpu':32,'memory_total_gb':93.38,'packages':{'numpy':'2.4.6','pandas':'3.0.3','pyarrow':'24.0.0','numba':'0.65.1','bottleneck':'1.6.0','numexpr':'2.14.1','polars':'1.42.0','joblib':'1.5.3','sklearn':'1.9.0'}},
+  'hot_path':{'evaluator_backend':'PANDAS_PLUS_PROCESS_POOL','numba_in_active_evaluator':False,'polars_in_active_evaluator':False,'candidate_supply_underfill_observed':False,'production_checkpoint_fill_ratio':1.0,'successor_prefinancial_fill_ratio':1.0,'continuous_selection_median_seconds':4.31,'continuous_evaluation_median_seconds':138.43,'continuous_close_median_seconds':3.15,'active_wall_share_from_medians':{'selection':4.31/(4.31+138.43+3.15),'evaluation':138.43/(4.31+138.43+3.15),'close':3.15/(4.31+138.43+3.15)},'recovery_boundary_gap_excluded_seconds':11540.12},
+  'evaluator_accuracy':{'production_records':840,'replay_complete':822,'replay_blocked_fail_closed':18,'complete_primary_accounting_pass':822,'complete_control_accounting_pass':822,'blocked_contract_errors':0,'signal_recompute_sampled_programs':14,'signal_recompute_sampled_legs':28,'signal_hash_rank_behavior_drift_count':0,'restricted_reads':{'validation':0,'holdout':0,'historical_2023':0,'forward_b':0,'forward_2026':0},'financial_replay_reexecuted_for_signal_audit':False},
+  'productive_semantics':{'historical_productive_definition_unchanged':True,'productive_count':162,'uplift_stable_2of3_count':127,'uplift_stable_2of3_rate_given_productive':127/162,'uplift_stable_3of3_count':46,'uplift_stable_3of3_rate_given_productive':46/162,'only_1of3_uplift_positive_count':35,'core_market_primitive':{'evaluated':192,'productive':78,'uplift_stable_2of3':60,'uplift_stable_2of3_rate':60/192},'combined_core_controls':{'evaluated':48,'productive':9,'uplift_stable_2of3':4,'uplift_stable_2of3_rate':4/48},'successor_must_report_uplift_stable_2of3_separately':True},
+  'persistent_pool_ab':{'diagnostic_results_reusable':False,'same_spent_checkpoints':[6,7],'records':48,'field_column_count':53,'old_separate_pool_seconds':276.97288380004466,'old_checkpoint_seconds':[140.60848300007638,136.36437510000054],'persistent_24_pool_seconds':250.4425373999402,'persistent_24_checkpoint_seconds':[141.22442720003892,106.82800819992553],'persistent_24_first_result_seconds':[116.50438380008563,93.5363341999473],'persistent_24_speedup_vs_old':1.1059338668084857,'persistent_16_pool_seconds':305.89777859998867,'persistent_16_checkpoint_seconds':[164.91892119997647,139.92102240002714],'persistent_16_first_result_seconds':[89.84538090007845,66.28457250003703],'persistent_16_host_cpu_mean_percent':[39.41648351648352,38.569767441860456],'persistent_24_speedup_vs_16':1.2214290023403258,'persistent_24_wall_reduction_vs_16':0.18128683854407868,'record_hash_drift_24':0,'record_hash_drift_16':0,'orphan_workers_24':0,'orphan_workers_16':0},
+  'resource_evidence':{'successor_24_worker_canary_initialized_workers':24,'successor_24_worker_canary_minimum_free_gb':37.791,'successor_24_worker_canary_minimum_commit_headroom_gb':88.378,'successor_24_worker_canary_max_single_worker_rss_gb':2.238,'successor_24_worker_canary_page_in_delta_bytes':0,'successor_24_worker_canary_page_out_delta_bytes':0,'observed_persistent_24_pool_total_rss_gb':51.7,'observed_persistent_16_pool_total_rss_gb':28.17,'observed_persistent_16_free_gb':52.61,'note':'canary maximum_process_tree/worker RSS is not aggregate pool RSS; minimum-free-memory is the authoritative host-memory gate'},
+  'decision':{'executor_workers_primary':24,'executor_workers_fallback':16,'evaluator_pool_lifetime':'PERSISTENT_RUN_SCOPE','keep_zero_candidate_resource_canary_as_separate_gate':True,'reason':'24-worker persistent pool is parity-clean and materially faster than both separate pools and 16-worker persistent; one-time separate canary is retained for simpler fail-closed governance','minimum_records_per_hour_after_first_checkpoint':650.0,'wall_clock_budget_minutes':50,'minimum_free_memory_bytes':24*1024**3,'canary_page_in_out_required_zero':True,'candidate_evaluation_during_canary':False},
+  'deliberately_not_applied':{'numba_rewrite':True,'polars_rewrite':True,'shared_memory_rearchitecture':True,'reason':'no measured numeric kernel justifies a semantics-risking rewrite; scheduling/context reuse is the first material fix'},
+  'validation_feedback_used':False,'oos_authority':'NONE','promotion_authorized':False,
+ }
+ payload['audit_payload_sha256']=stable_hash(payload);OUT.write_text(json.dumps(payload,ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8');print(json.dumps({'status':payload['status'],'payload':payload['audit_payload_sha256'],'primary_workers':24,'fallback_workers':16,'persistent_speedup':payload['persistent_pool_ab']['persistent_24_speedup_vs_old'],'core_stable':payload['productive_semantics']['core_market_primitive']['uplift_stable_2of3_rate']},sort_keys=True))
+if __name__=='__main__':main()

@@ -5,6 +5,7 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 
 ROOT=Path(__file__).resolve().parents[1]
 SUPPLY=ROOT/'runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json'
+ACCEL_AUDIT=ROOT/'runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json'
 OUT=ROOT/'runtime/run_plans/cn_program_primitive_market_successor_plan_v1.json'
 P='PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1'; U='UNIFORM_CONTROL'; E='CATALOG_TYPED_EVOLUTION_PROGRAM_V2'
 SCHEDULE=[
@@ -31,6 +32,8 @@ def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def build()->dict:
  s=read(SUPPLY); body=dict(s); claim=str(body.pop('audit_payload_sha256',''))
  if not claim or stable_hash(body)!=claim or s.get('status')!='ZERO_FINANCIAL_PRIMITIVE_MARKET_SUCCESSOR_FRESH_SUPPLY_READY': raise RuntimeError('successor supply drift')
+ aa=read(ACCEL_AUDIT); aa_body=dict(aa); aa_claim=str(aa_body.pop('audit_payload_sha256',''))
+ if not aa_claim or stable_hash(aa_body)!=aa_claim or aa.get('status')!='PASS_SUCCESSOR_REAUTH_ELIGIBLE': raise RuntimeError('successor acceleration/accuracy audit drift')
  if int(s['effective_spent_exact_count'])!=7574 or int(s['fresh_unique_count'])!=3430 or int(s['raw_ordinal_offset'])!=2048: raise RuntimeError('successor supply geometry drift')
  for t in ('BASE_MARKET','BASE_MARKET_EVENT'):
   if int(s['per_template_fresh'][t])!=512: raise RuntimeError(f'core supply drift:{t}')
@@ -53,12 +56,14 @@ def build()->dict:
    'primitive_total':{'evaluated':600,'productive':121,'rate':121/600},
    'uniform_total':{'evaluated':120,'productive':20,'rate':20/120},
    'typed_evolution_total':{'evaluated':120,'productive':21,'rate':21/120},
-   'primitive_core_market':{'evaluated':192,'productive':78,'rate':78/192,'base_market':{'evaluated':96,'productive':42},'base_market_event':{'evaluated':96,'productive':36}},
+   'primitive_core_market':{'evaluated':192,'productive':78,'rate':78/192,'uplift_stable_2of3':60,'uplift_stable_2of3_rate':60/192,'base_market':{'evaluated':96,'productive':42,'uplift_stable_2of3':37,'uplift_stable_2of3_rate':37/96},'base_market_event':{'evaluated':96,'productive':36,'uplift_stable_2of3':23,'uplift_stable_2of3_rate':23/96}},
+   'combined_core_controls':{'evaluated':48,'productive':9,'rate':9/48,'uplift_stable_2of3':4,'uplift_stable_2of3_rate':4/48},
    'primitive_noncore':{'evaluated':408,'productive':43,'rate':43/408},
    'primitive_base_temporal':{'evaluated':72,'productive':0,'rate':0.0},
    'production_labels_used_to_mutate_scorer':False,
   },
   'fresh_supply':{'relative_path':'runtime/run_plans/cn_program_primitive_market_successor_fresh_supply_20260821.json','file_sha256':sha(SUPPLY),'payload_sha256':claim,'raw_ordinal_offset':2048,'effective_spent_exact_count':7574,'fresh_unique_count':3430,'fresh_exact_identities_sha256':s['fresh_exact_identities_sha256']},
+  'acceleration_accuracy_audit':{'relative_path':'runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json','file_sha256':sha(ACCEL_AUDIT),'payload_sha256':aa_claim,'status':aa['status']},
   'search_authority':{
    'primitive_stats_relative_path':'runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json',
    'primitive_stats_payload_sha256':'fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d',
@@ -75,12 +80,15 @@ def build()->dict:
    'core_primitive_productive_rate_min':0.28,
    'core_primitive_to_combined_core_controls_rate_ratio_min':1.15,
    'each_core_template_primitive_productive_rate_min':0.25,
+   'core_primitive_uplift_stable_2of3_rate_min':0.20,
+   'core_primitive_to_combined_core_controls_uplift_stable_rate_ratio_min':1.50,
+   'each_core_template_primitive_uplift_stable_2of3_rate_min':0.15,
    'total_productive_count_min':70,
    'behavior_pair_rate_min':0.70,
    'effective_spent_overlap_count_required':0,
    'restricted_reads_required_zero':True,
   },
-  'resource_contract':{'profile':'SEARCH_DUAL_24','primary_executor_workers':24,'fallback_executor_workers':16,'candidate_evaluation_during_canary':False},
+  'resource_contract':{'profile':'SEARCH_DUAL_24','primary_executor_workers':24,'fallback_executor_workers':16,'candidate_evaluation_during_canary':False,'evaluator_pool_lifetime':'PERSISTENT_RUN_SCOPE','minimum_records_per_hour_after_first_checkpoint':650.0,'wall_clock_budget_minutes':50,'minimum_free_memory_bytes':24*1024**3,'canary_page_in_out_required_zero':True,'persistent_pool_ab_speedup_vs_old':aa['persistent_pool_ab']['persistent_24_speedup_vs_old'],'persistent_24_speedup_vs_16':aa['persistent_pool_ab']['persistent_24_speedup_vs_16'],'throughput_enforcement_after_warm_checkpoints':2,'persistent_pool_record_hash_parity_required':True,'saturated_compute_requirement':'COUNTERFACTUAL_24_VS_16_THROUGHPUT_PASS'},
   'validation_feedback_used':False,'oos_authority':'NONE','promotion_authorized':False,'automatic_successor_authorized':False,
   'restricted_reads':{'validation':0,'holdout':0,'historical_2023':0,'forward_b':0,'forward_2026':0},
  }
