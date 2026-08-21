@@ -36,7 +36,7 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
  rc=dict(p['resource_contract'])
  if rc.get('profile')!='SEARCH_DUAL_24' or int(rc.get('cpu_threads') or 0)!=24 or int(rc.get('primary_executor_workers') or 0)!=24 or int(rc.get('fallback_executor_workers') or 0)!=16 or int(rc.get('hard_cap_logical_records') or 0)!=360 or int(rc.get('field_column_count') or 0)!=53 or rc.get('evaluator_pool_lifetime')!='PERSISTENT_RUN_SCOPE' or float(rc.get('minimum_records_per_hour_after_first_checkpoint') or 0)<650.0 or rc.get('persistent_pool_record_hash_parity_required') is not True: raise ValueError('market successor resource contract drift')
  if any(int(v)!=0 for v in dict(p['restricted_reads']).values()): raise ValueError('market successor restricted-read drift')
- runner=root/'scripts/run_cn_program_primitive_market_successor_v1.py'
+ runner=root/'scripts/run_cn_program_primitive_market_successor_v2.py'
  if sha256_file(runner)!=str(p['implementation']['runner_source_file_sha256']): raise ValueError('market successor runner drift')
  return p
 
@@ -45,7 +45,7 @@ def verify_official_canary(path:Path,authorization:Mapping[str,Any],*,repo_root:
  if hashlib.sha256(raw).hexdigest()!=str(b['file_sha256']): raise ProjectControlDenied('market successor canary file drift')
  p=json.loads(raw.decode('utf-8-sig'));body=dict(p);claim=str(body.pop('official_canary_payload_sha256',''))
  if claim!=str(b['payload_sha256']) or stable_hash(body)!=claim or p.get('status')!='PASS' or p.get('candidate_evaluation_executed') is not False or int(p.get('preview_selected_count') or 0)!=360 or int(p.get('field_column_count') or 0)!=53 or p.get('field_columns_sha256')!=b['field_columns_sha256'] or p.get('acceleration_accuracy_audit_payload_sha256')!=b['acceleration_accuracy_audit_payload_sha256'] or p.get('evaluator_pool_lifetime')!='PERSISTENT_RUN_SCOPE': raise ProjectControlDenied('market successor canary payload drift')
- if sha256_file(repo_root/'scripts/run_cn_program_primitive_market_successor_v1.py')!=str(b['runner_source_file_sha256']): raise ProjectControlDenied('market successor runner changed after canary')
+ if sha256_file(repo_root/'scripts/run_cn_program_primitive_market_successor_v2.py')!=str(b['runner_source_file_sha256']): raise ProjectControlDenied('market successor runner changed after canary')
  return p
 
 def main(argv:Sequence[str]|None=None)->int:

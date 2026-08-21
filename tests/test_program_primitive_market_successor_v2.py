@@ -69,3 +69,10 @@ def test_v2_persistent_executor_uses_full_frozen_union():
  assert opts['initializer'] is r.engine._initialize_worker
  assert opts['initargs'][-1]==fields
  assert opts['initargs'][6]=='inputhash'
+
+
+def test_v2_runtime_verifier_hashes_v2_runner_not_v1_runner():
+ source=(ROOT/'src/our_system_phase2/runtime/cn_program_primitive_market_successor_v2.py').read_text(encoding='utf-8')
+ assert "runner=root/'scripts/run_cn_program_primitive_market_successor_v2.py'" in source
+ assert "repo_root/'scripts/run_cn_program_primitive_market_successor_v2.py'" in source
+ assert "run_cn_program_primitive_market_successor_v1.py" not in source
