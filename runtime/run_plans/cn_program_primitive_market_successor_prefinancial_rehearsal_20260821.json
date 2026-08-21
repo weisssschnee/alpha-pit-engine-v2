@@ -1,6 +1,8 @@
 {
+  "acceleration_accuracy_audit_payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
   "candidate_evaluation_executed": false,
   "diversity_contract_changed": false,
+  "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
   "field_column_count": 53,
   "field_columns": [
     "amount",
@@ -67,7 +69,10 @@
   "preview_selected_count": 360,
   "preview_unique_normalized_count": 360,
   "production_feedback_imported_into_primitive_stats": false,
+  "repo_sha": "9993badfbde33e943731c979b2b1f56f3425e524",
+  "runner_source_file_sha256": "d5beed51a2113088ac3988a7ceafa113fcc9d08ddf6e8071bbfd3b20286831e7",
   "status": "ZERO_FINANCIAL_PRIMITIVE_MARKET_SUCCESSOR_PREFLIGHT_READY",
+  "successor_plan_payload_sha256": "c2e96dce0ba7762a3f1e5b4dc4c6228ea330af58bea8eab88682922286f44ba2",
   "validation_reads": 0,
-  "wall_seconds": 221.6111791000003
+  "wall_seconds": 220.56563640001696
 }
