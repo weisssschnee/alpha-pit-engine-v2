@@ -1071,7 +1071,19 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         assert isinstance(first.value, ast.Call)
         assert isinstance(first.value.func, ast.Name)
         assert first.value.func.id == "consume_active_admission"
-        assert ast.literal_eval(first.value.args[0]) == route
+        route_arg = first.value.args[0]
+        if isinstance(route_arg, ast.Name):
+            route_constants = {
+                target.id: ast.literal_eval(statement.value)
+                for statement in module.body
+                if isinstance(statement, ast.Assign)
+                and len(statement.targets) == 1
+                and isinstance((target := statement.targets[0]), ast.Name)
+                and isinstance(statement.value, ast.Constant)
+            }
+            assert route_constants[route_arg.id] == route
+        else:
+            assert ast.literal_eval(route_arg) == route
         parse_index = next(
             index
             for index, statement in enumerate(main.body)
