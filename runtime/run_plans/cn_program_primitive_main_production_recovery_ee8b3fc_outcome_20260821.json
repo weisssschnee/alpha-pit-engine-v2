@@ -1,0 +1,49 @@
+{
+  "automatic_successor_authorized": false,
+  "behavior_pair_count": 659,
+  "closed_checkpoints": 35,
+  "closed_macros": 5,
+  "closure_payload_sha256": "ccd50318a8797b2a8928005d232175841a60ca9dc800abc655f1d99526da7dfe",
+  "effective_spent_overlap_count": 0,
+  "financial_evaluator_reexecution_performed": false,
+  "implementation_repo_sha": "ee8b3fc7fffc3dbde6e5cd0e5df645f2cfceb374",
+  "independent_audit_payload_sha256": "76762cea03375492a79bc2268de36b8b4903362865a07149f1f48ce61c38b454",
+  "logical_records": 840,
+  "newly_evaluated_logical_records": 816,
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "c02d15a63625c9c4ee520f3ba0a6a19d0db867e056c7b0e4319c3e0ff4b56f3a",
+  "per_arm": {
+    "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": {
+      "evaluated": 120,
+      "productive": 21,
+      "productive_efficiency": 0.175
+    },
+    "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1": {
+      "evaluated": 600,
+      "productive": 121,
+      "productive_efficiency": 0.20166666666666666
+    },
+    "UNIFORM_CONTROL": {
+      "evaluated": 120,
+      "productive": 20,
+      "productive_efficiency": 0.16666666666666666
+    }
+  },
+  "primitive_vs_evolution_productive_efficiency_ratio": 1.1523809523809525,
+  "primitive_vs_uniform_productive_efficiency_ratio": 1.21,
+  "productive_discovery_count": 162,
+  "promotion_authorized": false,
+  "recovered_logical_records": 24,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_main_production_recovery_outcome_v1",
+  "status": "PRIMITIVE_MAIN_PRODUCTION_RECOVERY_COMPLETE",
+  "stop_reason": "HARD_CAP_REACHED",
+  "total_productive_efficiency": 0.19285714285714287,
+  "validation_feedback_used": false
+}

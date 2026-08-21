@@ -1,0 +1,61 @@
+{
+  "audit_payload_sha256": "76762cea03375492a79bc2268de36b8b4903362865a07149f1f48ce61c38b454",
+  "authorization_payload_sha256": "a681b393ef03da2b2f4f6514ccb7b115e89e3f73755462647d09e3f75c23193e",
+  "automatic_successor_authorized": false,
+  "checks": {
+    "all_record_restricted_reads_zero": true,
+    "arm_counts": true,
+    "arm_productive_recompute": true,
+    "auth_canary_prefix_verify": true,
+    "behavior_recompute": true,
+    "checkpoint_geometry": true,
+    "checkpoint_hash_chain": true,
+    "closure_contract": true,
+    "closure_self_hash": true,
+    "fresh_supply_and_spent_deny": true,
+    "prefix_no_reexecution": true,
+    "productive_recompute": true,
+    "record_ordinals": true,
+    "recovered_checkpoint_copy_exact": true,
+    "repo_exact_clean": true,
+    "schedule_feedback_geometry": true,
+    "unique_selected": true
+  },
+  "closure_payload_sha256": "ccd50318a8797b2a8928005d232175841a60ca9dc800abc655f1d99526da7dfe",
+  "counts": {
+    "behavior_pairs": 659,
+    "closed_checkpoints": 35,
+    "logical_records": 840,
+    "new_records": 816,
+    "productive": 162,
+    "recovered_records": 24,
+    "selected_normalized_unique": 840,
+    "selected_physical_unique": 840
+  },
+  "financial_evaluator_reexecution_performed": false,
+  "implementation_repo_sha": "ee8b3fc7fffc3dbde6e5cd0e5df645f2cfceb374",
+  "official_canary_payload_sha256": "b7ab9229015e5410c9fdccb311b787186cb952e90498c501a15532f1912bd0d4",
+  "oos_authority": "NONE",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_main_production_recovery_20260821_ee8b3fc",
+  "per_arm_evaluated": {
+    "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": 120,
+    "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1": 600,
+    "UNIFORM_CONTROL": 120
+  },
+  "per_arm_productive": {
+    "CATALOG_TYPED_EVOLUTION_PROGRAM_V2": 21,
+    "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1": 121,
+    "UNIFORM_CONTROL": 20
+  },
+  "promotion_authorized": false,
+  "recovery_prefix_payload_sha256": "6f29b40f468ed7963423479359905fc13fa3bb4c4413eebf50ad209f62dfb091",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_main_production_recovery_independent_terminal_audit_v1",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT"
+}
