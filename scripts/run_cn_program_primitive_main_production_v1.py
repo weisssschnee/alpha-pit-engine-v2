@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-import argparse, json, time
+import argparse, json, multiprocessing, os, queue, time
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+import psutil
 
 from scripts import run_cn_joint_program_phase_c_v0 as engine
 from scripts import run_cn_program_optimizer_large_fresh_v1 as large
@@ -93,6 +96,44 @@ def prefinancial_rehearsal(args:argparse.Namespace,*,authorization:Mapping[str,A
  fields=_full_field_union(fresh,authority)
  return {'status':'ZERO_FINANCIAL_PRIMITIVE_MAIN_PRODUCTION_PREFLIGHT_READY','fresh_catalog_count':len(fresh['entries']),'preview_asks':24,'preview_state_unchanged':True,'field_column_count':len(fields),'field_columns':list(fields),'field_columns_sha256':stable_hash(list(fields)),'candidate_evaluation_executed':False,'validation_reads':0,'holdout_reads':0,'forward_2026_reads':0}
 
+def _resource_canary_initializer(ready_queue:Any,release_event:Any,*initargs:Any)->None:
+ engine._initialize_worker(*initargs)
+ ready_queue.put(os.getpid())
+ if not release_event.wait(timeout=120.0):
+  raise RuntimeError('PRIMITIVE_MAIN_RESOURCE_CANARY_START_BARRIER_TIMEOUT')
+
+def _resource_canary(authority:Mapping[str,Any],input_hash:str,workers:int,field_columns:tuple[str,...]|None)->dict[str,Any]:
+ before_children={child.pid for child in psutil.Process().children(recursive=True)}
+ before=engine._runtime_resource_snapshot(); engine._require_runtime_resource_safety(before)
+ initargs=(str(authority['execution_contract_path']),str(authority['train_field_root']),str(authority['train_price_root']),authority['price_manifest'],str(authority['price_manifest_path']),str(authority['registry_path']),str(input_hash),authority['windows'],authority['field_manifest_file_sha'],authority['field_manifest_payload_sha'],field_columns)
+ ctx=multiprocessing.get_context('spawn'); ready_queue=ctx.Queue(); release_event=ctx.Event(); results=[]; ready_pids=set(); started=time.perf_counter()
+ try:
+  with ProcessPoolExecutor(max_workers=int(workers),mp_context=ctx,initializer=_resource_canary_initializer,initargs=(ready_queue,release_event,*initargs)) as executor:
+   futures=[executor.submit(large._resource_probe,large.RESOURCE_CANARY_PROBE_SECONDS) for _ in range(int(workers))]
+   deadline=time.monotonic()+120.0
+   while len(ready_pids)<int(workers):
+    remaining=deadline-time.monotonic()
+    if remaining<=0: raise RuntimeError(f'PRIMITIVE_MAIN_RESOURCE_CANARY_INITIALIZED_WORKER_CARDINALITY:{len(ready_pids)}!={workers}')
+    try: ready_pids.add(int(ready_queue.get(timeout=min(5.0,remaining))))
+    except queue.Empty: continue
+   release_event.set(); results=[future.result() for future in futures]
+ finally:
+  release_event.set()
+ after=engine._runtime_resource_snapshot(); engine._require_runtime_resource_safety(after)
+ orphans=engine._new_child_process_ids(before_children)
+ if orphans: raise RuntimeError('PRIMITIVE_MAIN_RESOURCE_CANARY_LEFT_ORPHANS:'+','.join(map(str,orphans)))
+ if len(ready_pids)!=int(workers): raise RuntimeError(f'PRIMITIVE_MAIN_RESOURCE_CANARY_INITIALIZED_WORKER_CARDINALITY:{len(ready_pids)}!={workers}')
+ minimum_free=min([int(row['available_memory_bytes']) for row in results]+[int(after['available_physical_bytes'])])
+ minimum_commit=min([int(row['commit_headroom_bytes']) for row in results]+[int(after['commit_headroom_bytes'])])
+ maximum_committed=max([int(row['committed_bytes']) for row in results]+[int(after['committed_bytes'])])
+ maximum_pagefile=max([int(row['pagefile_used_bytes']) for row in results]+[int(after['pagefile_used_bytes'])])
+ maximum_tree=max([int(row['process_tree_rss_bytes']) for row in results]+[int(after['process_tree_rss_bytes'])])
+ page_in=max(0,max([int(row['pagefile_pages_in_bytes']) for row in results]+[int(after['pagefile_pages_in_bytes'])])-int(before['pagefile_pages_in_bytes']))
+ page_out=max(0,max([int(row['pagefile_pages_out_bytes']) for row in results]+[int(after['pagefile_pages_out_bytes'])])-int(before['pagefile_pages_out_bytes']))
+ if large.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL and minimum_free<large.MINIMUM_FREE_MEMORY_BYTES: raise RuntimeError('PRIMITIVE_MAIN_RESOURCE_CANARY_MEMORY_HEADROOM')
+ if minimum_commit<engine.MINIMUM_COMMIT_HEADROOM_BYTES: raise RuntimeError('PRIMITIVE_MAIN_RESOURCE_CANARY_COMMIT_HEADROOM')
+ return {'schema_version':'cn_program_primitive_main_resource_canary_v2','status':'PASS_ZERO_CANDIDATE_EVALUATION_RESOURCE_CANARY','requested_workers':int(workers),'initialized_worker_pids':sorted(ready_pids),'probe_result_worker_pids':sorted({int(row['pid']) for row in results}),'field_columns':None if field_columns is None else list(field_columns),'field_column_count':None if field_columns is None else len(field_columns),'minimum_free_memory_bytes':minimum_free,'minimum_commit_headroom_bytes':minimum_commit,'maximum_committed_bytes':maximum_committed,'maximum_pagefile_used_bytes':maximum_pagefile,'maximum_process_tree_rss_bytes':maximum_tree,'pagefile_pages_in_delta_bytes':page_in,'pagefile_pages_out_delta_bytes':page_out,'maximum_worker_rss_bytes':max(int(row['rss_bytes']) for row in results),'probe_seconds':float(large.RESOURCE_CANARY_PROBE_SECONDS),'physical_free_gate_required':bool(large.RESOURCE_CANARY_REQUIRE_MINIMUM_FREE_PHYSICAL),'wall_seconds':float(time.perf_counter()-started),'candidate_evaluation_executed':False,'validation_reads':0,'holdout_reads':0,'forward_2026_reads':0}
+
 def run(args:argparse.Namespace,*,admission:Mapping[str,Any],authorization:Mapping[str,Any])->dict[str,Any]:
  repo_sha=str(admission['repo_sha']); repo_root=Path(__file__).resolve().parents[1]; plan=verify_plan(args.production_plan); authority=_load_authority(args,authorization=authorization,repo_sha=repo_sha); fresh=_fresh_catalog(plan,authority,repo_root); bandit=_bandit(plan,fresh,repo_root)
  root=args.output_root.resolve()
@@ -100,7 +141,7 @@ def run(args:argparse.Namespace,*,admission:Mapping[str,Any],authorization:Mappi
  fields=_full_field_union(fresh,authority); input_binding=engine._self_hashed({'schema_version':'cn_program_primitive_main_production_input_binding_v1','repo_sha':repo_sha,'authorization_payload_sha256':authorization['authorization_payload_sha256'],'production_plan_payload_sha256':plan['plan_payload_sha256'],'fresh_supply_payload_sha256':plan['fresh_supply']['payload_sha256'],'effective_spent_exact_count':6734,'effective_spent_exact_identities_sha256':plan['fresh_supply']['effective_spent_exact_identities_sha256'],'fresh_exact_identities_sha256':plan['fresh_supply']['fresh_exact_identities_sha256'],'primitive_stats_payload_sha256':plan['search_authority']['primitive_stats_payload_sha256'],'qualification_payload_sha256':plan['search_authority']['qualification_payload_sha256'],'field_columns_sha256':stable_hash(list(fields)),'evaluation_data_role':'DEVELOPMENT_ONLY','restricted_reads':{'validation':0,'holdout':0,'historical_2023':0,'forward_b':0,'forward_2026':0}},'input_binding_sha256'); large._write_json(root/'input_binding.json',input_binding)
  input_hash=str(input_binding['input_binding_sha256']); workers=None; decision=None
  for w in (24,16):
-  try: receipt=large._resource_canary(authority,input_hash,w,fields); workers=w; decision={'status':'PASS','selected_executor_workers':w,'attempts':[receipt],'fallback_applied':w!=24,'field_columns':list(fields),'field_columns_sha256':stable_hash(list(fields))}; break
+  try: receipt=_resource_canary(authority,input_hash,w,fields); workers=w; decision={'status':'PASS','selected_executor_workers':w,'attempts':[receipt],'fallback_applied':w!=24,'field_columns':list(fields),'field_columns_sha256':stable_hash(list(fields))}; break
   except Exception as exc: decision={'status':'FAIL','error':f'{type(exc).__name__}:{exc}'}
  if workers is None: raise RuntimeError(f'PRIMITIVE_MAIN_RESOURCE_CANARY_FAILED:{decision}')
  large._write_json(root/'resource_canary.json',decision); large._write_json(root/'optimizer_state_genesis.json',bandit.snapshot()); state=engine._selection_state(); large._write_json(root/'selection_state_genesis.json',large._selection_state_record(state))

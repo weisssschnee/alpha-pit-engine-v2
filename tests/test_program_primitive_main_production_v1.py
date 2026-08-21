@@ -37,3 +37,16 @@ def test_production_bandit_uses_v3_primitive_config_contract(monkeypatch):
  assert set(captured)=={'campaign_id','entries_by_arm','seeds','primitive_config','evolution_config'}
  assert captured['primitive_config']['metadata_by_exact_identity']=={}
  assert captured['primitive_config']['primitive_stats_payload_sha256']==plan['search_authority']['primitive_stats_payload_sha256']
+
+def test_resource_canary_initializer_reports_initialized_worker_before_probe(monkeypatch):
+ calls=[]
+ class ReadyQueue:
+  def put(self,value): calls.append(('pid',value))
+ class ReleaseEvent:
+  def wait(self,timeout): calls.append(('wait',timeout)); return True
+ monkeypatch.setattr(runner.engine,'_initialize_worker',lambda *args: calls.append(('init',args)))
+ monkeypatch.setattr(runner.os,'getpid',lambda:4242)
+ runner._resource_canary_initializer(ReadyQueue(),ReleaseEvent(),'authority')
+ assert calls[0]==('init',('authority',))
+ assert calls[1]==('pid',4242)
+ assert calls[2]==('wait',120.0)
