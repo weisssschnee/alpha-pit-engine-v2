@@ -1,0 +1,218 @@
+{
+  "aggregate": {
+    "best_control_productive_rate": 0.25,
+    "best_control_stable_rate": 0.1875,
+    "primitive": {
+      "admission_rate": 0.8402777777777778,
+      "admitted": 121,
+      "evaluated": 144,
+      "productive": 83,
+      "productive_efficiency": 0.5763888888888888
+    },
+    "primitive_stable": {
+      "evaluated": 144,
+      "uplift_stable_2of3": 55,
+      "uplift_stable_2of3_rate": 0.3819444444444444
+    },
+    "productive_delta_vs_best_control": 0.32638888888888884,
+    "productive_ratio_vs_best_control": 2.3055555555555554,
+    "stable_delta_vs_best_control": 0.19444444444444442,
+    "stable_ratio_vs_best_control": 2.0370370370370368,
+    "typed_evolution": {
+      "admission_rate": 0.75,
+      "admitted": 36,
+      "evaluated": 48,
+      "productive": 12,
+      "productive_efficiency": 0.25
+    },
+    "typed_evolution_stable": {
+      "evaluated": 48,
+      "uplift_stable_2of3": 9,
+      "uplift_stable_2of3_rate": 0.1875
+    },
+    "uniform": {
+      "admission_rate": 0.7291666666666666,
+      "admitted": 35,
+      "evaluated": 48,
+      "productive": 12,
+      "productive_efficiency": 0.25
+    },
+    "uniform_stable": {
+      "evaluated": 48,
+      "uplift_stable_2of3": 8,
+      "uplift_stable_2of3_rate": 0.16666666666666666
+    }
+  },
+  "anchor_v3_used_in_prospective_gate": false,
+  "audit_payload_sha256": "082af5a4b25782cd3ed08b69e994df8de46d16a9e89609edc5cbf95057a23a83",
+  "automatic_successor_authorized": false,
+  "behavior_pair_rate": 0.825,
+  "checks": {
+    "CONFIRM_A_metrics": true,
+    "CONFIRM_B_metrics": true,
+    "anchor_excluded": true,
+    "artifact_hashes": true,
+    "auth_self_hash": true,
+    "authority_boundary": true,
+    "behavior_recompute": true,
+    "bound_pools_disjoint": true,
+    "checkpoint_count": true,
+    "closure_self_hash": true,
+    "closure_status": true,
+    "cross_replicate_selected_disjoint": true,
+    "directional_wins_recompute": true,
+    "gate_checks_recompute": true,
+    "gate_status_recompute": true,
+    "manifest_hash_chain": true,
+    "ordinal_geometry": true,
+    "per_replicate_selected": true,
+    "plan_self_hash": true,
+    "pool_self_hash": true,
+    "productive_recompute": true,
+    "record_schedule_binding": true,
+    "record_self_hashes": true,
+    "replicate_binding": true,
+    "repo_sha": true,
+    "restricted_record_reads_zero": true,
+    "restricted_root_zero": true,
+    "review_self_hash": true,
+    "selected_in_bound_pool": true,
+    "selected_unique": true,
+    "single_input_binding": true,
+    "spent_overlap_zero": true,
+    "stable_recompute": true,
+    "telemetry_persistent_38_fields": true,
+    "throughput_pass": true
+  },
+  "closure_payload_sha256": "dd61abe6cbdbce71e350b9bc1e66d0e0cc7b4fe11a84e81d7dff146894d1ce31",
+  "counts": {
+    "behavior_pairs": 198,
+    "productive": 107,
+    "records": 240,
+    "selected_unique": 240,
+    "stable_uplift_2of3": 72
+  },
+  "failed_gate_checks": [],
+  "gate_checks": {
+    "aggregate_primitive_minus_best_control_productive_rate": true,
+    "aggregate_primitive_minus_best_control_uplift_stable_rate": true,
+    "aggregate_primitive_productive_rate": true,
+    "aggregate_primitive_to_best_control_productive_ratio": true,
+    "aggregate_primitive_to_best_control_uplift_stable_ratio": true,
+    "aggregate_primitive_uplift_stable_2of3_rate": true,
+    "behavior_pair_rate": true,
+    "each_replicate_primitive_productive_rate": true,
+    "each_replicate_primitive_uplift_stable": true,
+    "replicate_directional_policy_win_count": true
+  },
+  "gate_status": "BASE_EVENT_REPLICATION_STUDY_PROSPECTIVE_PASS",
+  "oos_authority": "NONE",
+  "per_replicate": {
+    "CONFIRM_A": {
+      "best_control_productive_rate": 0.5,
+      "best_control_stable_rate": 0.3333333333333333,
+      "directional_policy_win": true,
+      "primitive": {
+        "admission_rate": 0.8472222222222222,
+        "admitted": 61,
+        "evaluated": 72,
+        "productive": 43,
+        "productive_efficiency": 0.5972222222222222
+      },
+      "primitive_stable": {
+        "evaluated": 72,
+        "uplift_stable_2of3": 33,
+        "uplift_stable_2of3_rate": 0.4583333333333333
+      },
+      "typed_evolution": {
+        "admission_rate": 0.7083333333333334,
+        "admitted": 17,
+        "evaluated": 24,
+        "productive": 4,
+        "productive_efficiency": 0.16666666666666666
+      },
+      "typed_evolution_stable": {
+        "evaluated": 24,
+        "uplift_stable_2of3": 4,
+        "uplift_stable_2of3_rate": 0.16666666666666666
+      },
+      "uniform": {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 20,
+        "evaluated": 24,
+        "productive": 12,
+        "productive_efficiency": 0.5
+      },
+      "uniform_stable": {
+        "evaluated": 24,
+        "uplift_stable_2of3": 8,
+        "uplift_stable_2of3_rate": 0.3333333333333333
+      }
+    },
+    "CONFIRM_B": {
+      "best_control_productive_rate": 0.3333333333333333,
+      "best_control_stable_rate": 0.20833333333333334,
+      "directional_policy_win": true,
+      "primitive": {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 60,
+        "evaluated": 72,
+        "productive": 40,
+        "productive_efficiency": 0.5555555555555556
+      },
+      "primitive_stable": {
+        "evaluated": 72,
+        "uplift_stable_2of3": 22,
+        "uplift_stable_2of3_rate": 0.3055555555555556
+      },
+      "typed_evolution": {
+        "admission_rate": 0.7916666666666666,
+        "admitted": 19,
+        "evaluated": 24,
+        "productive": 8,
+        "productive_efficiency": 0.3333333333333333
+      },
+      "typed_evolution_stable": {
+        "evaluated": 24,
+        "uplift_stable_2of3": 5,
+        "uplift_stable_2of3_rate": 0.20833333333333334
+      },
+      "uniform": {
+        "admission_rate": 0.625,
+        "admitted": 15,
+        "evaluated": 24,
+        "productive": 0,
+        "productive_efficiency": 0.0
+      },
+      "uniform_stable": {
+        "evaluated": 24,
+        "uplift_stable_2of3": 0,
+        "uplift_stable_2of3_rate": 0.0
+      }
+    }
+  },
+  "promotion_authorized": false,
+  "replicate_directional_policy_win_count": 2,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_base_event_replication_study_independent_terminal_audit_v1",
+  "source_repo_sha": "e696a9b20ac3343a5853606794b68c0c8a88216d",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_replication_study_20260822_e696a9b",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "throughput": {
+    "checkpoint_telemetry_count": 10,
+    "executor_lifetime": "PERSISTENT_RUN_SCOPE",
+    "field_column_count": 38,
+    "mean_checkpoint_wall_seconds": 98.31228501000024,
+    "mean_host_cpu_percent": 62.693296465789125,
+    "selected_executor_workers": 24,
+    "throughput_contract_status": "PASS",
+    "wall_clock_budget_seconds": 2400.0,
+    "warm_records_per_hour": 905.9646307968804
+  }
+}

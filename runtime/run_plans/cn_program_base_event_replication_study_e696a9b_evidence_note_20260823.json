@@ -1,0 +1,33 @@
+{
+  "automatic_successor_authorized": false,
+  "closure_payload_sha256": "dd61abe6cbdbce71e350b9bc1e66d0e0cc7b4fe11a84e81d7dff146894d1ce31",
+  "decision": "BASE_EVENT_SEARCH_POLICY_REPLICATION_PASS_REDIRECT_TO_ALPHA_QUALIFICATION_EVIDENCE",
+  "evidence_payload_sha256": "6f1bc80f637cdd2762286b8f497dd58aaeffcb586e978bbf3eb4912194b6d8e9",
+  "evidence_summary": {
+    "behavior_pair_rate": 0.825,
+    "best_control_productive_rate": 0.25,
+    "best_control_stable_rate": 0.1875,
+    "directional_wins": 2,
+    "primitive_productive_rate": 0.5763888888888888,
+    "primitive_stable_rate": 0.3819444444444444,
+    "productive_delta": 0.32638888888888884,
+    "productive_ratio": 2.3055555555555554,
+    "stable_delta": 0.19444444444444442,
+    "stable_ratio": 2.0370370370370368
+  },
+  "independent_audit_payload_sha256": "082af5a4b25782cd3ed08b69e994df8de46d16a9e89609edc5cbf95057a23a83",
+  "next_boundary": "DEVELOPMENT_ONLY_ALPHA_QUALIFICATION_EVIDENCE_REVIEW",
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "c1baa0b347d7280325c3f604239eb50b557f2cfa2167c37d996d92cfd9bbbced",
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_base_event_replication_study_terminal_evidence_note_v1",
+  "source_repo_sha": "e696a9b20ac3343a5853606794b68c0c8a88216d",
+  "status": "BASE_EVENT_REPLICATION_STUDY_TERMINAL_EVIDENCE_FROZEN"
+}
