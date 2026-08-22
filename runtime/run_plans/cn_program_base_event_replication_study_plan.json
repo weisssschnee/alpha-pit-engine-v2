@@ -1,0 +1,259 @@
+{
+  "acceleration_accuracy_audit": {
+    "file_sha256": "578ed41011d4884b30de1f91d2620ff411250dd5e173792808ea722b96dec460",
+    "payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json"
+  },
+  "anchor_v3_used_in_prospective_gate": false,
+  "automatic_successor_authorized": false,
+  "budget": {
+    "checkpoint_count": 10,
+    "checkpoint_size": 24,
+    "hard_cap_logical_records": 240,
+    "primitive_records": 144,
+    "records_per_replicate": 120,
+    "replicate_count": 2,
+    "typed_evolution_records": 48,
+    "uniform_records": 48
+  },
+  "candidate_evaluation_executed": false,
+  "design_reason": "V3 established one controlled BASE_EVENT anchor but also revealed campaign-local max-4 capacity exhaustion and fixed-order concern. The only two additional fully reserved disjoint pools with max4 capacity >=120 are used as preregistered order-rotated prospective confirmations. V3 anchor is excluded from the prospective gate.",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "focus_template": "BASE_EVENT",
+  "oos_authority": "NONE",
+  "plan_payload_sha256": "4f430eff3ee851c245118ba64509180f23f8d4b74d883fe703153ed44e6041f5",
+  "pool_review": {
+    "effective_spent_exact_count": 8654,
+    "file_sha256": "ee32fb9e7a3a1c3ee5b441292ea2e108c6e766890f8b62097db4d3357fe025f9",
+    "payload_sha256": "7f1701e7ad336d4d039f2b007274899a918926e9ef8ab3dcc179c58da3e75407",
+    "relative_path": "runtime/run_plans/cn_program_base_event_replication_pools_review_20260822.json",
+    "required_accepted_pool_ids": [
+      "REPL_1",
+      "REPL_2"
+    ]
+  },
+  "promotion_authorized": false,
+  "prospective_gate": {
+    "aggregate_primitive_minus_best_control_productive_rate_min": 0.08,
+    "aggregate_primitive_minus_best_control_uplift_stable_rate_min": 0.1,
+    "aggregate_primitive_productive_rate_min": 0.45,
+    "aggregate_primitive_to_best_control_productive_ratio_min": 1.2,
+    "aggregate_primitive_to_best_control_uplift_stable_ratio_min": 1.4,
+    "aggregate_primitive_uplift_stable_2of3_rate_min": 0.35,
+    "behavior_pair_rate_min": 0.75,
+    "each_replicate_primitive_productive_rate_min": 0.3,
+    "each_replicate_primitive_uplift_stable_2of3_rate_min": 0.25,
+    "effective_spent_overlap_count_required": 0,
+    "replicate_directional_policy_win_count_min": 2,
+    "restricted_reads_required_zero": true
+  },
+  "replicates": [
+    {
+      "arm_order": [
+        "UNIFORM_CONTROL",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1"
+      ],
+      "first_mover": "UNIFORM_CONTROL",
+      "pool_id": "REPL_1",
+      "primitive_records": 72,
+      "raw_offset": 3584,
+      "records": 120,
+      "replicate_id": "CONFIRM_A",
+      "typed_evolution_records": 24,
+      "uniform_records": 24
+    },
+    {
+      "arm_order": [
+        "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "UNIFORM_CONTROL"
+      ],
+      "first_mover": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "pool_id": "REPL_2",
+      "primitive_records": 72,
+      "raw_offset": 5120,
+      "records": 120,
+      "replicate_id": "CONFIRM_B",
+      "typed_evolution_records": 24,
+      "uniform_records": 24
+    }
+  ],
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
+    "fallback_executor_workers": 16,
+    "minimum_free_memory_bytes": 25769803776,
+    "minimum_records_per_hour_after_first_checkpoint": 650.0,
+    "persistent_pool_record_hash_parity_required": true,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24",
+    "throughput_enforcement_after_warm_checkpoints": 2,
+    "wall_clock_budget_minutes": 40
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schedule": [
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 0,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_1",
+      "replicate_checkpoint": 0,
+      "replicate_id": "CONFIRM_A",
+      "role": "PROSPECTIVE_CONTROL",
+      "start_ordinal": 0,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 1,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_1",
+      "replicate_checkpoint": 1,
+      "replicate_id": "CONFIRM_A",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 24,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 2,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_1",
+      "replicate_checkpoint": 2,
+      "replicate_id": "CONFIRM_A",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 48,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 3,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_1",
+      "replicate_checkpoint": 3,
+      "replicate_id": "CONFIRM_A",
+      "role": "PROSPECTIVE_CONTROL",
+      "start_ordinal": 72,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 4,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_1",
+      "replicate_checkpoint": 4,
+      "replicate_id": "CONFIRM_A",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 96,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 96
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 5,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_2",
+      "replicate_checkpoint": 0,
+      "replicate_id": "CONFIRM_B",
+      "role": "PROSPECTIVE_CONTROL",
+      "start_ordinal": 120,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 120
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 6,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_2",
+      "replicate_checkpoint": 1,
+      "replicate_id": "CONFIRM_B",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 144,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 144
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 7,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_2",
+      "replicate_checkpoint": 2,
+      "replicate_id": "CONFIRM_B",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 168,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 168
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 8,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_2",
+      "replicate_checkpoint": 3,
+      "replicate_id": "CONFIRM_B",
+      "role": "PROSPECTIVE_PRIMITIVE",
+      "start_ordinal": 192,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 192
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 9,
+      "checkpoint_size": 24,
+      "pool_id": "REPL_2",
+      "replicate_checkpoint": 4,
+      "replicate_id": "CONFIRM_B",
+      "role": "PROSPECTIVE_CONTROL",
+      "start_ordinal": 216,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 216
+    }
+  ],
+  "schema_version": "cn_program_base_event_replication_study_plan_v1",
+  "search_authority": {
+    "diversity_contract_changed": false,
+    "max_variants_per_base_per_template": 4,
+    "primitive_stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "primitive_stats_relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "production_feedback_imported_into_primitive_stats": false,
+    "production_results_in_stats": 0,
+    "v1_successor_feedback_imported_into_primitive_stats": false,
+    "v1_successor_results_in_stats": 0,
+    "v2_successor_feedback_imported_into_primitive_stats": false,
+    "v2_successor_results_in_stats": 0,
+    "v3_successor_feedback_imported_into_primitive_stats": false,
+    "v3_successor_results_in_stats": 0
+  },
+  "source_v3_postrun_outcome": {
+    "file_sha256": "2bc6df527df1b942ad62d665ea1938a955a6644477cee9504011feec0cea22d8",
+    "payload_sha256": "2743d9094e84dcc17d88323cd768ae90449323c6b5d33b8ab21a9811a536758e",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_9aea661_outcome_20260822.json"
+  },
+  "source_v3_terminal_audit": {
+    "file_sha256": "090f4699dc703f1232e179e5b075bb9f2a26bbc7055b4fc70d283243cbb2f4f2",
+    "payload_sha256": "4640634f371e16688cffe4f4f2a927f5b89a979f07cf6be329b9b85627f1afd0",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_9aea661_independent_audit_20260822.json"
+  },
+  "status": "BASE_EVENT_REPLICATION_STUDY_PLAN_FROZEN_NOT_RUN",
+  "study_review": {
+    "file_sha256": "0e5a30869c3726ed8cb6f1ebdfd30caf13caca9674031b9671ffe0bad286b65e",
+    "payload_sha256": "21cff82b9a35c6cae231ea10e026b09845510f9c0dd75df1f53f09cfb1b2fed7",
+    "relative_path": "runtime/run_plans/cn_program_base_event_replication_study_review_20260822.json"
+  },
+  "validation_feedback_used": false
+}

@@ -1,0 +1,102 @@
+{
+  "control_arm_autopsy": {
+    "interpretation": "Primitive retained a real advantage versus the stronger Uniform control, but the earlier combined-control ratio overstated its magnitude because Typed Evolution was weak.",
+    "primitive_productive_rate": 0.5972222222222222,
+    "primitive_stable_rate": 0.4722222222222222,
+    "typed_evolution_productive_rate": 0.16666666666666666,
+    "typed_evolution_stable_rate": 0.08333333333333333,
+    "uniform_productive_rate": 0.4583333333333333,
+    "uniform_stable_rate": 0.25
+  },
+  "decision": "REJECT_SINGLE_480_AND_THREE_NEW_POOL_SCALE; USE_V3_AS_RETROSPECTIVE_ANCHOR_PLUS_TWO_NEW_PROSPECTIVE_ORDER_ROTATED_CONFIRMATIONS",
+  "diversity_capacity_review": {
+    "max_variants_per_base_per_template": 4,
+    "next_full_24_checkpoint_from_v3_final_state": "PROGRAM_TOURNAMENT_CHECKPOINT_SUPPLY_EXHAUSTED",
+    "single_480_campaign_legal_under_frozen_diversity": false,
+    "v3_base_event_fresh_unique": 321,
+    "v3_base_event_records_used": 120,
+    "v3_theoretical_campaign_capacity": 128,
+    "v3_unique_base_groups": 32
+  },
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "new_candidate_evaluation_executed": false,
+  "pool_review": {
+    "file_sha256": "ee32fb9e7a3a1c3ee5b441292ea2e108c6e766890f8b62097db4d3357fe025f9",
+    "original_status": "ZERO_FINANCIAL_BASE_EVENT_REPLICATION_POOLS_INSUFFICIENT_UNDER_FULL_POOL_RESERVATION",
+    "payload_sha256": "7f1701e7ad336d4d039f2b007274899a918926e9ef8ab3dcc179c58da3e75407",
+    "relative_path": "runtime/run_plans/cn_program_base_event_replication_pools_review_20260822.json"
+  },
+  "pool_scan_decision": {
+    "acceptance_rule": "FIRST_SEQUENTIAL_OFFSET_WITH_MAX4_CAPACITY_GTE_120_AFTER_PRIOR_SPENT_AND_FULL_PRIOR_POOL_RESERVATION",
+    "accepted_new_pools": [
+      {
+        "fresh_exact_identities_sha256": "c67e0e20d41ee2547bb82b5fa8935165349fdf64a5003e445f95e234bcc5dd0e",
+        "fresh_unique_count": 433,
+        "max4_capacity": 128,
+        "raw_offset": 3584,
+        "replicate_id": "REPL_1"
+      },
+      {
+        "fresh_exact_identities_sha256": "49fa62f10d56722af04800c6030f174227334c9dd543617ada6d1484e3a1b04c",
+        "fresh_unique_count": 156,
+        "max4_capacity": 123,
+        "raw_offset": 5120,
+        "replicate_id": "REPL_2"
+      }
+    ],
+    "pool_score_used_to_choose_offset": false,
+    "three_new_pool_design_feasible": false,
+    "two_new_pool_confirmation_feasible": true
+  },
+  "review_payload_sha256": "21cff82b9a35c6cae231ea10e026b09845510f9c0dd75df1f53f09cfb1b2fed7",
+  "schema_version": "cn_program_base_event_replication_study_review_v1",
+  "source_repo_sha": "1cdfdf121677043b461bba9f726f05dd1a3dfe54",
+  "source_v3_evidence_note": {
+    "file_sha256": "add18b7c4f0c7f2bda0357e4457f1fe671a8d98278cf45dea2998e2d4c03974c",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_9aea661_evidence_note_20260822.json"
+  },
+  "source_v3_postrun_outcome": {
+    "file_sha256": "2bc6df527df1b942ad62d665ea1938a955a6644477cee9504011feec0cea22d8",
+    "payload_sha256": "2743d9094e84dcc17d88323cd768ae90449323c6b5d33b8ab21a9811a536758e",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_9aea661_outcome_20260822.json"
+  },
+  "source_v3_terminal_audit": {
+    "file_sha256": "090f4699dc703f1232e179e5b075bb9f2a26bbc7055b4fc70d283243cbb2f4f2",
+    "payload_sha256": "4640634f371e16688cffe4f4f2a927f5b89a979f07cf6be329b9b85627f1afd0",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_9aea661_independent_audit_20260822.json"
+  },
+  "status": "BASE_EVENT_REPLICATION_STUDY_REVIEW_FROZEN",
+  "v3_anchor": {
+    "first_mover": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+    "known_before_new_prospective_labels": true,
+    "primitive_checkpoint_first_scores": [
+      0.6165520310355066,
+      0.4207596078061169,
+      0.3542063729909293
+    ],
+    "primitive_checkpoint_productive_rates": [
+      0.9166666666666666,
+      0.5833333333333334,
+      0.2916666666666667
+    ],
+    "primitive_checkpoint_stable_rates": [
+      0.75,
+      0.4583333333333333,
+      0.20833333333333334
+    ],
+    "primitive_productive_rate": 0.5972222222222222,
+    "primitive_records": 72,
+    "primitive_stable_rate": 0.4722222222222222,
+    "records": 120,
+    "template": "BASE_EVENT",
+    "typed_evolution_records": 24,
+    "uniform_or_evolution_combined_control_productive_rate": 0.3125,
+    "uniform_or_evolution_combined_control_stable_rate": 0.16666666666666666,
+    "uniform_records": 24,
+    "used_in_new_prospective_gate": false
+  },
+  "validation_reads": 0
+}
