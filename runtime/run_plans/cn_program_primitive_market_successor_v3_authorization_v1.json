@@ -5,7 +5,7 @@
     "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json",
     "status": "PASS_SUCCESSOR_REAUTH_ELIGIBLE"
   },
-  "authorization_payload_sha256": "13a1bac667f6ebee4435f3bacee4b1ec92c2187b5c5b8c05994fc16fbbdc07d2",
+  "authorization_payload_sha256": "597992e2c812f139c002c210d0b62ca5deeeecaeb6902fe9fca7798e7608aa44",
   "automatic_successor_authorized": false,
   "campaign_id": "CN_PROGRAM_PRIMITIVE_MARKET_SUCCESSOR_V3",
   "campaign_profile": "cn_program_primitive_market_successor_v3",
@@ -20,16 +20,16 @@
     "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_fresh_supply_20260822.json"
   },
   "implementation": {
-    "runner_source_file_sha256": "b5d496db1d91db253d8832446af31d282405982789b796cf91ab4192e72a3058"
+    "runner_source_file_sha256": "2752c7d1a77e001f89bc9151d5adcd2d3ef0e6a891d97d66fd72c88b2982a916"
   },
   "official_resource_canary": {
     "acceleration_accuracy_audit_payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
     "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
     "field_column_count": 47,
     "field_columns_sha256": "2cc458cd0e71816b72291f2d5c969454610977ef60726ce0a49cf0f7be0c66a7",
-    "file_sha256": "f7b9244d452553907aae44b5839c05eeb483b0b1bedf78cc38f212e28355b262",
-    "payload_sha256": "2c0d1aab3e73be80cd840023b55ba2161aef293138b1d8b8061a905ed093ce03",
-    "runner_source_file_sha256": "b5d496db1d91db253d8832446af31d282405982789b796cf91ab4192e72a3058",
+    "file_sha256": "e01e1852bf56f6afff2e29ab5490ca440b40546d60859fc49a6a90221b379031",
+    "payload_sha256": "f2d927f2d364dbf18be9ca54a5930a1c861407dad6a928738be9e8e464d7eea4",
+    "runner_source_file_sha256": "2752c7d1a77e001f89bc9151d5adcd2d3ef0e6a891d97d66fd72c88b2982a916",
     "source_v2_focus_redirect_evidence_payload_sha256": "a23b5a23d59d787f65a0062cd7692c211c4eb46c940c5986bf5fb112c068318c",
     "source_v2_postrun_outcome_payload_sha256": "0409c9e1fac31565b10f8085b9dd67fbac69039978914e89031d32d36a217c9b",
     "source_v2_terminal_audit_payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b"
