@@ -29,6 +29,7 @@ def verify_authorization(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
     if not plan_path.is_relative_to(root) or not plan_path.is_file() or sha256_file(plan_path)!=str(b['file_sha256']): raise ValueError('tier-a validation plan file drift')
     plan=_self(plan_path,'plan_payload_sha256')
     if plan['plan_payload_sha256']!=b['payload_sha256'] or int(plan['candidate_count'])!=5: raise ValueError('tier-a validation plan payload drift')
+    if dict(p.get('source_data') or {})!=dict(plan['source_data']) or dict(p.get('endpoint_contract') or {})!=dict(plan['endpoint_contract']) or list(p.get('validation_windows') or [])!=list(plan['validation_windows']): raise ValueError('tier-a validation authorization-plan drift')
     impl=dict(p['implementation']); runner=root/'scripts/run_cn_program_base_event_tier_a_report_only_validation_v1.py'
     if sha256_file(runner)!=str(impl['runner_source_file_sha256']) or sha256_file(Path(__file__).resolve())!=str(impl['runtime_source_file_sha256']): raise ValueError('tier-a validation implementation drift')
     rc=dict(p['resource_contract'])
