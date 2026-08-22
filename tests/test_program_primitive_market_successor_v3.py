@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from pathlib import Path
 
 import app
+from scripts import build_cn_program_primitive_market_successor_v3_authorization_v1 as auth_builder
 from scripts import run_cn_program_primitive_market_successor_v3 as r
-from our_system_phase2.services.project_control_admission import CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
+from our_system_phase2.runtime import cn_program_primitive_market_successor_v3 as runtime
+from our_system_phase2.services.project_control_admission import CAMPAIGN_AUTHORIZATION_BOUND_ROUTES, sha256_file
+from our_system_phase2.services.unified_capability_registry import stable_hash
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = ROOT / "runtime/run_plans/cn_program_primitive_market_successor_v3_plan.json"
@@ -189,3 +193,37 @@ def test_v3_runtime_verifier_hashes_v3_runner_and_binds_v2_redirect() -> None:
     assert "source_v2_postrun_outcome" in source
     assert "source_v2_focus_redirect_evidence" in source
     assert "effective_spent_exact_count'])!=8294" in source
+
+
+def test_v3_authorization_binds_dynamic_prefinancial_field_projection(tmp_path: Path) -> None:
+    plan = r.verify_plan(PLAN)
+    canary = {
+        "schema_version": "synthetic_v3_canary_dynamic_field_projection",
+        "status": "PASS",
+        "candidate_evaluation_executed": False,
+        "preview_selected_count": 360,
+        "field_column_count": 47,
+        "field_columns_sha256": "synthetic-47-field-hash",
+        "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
+        "successor_plan_payload_sha256": plan["plan_payload_sha256"],
+        "fresh_supply_payload_sha256": plan["fresh_supply"]["payload_sha256"],
+        "source_v2_terminal_audit_payload_sha256": plan["source_v2_terminal_audit"]["payload_sha256"],
+        "source_v2_postrun_outcome_payload_sha256": plan["source_v2_postrun_outcome"]["payload_sha256"],
+        "source_v2_focus_redirect_evidence_payload_sha256": plan["source_v2_focus_redirect_evidence"]["payload_sha256"],
+        "acceleration_accuracy_audit_payload_sha256": plan["acceleration_accuracy_audit"]["payload_sha256"],
+        "runner_source_file_sha256": sha256_file(ROOT / "scripts/run_cn_program_primitive_market_successor_v3.py"),
+    }
+    canary["official_canary_payload_sha256"] = stable_hash(canary)
+    canary_path = tmp_path / "canary.json"
+    canary_path.write_text(json.dumps(canary, sort_keys=True), encoding="utf-8")
+
+    authorization = auth_builder.build(ROOT, canary_path)
+    assert authorization["resource_contract"]["field_column_count"] == 47
+    assert authorization["resource_contract"]["field_columns_sha256"] == "synthetic-47-field-hash"
+    assert authorization["official_resource_canary"]["field_column_count"] == 47
+
+    auth_path = tmp_path / "authorization.json"
+    auth_path.write_text(json.dumps(authorization, sort_keys=True), encoding="utf-8")
+    verified = runtime.verify_authorization(auth_path, repo_root=ROOT)
+    checked = runtime.verify_official_canary(canary_path, verified, repo_root=ROOT)
+    assert checked["field_column_count"] == 47

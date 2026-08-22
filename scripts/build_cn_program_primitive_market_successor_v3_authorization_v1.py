@@ -74,7 +74,7 @@ def build(repo: Path, canary: Path) -> dict[str, Any]:
         canary_row.get("status") != "PASS"
         or canary_row.get("candidate_evaluation_executed") is not False
         or int(canary_row.get("preview_selected_count") or 0) != 360
-        or int(canary_row.get("field_column_count") or 0) != 53
+        or int(canary_row.get("field_column_count") or 0) <= 0
         or canary_row.get("evaluator_pool_lifetime") != "PERSISTENT_RUN_SCOPE"
         or canary_row.get("successor_plan_payload_sha256") != plan_hash
         or canary_row.get("fresh_supply_payload_sha256") != supply_hash
