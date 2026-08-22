@@ -1,0 +1,52 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 2,
+  "decision_after_report_only_holdout": {
+    "if_both_mechanisms_supported": "HOLDOUT_MECHANISM_TRANSFER_SUPPORTED; RETURN_TO_PROJECT_CONTROL_FOR_FORWARD_2026_ACCESS_REVIEW",
+    "otherwise": "HOLDOUT_TRANSFER_NOT_SUPPORTED_OR_INCONCLUSIVE; STOP_ESCALATION"
+  },
+  "decision_payload_sha256": "12dfd420f05ddf541fd94af0c1ef662dd787cecd04db586945df5df8320f09dd",
+  "execution_authorized": false,
+  "family_count": 2,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_access_authorized": false,
+  "holdout_reads": 0,
+  "holdout_windows": [
+    {
+      "end_date": "2025-11-17",
+      "session_count": 16,
+      "start_date": "2025-10-27",
+      "trade_dates_sha256": "19ab22da20a9c4e973ad85ffac67c5325faa0a7bd3523f4b3991dfa22b01c90a",
+      "window_id": "holdout_1"
+    },
+    {
+      "end_date": "2025-12-09",
+      "session_count": 16,
+      "start_date": "2025-11-18",
+      "trade_dates_sha256": "25a12d103c1e327760036e824329c32b931ec16e66f21fe181eab08edfd3afca",
+      "window_id": "holdout_2"
+    },
+    {
+      "end_date": "2025-12-31",
+      "session_count": 16,
+      "start_date": "2025-12-10",
+      "trade_dates_sha256": "7700a20f6fff2913548a80b37aa5eb2dbdca6d5881f7abc8b176b9043e2ebad7",
+      "window_id": "holdout_3"
+    }
+  ],
+  "pre_frozen_endpoints": {
+    "candidate_holdout_survivor": "replay_complete AND absolute_admission.admitted AND matched_cumulative_net_return_increment>0 AND matched_net_reward_increment>0 AND cross_window_positive_increment_count>=2 over the three pre-frozen 16-session holdout windows",
+    "cohort_pass_count_threshold": "EXACTLY_2_OF_2_REQUIRED_BY_MECHANISM_GEOMETRY_NOT_POST_HOC_RATE_THRESHOLD",
+    "mechanism_holdout_support": "BOTH frozen survivor candidates must be holdout survivors because exactly one candidate represents each pre-frozen mechanism family",
+    "promotion_implication": "NONE"
+  },
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_holdout_decision_packet_v1",
+  "source_holdout_access_review_payload_sha256": "6291968a088271c8f57d87bfdbf0489e2ba4ec1195b77401bc1c7cb7c6b48ad1",
+  "source_holdout_freeze_payload_sha256": "1c3c1212bc8c94be72dd64bb1042c9da33a59f011e20369d325007dc43f91ff0",
+  "source_holdout_selection_preflight_payload_sha256": "38999f1c0d8be0c920919377c2f282b552e2c64f53bd1e06ce85f1ef2eedf7fc",
+  "status": "TIER_A_HOLDOUT_DECISION_READY_NOT_AUTHORIZED",
+  "validation_reads": 0
+}

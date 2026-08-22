@@ -1,0 +1,28 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 2,
+  "candidate_exact_identities": [
+    "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8",
+    "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6"
+  ],
+  "candidate_exact_identities_sha256": "3a5ba10caa18a1ac1c1355ca482de576d3e100ab4cdb5ffe8e565b0220966a05",
+  "candidate_members_file_sha256": "40a1335b6ad196f7ace5993d4fbf30123c5500f9de9fbaae387d13adfbdb1b86",
+  "candidate_members_payload_sha256": "fecc94ae63379f2abcc3d9b8109017ea0f105d95d2c32f2d0a0d8b7b330c1e5c",
+  "family_ids": [
+    "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+    "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318"
+  ],
+  "family_ids_sha256": "a79b28392e0c9989b8e9c4b6fc4c5d4b221c5974516393e70750746630c0a6f0",
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "freeze_payload_sha256": "1c3c1212bc8c94be72dd64bb1042c9da33a59f011e20369d325007dc43f91ff0",
+  "historical_challenge_reads": 0,
+  "holdout_access_authorized": false,
+  "holdout_reads": 0,
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_holdout_candidate_freeze_v1",
+  "selection_rule": "ALL_AND_ONLY_VALIDATION_CANDIDATE_SURVIVORS; EXACTLY_ONE_SURVIVOR_FROM_EACH_PRE_FROZEN_TIER_A_MECHANISM_FAMILY",
+  "source_validation_audit_payload_sha256": "9994cef98ab11e8735edea4891180635851d4b762405656eba0c04ef20426f7c",
+  "source_validation_closure_payload_sha256": "e17569bd062343c1f9720f9dd94eac17379cd4ab24dafb1ff7b6862e0d5f0cc8",
+  "status": "TIER_A_HOLDOUT_CANDIDATES_FROZEN_BEFORE_HOLDOUT_ACCESS"
+}

@@ -1,0 +1,65 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 2,
+  "candidate_evaluation_executed": false,
+  "candidate_exact_identities": [
+    "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8",
+    "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6"
+  ],
+  "candidate_exact_identities_sha256": "3a5ba10caa18a1ac1c1355ca482de576d3e100ab4cdb5ffe8e565b0220966a05",
+  "family_ids": [
+    "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+    "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318"
+  ],
+  "family_ids_sha256": "a79b28392e0c9989b8e9c4b6fc4c5d4b221c5974516393e70750746630c0a6f0",
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_access_authorized": false,
+  "holdout_reads": 0,
+  "holdout_trade_date_count": 48,
+  "holdout_trade_dates_sha256": "3d0f461f27620d0ae6a6aa225e9e85ffeb25be0ba8c6632fe18eb34978141dcf",
+  "holdout_windows": [
+    {
+      "end_date": "2025-11-17",
+      "session_count": 16,
+      "start_date": "2025-10-27",
+      "trade_dates_sha256": "19ab22da20a9c4e973ad85ffac67c5325faa0a7bd3523f4b3991dfa22b01c90a",
+      "window_id": "holdout_1"
+    },
+    {
+      "end_date": "2025-12-09",
+      "session_count": 16,
+      "start_date": "2025-11-18",
+      "trade_dates_sha256": "25a12d103c1e327760036e824329c32b931ec16e66f21fe181eab08edfd3afca",
+      "window_id": "holdout_2"
+    },
+    {
+      "end_date": "2025-12-31",
+      "session_count": 16,
+      "start_date": "2025-12-10",
+      "trade_dates_sha256": "7700a20f6fff2913548a80b37aa5eb2dbdca6d5881f7abc8b176b9043e2ebad7",
+      "window_id": "holdout_3"
+    }
+  ],
+  "preflight_payload_sha256": "38999f1c0d8be0c920919377c2f282b552e2c64f53bd1e06ce85f1ef2eedf7fc",
+  "promotion_authorized": false,
+  "required_physical_leaf_count": 3,
+  "required_physical_leaf_ids": [
+    "ctx_hfq_volume_ratio",
+    "fund_disclosure_cashflow_pulse",
+    "fund_leverage_liabilities_assets"
+  ],
+  "required_physical_leaf_ids_sha256": "76d052754f384016226f6981d96083960557c1d8d56285e00081bdcce0938ed4",
+  "resolved_schedule_count": 2,
+  "resolved_schedule_file_sha256": "18350bc33b7ce068246f0c58ce1761677294f5483f3c43243733b999be8d04f5",
+  "schema_version": "cn_program_base_event_tier_a_holdout_selection_preflight_v1",
+  "source_candidate_freeze_payload_sha256": "1c3c1212bc8c94be72dd64bb1042c9da33a59f011e20369d325007dc43f91ff0",
+  "source_schedule_record_sha256s": [
+    "370194af016efb7a5f8a194aa4f7b4ef7f11ed5eb178048065511e73ecac6a8f",
+    "4c2698d4675bc256bacae66dcc6c68fd4c77a3dd5103f8468790b7dae138c2fa"
+  ],
+  "split_manifest_file_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "TIER_A_HOLDOUT_SELECTION_PREFLIGHT_READY",
+  "validation_reads": 0
+}
