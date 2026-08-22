@@ -1,8 +1,12 @@
 """Freeze Tier-A BASE_EVENT schedules before any validation access."""
 from __future__ import annotations
-import argparse, hashlib, json
+import argparse, hashlib, json, sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+PROJECT_ROOT=Path(__file__).resolve().parents[1]
+for _path in (PROJECT_ROOT, PROJECT_ROOT/'src'):
+    if str(_path) not in sys.path: sys.path.insert(0,str(_path))
 
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
