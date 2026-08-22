@@ -56,7 +56,7 @@ def verify_plan(path:Path,*,repo_root:Path|None=None)->dict[str,Any]:
     if len(exacts)!=5 or stable_hash(exacts)!=str(plan['candidate_exact_identities_sha256']) or sorted(str(x.get('optimizer_ask',{}).get('exact_identity') or '') for x in schedules)!=exacts: raise RuntimeError('TIER_A_VALIDATION_EXACT_BINDING_DRIFT')
     if freeze.get('validation_reads_performed_by_freeze')!=0 or decision.get('validation_access_authorized') is not False or int(pre.get('validation_reads') or 0)!=0 or pre.get('candidate_evaluation_executed') is not False: raise RuntimeError('TIER_A_VALIDATION_PREFINANCIAL_BOUNDARY_DRIFT')
     if list(pre['required_physical_leaf_ids'])!=list(plan['required_physical_leaf_ids']) or pre['required_physical_leaf_ids_sha256']!=plan['required_physical_leaf_ids_sha256']: raise RuntimeError('TIER_A_VALIDATION_FIELD_DRIFT')
-    if infra.get('strategy')!='BUILD_FRESH_8_FIELD_VALIDATION_CONTEXT_ONLY_AFTER_PROJECT_CONTROL_ADMISSION': raise RuntimeError('TIER_A_VALIDATION_INFRA_STRATEGY_DRIFT')
+    if dict(infra.get('implementation_decision') or {}).get('context_strategy')!='BUILD_FRESH_8_FIELD_VALIDATION_CONTEXT_ONLY_AFTER_PROJECT_CONTROL_ADMISSION': raise RuntimeError('TIER_A_VALIDATION_INFRA_STRATEGY_DRIFT')
     rc=dict(plan['resource_contract'])
     if rc!={'profile':'VALIDATION_DUAL_8','cpu_threads':8,'evaluator_workers':4,'candidate_count':5}: raise RuntimeError('TIER_A_VALIDATION_RESOURCE_DRIFT')
     return plan
