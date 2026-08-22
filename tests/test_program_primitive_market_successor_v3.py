@@ -184,6 +184,12 @@ def test_v3_persistent_executor_uses_full_frozen_union() -> None:
     assert opts["initargs"][6] == "inputhash"
 
 
+def test_v3_telemetry_uses_dynamic_field_projection_label() -> None:
+    source = (ROOT / "scripts/run_cn_program_primitive_market_successor_v3.py").read_text(encoding="utf-8-sig")
+    assert "FULL_FROZEN_DYNAMIC_FIELD_UNION" in source
+    assert "FULL_FROZEN_53_FIELD_UNION" not in source
+
+
 def test_v3_runtime_verifier_hashes_v3_runner_and_binds_v2_redirect() -> None:
     source = (ROOT / "src/our_system_phase2/runtime/cn_program_primitive_market_successor_v3.py").read_text(encoding="utf-8-sig")
     assert "ROUTE_ID='cn-program-primitive-market-successor-v3'" in source
