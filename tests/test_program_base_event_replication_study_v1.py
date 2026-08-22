@@ -7,7 +7,7 @@ import app
 from scripts import build_cn_program_base_event_replication_study_authorization_v1 as auth_builder
 from scripts import run_cn_program_base_event_replication_study_v1 as r
 from our_system_phase2.runtime import cn_program_base_event_replication_study_v1 as runtime
-from our_system_phase2.services.project_control_admission import CAMPAIGN_AUTHORIZATION_BOUND_ROUTES, sha256_file
+from our_system_phase2.services.project_control_admission import ACTION_LAUNCH, ACTION_RETRY, CAMPAIGN_AUTHORIZATION_BOUND_ROUTES, sha256_file
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +19,7 @@ REVIEW = ROOT / "runtime/run_plans/cn_program_base_event_replication_study_revie
 def test_replication_route_registered_high_cost_and_authorization_bound() -> None:
     route = "cn-program-base-event-replication-study-v1"
     assert app.ROUTES[route] == "our_system_phase2.runtime.cn_program_base_event_replication_study_v1"
-    assert app.HIGH_COST_ROUTE_ACTIONS[route] == {r.ACTION_LAUNCH, r.ACTION_RETRY}
+    assert app.HIGH_COST_ROUTE_ACTIONS[route] == {ACTION_LAUNCH, ACTION_RETRY}
     assert route in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
 
 
