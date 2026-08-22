@@ -1,0 +1,150 @@
+{
+  "access_review": {
+    "file_sha256": "36c3cb9bf290d1bf8aaa6dbf71d49442326139c398bf1ca8b169114685ca13a5",
+    "payload_sha256": "6291968a088271c8f57d87bfdbf0489e2ba4ec1195b77401bc1c7cb7c6b48ad1",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_access_review_20260823.json"
+  },
+  "archive_write": "FORBIDDEN",
+  "automatic_successor_authorized": false,
+  "candidate_count": 2,
+  "candidate_exact_identities_sha256": "3a5ba10caa18a1ac1c1355ca482de576d3e100ab4cdb5ffe8e565b0220966a05",
+  "candidate_freeze": {
+    "file_sha256": "8b7aaafca9786f93e09f83452b510b43c13f39edc7c458c89ea9186460d57268",
+    "payload_sha256": "1c3c1212bc8c94be72dd64bb1042c9da33a59f011e20369d325007dc43f91ff0",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_candidate_freeze_20260823.json"
+  },
+  "candidate_members": {
+    "file_sha256": "40a1335b6ad196f7ace5993d4fbf30123c5500f9de9fbaae387d13adfbdb1b86",
+    "payload_sha256": "fecc94ae63379f2abcc3d9b8109017ea0f105d95d2c32f2d0a0d8b7b330c1e5c",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_candidate_members_20260823.jsonl"
+  },
+  "decision_packet": {
+    "file_sha256": "ac8ad725a51738ca9a383a97b01687c87e67d62638e618163ad4a3c140772c78",
+    "payload_sha256": "12dfd420f05ddf541fd94af0c1ef662dd787cecd04db586945df5df8320f09dd",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_decision_packet_20260823.json"
+  },
+  "endpoint_contract": {
+    "candidate_holdout_survivor": "replay_complete AND absolute_admission.admitted AND matched_cumulative_net_return_increment>0 AND matched_net_reward_increment>0 AND cross_window_positive_increment_count>=2 over the three pre-frozen 16-session holdout windows",
+    "cohort_pass_count_threshold": "EXACTLY_2_OF_2_REQUIRED_BY_MECHANISM_GEOMETRY_NOT_POST_HOC_RATE_THRESHOLD",
+    "mechanism_holdout_support": "BOTH frozen survivor candidates must be holdout survivors because exactly one candidate represents each pre-frozen mechanism family",
+    "promotion_implication": "NONE"
+  },
+  "evaluation_role": "holdout",
+  "family_ids": [
+    "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+    "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318"
+  ],
+  "family_ids_sha256": "a79b28392e0c9989b8e9c4b6fc4c5d4b221c5974516393e70750746630c0a6f0",
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_access_authorized": false,
+  "holdout_context_contract": {
+    "field_builder": "build_cn_core_pack_validation_session_sidecar.py --evaluation-role holdout",
+    "field_context_built_after_admission": true,
+    "label_builder": "build_cn_phase3cm_forward_label_sidecars.py --evaluation-role holdout --horizons 1,5,15,30",
+    "label_context_built_after_admission": true,
+    "session_authority_builder": "build_cn_validation_session_authority.py --evaluation-role holdout --date-min 2025-10-27 --date-max 2025-12-31",
+    "session_authority_verifier": "verify_cn_report_only_session_authority.py role=holdout"
+  },
+  "holdout_reads": 0,
+  "holdout_trade_date_count": 48,
+  "holdout_trade_dates_sha256": "3d0f461f27620d0ae6a6aa225e9e85ffeb25be0ba8c6632fe18eb34978141dcf",
+  "holdout_windows": [
+    {
+      "end_date": "2025-11-17",
+      "session_count": 16,
+      "start_date": "2025-10-27",
+      "trade_dates_sha256": "19ab22da20a9c4e973ad85ffac67c5325faa0a7bd3523f4b3991dfa22b01c90a",
+      "window_id": "holdout_1"
+    },
+    {
+      "end_date": "2025-12-09",
+      "session_count": 16,
+      "start_date": "2025-11-18",
+      "trade_dates_sha256": "25a12d103c1e327760036e824329c32b931ec16e66f21fe181eab08edfd3afca",
+      "window_id": "holdout_2"
+    },
+    {
+      "end_date": "2025-12-31",
+      "session_count": 16,
+      "start_date": "2025-12-10",
+      "trade_dates_sha256": "7700a20f6fff2913548a80b37aa5eb2dbdca6d5881f7abc8b176b9043e2ebad7",
+      "window_id": "holdout_3"
+    }
+  ],
+  "oos_authority": "HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "plan_payload_sha256": "bc85308308e82c927d8cea17c5e131922f2adc0dd3ad92db741697c59b2d83dd",
+  "post_holdout_decision": {
+    "if_both_mechanisms_supported": "HOLDOUT_MECHANISM_TRANSFER_SUPPORTED; RETURN_TO_PROJECT_CONTROL_FOR_FORWARD_2026_ACCESS_REVIEW",
+    "otherwise": "HOLDOUT_TRANSFER_NOT_SUPPORTED_OR_INCONCLUSIVE; STOP_ESCALATION"
+  },
+  "promotion_authorized": false,
+  "required_physical_leaf_ids": [
+    "ctx_hfq_volume_ratio",
+    "fund_disclosure_cashflow_pulse",
+    "fund_leverage_liabilities_assets"
+  ],
+  "required_physical_leaf_ids_sha256": "76d052754f384016226f6981d96083960557c1d8d56285e00081bdcce0938ed4",
+  "resolved_schedules": {
+    "file_sha256": "18350bc33b7ce068246f0c58ce1761677294f5483f3c43243733b999be8d04f5",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_resolved_schedules_20260823.jsonl"
+  },
+  "resource_contract": {
+    "candidate_count": 2,
+    "cpu_threads": 8,
+    "evaluator_workers": 2,
+    "profile": "VALIDATION_DUAL_8"
+  },
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_base_event_tier_a_report_only_holdout_plan_v1",
+  "selection_preflight": {
+    "file_sha256": "47bb789895dbdf4fc10ce92bbf7082b4c9eaebacf96b778ececfa13022fbb272",
+    "payload_sha256": "38999f1c0d8be0c920919377c2f282b552e2c64f53bd1e06ce85f1ef2eedf7fc",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_selection_preflight_20260823.json"
+  },
+  "source_data": {
+    "chip_manifest": {
+      "path": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713\\chip_sidecar_manifest_v1.json",
+      "sha256": "b619eeb3f73e7041b8b0de2166b933651c7bbf03e3be4d3db0904f57dd6f5cd9"
+    },
+    "chip_root": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713",
+    "daily_st_source": {
+      "path": "D:\\ChengboRemote\\data\\20260730_142854_hfq_daily_2024_2025\\hfq_daily_2024_2025\\year=2025\\part.parquet",
+      "sha256": "7060dd78cde6b826157f10c03541a4c302d11fe3213517236dc893393c071e68"
+    },
+    "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+    "minute_source_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "public_source_manifest": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41\\source_snapshot_manifest.json",
+      "sha256": "0c06baa7c24109ea8a1064a291565ce6352ab2a0ca32f20f6cc257261e25514d"
+    },
+    "public_source_root": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41",
+    "registry": {
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+      "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+    },
+    "source_contract": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+      "sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+    },
+    "split_manifest": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_phase3cm_1024_sidecar_closure_0aba8c5\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    }
+  },
+  "source_validation_audit": {
+    "file_sha256": "6d6d31dc75ba5ced4a9056959e81e2e3d6ef24a82ca073b84480b849479ae39d",
+    "payload_sha256": "9994cef98ab11e8735edea4891180635851d4b762405656eba0c04ef20426f7c",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_validation_independent_audit_20260823.json"
+  },
+  "source_validation_outcome": {
+    "file_sha256": "794854d6ec4ab23277cf354680f448d38d60fd16a6fa5f2f7a6a8871ed415205",
+    "payload_sha256": "dcb2051bef3f09f19c66f659d033750b6892e743d159881d3494082caa8e8dd1",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_validation_outcome_20260823.json"
+  },
+  "status": "BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_PLAN_FROZEN_NOT_RUN",
+  "usage": "REPORT_ONLY_CANDIDATE_TRANSFER",
+  "validation_reads": 0
+}

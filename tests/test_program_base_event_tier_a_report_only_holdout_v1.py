@@ -1,0 +1,22 @@
+from __future__ import annotations
+import json
+from pathlib import Path
+import app
+from scripts import build_cn_program_base_event_tier_a_report_only_holdout_authorization_v1 as auth_builder
+from scripts import run_cn_program_base_event_tier_a_report_only_holdout_v1 as r
+from our_system_phase2.runtime import cn_program_base_event_tier_a_report_only_holdout_v1 as runtime
+from our_system_phase2.services.project_control_admission import ACTION_LAUNCH,ACTION_RETRY,CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
+
+ROOT=Path(__file__).resolve().parents[1]; PLAN=ROOT/'runtime/run_plans/cn_program_base_event_tier_a_report_only_holdout_plan.json'
+def test_holdout_route_is_high_cost_and_authorization_bound():
+ route=runtime.ROUTE_ID; assert app.ROUTES[route]=='our_system_phase2.runtime.cn_program_base_event_tier_a_report_only_holdout_v1'; assert app.HIGH_COST_ROUTE_ACTIONS[route]=={ACTION_LAUNCH,ACTION_RETRY}; assert route in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
+def test_holdout_plan_freezes_two_mechanisms_three_fields_and_three_windows():
+ p=r.verify_plan(PLAN,repo_root=ROOT); assert p['candidate_count']==2 and len(p['family_ids'])==2; assert len(p['required_physical_leaf_ids'])==3; assert p['required_physical_leaf_ids']==['ctx_hfq_volume_ratio','fund_disclosure_cashflow_pulse','fund_leverage_liabilities_assets']; assert [x['session_count'] for x in p['holdout_windows']]==[16,16,16]; assert p['holdout_windows'][0]['start_date']=='2025-10-27' and p['holdout_windows'][-1]['end_date']=='2025-12-31'; assert p['holdout_access_authorized'] is False; assert all(p[k]==0 for k in ('holdout_reads','validation_reads','historical_challenge_reads','forward_b_reads','forward_2026_reads')); assert p['promotion_authorized'] is False and p['automatic_successor_authorized'] is False
+def test_holdout_endpoint_is_two_of_two_by_mechanism_not_rate_threshold():
+ p=r.verify_plan(PLAN,repo_root=ROOT); assert p['endpoint_contract']['cohort_pass_count_threshold']=='EXACTLY_2_OF_2_REQUIRED_BY_MECHANISM_GEOMETRY_NOT_POST_HOC_RATE_THRESHOLD'; a,b=p['family_ids']; ok=r._metrics(p,[{'family_id':a,'exact_identity':'a','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':2},{'family_id':b,'exact_identity':'b','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':3}]); assert ok['status']==r.SUPPORTED and ok['family_support_observed']==2; fail=r._metrics(p,[{'family_id':a,'exact_identity':'a','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':2},{'family_id':b,'exact_identity':'b','candidate_holdout_survivor':False,'holdout_productive':False,'holdout_stable_2of3':False,'cross_window_positive_increment_count':1}]); assert fail['status']==r.NOT_SUPPORTED and fail['family_support_observed']==1
+def test_holdout_builds_role_bound_context_only_inside_runner():
+ src=(ROOT/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py').read_text(encoding='utf-8-sig'); assert "'--evaluation-role','holdout'" in src; assert 'build_cn_phase3cm_forward_label_sidecars.py' in src; assert 'verify_cn_report_only_session_authority.py' in src; assert "data_role='holdout_report_only'" in src; assert "'promotion_authorized':False" in src
+def test_generic_session_authority_verifier_is_role_parameterized():
+ src=(ROOT/'scripts/verify_cn_report_only_session_authority.py').read_text(encoding='utf-8-sig'); assert "evaluation_role:str" in src; assert "f'{prefix}_session_authority_manifest.json'" in src; assert "f'{evaluation_role}_reads'" in src; assert "--evaluation-role" in src
+def test_holdout_authorization_binds_final_plan_and_report_only_boundary(tmp_path:Path):
+ x=auth_builder.build(ROOT); assert x['status']=='BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_AUTHORIZED_NOT_RUN'; assert x['evaluation_role']=='holdout' and x['usage']=='REPORT_ONLY_CANDIDATE_TRANSFER'; assert x['resource_contract']=={'profile':'VALIDATION_DUAL_8','cpu_threads':8,'evaluator_workers':2,'candidate_count':2}; assert x['oos_authority']=='HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY'; assert x['promotion_authorized'] is False and x['automatic_successor_authorized'] is False; p=tmp_path/'auth.json';p.write_text(json.dumps(x,sort_keys=True),encoding='utf-8'); y=runtime.verify_authorization(p,repo_root=ROOT); assert y['authorization_payload_sha256']==x['authorization_payload_sha256']

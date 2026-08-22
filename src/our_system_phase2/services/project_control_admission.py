@@ -93,6 +93,7 @@ CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
         "cn-program-primitive-market-successor-v3",
         "cn-program-base-event-replication-study-v1",
         "cn-program-base-event-tier-a-report-only-validation-v1",
+        "cn-program-base-event-tier-a-report-only-holdout-v1",
         "cn-program-optimizer-d1-report-only-validation-v1",
         "cn-program-optimizer-d1-transfer-prospective-validation-v1",
     }

@@ -1,0 +1,14 @@
+from __future__ import annotations
+import argparse,json
+from pathlib import Path
+from typing import Any
+from scripts import run_cn_program_base_event_tier_a_report_only_holdout_v1 as runner
+from our_system_phase2.runtime import cn_program_base_event_tier_a_report_only_holdout_v1 as runtime
+from our_system_phase2.services.project_control_admission import ACTION_LAUNCH,ACTION_RETRY,sha256_file
+from our_system_phase2.services.unified_capability_registry import stable_hash
+def build(repo:Path)->dict[str,Any]:
+ repo=repo.resolve();pp=repo/runtime.PLAN_RELATIVE_PATH;p=runner.verify_plan(pp,repo_root=repo)
+ x={'schema_version':runtime.AUTHORIZATION_SCHEMA,'status':'BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_AUTHORIZED_NOT_RUN','execution_authorized':True,'campaign_id':runtime.CAMPAIGN_ID,'campaign_profile':runtime.CAMPAIGN_PROFILE,'project_control_route_id':runtime.ROUTE_ID,'permitted_project_control_actions':[ACTION_LAUNCH,ACTION_RETRY],'evaluation_role':'holdout','usage':'REPORT_ONLY_CANDIDATE_TRANSFER','holdout_plan':{'relative_path':str(runtime.PLAN_RELATIVE_PATH).replace('\\','/'),'file_sha256':sha256_file(pp),'payload_sha256':p['plan_payload_sha256'],'candidate_count':2,'candidate_exact_identities_sha256':p['candidate_exact_identities_sha256'],'family_ids':list(p['family_ids']),'required_physical_leaf_ids_sha256':p['required_physical_leaf_ids_sha256']},'source_data':dict(p['source_data']),'endpoint_contract':dict(p['endpoint_contract']),'holdout_windows':list(p['holdout_windows']),'implementation':{'runner_source_file_sha256':sha256_file(repo/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py'),'runtime_source_file_sha256':sha256_file(repo/'src/our_system_phase2/runtime/cn_program_base_event_tier_a_report_only_holdout_v1.py'),'session_authority_verifier_sha256':sha256_file(repo/'scripts/verify_cn_report_only_session_authority.py')},'resource_contract':dict(p['resource_contract']),'optimizer_feedback_write':'FORBIDDEN','scheduler_write':'FORBIDDEN','archive_write':'FORBIDDEN','validation_reads':0,'holdout_reads':0,'historical_challenge_reads':0,'forward_b_reads':0,'forward_2026_reads':0,'oos_authority':'HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY','promotion_authorized':False,'automatic_successor_authorized':False};x['authorization_payload_sha256']=stable_hash(x);return x
+def main(argv=None):
+ q=argparse.ArgumentParser();q.add_argument('--repo-root',type=Path,default=Path(__file__).resolve().parents[1]);q.add_argument('--output',type=Path,default=runtime.AUTHORIZATION_RELATIVE_PATH);a=q.parse_args(argv);x=build(a.repo_root);out=a.output if a.output.is_absolute() else a.repo_root/a.output;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(x,ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8');print(json.dumps({'status':x['status'],'authorization_payload_sha256':x['authorization_payload_sha256'],'output':str(out.resolve())},sort_keys=True))
+if __name__=='__main__':main()
