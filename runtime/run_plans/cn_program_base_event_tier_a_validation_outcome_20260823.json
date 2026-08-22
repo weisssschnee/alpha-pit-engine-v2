@@ -1,0 +1,45 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 5,
+  "candidate_survivor_count": 2,
+  "closure_payload_sha256": "e17569bd062343c1f9720f9dd94eac17379cd4ab24dafb1ff7b6862e0d5f0cc8",
+  "forward_2026_access_authorized": false,
+  "forward_b_access_authorized": false,
+  "historical_challenge_access_authorized": false,
+  "holdout_access_authorized": false,
+  "independent_audit_payload_sha256": "9994cef98ab11e8735edea4891180635851d4b762405656eba0c04ef20426f7c",
+  "mechanism_support_status": "BASE_EVENT_TIER_A_VALIDATION_MECHANISM_TRANSFER_SUPPORTED",
+  "next_required_decision": "Review whether the two validation-supported Tier-A mechanisms and frozen survivor candidates justify a separately authorized holdout test.",
+  "oos_authority": "VALIDATION_REPORT_ONLY_EVIDENCE_ONLY",
+  "outcome_payload_sha256": "dcb2051bef3f09f19c66f659d033750b6892e743d159881d3494082caa8e8dd1",
+  "per_family": {
+    "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170": {
+      "candidate_count": 2,
+      "candidate_exact_identities": [
+        "315939e7a438defb673d0006044e7295f1a5f52cb9b159250df1a7d81f2dc7b7",
+        "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8"
+      ],
+      "supported": true,
+      "survivor_count": 1
+    },
+    "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318": {
+      "candidate_count": 3,
+      "candidate_exact_identities": [
+        "7a97b754c5dae59f047752bcf6ed455317e700a925976eec57359c7b85dfcccc",
+        "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6",
+        "f4a359de8511ad03896a5ff6fa58329793717cd45166b99571ba81b2da662edf"
+      ],
+      "supported": true,
+      "survivor_count": 1
+    }
+  },
+  "post_batch_recommendation": "REDIRECT",
+  "promotion_authorized": false,
+  "redirect_target": "HOLDOUT_ACCESS_PROJECT_CONTROL_REVIEW",
+  "schema_version": "cn_program_base_event_tier_a_validation_postrun_outcome_v1",
+  "source_repo_sha": "8c608564f81975c6421df2c6ea44a6df902dcbce",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_validation_20260823_8c60856",
+  "status": "BASE_EVENT_TIER_A_VALIDATION_POSTRUN_CLOSED",
+  "validation_productive_count": 2,
+  "validation_stable_2of3_count": 2
+}
