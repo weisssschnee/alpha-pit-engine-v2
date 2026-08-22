@@ -1,0 +1,86 @@
+{
+  "candidate_evaluation_executed": false,
+  "design_interpretation": "Promote BASE_EVENT and BASE_TEMPORAL_MARKET_EVENT from uncontrolled exploration to controlled confirmation; retain BASE_MARKET_EVENT as already controlled positive frontier; remove BASE_MARKET because stable uplift failed its frozen gate and underperformed Evolution on stable rate.",
+  "evidence_payload_sha256": "a23b5a23d59d787f65a0062cd7692c211c4eb46c940c5986bf5fb112c068318c",
+  "oos_authority": "NONE",
+  "promotion_authorized": false,
+  "redirect_focus_templates": [
+    "BASE_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT",
+    "BASE_MARKET_EVENT"
+  ],
+  "removed_focus_template": "BASE_MARKET",
+  "schema_version": "cn_program_primitive_market_successor_v2_focus_redirect_evidence_v1",
+  "scorer_mutation_authorized": false,
+  "source_closure_payload_sha256": "5584e7f2ece30d61a71dec98c1ebbc343126d8a29acb8ef0c8f27d6abbc9ee2c",
+  "source_independent_audit_payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b",
+  "source_postrun_outcome_payload_sha256": "0409c9e1fac31565b10f8085b9dd67fbac69039978914e89031d32d36a217c9b",
+  "source_repo_sha": "9f458e3efad0dda2cb86885ae2f39ec0809c5aec",
+  "status": "V2_FOCUS_REDIRECT_EVIDENCE_FROZEN",
+  "template_arm_metrics": {
+    "BASE_EVENT": {
+      "P": {
+        "n": 72,
+        "productive": 51,
+        "productive_rate": 0.7083333333333334,
+        "stable": 43,
+        "stable_rate": 0.5972222222222222
+      }
+    },
+    "BASE_MARKET": {
+      "E": {
+        "n": 24,
+        "productive": 6,
+        "productive_rate": 0.25,
+        "stable": 5,
+        "stable_rate": 0.20833333333333334
+      },
+      "P": {
+        "n": 72,
+        "productive": 19,
+        "productive_rate": 0.2638888888888889,
+        "stable": 8,
+        "stable_rate": 0.1111111111111111
+      },
+      "U": {
+        "n": 24,
+        "productive": 2,
+        "productive_rate": 0.08333333333333333,
+        "stable": 2,
+        "stable_rate": 0.08333333333333333
+      }
+    },
+    "BASE_MARKET_EVENT": {
+      "E": {
+        "n": 24,
+        "productive": 7,
+        "productive_rate": 0.2916666666666667,
+        "stable": 6,
+        "stable_rate": 0.25
+      },
+      "P": {
+        "n": 72,
+        "productive": 33,
+        "productive_rate": 0.4583333333333333,
+        "stable": 29,
+        "stable_rate": 0.4027777777777778
+      },
+      "U": {
+        "n": 24,
+        "productive": 3,
+        "productive_rate": 0.125,
+        "stable": 2,
+        "stable_rate": 0.08333333333333333
+      }
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "P": {
+        "n": 48,
+        "productive": 31,
+        "productive_rate": 0.6458333333333334,
+        "stable": 31,
+        "stable_rate": 0.6458333333333334
+      }
+    }
+  }
+}

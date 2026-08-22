@@ -1039,6 +1039,7 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         "cn-program-primitive-main-production-recovery-v1",
         "cn-program-primitive-market-successor-v1",
         "cn-program-primitive-market-successor-v2",
+        "cn-program-primitive-market-successor-v3",
         "cn-program-optimizer-d1-report-only-validation-v1",
         "cn-program-optimizer-d1-transfer-prospective-validation-v1",
     }

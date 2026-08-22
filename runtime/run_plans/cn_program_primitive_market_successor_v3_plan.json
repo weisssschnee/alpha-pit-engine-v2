@@ -1,0 +1,255 @@
+{
+  "acceleration_accuracy_audit": {
+    "file_sha256": "578ed41011d4884b30de1f91d2620ff411250dd5e173792808ea722b96dec460",
+    "payload_sha256": "07bc4eaba9ce564d1a0f64211cbe974be19b82fa499a3e5c2c53a354f1791bca",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_acceleration_accuracy_audit_20260821.json"
+  },
+  "automatic_successor_authorized": false,
+  "budget": {
+    "checkpoint_count": 15,
+    "checkpoint_size": 24,
+    "focus_records": 360,
+    "hard_cap_logical_records": 360,
+    "per_focus_template_records": 120,
+    "primitive_records": 216,
+    "typed_evolution_records": 72,
+    "uniform_records": 72
+  },
+  "candidate_evaluation_executed": false,
+  "design_reason": "V2 failed only the frozen per-core stable-uplift gate because BASE_MARKET transferred poorly on stable uplift, while BASE_EVENT and BASE_TEMPORAL_MARKET_EVENT showed high productive/stable yield without controls and BASE_MARKET_EVENT retained a controlled Primitive advantage. V3 removes BASE_MARKET and converts the three surviving frontiers into equal controlled confirmation blocks. Scorer, primitive stats, evaluator, component universe, diversity contract and resource profile remain frozen.",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "focus_templates": [
+    "BASE_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT",
+    "BASE_MARKET_EVENT"
+  ],
+  "fresh_supply": {
+    "effective_spent_exact_count": 8294,
+    "file_sha256": "5cf43a0a14bc9b004cca794d5c291a2546300268e27a54806ccee3e0aca20707",
+    "fresh_exact_identities_sha256": "849381d39caecbe312e51f2e58fa8a28daa1de7ff8b2a3121b8ac96a3a334c1d",
+    "fresh_unique_count": 3302,
+    "payload_sha256": "f4d9de953f5d88b3525cf5d0e78771b06b8a7417641294d17215b07f2eca5df9",
+    "per_template_fresh": {
+      "BASE_EVENT": 321,
+      "BASE_MARKET_EVENT": 512,
+      "BASE_TEMPORAL_MARKET_EVENT": 512
+    },
+    "raw_ordinal_offset": 3072,
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_fresh_supply_20260822.json"
+  },
+  "oos_authority": "NONE",
+  "plan_payload_sha256": "39aebf4872f6c2baadd745ba03f9b58f1cb8cf347783b8cc5ef1febe9574de48",
+  "promotion_authorized": false,
+  "prospective_gate": {
+    "behavior_pair_rate_min": 0.7,
+    "each_focus_template_primitive_productive_rate_min": 0.3,
+    "each_focus_template_primitive_to_controls_productive_ratio_min": 1.2,
+    "each_focus_template_primitive_to_controls_uplift_stable_ratio_min": 1.2,
+    "each_focus_template_primitive_uplift_stable_2of3_rate_min": 0.25,
+    "effective_spent_overlap_count_required": 0,
+    "focus_primitive_productive_rate_min": 0.4,
+    "focus_primitive_uplift_stable_2of3_rate_min": 0.3,
+    "restricted_reads_required_zero": true,
+    "total_productive_count_min": 100
+  },
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "evaluator_pool_lifetime": "PERSISTENT_RUN_SCOPE",
+    "fallback_executor_workers": 16,
+    "minimum_free_memory_bytes": 25769803776,
+    "minimum_records_per_hour_after_first_checkpoint": 650.0,
+    "persistent_pool_record_hash_parity_required": true,
+    "primary_executor_workers": 24,
+    "profile": "SEARCH_DUAL_24",
+    "throughput_enforcement_after_warm_checkpoints": 2,
+    "wall_clock_budget_minutes": 50
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schedule": [
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 0,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 0,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 1,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 24,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 2,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 48,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 0
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 3,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 72,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 4,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 96,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 5,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 120,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 6,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 144,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "UNIFORM_CONTROL",
+      "checkpoint": 7,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 168,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 24
+    },
+    {
+      "arm": "CATALOG_TYPED_EVOLUTION_PROGRAM_V2",
+      "checkpoint": 8,
+      "checkpoint_size": 24,
+      "role": "FOCUS_CONTROL",
+      "start_ordinal": 192,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 48
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 9,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 216,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 10,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 240,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 11,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 264,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 72
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 12,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 288,
+      "template": "BASE_EVENT",
+      "template_start_ordinal": 96
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 13,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 312,
+      "template": "BASE_TEMPORAL_MARKET_EVENT",
+      "template_start_ordinal": 96
+    },
+    {
+      "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+      "checkpoint": 14,
+      "checkpoint_size": 24,
+      "role": "FOCUS_PRIMITIVE",
+      "start_ordinal": 336,
+      "template": "BASE_MARKET_EVENT",
+      "template_start_ordinal": 96
+    }
+  ],
+  "schema_version": "cn_program_primitive_market_successor_v3_plan_v1",
+  "search_authority": {
+    "diversity_contract_changed": false,
+    "max_variants_per_base_per_template": 4,
+    "primitive_stats_payload_sha256": "fb5c53287eaaec0b6bfb3dddf6ba0f2846a64b61e888503b2fc00a2b426f7b1d",
+    "primitive_stats_relative_path": "runtime/run_plans/cn_stage_c_primitive_credit_stats_20260820.json",
+    "production_feedback_imported_into_primitive_stats": false,
+    "production_results_in_stats": 0,
+    "stage_c_results_in_stats": 0,
+    "stage_d_results_in_stats": 0,
+    "v1_successor_feedback_imported_into_primitive_stats": false,
+    "v1_successor_results_in_stats": 0,
+    "v2_successor_feedback_imported_into_primitive_stats": false,
+    "v2_successor_results_in_stats": 0
+  },
+  "source_v2_focus_redirect_evidence": {
+    "file_sha256": "4a68dfb269d4e1cc5c6baf2f936fc145bfc196d7004fcaa662de65bec7707177",
+    "payload_sha256": "a23b5a23d59d787f65a0062cd7692c211c4eb46c940c5986bf5fb112c068318c",
+    "redirect_focus_templates": [
+      "BASE_EVENT",
+      "BASE_TEMPORAL_MARKET_EVENT",
+      "BASE_MARKET_EVENT"
+    ],
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v2_focus_redirect_evidence_20260822.json",
+    "removed_focus_template": "BASE_MARKET"
+  },
+  "source_v2_postrun_outcome": {
+    "file_sha256": "9c59726654fbfde0f7d192396bedc263635ffb20cefba7e5b577a201d41c7978",
+    "payload_sha256": "0409c9e1fac31565b10f8085b9dd67fbac69039978914e89031d32d36a217c9b",
+    "recommendation": "REDIRECT",
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v2_9f458e3_outcome_20260822.json"
+  },
+  "source_v2_terminal_audit": {
+    "failed_gate_checks": [
+      "each_core_template_uplift_stable"
+    ],
+    "file_sha256": "ff4301e3517d67fd137bde3959e3a764d5fc7919d915c548f3a1608303c74acd",
+    "gate_status": "PRIMITIVE_MARKET_SUCCESSOR_V2_TRANSFER_FAIL",
+    "payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b",
+    "records": 360,
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v2_9f458e3_independent_audit_20260822.json"
+  },
+  "status": "PRIMITIVE_MARKET_SUCCESSOR_V3_PLAN_FROZEN_NOT_RUN",
+  "validation_feedback_used": false
+}
