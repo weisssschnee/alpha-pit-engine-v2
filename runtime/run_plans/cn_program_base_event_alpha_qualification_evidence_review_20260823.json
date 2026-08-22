@@ -1,0 +1,26 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_cohort_path": "D:\\ChengboRemote\\runtime\\cn_program_base_event_alpha_qualification_candidate_cohort_20260823.json",
+  "candidate_cohort_payload_sha256": "88b6a59220165fa3fd7476b474481f25c0a76e0654b963e8a39955639a23d6be",
+  "candidate_evaluation_executed": false,
+  "evidence_interpretation": {
+    "candidate_level_caveat": "All candidate selection evidence is development-domain and label-informed. No candidate has validation/OOS authority or promotion authority.",
+    "search_policy_development_evidence": "PASS_REPEATABLE_BASE_EVENT_POLICY_ADVANTAGE",
+    "tier_a_interpretation": "Two mechanism families independently produced stable Primitive discoveries in both new prospective pools; Tier A exact candidates are core review-eligible but are not validated alphas.",
+    "tier_b_interpretation": "Mechanism families supported by V3 anchor plus one new pool only; reserve evidence, not core nomination."
+  },
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "next_decision": "SEPARATE_PROJECT_CONTROL_DECISION_ON_WHETHER_TO_OPEN_VALIDATION_FOR_FROZEN_TIER_A_COHORT",
+  "oos_authority": "NONE",
+  "promotion_authorized": false,
+  "recommendation": "PAUSE_NEW_DEVELOPMENT_SEARCH_AND_REVIEW_TIER_A_FOR_VALIDATION_AUTHORIZATION",
+  "review_payload_sha256": "0f94e762043841454621476275205d8ba0266c0ac689a93795c963a00d0c45e8",
+  "schema_version": "cn_program_base_event_alpha_qualification_evidence_review_v1",
+  "source_postrun_outcome_payload_sha256": "c1baa0b347d7280325c3f604239eb50b557f2cfa2167c37d996d92cfd9bbbced",
+  "source_terminal_audit_payload_sha256": "082af5a4b25782cd3ed08b69e994df8de46d16a9e89609edc5cbf95057a23a83",
+  "status": "ZERO_FINANCIAL_BASE_EVENT_ALPHA_QUALIFICATION_EVIDENCE_REVIEW_FROZEN",
+  "validation_reads": 0
+}
