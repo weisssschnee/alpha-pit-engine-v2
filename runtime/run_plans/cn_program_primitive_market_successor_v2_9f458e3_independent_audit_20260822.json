@@ -1,0 +1,113 @@
+{
+  "audit_payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b",
+  "automatic_successor_authorized": false,
+  "checks": {
+    "artifact_hashes": true,
+    "behavior_recompute": true,
+    "checkpoint_count": true,
+    "closure_self_hash": true,
+    "closure_spent_overlap_zero": true,
+    "closure_status": true,
+    "core_metrics_recompute": true,
+    "fresh_count": true,
+    "gate_checks_recompute": true,
+    "gate_status_recompute": true,
+    "manifest_hash_chain": true,
+    "ordinal_geometry": true,
+    "plan_self_hash": true,
+    "productive_recompute": true,
+    "record_schedule_binding": true,
+    "record_self_hashes": true,
+    "restricted_reads_zero": true,
+    "selected_in_fresh_supply": true,
+    "selected_unique": true,
+    "single_input_binding": true,
+    "spent_count": true,
+    "stable_metrics_recompute": true,
+    "stable_recompute": true,
+    "supply_self_hash": true
+  },
+  "closure_payload_sha256": "5584e7f2ece30d61a71dec98c1ebbc343126d8a29acb8ef0c8f27d6abbc9ee2c",
+  "core_controls": {
+    "admission_rate": 0.5520833333333334,
+    "admitted": 53,
+    "evaluated": 96,
+    "productive": 18,
+    "productive_efficiency": 0.1875,
+    "stable_uplift_2of3": 15,
+    "stable_uplift_2of3_rate": 0.15625
+  },
+  "core_primitive": {
+    "admission_rate": 0.4166666666666667,
+    "admitted": 60,
+    "evaluated": 144,
+    "productive": 52,
+    "productive_efficiency": 0.3611111111111111,
+    "stable_uplift_2of3": 37,
+    "stable_uplift_2of3_rate": 0.2569444444444444
+  },
+  "core_productive_rate_ratio": 1.9259259259259258,
+  "core_stable_uplift_rate_ratio": 1.6444444444444444,
+  "counts": {
+    "behavior_pairs": 266,
+    "productive": 152,
+    "records": 360,
+    "selected_unique": 360,
+    "stable_uplift_2of3": 126
+  },
+  "failed_gate_checks": [
+    "each_core_template_uplift_stable"
+  ],
+  "gate_checks": {
+    "behavior_pair_rate": true,
+    "core_primitive_productive_rate": true,
+    "core_primitive_uplift_stable_2of3_rate": true,
+    "core_primitive_vs_controls_ratio": true,
+    "core_primitive_vs_controls_uplift_stable_ratio": true,
+    "each_core_template": true,
+    "each_core_template_uplift_stable": false,
+    "total_productive": true
+  },
+  "gate_status": "PRIMITIVE_MARKET_SUCCESSOR_V2_TRANSFER_FAIL",
+  "oos_authority": "NONE",
+  "per_core_primitive": {
+    "BASE_MARKET": {
+      "admission_rate": 0.2638888888888889,
+      "admitted": 19,
+      "evaluated": 72,
+      "productive": 19,
+      "productive_efficiency": 0.2638888888888889
+    },
+    "BASE_MARKET_EVENT": {
+      "admission_rate": 0.5694444444444444,
+      "admitted": 41,
+      "evaluated": 72,
+      "productive": 33,
+      "productive_efficiency": 0.4583333333333333
+    }
+  },
+  "per_core_primitive_uplift_stable": {
+    "BASE_MARKET": {
+      "evaluated": 72,
+      "uplift_stable_2of3": 8,
+      "uplift_stable_2of3_rate": 0.1111111111111111
+    },
+    "BASE_MARKET_EVENT": {
+      "evaluated": 72,
+      "uplift_stable_2of3": 29,
+      "uplift_stable_2of3_rate": 0.4027777777777778
+    }
+  },
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v2_independent_terminal_audit_v1",
+  "source_repo_sha": "9f458e3efad0dda2cb86885ae2f39ec0809c5aec",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_market_successor_v2_20260822_9f458e3",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT"
+}

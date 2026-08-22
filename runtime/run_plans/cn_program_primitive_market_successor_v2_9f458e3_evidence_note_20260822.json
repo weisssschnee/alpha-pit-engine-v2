@@ -1,0 +1,9 @@
+{
+  "decision": "REDIRECT_NOT_CONTINUE",
+  "evidence_note_payload_sha256": "7cf350284aaa00adfa4d506b935520e89626ae1054e19b6130e51abe10bf390e",
+  "independent_audit_payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b",
+  "outcome_payload_sha256": "0409c9e1fac31565b10f8085b9dd67fbac69039978914e89031d32d36a217c9b",
+  "reason": "Frozen V2 gate failed only per-core stable-uplift for BASE_MARKET (8/72=11.11% < 15%), while BASE_MARKET_EVENT remained stable and reallocated BASE_EVENT / BASE_TEMPORAL_MARKET_EVENT delivered high productive yield. Do not continue the same Market-core geometry; prepare a fresh development-only redirect successor without OOS/promotion authority.",
+  "schema_version": "cn_program_primitive_market_successor_v2_evidence_note_v1",
+  "status": "V2_TERMINAL_EVIDENCE_FROZEN"
+}

@@ -1,0 +1,38 @@
+{
+  "automatic_successor_authorized": false,
+  "base_market_event_stable_uplift_rate": 0.4027777777777778,
+  "base_market_stable_uplift_rate": 0.1111111111111111,
+  "behavior_pairs": 266,
+  "closure_payload_sha256": "5584e7f2ece30d61a71dec98c1ebbc343126d8a29acb8ef0c8f27d6abbc9ee2c",
+  "core_controls_productive_rate": 0.1875,
+  "core_controls_stable_uplift_rate": 0.15625,
+  "core_primitive_productive_rate": 0.3611111111111111,
+  "core_primitive_stable_uplift_rate": 0.2569444444444444,
+  "core_productive_rate_ratio": 1.9259259259259258,
+  "core_stable_uplift_rate_ratio": 1.6444444444444444,
+  "failed_gate_checks": [
+    "each_core_template_uplift_stable"
+  ],
+  "independent_audit_payload_sha256": "1d9c418419918f175a5107152ebd21efcd06cb6e4dffbd4d79a41fd637aacd8b",
+  "independent_audit_status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "0409c9e1fac31565b10f8085b9dd67fbac69039978914e89031d32d36a217c9b",
+  "post_batch_recommendation": "REDIRECT",
+  "productive": 152,
+  "promotion_authorized": false,
+  "prospective_gate_status": "PRIMITIVE_MARKET_SUCCESSOR_V2_TRANSFER_FAIL",
+  "records": 360,
+  "redirect_target": "DEEPEN_BASE_EVENT_BASE_TEMPORAL_MARKET_EVENT_AND_BASE_MARKET_EVENT_REDUCE_BASE_MARKET",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v2_postrun_outcome_v1",
+  "source_repo_sha": "9f458e3efad0dda2cb86885ae2f39ec0809c5aec",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_market_successor_v2_20260822_9f458e3",
+  "stable_uplift_2of3": 126,
+  "status": "PRIMITIVE_MARKET_SUCCESSOR_V2_POSTRUN_CLOSED_REDIRECT"
+}
