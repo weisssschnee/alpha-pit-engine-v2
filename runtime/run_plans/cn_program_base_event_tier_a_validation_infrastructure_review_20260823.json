@@ -1,0 +1,64 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 5,
+  "candidate_evaluation_executed": false,
+  "existing_d1_validation_context": {
+    "missing_count": 2,
+    "missing_fields": [
+      "fund_disclosure_cashflow_pulse",
+      "fund_disclosure_holder_pulse"
+    ],
+    "overlap_count": 6,
+    "overlap_fields": [
+      "chip_cost_p95",
+      "ctx_hfq_turnover_ratio",
+      "ctx_hfq_volume_ratio",
+      "fund_cashflow_cfo_profit",
+      "fund_holder_top10_shares_log",
+      "fund_leverage_liabilities_assets"
+    ],
+    "prepared_binding_payload_sha256": "44fae2d49caf1e377d7816886ec475136fdfb0e571f8be26f5fcc71731247917",
+    "required_physical_leaf_count": 48,
+    "reusable_as_complete_context": false,
+    "validation_field_manifest_sha256": "699a0c514ad19e94a91ae0d2edf38bdd567f2cc55cba10600fcc32d97b2e1a15",
+    "validation_field_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_validation_prefinancial_20260816_97fbe07\\program_validation_session_fields",
+    "validation_session_authority_manifest_sha256": "da914053dfd4210913904335e83fc91cafb01f77ba1d580cee4d335a261abdcc",
+    "validation_session_authority_root": "D:\\ChengboRemote\\runtime\\cn_program_optimizer_d1_validation_prefinancial_20260816_97fbe07\\validation_session_authority"
+  },
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "implementation_decision": {
+    "context_strategy": "BUILD_FRESH_8_FIELD_VALIDATION_CONTEXT_ONLY_AFTER_PROJECT_CONTROL_ADMISSION",
+    "new_lineage_adapter_required": true,
+    "reuse_compiled_evaluator_core": "scripts/run_cn_program_optimizer_d1_report_only_validation_v1.py::_evaluate_compiled_validation",
+    "reuse_d1_route_directly": false,
+    "reuse_session_authority_audit": "scripts/verify_cn_validation_session_authority.py",
+    "reuse_session_authority_builder": "scripts/build_cn_validation_session_authority.py",
+    "reuse_sidecar_builder": "scripts/build_cn_core_pack_validation_session_sidecar.py"
+  },
+  "oos_authority": "NONE",
+  "promotion_authorized": false,
+  "required_physical_leaf_count": 8,
+  "required_physical_leaf_ids": [
+    "chip_cost_p95",
+    "ctx_hfq_turnover_ratio",
+    "ctx_hfq_volume_ratio",
+    "fund_cashflow_cfo_profit",
+    "fund_disclosure_cashflow_pulse",
+    "fund_disclosure_holder_pulse",
+    "fund_holder_top10_shares_log",
+    "fund_leverage_liabilities_assets"
+  ],
+  "required_physical_leaf_ids_sha256": "22da7cad6fdd14e434366eae0842ad468fd3daf60de73caa57b1e0b180f5cb64",
+  "resolved_schedule_file_sha256": "2b12d20c5eb2a18de8f6c97f46a0ee26f6f976c42746866a8077639e7c08ed6b",
+  "review_payload_sha256": "0661fc693e8e4cde69cff6ce6207d2c1a57949f542b260cfef41baa3564feb10",
+  "schema_version": "cn_program_base_event_tier_a_validation_infrastructure_review_v1",
+  "source_selection_preflight_file_sha256": "29dad232082f49996230fd5a916693f5653c3489b626e1c4e56e810cdd5c6722",
+  "source_selection_preflight_payload_sha256": "93a632c37e687fd307f57b604ac55612ea063a2ed55174efe4fe20a355b225cb",
+  "source_validation_decision_payload_sha256": "bfa80433412b177d5248a41c070c5befcd755a91be4e1dff196bc0e831927598",
+  "status": "ZERO_FINANCIAL_BASE_EVENT_TIER_A_VALIDATION_INFRASTRUCTURE_REVIEW_FROZEN",
+  "validation_access_authorized": false,
+  "validation_reads": 0
+}

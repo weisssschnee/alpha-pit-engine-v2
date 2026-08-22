@@ -1,0 +1,37 @@
+{
+  "candidate_count": 5,
+  "candidate_evaluation_executed": false,
+  "candidate_exact_identities_sha256": "9cc0bc93ef13aa8059be56ac50c92a42f4913b2db13f89aae6846bf81f60a770",
+  "candidate_freeze_payload_sha256": "b15139abad2dd92c9a2c51dd0885964dda3d865437c74c8ff9213f87226fa2de",
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "preflight_payload_sha256": "93a632c37e687fd307f57b604ac55612ea063a2ed55174efe4fe20a355b225cb",
+  "promotion_authorized": false,
+  "required_physical_leaf_count": 8,
+  "required_physical_leaf_ids": [
+    "chip_cost_p95",
+    "ctx_hfq_turnover_ratio",
+    "ctx_hfq_volume_ratio",
+    "fund_cashflow_cfo_profit",
+    "fund_disclosure_cashflow_pulse",
+    "fund_disclosure_holder_pulse",
+    "fund_holder_top10_shares_log",
+    "fund_leverage_liabilities_assets"
+  ],
+  "required_physical_leaf_ids_sha256": "22da7cad6fdd14e434366eae0842ad468fd3daf60de73caa57b1e0b180f5cb64",
+  "resolved_schedule_count": 5,
+  "resolved_schedule_file_sha256": "2b12d20c5eb2a18de8f6c97f46a0ee26f6f976c42746866a8077639e7c08ed6b",
+  "schema_version": "cn_program_base_event_tier_a_validation_selection_preflight_v1",
+  "source_schedule_record_sha256s": [
+    "370194af016efb7a5f8a194aa4f7b4ef7f11ed5eb178048065511e73ecac6a8f",
+    "4c2698d4675bc256bacae66dcc6c68fd4c77a3dd5103f8468790b7dae138c2fa",
+    "4f5b3d72a5d39e6a97e66a78c857e8a39fb28711bacd2f3d6cb3da21988daca5",
+    "62f5b71a5ce5389a8f623f347b1d9c77d963f6f38fbccce4b1ae40df9834ca71",
+    "a02708305571c17651d846c1c7e9429a1a93ef29a4f4a76bd5235c8503e13167"
+  ],
+  "status": "BASE_EVENT_TIER_A_VALIDATION_SELECTION_PREFLIGHT_READY",
+  "validation_access_authorized": false,
+  "validation_reads": 0
+}
