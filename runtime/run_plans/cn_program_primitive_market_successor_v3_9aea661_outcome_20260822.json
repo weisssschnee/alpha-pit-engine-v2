@@ -1,0 +1,64 @@
+{
+  "automatic_successor_authorized": false,
+  "base_event": {
+    "control_productive_rate": 0.3125,
+    "control_stable_rate": 0.16666666666666666,
+    "decision": "KEEP_AND_SCALE_REVIEW",
+    "primitive_productive_rate": 0.5972222222222222,
+    "primitive_stable_rate": 0.4722222222222222,
+    "productive_rate_ratio": 1.911111111111111,
+    "stable_rate_ratio": 2.8333333333333335
+  },
+  "base_market_event": {
+    "control_productive_rate": 0.2708333333333333,
+    "control_stable_rate": 0.22916666666666666,
+    "decision": "DROP_FROM_FOCUS_CONTROL_ADVANTAGE_NOT_REPLICATED",
+    "primitive_productive_rate": 0.2916666666666667,
+    "primitive_stable_rate": 0.2361111111111111,
+    "productive_rate_ratio": 1.076923076923077,
+    "stable_rate_ratio": 1.0303030303030303
+  },
+  "base_temporal_market_event": {
+    "control_productive_rate": 0.125,
+    "control_stable_rate": 0.125,
+    "decision": "DROP_FROM_FOCUS_ABSOLUTE_YIELD_EXHAUSTED",
+    "primitive_productive_rate": 0.18055555555555555,
+    "primitive_stable_rate": 0.18055555555555555,
+    "productive_rate_ratio": 1.4444444444444444,
+    "stable_rate_ratio": 1.4444444444444444
+  },
+  "behavior_pairs": 296,
+  "closure_payload_sha256": "fb5f5b732cfd8bd18d2aff4cb281536e3bc4655d783f22c8ee2e9d6fe4131876",
+  "failed_gate_checks": [
+    "focus_primitive_productive_rate",
+    "focus_primitive_uplift_stable_2of3_rate",
+    "each_focus_template_primitive_productive_rate",
+    "each_focus_template_primitive_uplift_stable",
+    "each_focus_template_productive_advantage",
+    "each_focus_template_stable_advantage"
+  ],
+  "focus_primitive_productive_rate": 0.35648148148148145,
+  "focus_primitive_stable_uplift_rate": 0.2962962962962963,
+  "independent_audit_payload_sha256": "4640634f371e16688cffe4f4f2a927f5b89a979f07cf6be329b9b85627f1afd0",
+  "independent_audit_status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "oos_authority": "NONE",
+  "outcome_payload_sha256": "2743d9094e84dcc17d88323cd768ae90449323c6b5d33b8ab21a9811a536758e",
+  "post_batch_recommendation": "REDIRECT",
+  "productive": 111,
+  "promotion_authorized": false,
+  "prospective_gate_status": "PRIMITIVE_FRONTIER_CONTROLLED_V3_FAIL",
+  "records": 360,
+  "redirect_target": "BASE_EVENT_ONLY_SYSTEM_SCALE_DEVELOPMENT_SEARCH_REVIEW",
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v3_postrun_outcome_v1",
+  "source_repo_sha": "9aea6618d5557f315b85d8bf130f3b55ff1cf71d",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_market_successor_v3_20260822_9aea661",
+  "stable_uplift_2of3": 89,
+  "status": "PRIMITIVE_FRONTIER_CONTROLLED_V3_POSTRUN_CLOSED_REDIRECT"
+}

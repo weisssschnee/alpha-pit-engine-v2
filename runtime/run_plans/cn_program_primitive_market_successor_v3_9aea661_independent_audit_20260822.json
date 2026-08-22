@@ -1,0 +1,184 @@
+{
+  "audit_payload_sha256": "4640634f371e16688cffe4f4f2a927f5b89a979f07cf6be329b9b85627f1afd0",
+  "automatic_successor_authorized": false,
+  "checks": {
+    "artifact_hashes": true,
+    "authority_limits": true,
+    "balanced_controlled_geometry": true,
+    "behavior_recompute": true,
+    "builder_label_reads_zero": true,
+    "checkpoint_count": true,
+    "checkpoint_geometry": true,
+    "closure_restricted_zero": true,
+    "closure_self_hash": true,
+    "closure_spent_overlap_zero": true,
+    "closure_status": true,
+    "dynamic_field_projection": true,
+    "focus_metrics_recompute": true,
+    "fresh_count": true,
+    "gate_checks_recompute": true,
+    "gate_status_recompute": true,
+    "manifest_hash_chain": true,
+    "no_inflight": true,
+    "ordinal_geometry": true,
+    "per_template_gate_metrics_recompute": true,
+    "plan_self_hash": true,
+    "productive_recompute": true,
+    "record_schedule_binding": true,
+    "record_self_hashes": true,
+    "repo_sha": true,
+    "restricted_reads_zero": true,
+    "schedule_self_hashes": true,
+    "selected_in_fresh_supply": true,
+    "selected_unique": true,
+    "single_input_binding": true,
+    "spent_count": true,
+    "stable_recompute": true,
+    "supply_restricted_reads_zero": true,
+    "supply_self_hash": true,
+    "telemetry_count": true,
+    "telemetry_restricted_zero": true,
+    "throughput_contract": true
+  },
+  "closure_payload_sha256": "fb5f5b732cfd8bd18d2aff4cb281536e3bc4655d783f22c8ee2e9d6fe4131876",
+  "counts": {
+    "behavior_pairs": 296,
+    "productive": 111,
+    "records": 360,
+    "selected_unique": 360,
+    "stable_uplift_2of3": 89
+  },
+  "failed_gate_checks": [
+    "focus_primitive_productive_rate",
+    "focus_primitive_uplift_stable_2of3_rate",
+    "each_focus_template_primitive_productive_rate",
+    "each_focus_template_primitive_uplift_stable",
+    "each_focus_template_productive_advantage",
+    "each_focus_template_stable_advantage"
+  ],
+  "focus_primitive": {
+    "admission_rate": 0.5,
+    "admitted": 108,
+    "evaluated": 216,
+    "productive": 77,
+    "productive_efficiency": 0.35648148148148145,
+    "stable_uplift_2of3": 64,
+    "stable_uplift_2of3_rate": 0.2962962962962963
+  },
+  "gate_checks": {
+    "behavior_pair_rate": true,
+    "each_focus_template_primitive_productive_rate": false,
+    "each_focus_template_primitive_uplift_stable": false,
+    "each_focus_template_productive_advantage": false,
+    "each_focus_template_stable_advantage": false,
+    "focus_primitive_productive_rate": false,
+    "focus_primitive_uplift_stable_2of3_rate": false,
+    "total_productive": true
+  },
+  "gate_status": "PRIMITIVE_FRONTIER_CONTROLLED_V3_FAIL",
+  "oos_authority": "NONE",
+  "per_focus_template": {
+    "BASE_EVENT": {
+      "controls": {
+        "admission_rate": 0.6041666666666666,
+        "admitted": 29,
+        "evaluated": 48,
+        "productive": 15,
+        "productive_efficiency": 0.3125
+      },
+      "controls_stable": {
+        "evaluated": 48,
+        "uplift_stable_2of3": 8,
+        "uplift_stable_2of3_rate": 0.16666666666666666
+      },
+      "primitive": {
+        "admission_rate": 0.8055555555555556,
+        "admitted": 58,
+        "evaluated": 72,
+        "productive": 43,
+        "productive_efficiency": 0.5972222222222222
+      },
+      "primitive_stable": {
+        "evaluated": 72,
+        "uplift_stable_2of3": 34,
+        "uplift_stable_2of3_rate": 0.4722222222222222
+      },
+      "productive_rate_ratio": 1.911111111111111,
+      "stable_rate_ratio": 2.8333333333333335
+    },
+    "BASE_MARKET_EVENT": {
+      "controls": {
+        "admission_rate": 0.4166666666666667,
+        "admitted": 20,
+        "evaluated": 48,
+        "productive": 13,
+        "productive_efficiency": 0.2708333333333333
+      },
+      "controls_stable": {
+        "evaluated": 48,
+        "uplift_stable_2of3": 11,
+        "uplift_stable_2of3_rate": 0.22916666666666666
+      },
+      "primitive": {
+        "admission_rate": 0.4861111111111111,
+        "admitted": 35,
+        "evaluated": 72,
+        "productive": 21,
+        "productive_efficiency": 0.2916666666666667
+      },
+      "primitive_stable": {
+        "evaluated": 72,
+        "uplift_stable_2of3": 17,
+        "uplift_stable_2of3_rate": 0.2361111111111111
+      },
+      "productive_rate_ratio": 1.076923076923077,
+      "stable_rate_ratio": 1.0303030303030303
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "controls": {
+        "admission_rate": 0.16666666666666666,
+        "admitted": 8,
+        "evaluated": 48,
+        "productive": 6,
+        "productive_efficiency": 0.125
+      },
+      "controls_stable": {
+        "evaluated": 48,
+        "uplift_stable_2of3": 6,
+        "uplift_stable_2of3_rate": 0.125
+      },
+      "primitive": {
+        "admission_rate": 0.20833333333333334,
+        "admitted": 15,
+        "evaluated": 72,
+        "productive": 13,
+        "productive_efficiency": 0.18055555555555555
+      },
+      "primitive_stable": {
+        "evaluated": 72,
+        "uplift_stable_2of3": 13,
+        "uplift_stable_2of3_rate": 0.18055555555555555
+      },
+      "productive_rate_ratio": 1.4444444444444444,
+      "stable_rate_ratio": 1.4444444444444444
+    }
+  },
+  "promotion_authorized": false,
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_program_primitive_market_successor_v3_independent_terminal_audit_v1",
+  "source_repo_sha": "9aea6618d5557f315b85d8bf130f3b55ff1cf71d",
+  "source_run_root": "D:\\ChengboRemote\\runtime\\cn_program_primitive_market_successor_v3_20260822_9aea661",
+  "status": "PASS_INDEPENDENT_TERMINAL_AUDIT",
+  "throughput": {
+    "executor_lifetime": "PERSISTENT_RUN_SCOPE",
+    "field_column_count": 47,
+    "status": "PASS",
+    "warm_records_per_hour": 748.2483081206336
+  }
+}
