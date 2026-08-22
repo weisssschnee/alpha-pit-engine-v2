@@ -1,0 +1,108 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "dfd0bcb02bfe10b011b8c6f80af556a052f260b79f906c2cbbc6a34059783bc8",
+  "automatic_successor_authorized": false,
+  "campaign_id": "CN_PROGRAM_BASE_EVENT_TIER_A_REPORT_ONLY_VALIDATION_V1",
+  "campaign_profile": "cn_program_base_event_tier_a_report_only_validation_v1",
+  "endpoint_contract": {
+    "candidate_pass_count_threshold": "NONE",
+    "candidate_survivor": "replay_complete AND validation_productive AND cross_window_positive_increment_count>=2",
+    "mechanism_support": "each frozen Tier-A family has >=1 candidate_survivor",
+    "promotion_implication": "NONE"
+  },
+  "evaluation_role": "validation",
+  "execution_authorized": true,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_reads": 0,
+  "implementation": {
+    "runner_source_file_sha256": "cfd79cb11671c07f0ffb3f664d9ab66b83a5090686881e27d96991f76e0849d5",
+    "runtime_source_file_sha256": "02c2e9e88a4eb991ad37ba51e960d8ebd80e2a9f38624833edb623047f8a2786"
+  },
+  "oos_authority": "VALIDATION_REPORT_ONLY_EVIDENCE_ONLY",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "project_control_route_id": "cn-program-base-event-tier-a-report-only-validation-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_count": 5,
+    "cpu_threads": 8,
+    "evaluator_workers": 4,
+    "profile": "VALIDATION_DUAL_8"
+  },
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_program_base_event_tier_a_report_only_validation_authorization_v1",
+  "source_data": {
+    "chip_manifest": {
+      "path": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713\\chip_sidecar_manifest_v1.json",
+      "sha256": "b619eeb3f73e7041b8b0de2166b933651c7bbf03e3be4d3db0904f57dd6f5cd9"
+    },
+    "chip_root": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713",
+    "daily_st_source": {
+      "path": "D:\\ChengboRemote\\data\\20260730_142854_hfq_daily_2024_2025\\hfq_daily_2024_2025\\year=2025\\part.parquet",
+      "sha256": "7060dd78cde6b826157f10c03541a4c302d11fe3213517236dc893393c071e68"
+    },
+    "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+    "minute_source_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "public_source_manifest": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41\\source_snapshot_manifest.json",
+      "sha256": "0c06baa7c24109ea8a1064a291565ce6352ab2a0ca32f20f6cc257261e25514d"
+    },
+    "public_source_root": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41",
+    "registry": {
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+      "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+    },
+    "source_contract": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+      "sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+    },
+    "split_manifest": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_phase3cm_1024_sidecar_closure_0aba8c5\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    },
+    "validation_label_manifest": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\validation_session_labels\\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+      "sha256": "a7ecab7d11bc2e585a0cdfc63a4b0f08194dd6065b277d7a6e5a9e0f80f92721"
+    },
+    "validation_label_root": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\validation_session_labels"
+  },
+  "status": "BASE_EVENT_TIER_A_REPORT_ONLY_VALIDATION_AUTHORIZED_NOT_RUN",
+  "usage": "REPORT_ONLY_CANDIDATE_TRANSFER",
+  "validation_plan": {
+    "candidate_count": 5,
+    "candidate_exact_identities_sha256": "9cc0bc93ef13aa8059be56ac50c92a42f4913b2db13f89aae6846bf81f60a770",
+    "family_ids": [
+      "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+      "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318"
+    ],
+    "file_sha256": "669cd369e52f96d4ab8abfc2cff02405defb5ccec3faf0f321d2968d7fd89e8a",
+    "payload_sha256": "81523e5c48d45d30794bad6f56c1d555bc50f17577ae73397634e3e8c61f0672",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_report_only_validation_plan.json",
+    "required_physical_leaf_ids_sha256": "22da7cad6fdd14e434366eae0842ad468fd3daf60de73caa57b1e0b180f5cb64"
+  },
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
