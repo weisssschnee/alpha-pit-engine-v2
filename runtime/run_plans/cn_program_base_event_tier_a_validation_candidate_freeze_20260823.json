@@ -1,0 +1,70 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_behavior_identities_sha256": "f461c7773329823928883b40cfd95d5298924bf52a9b3497655f85096f7743f9",
+  "candidate_count": 5,
+  "candidate_evaluation_executed": false,
+  "candidate_exact_identities_sha256": "9cc0bc93ef13aa8059be56ac50c92a42f4913b2db13f89aae6846bf81f60a770",
+  "candidate_members_file_sha256": "ebc8d9f8518eda5d4ab247580d7c90521507859e1e8ea54b88d2c8e7b681ce4e",
+  "candidate_members_payload_sha256": "788540a95c20c2e12ebf6d720a9bba6937e44d99f30ee2c8991859c4caeb3a3b",
+  "candidate_members_relative_name": "cn_program_base_event_tier_a_validation_candidate_members_20260823.jsonl",
+  "family_count": 2,
+  "freeze_payload_sha256": "b15139abad2dd92c9a2c51dd0885964dda3d865437c74c8ff9213f87226fa2de",
+  "oos_authority": "NONE",
+  "per_family_candidate_count": {
+    "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170": 2,
+    "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318": 3
+  },
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_validation_candidate_freeze_v1",
+  "selection_rule": {
+    "behavior_deduplication": "ONE_REPRESENTATIVE_PER_BEHAVIOR_IDENTITY; LEXICOGRAPHIC_EXACT_IDENTITY; NO_FINANCIAL_MAGNITUDE_MAXIMIZATION",
+    "candidate_source": "STABLE_PRODUCTIVE_PRIMITIVE_ONLY_FROM_CONFIRM_A_CONFIRM_B",
+    "family_definition": [
+      "base__skeleton_id",
+      "event__skeleton_id",
+      "combination_event_application"
+    ],
+    "tier_a_rule": "FAMILY_HAS_STABLE_PRIMITIVE_IN_BOTH_CONFIRM_A_AND_CONFIRM_B",
+    "tier_a_validation_nomination_authority": "CORE_REVIEW_ELIGIBLE",
+    "tier_b_rule": "FAMILY_HAS_STABLE_PRIMITIVE_IN_V3_ANCHOR_AND_EXACTLY_ONE_PROSPECTIVE_REPLICATE",
+    "tier_b_validation_nomination_authority": "RESERVE_SUPPORT_ONLY",
+    "tier_c_validation_nomination_authority": "NOT_NOMINATED",
+    "v3_anchor_candidate_eligible": false
+  },
+  "source_candidate_cohort_payload_sha256": "88b6a59220165fa3fd7476b474481f25c0a76e0654b963e8a39955639a23d6be",
+  "source_postrun_outcome_payload_sha256": "c1baa0b347d7280325c3f604239eb50b557f2cfa2167c37d996d92cfd9bbbced",
+  "source_terminal_audit_payload_sha256": "082af5a4b25782cd3ed08b69e994df8de46d16a9e89609edc5cbf95057a23a83",
+  "status": "FROZEN_BEFORE_VALIDATION_ACCESS",
+  "validation_contract": {
+    "archive_write": "FORBIDDEN",
+    "development_search_visibility": "FORBIDDEN",
+    "evaluation_role": "validation",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "usage": "REPORT_ONLY_CANDIDATE_TRANSFER"
+  },
+  "validation_reads_performed_by_freeze": 0,
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "automatic_successor_authorized": false,
+  "candidate_count": 5,
+  "candidate_evaluation_executed": false,
+  "candidate_freeze_file_sha256": "7aeeacb559ff69b20b2c8d86fe1804f31313bebe7b251ef81a96721cfb214986",
+  "candidate_freeze_payload_sha256": "b15139abad2dd92c9a2c51dd0885964dda3d865437c74c8ff9213f87226fa2de",
+  "candidate_members_payload_sha256": "788540a95c20c2e12ebf6d720a9bba6937e44d99f30ee2c8991859c4caeb3a3b",
+  "decision_after_report_only_validation": {
+    "if_both_families_supported": "MECHANISM_LEVEL_VALIDATION_TRANSFER_SUPPORTED; RETURN_TO_PROJECT_CONTROL_FOR_ANY_HOLDOUT_DECISION",
+    "otherwise": "VALIDATION_TRANSFER_NOT_REPLICATED_OR_INCONCLUSIVE; NO_HOLDOUT_AUTO_OPEN"
+  },
+  "decision_payload_sha256": "bfa80433412b177d5248a41c070c5befcd755a91be4e1dff196bc0e831927598",
+  "execution_authorized": false,
+  "family_count": 2,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "infrastructure_review": {
+    "proposed_adapter": "Resolve the 5 frozen exacts directly to immutable BASE_EVENT replication selected_schedule records, then call the existing compiled validation evaluator/report-only metrics under a new Project-Control-bound lineage adapter.",
+    "reason": "D1 route is hard-bound to D1 wave manifests/candidate count/freeze hashes; evaluator core is generic compiled Program versus matched base control on validation context.",
+    "reuse_d1_route_directly": false,
+    "reuse_evaluator_core": true
+  },
+  "oos_authority": "NONE",
+  "pre_frozen_endpoints": {
+    "candidate_validation_survivor": "replay_complete AND absolute_admission.admitted AND matched_cumulative_net_return_increment>0 AND matched_net_reward_increment>0 AND cross_window_positive_increment_count>=2",
+    "cohort_reporting": [
+      "candidate survivor booleans",
+      "per-family survivor count",
+      "aggregate productive count",
+      "aggregate stable-2of3 count",
+      "replay blocker count"
+    ],
+    "family_validation_support": "AT_LEAST_ONE_VALIDATION_SURVIVOR_IN_EACH_OF_THE_TWO_TIER_A_FAMILIES",
+    "no_automatic_promotion_gate": true
+  },
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_report_only_validation_decision_packet_v1",
+  "status": "BASE_EVENT_TIER_A_REPORT_ONLY_VALIDATION_DECISION_READY_NOT_AUTHORIZED",
+  "validation_access_authorized": false,
+  "validation_reads": 0,
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
