@@ -1,0 +1,111 @@
+{
+  "automatic_successor_authorized": false,
+  "autopsy_payload_sha256": "8338f567d934f15f4a553744023d708422861beef11d93dfce8cafb1d424dcf9",
+  "corrected_absolute_admission_count": 0,
+  "corrected_candidate_survivor_count": 0,
+  "corrected_records": [
+    {
+      "corrected_admitted": false,
+      "corrected_failure_reasons": [
+        "CROSS_WINDOW_STABILITY_FAILED"
+      ],
+      "exact_identity": "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8",
+      "family_id": "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+      "fill_count": 4,
+      "matched_positive_window_count": 2,
+      "matched_stable_2of3_diagnostic": true,
+      "matched_window_return_increments": [
+        -0.044084720247300035,
+        0.102309173553497,
+        0.10821849377184856
+      ],
+      "primary_continuous_book_net_reward": 0.0062210178888572835,
+      "primary_cumulative_net_return": 0.01885804249800005,
+      "primary_net_return_per_turnover": 0.8896960301165463,
+      "primary_positive_window_count": 1,
+      "primary_window_returns": [
+        0.0,
+        0.01885804249800005,
+        0.0
+      ],
+      "reported_failure_reasons": [
+        "MATCHED_CONTROL_CONTRACT_INVALID",
+        "COMPILE_NOT_COMPLETE",
+        "EXECUTION_NOT_READY",
+        "CROSS_WINDOW_STABILITY_FAILED"
+      ],
+      "spurious_missing-readiness_failure_reasons": [
+        "MATCHED_CONTROL_CONTRACT_INVALID",
+        "COMPILE_NOT_COMPLETE",
+        "EXECUTION_NOT_READY"
+      ]
+    },
+    {
+      "corrected_admitted": false,
+      "corrected_failure_reasons": [
+        "CROSS_WINDOW_STABILITY_FAILED"
+      ],
+      "exact_identity": "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6",
+      "family_id": "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318",
+      "fill_count": 20,
+      "matched_positive_window_count": 2,
+      "matched_stable_2of3_diagnostic": true,
+      "matched_window_return_increments": [
+        -0.044084720247300035,
+        0.08901160698589672,
+        0.10821849377184856
+      ],
+      "primary_continuous_book_net_reward": 0.0018364396076624128,
+      "primary_cumulative_net_return": 0.005560475930399766,
+      "primary_net_return_per_turnover": 0.2648406217392705,
+      "primary_positive_window_count": 1,
+      "primary_window_returns": [
+        0.0,
+        0.005560475930399766,
+        0.0
+      ],
+      "reported_failure_reasons": [
+        "MATCHED_CONTROL_CONTRACT_INVALID",
+        "COMPILE_NOT_COMPLETE",
+        "EXECUTION_NOT_READY",
+        "CROSS_WINDOW_STABILITY_FAILED"
+      ],
+      "spurious_missing-readiness_failure_reasons": [
+        "MATCHED_CONTROL_CONTRACT_INVALID",
+        "COMPILE_NOT_COMPLETE",
+        "EXECUTION_NOT_READY"
+      ]
+    }
+  ],
+  "financial_re_evaluation_executed": false,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "holdout_data_reread_for_financial_evaluation": false,
+  "implementation_confound": {
+    "missing_pair_record_fields": [
+      "control_contract_valid",
+      "compile_status",
+      "physical_ready",
+      "dag_ready",
+      "semantic_noop"
+    ],
+    "spurious_admission_failure_reasons": [
+      "MATCHED_CONTROL_CONTRACT_INVALID",
+      "COMPILE_NOT_COMPLETE",
+      "EXECUTION_NOT_READY"
+    ],
+    "status": "CONFIRMED_LOCAL_REIMPLEMENTATION_DRIFT",
+    "validation_runner_reference_fields_present": true
+  },
+  "interpretation": "Matched-control relative advantage remains 2-of-3-window positive for both candidates, but each primary is positive in only 1-of-3 holdout windows. Correcting missing readiness fields removes three spurious admission reasons but leaves CROSS_WINDOW_STABILITY_FAILED for both, so 0/2 absolute holdout survivors remains invariant. This supports search-policy relative advantage but rejects standalone alpha qualification on the frozen holdout.",
+  "matched_stable_2of3_diagnostic_count": 2,
+  "official_holdout_not_supported_status_invariant": true,
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_holdout_retry2_confound_corrected_autopsy_v1",
+  "source_independent_audit_payload_sha256": "0f746a08369230be96b60f7afad69383e64466192277e3d32fd130c919ebbaa5",
+  "source_outcome_payload_sha256": "43a82432187b3c7cc5239fc2a11b255239be40e8a0a4bd0a1dfd11b63dd8f80b",
+  "source_repo_sha": "2b446894fbc81e618c298a1c99da4db9c234173e",
+  "status": "PASS_CONFOUND_CORRECTED_HOLDOUT_OUTCOME_INVARIANT",
+  "validation_reads": 0
+}

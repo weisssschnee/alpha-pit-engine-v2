@@ -1,0 +1,196 @@
+{
+  "alpha_qualification_status": "FAIL_HOLDOUT_MECHANISM_TRANSFER",
+  "anti_overfit_boundary": {
+    "forward_2026_access_authorized": false,
+    "forward_b_access_authorized": false,
+    "new_search_authorized": false,
+    "new_validation_authorized": false,
+    "promotion_authorized": false,
+    "spent_holdout_may_be_reused_to_validate_new_gate": false,
+    "spent_holdout_may_be_used_for_diagnosis": true
+  },
+  "automatic_successor_authorized": false,
+  "candidate_transition": [
+    {
+      "development": {
+        "cross_positive": 2,
+        "matched_return": 0.9004346887769166,
+        "matched_reward": 4.904421726340438
+      },
+      "diagnostic_terminal_recency_gate": {
+        "latest_validation_matched_positive": false,
+        "latest_validation_primary_positive": false,
+        "would_pass": false
+      },
+      "exact_identity": "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8",
+      "family_id": "847783eec9521be34fc525e622cb738c892fb94cdb8584acda6dd8d5654b1170",
+      "holdout": {
+        "corrected_admitted": false,
+        "corrected_failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "fill_count": 4,
+        "matched_positive_windows": 2,
+        "matched_return": 0.16546356600619938,
+        "matched_reward": 3.8386231174033516,
+        "matched_windows": [
+          -0.044084720247300035,
+          0.102309173553497,
+          0.10821849377184856
+        ],
+        "primary_positive_windows": 1,
+        "primary_return": 0.01885804249800005,
+        "primary_reward": 0.0062210178888572835,
+        "primary_windows": [
+          0.0,
+          0.01885804249800005,
+          0.0
+        ]
+      },
+      "validation": {
+        "admitted": true,
+        "cross_positive": 2,
+        "fill_count": 511,
+        "matched_return": 0.22040655014649924,
+        "matched_reward": 4.639118203575115,
+        "matched_windows": [
+          0.1772702784433986,
+          0.09213693529263911,
+          -0.050732983191706826
+        ],
+        "primary_return": 0.08685189251050018,
+        "primary_reward": 2.4202842014052965,
+        "primary_windows": [
+          0.014527997819899774,
+          0.11657457243146041,
+          -0.040558287782837765
+        ],
+        "productive": true
+      }
+    },
+    {
+      "development": {
+        "cross_positive": 3,
+        "matched_return": 0.9907492364291925,
+        "matched_reward": 5.622643529662316
+      },
+      "diagnostic_terminal_recency_gate": {
+        "latest_validation_matched_positive": false,
+        "latest_validation_primary_positive": false,
+        "would_pass": false
+      },
+      "exact_identity": "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6",
+      "family_id": "8cc81d0f98a2fa14e98d94c9b51dfba99452b1008df81b26a6703488abbe5318",
+      "holdout": {
+        "corrected_admitted": false,
+        "corrected_failure_reasons": [
+          "CROSS_WINDOW_STABILITY_FAILED"
+        ],
+        "fill_count": 20,
+        "matched_positive_windows": 2,
+        "matched_return": 0.1521659994385991,
+        "matched_reward": 3.8342385391221567,
+        "matched_windows": [
+          -0.044084720247300035,
+          0.08901160698589672,
+          0.10821849377184856
+        ],
+        "primary_positive_windows": 1,
+        "primary_return": 0.005560475930399766,
+        "primary_reward": 0.0018364396076624128,
+        "primary_windows": [
+          0.0,
+          0.005560475930399766,
+          0.0
+        ]
+      },
+      "validation": {
+        "admitted": true,
+        "cross_positive": 2,
+        "fill_count": 565,
+        "matched_return": 0.23421504880739918,
+        "matched_reward": 5.31082872671803,
+        "matched_windows": [
+          0.1772702784433986,
+          0.1216931297389583,
+          -0.06359947686376044
+        ],
+        "primary_return": 0.10066039117140013,
+        "primary_reward": 3.0919947245482113,
+        "primary_windows": [
+          0.014527997819899774,
+          0.1461307668777796,
+          -0.05342478145489138
+        ],
+        "productive": true
+      }
+    }
+  ],
+  "diagnosis": {
+    "absolute_alpha_transfer_supported": false,
+    "aggregate_validation_fill_count_is_not_sufficient_predictor": true,
+    "matched_control_relative_advantage_preserved": true,
+    "primary_failure_mode": "TERMINAL_WINDOW_DECAY_AND_ABSOLUTE_SUPPORT_COLLAPSE",
+    "reason": "Both validation survivors had high aggregate fills and strong total validation economics, but their latest validation primary return and latest matched uplift were already negative. The symmetric 2-of-3 rule ignored chronological decay. Holdout then produced only 1-of-3 positive primary windows, while relative matched uplift remained 2-of-3 positive because the base control deteriorated more."
+  },
+  "diagnostic_future_gate_design": {
+    "additional_recency_requirements": [
+      "latest validation primary cumulative return > 0",
+      "latest validation matched window return increment > 0"
+    ],
+    "base_requirements": "retain existing absolute admission + matched productive + 2-of-3 matched stability",
+    "current_survivor_count_if_applied_diagnostically": 0,
+    "numeric_support_threshold_frozen_now": false,
+    "per_candidate": [
+      {
+        "exact_identity": "9eacce9f77eb7f91f91b4fdf5259cd7012f2e30ef2bd402425610f94ce7041e8",
+        "latest_validation_matched_positive": false,
+        "latest_validation_primary_positive": false,
+        "would_pass": false
+      },
+      {
+        "exact_identity": "d62a29c471d31aeb7063cd8d20bed09ff25b13cfdb9d1599753c4eeae901cee6",
+        "latest_validation_matched_positive": false,
+        "latest_validation_primary_positive": false,
+        "would_pass": false
+      }
+    ],
+    "per_window_support_measurement_required_next": true,
+    "required_new_telemetry": [
+      "per-window fill_count",
+      "per-window selected_symbol_count",
+      "per-window signal_support_rows or active-session count"
+    ],
+    "status": "DESIGN_ONLY_FROM_SPENT_HOLDOUT_NOT_PROSPECTIVE_EVIDENCE"
+  },
+  "implementation_confounds": [
+    {
+      "effect": "Three spurious admission failure reasons; corrected admission remains false for both due CROSS_WINDOW_STABILITY_FAILED",
+      "kind": "PAIR_RECORD_SCHEMA_DRIFT",
+      "outcome_invariant": true
+    },
+    {
+      "economic_effect": false,
+      "effect": "Canonical closure absent because phase_b.engine was unavailable after both economic records completed; independent record-level audit reused immutable results",
+      "kind": "POST_EVALUATION_AGGREGATION_BUG"
+    }
+  ],
+  "new_financial_evaluation_executed": false,
+  "next_required_decision": "Before any new financial search/validation, add frozen per-window support telemetry and freeze a recency-aware qualification gate on a new fresh cohort design. Any test of that gate requires a separately authorized unseen evaluation domain; do not reuse the spent holdout and do not open Forward-B/Forward-2026 automatically.",
+  "promotion_authorized": false,
+  "qualification_gap": {
+    "coverage_threshold_problem": "Do not invent a post-hoc aggregate fill threshold; validation fills were high for both eventual failures and for the broader cohort.",
+    "current_rule_problem": "SYMMETRIC_2_OF_3_WINDOWS_IGNORES_TEMPORAL_ORDER",
+    "single_family_representative_problem": "Not primary in this cohort: each family had only one validation survivor, so representative selection had no alternative survivor to choose."
+  },
+  "review_payload_sha256": "280988fa5cdaf6d55caa9c0ca1d7227436559d8e625e628681dd0bbeaa90ee25",
+  "schema_version": "cn_program_base_event_validation_to_holdout_transfer_criteria_review_v1",
+  "search_policy_evidence_status": "BASE_EVENT_POLICY_FRONTIER_SUPPORTED_IN_DEVELOPMENT_AND_VALIDATION_BUT_FINALISTS_FAIL_HOLDOUT",
+  "source_confound_corrected_autopsy_payload_sha256": "8338f567d934f15f4a553744023d708422861beef11d93dfce8cafb1d424dcf9",
+  "source_holdout_outcome_payload_sha256": "43a82432187b3c7cc5239fc2a11b255239be40e8a0a4bd0a1dfd11b63dd8f80b",
+  "source_replication_outcome_payload_sha256": "c1baa0b347d7280325c3f604239eb50b557f2cfa2167c37d996d92cfd9bbbced",
+  "source_repo_sha": "2b446894fbc81e618c298a1c99da4db9c234173e",
+  "source_validation_outcome_payload_sha256": "dcb2051bef3f09f19c66f659d033750b6892e743d159881d3494082caa8e8dd1",
+  "status": "ZERO_FINANCIAL_VALIDATION_TO_HOLDOUT_FAILURE_AUTOPSY_FROZEN",
+  "validation_or_holdout_replay_executed": false
+}
