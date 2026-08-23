@@ -19,6 +19,13 @@ def test_holdout_endpoint_is_two_of_two_by_mechanism_not_rate_threshold():
  p=r.verify_plan(PLAN,repo_root=ROOT); assert p['endpoint_contract']['cohort_pass_count_threshold']=='EXACTLY_2_OF_2_REQUIRED_BY_MECHANISM_GEOMETRY_NOT_POST_HOC_RATE_THRESHOLD'; a,b=p['family_ids']; ok=r._metrics(p,[{'family_id':a,'exact_identity':'a','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':2},{'family_id':b,'exact_identity':'b','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':3}]); assert ok['status']==r.SUPPORTED and ok['family_support_observed']==2; fail=r._metrics(p,[{'family_id':a,'exact_identity':'a','candidate_holdout_survivor':True,'holdout_productive':True,'holdout_stable_2of3':True,'cross_window_positive_increment_count':2},{'family_id':b,'exact_identity':'b','candidate_holdout_survivor':False,'holdout_productive':False,'holdout_stable_2of3':False,'cross_window_positive_increment_count':1}]); assert fail['status']==r.NOT_SUPPORTED and fail['family_support_observed']==1
 def test_holdout_builds_role_bound_context_only_inside_runner():
  src=(ROOT/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py').read_text(encoding='utf-8-sig'); assert "'--evaluation-role','holdout'" in src; assert 'build_cn_phase3cm_forward_label_sidecars.py' in src; assert 'verify_cn_report_only_session_authority.py' in src; assert "data_role='holdout_report_only'" in src; assert "'promotion_authorized':False" in src
+def test_holdout_pair_record_matches_validation_readiness_contract_and_resource_check():
+ src=(ROOT/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py').read_text(encoding='utf-8-sig')
+ for fragment in ("'control_contract_valid':True","'compile_status':'PASS'","'physical_ready':True","'dag_ready':True","'semantic_noop':False"):
+  assert fragment in src
+ assert 'from scripts import run_cn_joint_program_phase_c_v0 as engine' in src
+ assert 'engine._require_runtime_resource_safety(engine._runtime_resource_snapshot())' in src
+ assert 'phase_b.engine' not in src
 def test_holdout_label_builder_thread_environment_is_frozen():
  env=r._label_builder_env(8); expected={'NUMBA_NUM_THREADS':'1','ARROW_NUM_THREADS':'1','OMP_NUM_THREADS':'1','MKL_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','NUMEXPR_MAX_THREADS':'1','POLARS_MAX_THREADS':'8'}; assert {k:env[k] for k in expected}==expected; src=(ROOT/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py').read_text(encoding='utf-8-sig'); assert "env=_label_builder_env(8)" in src
 def test_generic_sidecar_validators_accept_positive_holdout_reads(tmp_path:Path):
