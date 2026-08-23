@@ -1,0 +1,23 @@
+{
+  "audit_payload_sha256": "0f746a08369230be96b60f7afad69383e64466192277e3d32fd130c919ebbaa5",
+  "automatic_successor_authorized": false,
+  "candidate_survivor_count": 0,
+  "evidence_interpretation": {
+    "candidate_alpha": "The two pre-frozen validation survivors both fail the frozen holdout survivor endpoint; current alpha qualification is not supported.",
+    "decision": "STOP_PROMOTION_AND_REDIRECT_TO_FAILURE_AUTOPSY",
+    "search_policy": "BASE_EVENT Primitive policy advantage was independently replicated against controls and produced validation-supported mechanisms.",
+    "terminal_failure": "The runner crashed only after both immutable economic results were written, during a post-evaluation resource-safety call; independent audit establishes result completeness without candidate re-evaluation."
+  },
+  "evidence_note_payload_sha256": "7e81c548bf4fd6ad5f32eb83abebd8fec6e58741af9627e607b7cf9fdef9997a",
+  "family_support_observed": 0,
+  "family_support_required": 2,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_challenge_reads": 0,
+  "outcome_payload_sha256": "43a82432187b3c7cc5239fc2a11b255239be40e8a0a4bd0a1dfd11b63dd8f80b",
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_tier_a_holdout_retry2_evidence_note_v1",
+  "source_repo_sha": "525e88638f9c924a51a6be5eb57dba4e30deac44",
+  "status": "BASE_EVENT_TIER_A_HOLDOUT_RETRY2_TERMINAL_EVIDENCE_FROZEN",
+  "validation_reads": 0
+}
