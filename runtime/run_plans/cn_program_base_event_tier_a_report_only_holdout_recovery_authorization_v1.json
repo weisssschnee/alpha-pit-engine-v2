@@ -1,6 +1,6 @@
 {
   "archive_write": "FORBIDDEN",
-  "authorization_payload_sha256": "b6549a6102485bc82cfcb7aa847cbb4d92954f7a06a5f15ddae88166a77b88f8",
+  "authorization_payload_sha256": "c6a0486ec01f13cead438bd58d752d31cf84abc552c5a1846d9c6a8e1bd2edf9",
   "automatic_successor_authorized": false,
   "campaign_id": "CN_PROGRAM_BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_V1",
   "campaign_profile": "cn_program_base_event_tier_a_report_only_holdout_v1",
@@ -52,8 +52,10 @@
     }
   ],
   "implementation": {
+    "forward_label_builder_sha256": "52b043d5d9ecfd97f3b615eecd3c6882b9d1763272cede58836f85e6360ecf03",
+    "generic_replay_validator_sha256": "e75b8b72326559c0538eb58174661957f61f0fef36d588115c66f7e7360159fd",
     "runner_source_file_sha256": "c8fa2e60408d3bb16049a91f9e74f4a9c3484e972a527d4522eee0a7a6d95cb7",
-    "runtime_source_file_sha256": "50dba8f5ce93374d204610b6e9f924ef9ef016dc02df648cd0fea27379f9ac28",
+    "runtime_source_file_sha256": "fda7da170ace51816398ceb39ae8eb51d0029ea1394e40b7ca4872e943a8e18f",
     "session_authority_verifier_sha256": "05059ffc80754a83c8a66f11d7b9231406313aab74ae0b9d64ea01b8534639bc"
   },
   "oos_authority": "HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY",
@@ -71,18 +73,18 @@
   "recovery_contract": {
     "candidate_set_change_forbidden": true,
     "endpoint_change_forbidden": true,
-    "failed_admission_file_sha256": "f70f343822f87b1666719dc1905c140e0e17edb14cb4e6e03853907ac52d6375",
-    "failed_output_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
-    "failed_target_run_id": "cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
+    "failed_admission_file_sha256": "937a868f164b6cee132b677310cac1347d420f07571e9146a46e3c5ef7674f86",
+    "failed_output_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996",
+    "failed_target_run_id": "cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996",
     "fresh_output_root_required": true,
     "holdout_windows_change_forbidden": true,
-    "recovery_kind": "INFRASTRUCTURE_PRE_EVALUATION_FAILURE",
-    "recovery_scope": "SUBPROCESS_ENVIRONMENT_ONLY",
+    "recovery_kind": "INFRASTRUCTURE_PRE_EVALUATION_RETRY_FAILURE",
+    "recovery_scope": "PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY",
     "source_binding_change_forbidden": true
   },
   "recovery_incident": {
-    "file_sha256": "639527b41819a865b8c627d0bb9af76147e1f899f9840626a94b403c8420adee",
-    "payload_sha256": "d602fafdfa8114797f7b9138c715743ad548949fda5f236a7e0acd67f74f06a7",
+    "file_sha256": "09663c2f0926a04762883bfc21ad4c56166d7cd2d6c3fdf2c1574c07b9732083",
+    "payload_sha256": "0f719f4643709374aec94f652b8c0117da808cef658b221e9373860575aaa585",
     "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_holdout_recovery_incident_20260823.json"
   },
   "resource_contract": {
