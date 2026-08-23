@@ -657,7 +657,6 @@ def _validate_sidecar(
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
         "evaluation_role": evaluation_role,
         "split_manifest_hash": split_hash,
-        "holdout_reads": 0,
         "feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
@@ -706,6 +705,10 @@ def _validate_sidecar(
             )
     else:
         raise RuntimeError(f"unsupported field sidecar role: {evaluation_role}")
+    if evaluation_role != "holdout" and int(
+        manifest.get("holdout_reads") or 0
+    ) != 0:
+        raise RuntimeError(f"{evaluation_role} field sidecar read holdout")
     if evaluation_role != "forward_2026" and int(
         manifest.get("forward_2026_reads") or 0
     ) != 0:
@@ -1439,7 +1442,6 @@ def _validate_label_sidecar(
         "evaluation_role": evaluation_role,
         "data_role": f"{evaluation_role}_report_only",
         "split_manifest_hash": split_hash,
-        "holdout_reads": 0,
     }
     drift = [
         key
@@ -1472,6 +1474,10 @@ def _validate_label_sidecar(
             )
     else:
         raise RuntimeError(f"unsupported label sidecar role: {evaluation_role}")
+    if evaluation_role != "holdout" and int(
+        manifest.get("holdout_reads") or 0
+    ) != 0:
+        raise RuntimeError(f"{evaluation_role} label sidecar read holdout")
     if evaluation_role != "forward_2026" and int(
         manifest.get("forward_2026_reads") or 0
     ) != 0:

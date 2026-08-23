@@ -4,6 +4,10 @@
   "failed_repo_sha": "e69813c93f05db37459d06529957c5e79e11bf6d",
   "failed_target_run_id": "cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
   "fix_contract": {
+    "allowed_changes": [
+      "FREEZE_REQUIRED_LABEL_BUILDER_THREAD_ENVIRONMENT",
+      "MAKE_GENERIC_SIDECAR_VALIDATORS_ROLE_CORRECT_FOR_POSITIVE_HOLDOUT_READS"
+    ],
     "candidate_set_change_forbidden": true,
     "endpoint_change_forbidden": true,
     "evaluator_semantics_change_forbidden": true,
@@ -17,7 +21,7 @@
       "OPENBLAS_NUM_THREADS": "1",
       "POLARS_MAX_THREADS": "8"
     },
-    "scope": "SUBPROCESS_ENVIRONMENT_ONLY",
+    "scope": "PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY",
     "source_binding_change_forbidden": true
   },
   "holdout_governance": {
@@ -28,7 +32,7 @@
     "recovery_requires_new_project_control_retry": true,
     "treat_holdout_as_accessed": true
   },
-  "incident_payload_sha256": "d602fafdfa8114797f7b9138c715743ad548949fda5f236a7e0acd67f74f06a7",
+  "incident_payload_sha256": "2233aa6021ec4f58671beaf4e1a33efe5c3323fd52dd90530b4dcba7faea5597",
   "observed_failed_root_state": {
     "candidate_evaluation_executed": false,
     "holdout_preparation_present": true,
@@ -46,6 +50,18 @@
     "resource_profile": "VALIDATION_DUAL_8"
   },
   "promotion_authorized": false,
+  "recovery_preflight_assessment": {
+    "candidate_evaluator_semantics_change": false,
+    "candidate_set_or_endpoint_change": false,
+    "evidence": [
+      "holdout field and label builders legitimately emit positive holdout_reads for evaluation_role=holdout",
+      "generic _validate_sidecar and _validate_label_sidecar previously hard-required holdout_reads=0 in their common required block",
+      "the role-specific validation already requires positive role reads, so the common holdout_reads=0 requirement is contradictory for holdout only",
+      "no recovery candidate evaluation has been launched under this fix; this issue was identified statically before recovery execution"
+    ],
+    "issue": "GENERIC_HOLDOUT_SIDECAR_VALIDATOR_ROLE_CONTRACT_MISMATCH",
+    "status": "STATIC_CONFIRMED_BEFORE_RECOVERY_EXECUTION"
+  },
   "root_cause_assessment": {
     "confirmed_error": "thread environment is not frozen",
     "evidence": [

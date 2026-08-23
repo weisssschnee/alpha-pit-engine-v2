@@ -19,7 +19,7 @@ def build(repo:Path)->dict[str,Any]:
  original_path=repo/runtime.AUTHORIZATION_RELATIVE_PATH;original=_read_self(original_path,'authorization_payload_sha256')
  if original.get('schema_version')!=runtime.AUTHORIZATION_SCHEMA or original.get('status')!='BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_AUTHORIZED_NOT_RUN' or original.get('campaign_id')!=runtime.CAMPAIGN_ID:raise ValueError('original holdout authorization drift')
  incident_path=repo/INCIDENT_RELATIVE_PATH;incident=_read_self(incident_path,'incident_payload_sha256')
- if incident.get('status')!='HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED' or incident.get('failed_repo_sha')!='e69813c93f05db37459d06529957c5e79e11bf6d' or incident.get('observed_failed_root_state',{}).get('candidate_evaluation_executed') is not False or incident.get('holdout_governance',{}).get('recovery_requires_new_project_control_retry') is not True or incident.get('fix_contract',{}).get('scope')!='SUBPROCESS_ENVIRONMENT_ONLY':raise ValueError('recovery incident drift')
+ if incident.get('status')!='HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED' or incident.get('failed_repo_sha')!='e69813c93f05db37459d06529957c5e79e11bf6d' or incident.get('observed_failed_root_state',{}).get('candidate_evaluation_executed') is not False or incident.get('holdout_governance',{}).get('recovery_requires_new_project_control_retry') is not True or incident.get('fix_contract',{}).get('scope')!='PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY':raise ValueError('recovery incident drift')
  x={
   'schema_version':runtime.RECOVERY_AUTHORIZATION_SCHEMA,
   'status':'BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_RECOVERY_AUTHORIZED_NOT_RUN',
@@ -37,7 +37,7 @@ def build(repo:Path)->dict[str,Any]:
    'failed_target_run_id':'cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c',
    'failed_output_root':r'D:\ChengboRemote\runtime\cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c',
    'failed_admission_file_sha256':'f70f343822f87b1666719dc1905c140e0e17edb14cb4e6e03853907ac52d6375',
-   'recovery_scope':'SUBPROCESS_ENVIRONMENT_ONLY',
+   'recovery_scope':'PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY',
    'fresh_output_root_required':True,
    'candidate_set_change_forbidden':True,
    'holdout_windows_change_forbidden':True,
@@ -45,7 +45,7 @@ def build(repo:Path)->dict[str,Any]:
    'source_binding_change_forbidden':True,
   },
   'source_data':dict(p['source_data']),'endpoint_contract':dict(p['endpoint_contract']),'holdout_windows':list(p['holdout_windows']),
-  'implementation':{'runner_source_file_sha256':sha256_file(repo/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py'),'runtime_source_file_sha256':sha256_file(repo/'src/our_system_phase2/runtime/cn_program_base_event_tier_a_report_only_holdout_v1.py'),'session_authority_verifier_sha256':sha256_file(repo/'scripts/verify_cn_report_only_session_authority.py')},
+  'implementation':{'runner_source_file_sha256':sha256_file(repo/'scripts/run_cn_program_base_event_tier_a_report_only_holdout_v1.py'),'runtime_source_file_sha256':sha256_file(repo/'src/our_system_phase2/runtime/cn_program_base_event_tier_a_report_only_holdout_v1.py'),'session_authority_verifier_sha256':sha256_file(repo/'scripts/verify_cn_report_only_session_authority.py'),'generic_replay_validator_sha256':sha256_file(repo/'scripts/run_cn_finalist_replay_then_oos.py'),'forward_label_builder_sha256':sha256_file(repo/'scripts/build_cn_phase3cm_forward_label_sidecars.py')},
   'resource_contract':dict(p['resource_contract']),
   'optimizer_feedback_write':'FORBIDDEN','scheduler_write':'FORBIDDEN','archive_write':'FORBIDDEN',
   'validation_reads':0,'holdout_reads':0,'historical_challenge_reads':0,'forward_b_reads':0,'forward_2026_reads':0,
