@@ -19,7 +19,7 @@ def build(repo:Path)->dict[str,Any]:
  original_path=repo/runtime.AUTHORIZATION_RELATIVE_PATH;original=_read_self(original_path,'authorization_payload_sha256')
  if original.get('schema_version')!=runtime.AUTHORIZATION_SCHEMA or original.get('status')!='BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_AUTHORIZED_NOT_RUN' or original.get('campaign_id')!=runtime.CAMPAIGN_ID:raise ValueError('original holdout authorization drift')
  incident_path=repo/INCIDENT_RELATIVE_PATH;incident=_read_self(incident_path,'incident_payload_sha256')
- if incident.get('status')!='HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED' or incident.get('failed_repo_sha')!='e69813c93f05db37459d06529957c5e79e11bf6d' or incident.get('observed_failed_root_state',{}).get('candidate_evaluation_executed') is not False or incident.get('holdout_governance',{}).get('recovery_requires_new_project_control_retry') is not True or incident.get('fix_contract',{}).get('scope')!='PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY':raise ValueError('recovery incident drift')
+ if incident.get('status')!='HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED' or incident.get('failed_repo_sha')!='e69813c93f05db37459d06529957c5e79e11bf6d' or incident.get('observed_failed_root_state',{}).get('candidate_evaluation_executed') is not False or incident.get('holdout_governance',{}).get('recovery_requires_new_project_control_retry') is not True or incident.get('fix_contract',{}).get('scope')!='PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY' or incident.get('retry1_failure_assessment',{}).get('status')!='REMOTE_TRACE_CONFIRMED' or incident.get('retry1_failure_assessment',{}).get('confirmed_error')!='holdout field sidecar drift: holdout_reads':raise ValueError('recovery incident drift')
  x={
   'schema_version':runtime.RECOVERY_AUTHORIZATION_SCHEMA,
   'status':'BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_RECOVERY_AUTHORIZED_NOT_RUN',
@@ -33,10 +33,10 @@ def build(repo:Path)->dict[str,Any]:
   'original_authorization':{'relative_path':str(runtime.AUTHORIZATION_RELATIVE_PATH).replace('\\','/'),'file_sha256':sha256_file(original_path),'payload_sha256':original['authorization_payload_sha256']},
   'recovery_incident':{'relative_path':str(INCIDENT_RELATIVE_PATH).replace('\\','/'),'file_sha256':sha256_file(incident_path),'payload_sha256':incident['incident_payload_sha256']},
   'recovery_contract':{
-   'recovery_kind':'INFRASTRUCTURE_PRE_EVALUATION_FAILURE',
-   'failed_target_run_id':'cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c',
-   'failed_output_root':r'D:\ChengboRemote\runtime\cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c',
-   'failed_admission_file_sha256':'f70f343822f87b1666719dc1905c140e0e17edb14cb4e6e03853907ac52d6375',
+   'recovery_kind':'INFRASTRUCTURE_PRE_EVALUATION_RETRY_FAILURE',
+   'failed_target_run_id':'cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996',
+   'failed_output_root':r'D:\ChengboRemote\runtime\cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996',
+   'failed_admission_file_sha256':'937a868f164b6cee132b677310cac1347d420f07571e9146a46e3c5ef7674f86',
    'recovery_scope':'PRE_EVALUATION_INFRASTRUCTURE_COMPATIBILITY_ONLY',
    'fresh_output_root_required':True,
    'candidate_set_change_forbidden':True,

@@ -26,13 +26,19 @@
   },
   "holdout_governance": {
     "failed_root_must_be_preserved": true,
+    "failed_roots_must_be_preserved": [
+      "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
+      "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996"
+    ],
+    "next_recovery_requires_new_project_control_retry": true,
     "ordinary_relaunch_forbidden": true,
+    "prior_recovery_attempt_consumed": true,
     "reason": "A Project-Control-admitted holdout preparation attempt began. Partial feature-sidecar access must not be used to change candidates, windows, endpoints, or source bindings.",
     "recovery_requires_fresh_output_root": true,
     "recovery_requires_new_project_control_retry": true,
     "treat_holdout_as_accessed": true
   },
-  "incident_payload_sha256": "2233aa6021ec4f58671beaf4e1a33efe5c3323fd52dd90530b4dcba7faea5597",
+  "incident_payload_sha256": "0f719f4643709374aec94f652b8c0117da808cef658b221e9373860575aaa585",
   "observed_failed_root_state": {
     "candidate_evaluation_executed": false,
     "holdout_preparation_present": true,
@@ -54,13 +60,33 @@
     "candidate_evaluator_semantics_change": false,
     "candidate_set_or_endpoint_change": false,
     "evidence": [
-      "holdout field and label builders legitimately emit positive holdout_reads for evaluation_role=holdout",
-      "generic _validate_sidecar and _validate_label_sidecar previously hard-required holdout_reads=0 in their common required block",
-      "the role-specific validation already requires positive role reads, so the common holdout_reads=0 requirement is contradictory for holdout only",
-      "no recovery candidate evaluation has been launched under this fix; this issue was identified statically before recovery execution"
+      "retry1 output root contains .project_control_execution and holdout_preparation but no records or terminal closure",
+      "retry1 terminal receipt records requested_action=RETRY, repo 5a04996 and exit_code=1",
+      "retry1 traceback ends in run_cn_finalist_replay_then_oos._validate_sidecar with RuntimeError: holdout field sidecar drift: holdout_reads",
+      "holdout field and label builders legitimately report positive holdout_reads for evaluation_role=holdout"
     ],
     "issue": "GENERIC_HOLDOUT_SIDECAR_VALIDATOR_ROLE_CONTRACT_MISMATCH",
-    "status": "STATIC_CONFIRMED_BEFORE_RECOVERY_EXECUTION"
+    "status": "REMOTE_TRACE_CONFIRMED_ON_RETRY1"
+  },
+  "retry1_failure_assessment": {
+    "admission_file_sha256": "937a868f164b6cee132b677310cac1347d420f07571e9146a46e3c5ef7674f86",
+    "candidate_evaluation_executed": false,
+    "confirmed_error": "holdout field sidecar drift: holdout_reads",
+    "evidence": [
+      "retry1 output root contains .project_control_execution and holdout_preparation but no records or terminal closure",
+      "retry1 terminal receipt records requested_action=RETRY, repo 5a04996 and exit_code=1",
+      "retry1 traceback ends in run_cn_finalist_replay_then_oos._validate_sidecar with RuntimeError: holdout field sidecar drift: holdout_reads",
+      "holdout field and label builders legitimately report positive holdout_reads for evaluation_role=holdout"
+    ],
+    "failed_output_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996",
+    "failed_repo_sha": "5a04996edd7c7cb76635d490187df62ee81f0cb9",
+    "failed_target_run_id": "cn_program_base_event_tier_a_report_only_holdout_retry1_20260823_5a04996",
+    "failure_stage": "_load_holdout_context -> generic _validate_sidecar, after holdout preparation and before records directory creation",
+    "records_directory_present": false,
+    "requested_action": "RETRY",
+    "status": "REMOTE_TRACE_CONFIRMED",
+    "terminal_closure_present": false,
+    "terminal_receipt_exit_code": 1
   },
   "root_cause_assessment": {
     "confirmed_error": "thread environment is not frozen",
