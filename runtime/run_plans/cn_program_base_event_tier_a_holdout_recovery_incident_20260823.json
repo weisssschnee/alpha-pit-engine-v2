@@ -28,7 +28,7 @@
     "recovery_requires_new_project_control_retry": true,
     "treat_holdout_as_accessed": true
   },
-  "incident_payload_sha256": "a0a21a4c0b19fb7406701d21358c0676b648f810123034f9f84fa3923899f0c8",
+  "incident_payload_sha256": "d602fafdfa8114797f7b9138c715743ad548949fda5f236a7e0acd67f74f06a7",
   "observed_failed_root_state": {
     "candidate_evaluation_executed": false,
     "holdout_preparation_present": true,
@@ -47,16 +47,20 @@
   },
   "promotion_authorized": false,
   "root_cause_assessment": {
+    "confirmed_error": "thread environment is not frozen",
     "evidence": [
       "holdout runner calls label builder with --polars-threads 8 after field-sidecar construction and before records directory creation",
       "label builder hard-requires NUMBA/ARROW/OMP/MKL/OPENBLAS/NUMEXPR thread variables=1 and POLARS_MAX_THREADS=8 before reading labels",
       "failed launcher sets PATH/PYTHONPATH but none of the required thread environment variables",
       "runner _run inherited parent environment unchanged before the fix",
-      "failed output has holdout_preparation but no records or closure"
+      "failed output has holdout_preparation but no records or closure",
+      "failed runner.stderr contains exact RuntimeError thread environment is not frozen; terminal receipt exit_code=1"
     ],
-    "remote_traceback_retrieved": false,
-    "status": "HIGH_CONFIDENCE_STATIC_DIAGNOSIS_PENDING_REMOTE_TRACE_CONFIRMATION",
-    "suspected_failure_stage": "build_cn_phase3cm_forward_label_sidecars.py during holdout preparation, before candidate evaluation"
+    "remote_traceback_retrieved": true,
+    "status": "REMOTE_TRACE_CONFIRMED",
+    "suspected_failure_stage": "build_cn_phase3cm_forward_label_sidecars.py during holdout preparation, before candidate evaluation",
+    "terminal_receipt_exit_code": 1,
+    "thread_environment_error_match_count": 2
   },
   "schema_version": "cn_program_base_event_tier_a_holdout_recovery_incident_v1",
   "status": "HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED"
