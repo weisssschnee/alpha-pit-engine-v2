@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import app
 from scripts import build_cn_program_base_event_tier_a_report_only_holdout_authorization_v1 as auth_builder
+from scripts import build_cn_program_base_event_tier_a_report_only_holdout_recovery_authorization_v1 as recovery_auth_builder
 from scripts import run_cn_program_base_event_tier_a_report_only_holdout_v1 as r
 from our_system_phase2.runtime import cn_program_base_event_tier_a_report_only_holdout_v1 as runtime
 from our_system_phase2.services.project_control_admission import ACTION_LAUNCH,ACTION_RETRY,CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
@@ -22,3 +23,7 @@ def test_generic_session_authority_verifier_is_role_parameterized():
  src=(ROOT/'scripts/verify_cn_report_only_session_authority.py').read_text(encoding='utf-8-sig'); assert "evaluation_role:str" in src; assert "f'{prefix}_session_authority_manifest.json'" in src; assert "f'{evaluation_role}_reads'" in src; assert "--evaluation-role" in src
 def test_holdout_authorization_binds_final_plan_and_report_only_boundary(tmp_path:Path):
  x=auth_builder.build(ROOT); assert x['status']=='BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_AUTHORIZED_NOT_RUN'; assert x['evaluation_role']=='holdout' and x['usage']=='REPORT_ONLY_CANDIDATE_TRANSFER'; assert x['resource_contract']=={'profile':'VALIDATION_DUAL_8','cpu_threads':8,'evaluator_workers':2,'candidate_count':2}; assert x['oos_authority']=='HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY'; assert x['promotion_authorized'] is False and x['automatic_successor_authorized'] is False; p=tmp_path/'auth.json';p.write_text(json.dumps(x,sort_keys=True),encoding='utf-8'); y=runtime.verify_authorization(p,repo_root=ROOT); assert y['authorization_payload_sha256']==x['authorization_payload_sha256']
+def test_holdout_recovery_authorization_is_retry_only_and_incident_bound(tmp_path:Path):
+ x=recovery_auth_builder.build(ROOT); assert x['schema_version']==runtime.RECOVERY_AUTHORIZATION_SCHEMA; assert x['status']=='BASE_EVENT_TIER_A_REPORT_ONLY_HOLDOUT_RECOVERY_AUTHORIZED_NOT_RUN'; assert x['permitted_project_control_actions']==[ACTION_RETRY]; assert x['recovery_incident']['payload_sha256']=='a0a21a4c0b19fb7406701d21358c0676b648f810123034f9f84fa3923899f0c8'; assert x['recovery_contract']['failed_admission_file_sha256']=='f70f343822f87b1666719dc1905c140e0e17edb14cb4e6e03853907ac52d6375'; assert x['recovery_contract']['fresh_output_root_required'] is True; p=tmp_path/'recovery_auth.json';p.write_text(json.dumps(x,sort_keys=True),encoding='utf-8'); y=runtime.verify_authorization(p,repo_root=ROOT); assert y['authorization_payload_sha256']==x['authorization_payload_sha256']
+def test_holdout_runtime_enforces_admission_action_within_authorization():
+ src=(ROOT/'src/our_system_phase2/runtime/cn_program_base_event_tier_a_report_only_holdout_v1.py').read_text(encoding='utf-8-sig'); assert "admission action is outside campaign authorization" in src
