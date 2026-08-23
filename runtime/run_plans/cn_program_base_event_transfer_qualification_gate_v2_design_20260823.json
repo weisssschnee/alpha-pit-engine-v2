@@ -1,0 +1,31 @@
+{
+  "additional_recency_requirements": [
+    "latest evaluation-window primary cumulative net return > 0",
+    "latest evaluation-window matched return increment > 0"
+  ],
+  "automatic_successor_authorized": false,
+  "base_requirements": [
+    "absolute economic admission passes",
+    "matched cumulative net return increment > 0",
+    "matched net reward increment > 0",
+    "matched positive-window count >= 2 of 3"
+  ],
+  "candidate_membership_must_be_frozen_before_unseen_access": true,
+  "chronological_windows_are_ordered": true,
+  "diagnostic_current_validation_survivor_count_after_recency_gate": 0,
+  "gate_design_payload_sha256": "e4e116722f3c93957b20cb620af183f5b8fac6890144a5841636cc5a5ecbb2f0",
+  "new_financial_evaluation_authorized": false,
+  "promotion_authorized": false,
+  "schema_version": "cn_program_base_event_transfer_qualification_gate_v2_design_v1",
+  "source_transfer_review_payload_sha256": "280988fa5cdaf6d55caa9c0ca1d7227436559d8e625e628681dd0bbeaa90ee25",
+  "spent_holdout_reuse_for_gate_validation": false,
+  "spent_holdout_used_for_design_only": true,
+  "status": "BASE_EVENT_TRANSFER_QUALIFICATION_GATE_V2_DESIGN_FROZEN_NOT_RUN",
+  "support_numeric_threshold_status": "NOT_FROZEN_NO_UNSEEN_DATA_YET",
+  "support_telemetry_required": [
+    "per-window fill_count",
+    "per-window active_fill_session_count",
+    "per-window filled_symbol_count",
+    "per-window signal_support_rows or active-signal-session count"
+  ]
+}

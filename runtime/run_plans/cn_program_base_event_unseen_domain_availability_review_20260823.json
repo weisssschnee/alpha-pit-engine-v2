@@ -1,0 +1,70 @@
+{
+  "allowed_next_actions": [
+    "refresh/extend TDX lc1 source asset without evaluating candidate performance",
+    "rebuild metadata inventory and hash it",
+    "reserve a new post-refresh forward slice using metadata only",
+    "freeze candidate cohort and Gate V2 before any new forward performance access"
+  ],
+  "automatic_successor_authorized": false,
+  "evaluation_data_roles_registry_sha256": "b6816e034f327d3adf08377d840aa282ef520c41b07b3ca660a1299400b90868",
+  "financial_rows_read_by_this_review": 0,
+  "forbidden_next_actions": [
+    "reuse 2025 validation",
+    "reuse 2025 holdout",
+    "reuse spent 2026 asset",
+    "repurpose Forward-B fixed cohort",
+    "open Forward-B for Tier-A",
+    "open any new performance rows before candidate/gate freeze",
+    "promotion"
+  ],
+  "forward_b": {
+    "asset_id": "forward_b_tdx_lc1_20260413_20260514_f69cc84f",
+    "backfill": "FORBIDDEN",
+    "eligible_for_tier_a_gate_v2": false,
+    "expected_exchange_session_count_metadata_only": 21,
+    "fixed_intended_cohort_root": "G:\\Chengbo\\runtime\\cn_fixed_survivor_confirmatory_input_10_20260805_bec2de0",
+    "fixed_intended_members": 20,
+    "fixed_intended_pairs": 10,
+    "fixed_intended_selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+    "performance_access_authorized": false,
+    "performance_rows_read": 0,
+    "reason": "Forward-B is an immutable reservation for the old fixed-10 cohort; replacement/backfill are forbidden.",
+    "replacement": "FORBIDDEN",
+    "reserved_end_date": "2026-05-14",
+    "reserved_start_date": "2026-04-13",
+    "status": "FORWARD_B_RESERVED_SEALED_NOT_AUTHORIZED_FOR_PERFORMANCE_ACCESS"
+  },
+  "forward_c_reservation_possible_now": false,
+  "forward_performance_access_authorized": false,
+  "new_search_authorized": false,
+  "new_validation_authorized": false,
+  "next_required_decision": "Refresh the underlying TDX lc1 data asset beyond 2026-05-18. After a trusted metadata inventory exists, reserve a new Forward-C slice without reading performance, then freeze the Gate V2 candidate cohort before any Project-Control performance authorization.",
+  "promotion_authorized": false,
+  "review_payload_sha256": "6b467817d18996025bee629e5d29742eb407a47f51f3af43f132bf92c145e25c",
+  "schema_version": "cn_program_base_event_unseen_domain_availability_review_v1",
+  "source_gate_design_payload_sha256": "e4e116722f3c93957b20cb620af183f5b8fac6890144a5841636cc5a5ecbb2f0",
+  "source_repo_sha": "cc1d9866a80f1f72543a7cc467dd5500f4c30071",
+  "source_transfer_review_payload_sha256": "280988fa5cdaf6d55caa9c0ca1d7227436559d8e625e628681dd0bbeaa90ee25",
+  "spent_domains": {
+    "historical_2023": "SPENT_NEGATIVE_NO_RETRY",
+    "holdout_2025": "SPENT",
+    "separate_2026_20260105_20260410": "SPENT_BURNED_INCOMPLETE_NO_RETRY",
+    "validation_2025": "SPENT"
+  },
+  "status": "NO_CLEAN_UNSEEN_DOMAIN_AVAILABLE_UNTIL_DATA_REFRESH",
+  "tdx_source_filesystem_metadata_latest_write_time": {
+    "bj": "2026-05-18T19:02:25",
+    "sh": "2026-05-18T19:02:25",
+    "sz": "2026-05-18T19:00:36"
+  },
+  "trusted_data_available_after_forward_b": false,
+  "trusted_tdx_inventory": {
+    "bytes": 1115760,
+    "file_sha256": "f69cc84f51f9fa094431a81e2ac28d6f901040de6f78383f2228b5959a77b819",
+    "first_date_min": "2026-03-02",
+    "last_date_max": "2026-05-18",
+    "last_write_time": 1779166940.9346201,
+    "path": "G:\\Project_V7_Rotation\\data\\tdx_jq_stitch\\tdx_lc1_inventory.csv",
+    "row_count": 9204
+  }
+}
