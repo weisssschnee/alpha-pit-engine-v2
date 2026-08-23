@@ -1,0 +1,63 @@
+{
+  "automatic_successor_authorized": false,
+  "failed_output_root": "D:\\ChengboRemote\\runtime\\cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
+  "failed_repo_sha": "e69813c93f05db37459d06529957c5e79e11bf6d",
+  "failed_target_run_id": "cn_program_base_event_tier_a_report_only_holdout_20260823_e69813c",
+  "fix_contract": {
+    "candidate_set_change_forbidden": true,
+    "endpoint_change_forbidden": true,
+    "evaluator_semantics_change_forbidden": true,
+    "holdout_windows_change_forbidden": true,
+    "required_thread_environment": {
+      "ARROW_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMBA_NUM_THREADS": "1",
+      "NUMEXPR_MAX_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "POLARS_MAX_THREADS": "8"
+    },
+    "scope": "SUBPROCESS_ENVIRONMENT_ONLY",
+    "source_binding_change_forbidden": true
+  },
+  "holdout_governance": {
+    "failed_root_must_be_preserved": true,
+    "ordinary_relaunch_forbidden": true,
+    "reason": "A Project-Control-admitted holdout preparation attempt began. Partial feature-sidecar access must not be used to change candidates, windows, endpoints, or source bindings.",
+    "recovery_requires_fresh_output_root": true,
+    "recovery_requires_new_project_control_retry": true,
+    "treat_holdout_as_accessed": true
+  },
+  "incident_payload_sha256": "a0a21a4c0b19fb7406701d21358c0676b648f810123034f9f84fa3923899f0c8",
+  "observed_failed_root_state": {
+    "candidate_evaluation_executed": false,
+    "holdout_preparation_present": true,
+    "project_control_execution_present": true,
+    "records_directory_present": false,
+    "terminal_closure_present": false
+  },
+  "oos_authority": "HOLDOUT_REPORT_ONLY_EVIDENCE_ONLY",
+  "project_control": {
+    "admission_consumed": true,
+    "admission_file_sha256": "f70f343822f87b1666719dc1905c140e0e17edb14cb4e6e03853907ac52d6375",
+    "admission_payload_sha256": "32aec1cb71993b65f3376eb3d5559adb3253c819a09a75df3fb94f54977ff5dc",
+    "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+    "resource_lease_release_artifact_observed": true,
+    "resource_profile": "VALIDATION_DUAL_8"
+  },
+  "promotion_authorized": false,
+  "root_cause_assessment": {
+    "evidence": [
+      "holdout runner calls label builder with --polars-threads 8 after field-sidecar construction and before records directory creation",
+      "label builder hard-requires NUMBA/ARROW/OMP/MKL/OPENBLAS/NUMEXPR thread variables=1 and POLARS_MAX_THREADS=8 before reading labels",
+      "failed launcher sets PATH/PYTHONPATH but none of the required thread environment variables",
+      "runner _run inherited parent environment unchanged before the fix",
+      "failed output has holdout_preparation but no records or closure"
+    ],
+    "remote_traceback_retrieved": false,
+    "status": "HIGH_CONFIDENCE_STATIC_DIAGNOSIS_PENDING_REMOTE_TRACE_CONFIRMATION",
+    "suspected_failure_stage": "build_cn_phase3cm_forward_label_sidecars.py during holdout preparation, before candidate evaluation"
+  },
+  "schema_version": "cn_program_base_event_tier_a_holdout_recovery_incident_v1",
+  "status": "HOLDOUT_INFRASTRUCTURE_PRE_EVALUATION_FAILURE_RECOVERY_REQUIRED"
+}

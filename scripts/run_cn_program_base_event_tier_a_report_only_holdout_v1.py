@@ -1,6 +1,6 @@
 """Report-only holdout for the two frozen BASE_EVENT Tier-A mechanism survivors."""
 from __future__ import annotations
-import argparse,csv,gc,hashlib,json,subprocess,sys,time
+import argparse,csv,gc,hashlib,json,os,subprocess,sys,time
 from concurrent.futures import FIRST_COMPLETED,ProcessPoolExecutor,wait
 from pathlib import Path
 from typing import Any,Mapping,Sequence
@@ -74,8 +74,11 @@ def _requirements(path:Path,fields:Sequence[str])->Path:
   w=csv.DictWriter(h,fieldnames=['candidate_id','expression']);w.writeheader()
   for f in fields:w.writerow({'candidate_id':f'required::{f}','expression':f'${f}'})
  return path
-def _run(xs:Sequence[Any]):
- cp=subprocess.run([str(x) for x in xs],text=True,capture_output=True)
+_LABEL_SERIAL_ENV={'NUMBA_NUM_THREADS':'1','ARROW_NUM_THREADS':'1','OMP_NUM_THREADS':'1','MKL_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','NUMEXPR_MAX_THREADS':'1'}
+def _label_builder_env(polars_threads:int=8)->dict[str,str]:
+ env=os.environ.copy();env.update(_LABEL_SERIAL_ENV);env['POLARS_MAX_THREADS']=str(int(polars_threads));return env
+def _run(xs:Sequence[Any],*,env:Mapping[str,str]|None=None):
+ cp=subprocess.run([str(x) for x in xs],text=True,capture_output=True,env=None if env is None else dict(env))
  if cp.returncode:raise RuntimeError(f'SUBPROCESS_FAILED:{xs[1] if len(xs)>1 else xs[0]}\nOUT={cp.stdout}\nERR={cp.stderr}')
 def _root(p:Path)->Path:
  p=p.resolve()
@@ -104,7 +107,7 @@ def _load_holdout_context(*,source_contract:Path,field_root:Path,label_root:Path
 def _prepare(repo:Path,p:Mapping[str,Any],a:argparse.Namespace,out:Path,repo_sha:str)->dict[str,Any]:
  _verify_sources(p,a);prep=out/'holdout_preparation';prep.mkdir();fields=tuple(map(str,p['required_physical_leaf_ids']));req=_requirements(prep/'holdout_program_required_fields.csv',fields);field=prep/'program_holdout_session_fields'
  _run([sys.executable,repo/'scripts/build_cn_core_pack_validation_session_sidecar.py','--source-root',a.minute_source_root,'--evaluation-role','holdout','--output-root',field,'--candidate-table',req,'--registry',a.registry,'--split-manifest',a.split_manifest,'--split-manifest-hash',p['source_data']['split_manifest']['sha256'],'--fundamental-root',a.fundamental_root,'--chip-root',a.chip_root,'--max-shards','16']);fm=field/'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json';fsha=_sha(fm)
- labels=prep/'program_holdout_session_labels';_run([sys.executable,repo/'scripts/build_cn_phase3cm_forward_label_sidecars.py','--source-root',field,'--evaluation-role','holdout','--output-root',labels,'--split-manifest',a.split_manifest,'--split-manifest-hash',p['source_data']['split_manifest']['sha256'],'--horizons','1,5,15,30','--max-shards','16','--polars-threads','8'])
+ labels=prep/'program_holdout_session_labels';_run([sys.executable,repo/'scripts/build_cn_phase3cm_forward_label_sidecars.py','--source-root',field,'--evaluation-role','holdout','--output-root',labels,'--split-manifest',a.split_manifest,'--split-manifest-hash',p['source_data']['split_manifest']['sha256'],'--horizons','1,5,15,30','--max-shards','16','--polars-threads','8'],env=_label_builder_env(8))
  auth=prep/'holdout_session_authority';_run([sys.executable,repo/'scripts/build_cn_validation_session_authority.py','--field-manifest',fm,'--public-source-root',a.public_source_root,'--output-root',auth,'--expected-field-manifest-sha256',fsha,'--expected-source-manifest-sha256',p['source_data']['public_source_manifest']['sha256'],'--historical-daily-st-source',a.daily_st_source,'--expected-daily-st-source-sha256',p['source_data']['daily_st_source']['sha256'],'--builder-commit-sha',repo_sha,'--evaluation-role','holdout','--date-min',p['holdout_windows'][0]['start_date'],'--date-max',p['holdout_windows'][-1]['end_date'],'--schema-version','cn_holdout_session_authority_v1','--status','HOLDOUT_SESSION_AUTHORITY_CLOSED_IMMUTABLE','--evidence-scope','BASE_EVENT_TIER_A_HOLDOUT_REPORT_ONLY_INPUT'])
  audit=prep/'holdout_session_authority_audit';_run([sys.executable,repo/'scripts/verify_cn_report_only_session_authority.py','--authority-root',auth,'--output-root',audit,'--evaluation-role','holdout','--date-min',p['holdout_windows'][0]['start_date'],'--date-max',p['holdout_windows'][-1]['end_date'],'--expected-schema-version','cn_holdout_session_authority_v1','--expected-status','HOLDOUT_SESSION_AUTHORITY_CLOSED_IMMUTABLE']);ar=_read(audit/'audit.json')
  if ar.get('status')!='PASS_INDEPENDENT_REPORT_ONLY_SESSION_AUTHORITY_VERIFICATION':raise RuntimeError('TIER_A_HOLDOUT_AUTHORITY_AUDIT_FAIL')
