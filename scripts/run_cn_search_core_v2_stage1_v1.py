@@ -118,7 +118,7 @@ def _load_authority(
 def _stage_d_supply(repo: Path, prefreeze: Mapping[str, Any]) -> dict[str, Any]:
     binding = dict(prefreeze["arm_a_primitive"])
     path = repo / Path(str(binding["source_supply_relative_path"]))
-    if successor._sha256(path) != str(binding["source_supply_file_sha256"]):
+    if engine._sha256(path) != str(binding["source_supply_file_sha256"]):
         raise RuntimeError("SEARCH_CORE_V2_STAGE_D_SUPPLY_FILE_DRIFT")
     payload = _read(path)
     claimed = _verify_self(payload, "audit_payload_sha256", "Search Core V2 Stage-D supply")
