@@ -146,7 +146,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         map(str, prefreeze["arm_a_primitive"]["selected_exact_identities"])
     )
     if (
-        expected_probe_total != 156
+        expected_probe_total != runtime.SUPPLY_PROBE_TOTAL
         or len(exacts) != expected_probe_total
         or len(set(exacts)) != expected_probe_total
     ):
