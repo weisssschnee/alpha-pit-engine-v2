@@ -1,0 +1,395 @@
+{
+  "audit_payload_sha256": "ba353565395af78fb002a8dabf29ad5373b6a3ee400aefa2cf99c831518f21e6",
+  "audit_repo_sha": "5a803263a2a287d3e82eaad07e6f034a45bfe673",
+  "decision_contract_review": {
+    "automatic_stage2_authorized": false,
+    "finding": "FROZEN_TEXT_REQUIRED_BASELINE_AUDIT_BUT_47BC94F_DECISION_IMPLEMENTATION_ONLY_RECORDED_THE_FLAG",
+    "required_repair": "FAIL_CLOSED_ON_BASELINE_SANITY_MISS_BEFORE_STAGE2_REVIEW_ELIGIBILITY",
+    "terminal_baseline_historical_sanity_pass": false,
+    "terminal_status": "AMBIGUOUS_STAGE1_REVIEW_NO_AUTOMATIC_STAGE2"
+  },
+  "first_round_primitive_deterministic_parity": {
+    "aggregate": {
+      "admission_rate": 0.39880952380952384,
+      "admitted": 67,
+      "distinct_behavior_pair_count": 134,
+      "distinct_behavior_pair_rate": 0.7976190476190477,
+      "distinct_structural_region_count": 168,
+      "evaluated": 168,
+      "productive": 67,
+      "productive_rate": 0.39880952380952384,
+      "stable": 63,
+      "stable_rate": 0.375
+    },
+    "checkpoint_rows": {
+      "0": {
+        "new": {
+          "admitted": 21,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 19,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 21,
+          "round_index": 0,
+          "stable": 19,
+          "template_id": "BASE_EVENT"
+        },
+        "old": {
+          "admitted": 21,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 19,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 21,
+          "round_index": 0,
+          "stable": 19,
+          "template_id": "BASE_EVENT"
+        },
+        "same": true
+      },
+      "10": {
+        "new": {
+          "admitted": 5,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 21,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 5,
+          "round_index": 0,
+          "stable": 5,
+          "template_id": "BASE_TEMPORAL_MARKET"
+        },
+        "old": {
+          "admitted": 5,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 21,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 5,
+          "round_index": 0,
+          "stable": 5,
+          "template_id": "BASE_TEMPORAL_MARKET"
+        },
+        "same": true
+      },
+      "12": {
+        "new": {
+          "admitted": 5,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 22,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 5,
+          "round_index": 0,
+          "stable": 5,
+          "template_id": "BASE_TEMPORAL_MARKET_EVENT"
+        },
+        "old": {
+          "admitted": 5,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 22,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 5,
+          "round_index": 0,
+          "stable": 5,
+          "template_id": "BASE_TEMPORAL_MARKET_EVENT"
+        },
+        "same": true
+      },
+      "2": {
+        "new": {
+          "admitted": 20,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 23,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 20,
+          "round_index": 0,
+          "stable": 18,
+          "template_id": "BASE_MARKET"
+        },
+        "old": {
+          "admitted": 20,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 23,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 20,
+          "round_index": 0,
+          "stable": 18,
+          "template_id": "BASE_MARKET"
+        },
+        "same": true
+      },
+      "4": {
+        "new": {
+          "admitted": 7,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 6,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 7,
+          "round_index": 0,
+          "stable": 7,
+          "template_id": "BASE_MARKET_EVENT"
+        },
+        "old": {
+          "admitted": 7,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 6,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 7,
+          "round_index": 0,
+          "stable": 7,
+          "template_id": "BASE_MARKET_EVENT"
+        },
+        "same": true
+      },
+      "6": {
+        "new": {
+          "admitted": 0,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 24,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 0,
+          "round_index": 0,
+          "stable": 0,
+          "template_id": "BASE_TEMPORAL"
+        },
+        "old": {
+          "admitted": 0,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 24,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 0,
+          "round_index": 0,
+          "stable": 0,
+          "template_id": "BASE_TEMPORAL"
+        },
+        "same": true
+      },
+      "8": {
+        "new": {
+          "admitted": 9,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 19,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 9,
+          "round_index": 0,
+          "stable": 9,
+          "template_id": "BASE_TEMPORAL_EVENT"
+        },
+        "old": {
+          "admitted": 9,
+          "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+          "distinct_behavior_pair_count": 19,
+          "distinct_structural_region_count": 24,
+          "evaluated": 24,
+          "productive": 9,
+          "round_index": 0,
+          "stable": 9,
+          "template_id": "BASE_TEMPORAL_EVENT"
+        },
+        "same": true
+      }
+    },
+    "old_run_root": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage1_20260824_2fecaec",
+    "status": "PASS"
+  },
+  "generator_fix_status": "PRODUCTION_FAILURE_POINT_SURPASSED_AND_STAGE1_CLOSED",
+  "historical_sanity_reference_audit": {
+    "classification": "HISTORICAL_SANITY_BAND_NOT_SELECTION_INTENSITY_MATCHED",
+    "hash_before_score_source_verified": true,
+    "interpretation": "A=126/336 does not by itself establish evaluator drift: the exact first-round Primitive replay is deterministic, and the current 37.5% yield lies between Stage-D top-48/288 and top-72/288 Primitive yields while Core2 selects top-48/224.",
+    "original_reference": {
+      "stage_c_336": {
+        "distinct_behavior_pair_count": 251,
+        "productive": 140
+      },
+      "stage_d_336": {
+        "distinct_behavior_pair_count": 247,
+        "productive": 139
+      }
+    },
+    "partition_by_template": {
+      "BASE_EVENT": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_MARKET": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_MARKET_EVENT": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_TEMPORAL": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "combined_count": 512,
+        "overlap": 0,
+        "stage1_unspent_remainder_count": 224,
+        "stage_d_hash_selected_count": 288
+      }
+    },
+    "selection_fraction_stage1_arm_a": 0.21428571428571427,
+    "selection_fraction_stage_d_336": 0.16666666666666666,
+    "selection_fraction_stage_d_504": 0.25,
+    "selection_intensity_yield_bracket_pass": true,
+    "stage1_arm_a_productive_rate": 0.375,
+    "stage_d_336_productive_rate": 0.41369047619047616,
+    "stage_d_504_productive_rate": 0.36904761904761907,
+    "stage_d_builder_file_sha256": "689dc81e34762f4c11f9f86d4fdb1b25d52c3933786351fa4cbc56c6d26bb3a6",
+    "stage_d_cohort_selection": "HASH_STRATIFIED_BEFORE_PRIMITIVE_SCORING"
+  },
+  "project_control_recommendation": {
+    "automatic_stage2": false,
+    "budget": {
+      "per_arm": 168,
+      "per_template_per_arm": 24,
+      "total": 336
+    },
+    "generator_source": "RESTORE_EXACT_STAGE1_CHECKPOINT_0027_OPTIMIZER_STATE_AFTER",
+    "next": "PREFREEZE_STAGE1_5_MATURE_STATE_JUMP_CONFIRMATION",
+    "oos_authority": "NONE",
+    "primitive_source": "NEXT_UNSPENT_SLICE_48_TO_71_PER_TEMPLATE_FROM_STAGE1_FROZEN_ORDER",
+    "purpose": "CONFIRM_OR_FALSIFY_LATE_ROUND_MATURE_GENERATOR_ADVANTAGE_AT_ONE_QUARTER_OF_FULL_STAGE2_COST",
+    "verdict": "DO_NOT_LAUNCH_FULL_STAGE2"
+  },
+  "schema_version": "cn_search_core_v2_stage1_postrun_audit_v1",
+  "source_stage1": {
+    "closure_payload_sha256": "52189f476354cb186e77bd1b3de618227308e1f7d3dc7bcd44155d1956538d60",
+    "evaluated": 672,
+    "file_sha256": "65be16394d28f64c43663df1c25429fccdaaa0db5361b856fe4a6101574affe7",
+    "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage1_20260824_47bc94f\\CN_SEARCH_CORE_V2_STAGE1_COMPLETE.json",
+    "repo_sha": "47bc94f4fac08ee055af453ed0504241d3567b7f",
+    "restricted_reads": {
+      "forward_2026": 0,
+      "forward_b": 0,
+      "historical_2023": 0,
+      "holdout": 0,
+      "validation": 0
+    }
+  },
+  "stage1_metrics": {
+    "arm_a": {
+      "admission_rate": 0.3958333333333333,
+      "admitted": 133,
+      "distinct_behavior_pair_count": 261,
+      "distinct_behavior_pair_rate": 0.7767857142857143,
+      "distinct_structural_region_count": 336,
+      "evaluated": 336,
+      "productive": 126,
+      "productive_rate": 0.375,
+      "stable": 116,
+      "stable_rate": 0.34523809523809523
+    },
+    "arm_b": {
+      "admission_rate": 0.5238095238095238,
+      "admitted": 176,
+      "distinct_behavior_pair_count": 309,
+      "distinct_behavior_pair_rate": 0.9196428571428571,
+      "distinct_structural_region_count": 336,
+      "evaluated": 336,
+      "productive": 105,
+      "productive_rate": 0.3125,
+      "stable": 86,
+      "stable_rate": 0.25595238095238093
+    },
+    "generator_productive_template_win_count": 4,
+    "late_behavior_delta_b_vs_a": 19,
+    "late_productive_delta_b_vs_a": 12,
+    "late_stable_delta_b_vs_a": 3,
+    "max_positive_template_delta_share": 0.6363636363636364,
+    "per_template_productive_delta_b_vs_a": {
+      "BASE_EVENT": -23,
+      "BASE_MARKET": -10,
+      "BASE_MARKET_EVENT": -10,
+      "BASE_TEMPORAL": 2,
+      "BASE_TEMPORAL_EVENT": 3,
+      "BASE_TEMPORAL_MARKET": 3,
+      "BASE_TEMPORAL_MARKET_EVENT": 14
+    },
+    "round0": {
+      "arm_a": {
+        "admission_rate": 0.39880952380952384,
+        "admitted": 67,
+        "distinct_behavior_pair_count": 134,
+        "distinct_behavior_pair_rate": 0.7976190476190477,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 67,
+        "productive_rate": 0.39880952380952384,
+        "stable": 63,
+        "stable_rate": 0.375
+      },
+      "arm_b": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 77,
+        "distinct_behavior_pair_count": 160,
+        "distinct_behavior_pair_rate": 0.9523809523809523,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 34,
+        "productive_rate": 0.20238095238095238,
+        "stable": 30,
+        "stable_rate": 0.17857142857142858
+      }
+    },
+    "round1": {
+      "arm_a": {
+        "admission_rate": 0.39285714285714285,
+        "admitted": 66,
+        "distinct_behavior_pair_count": 136,
+        "distinct_behavior_pair_rate": 0.8095238095238095,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 59,
+        "productive_rate": 0.35119047619047616,
+        "stable": 53,
+        "stable_rate": 0.31547619047619047
+      },
+      "arm_b": {
+        "admission_rate": 0.5892857142857143,
+        "admitted": 99,
+        "distinct_behavior_pair_count": 155,
+        "distinct_behavior_pair_rate": 0.9226190476190477,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 71,
+        "productive_rate": 0.4226190476190476,
+        "stable": 56,
+        "stable_rate": 0.3333333333333333
+      }
+    }
+  },
+  "status": "SEARCH_CORE_V2_STAGE1_POSTRUN_AUDIT_COMPLETE_NO_STAGE2"
+}
