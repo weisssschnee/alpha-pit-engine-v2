@@ -29,6 +29,7 @@ TOTAL_CHECKPOINT_COUNT = 2 * CHECKPOINT_COUNT_PER_ARM
 STAGE1_PREFREEZE = Path("runtime/run_plans/cn_search_core_v2_stage1_prefreeze_20260824.json")
 STAGE15_PREFREEZE = Path("runtime/run_plans/cn_search_core_v2_stage15_prefreeze_20260824.json")
 STAGE15_POSTRUN_AUDIT = Path("runtime/run_plans/cn_search_core_v2_stage15_postrun_audit_20260825.json")
+STAGE2_REPAIR_AUDIT = Path("runtime/run_plans/cn_search_core_v2_stage2_exploration_collapse_repair_audit_20260825.json")
 STAGE15_TERMINAL = Path("runtime/run_plans/cn_search_core_v2_stage15_complete_a6ba961_20260825.json")
 STAGE15_FINAL_STATE = Path("runtime/run_plans/cn_search_core_v2_stage15_final_optimizer_state_a6ba961_20260825.json")
 
@@ -58,9 +59,10 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
     p1 = repo / STAGE1_PREFREEZE
     p15 = repo / STAGE15_PREFREEZE
     pa = repo / STAGE15_POSTRUN_AUDIT
+    pr = repo / STAGE2_REPAIR_AUDIT
     pt = repo / STAGE15_TERMINAL
     ps = repo / STAGE15_FINAL_STATE
-    for path in (p1, p15, pa, pt, ps):
+    for path in (p1, p15, pa, pr, pt, ps):
         if not path.is_file():
             raise FileNotFoundError(path)
 
@@ -70,6 +72,8 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
     stage15_hash = _verify_self(stage15, "prefreeze_payload_sha256", "Stage-1.5 prefreeze")
     audit = _read(pa)
     audit_hash = _verify_self(audit, "audit_payload_sha256", "Stage-1.5 postrun audit")
+    repair = _read(pr)
+    repair_hash = _verify_self(repair, "audit_payload_sha256", "Stage-2 exploration-collapse repair audit")
     terminal = _read(pt)
     terminal_hash = _verify_self(terminal, "closure_payload_sha256", "Stage-1.5 terminal")
     snapshot = _read(ps)
@@ -83,6 +87,20 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
         raise RuntimeError("Stage-1.5 postrun audit not Stage-2 review eligible")
     if int(audit["project_control_recommendation"]["remaining_stage2_budget_per_arm"]) != TOTAL_PER_ARM:
         raise RuntimeError("Stage-2 remaining budget drift")
+    if (
+        repair.get("status")
+        != "SEARCH_CORE_V2_STAGE2_EXPLORATION_COLLAPSE_REPAIR_PASS_FRESH_RESTART_REQUIRED"
+        or int(repair["failed_run"].get("closed_financial_record_count") or 0) != 36
+        or repair["failed_run"].get("financial_results_reusable") is not False
+        or repair["failed_run"].get("fresh_restart_required") is not True
+        or repair.get("failed_financial_records_reused") is not False
+        or int(repair.get("historical_mature_state_count") or 0) != 8
+        or repair["repair_contract"].get("maximum_attempts_changed") is not False
+        or repair["repair_contract"].get("snapshot_schema_changed") is not False
+        or repair["failed_state_repaired_supply"]["24"].get("status") != "PASS"
+        or repair["failed_state_repaired_supply"]["72"].get("status") != "PASS"
+    ):
+        raise RuntimeError("Stage-2 exploration-collapse repair audit not restart-safe")
     if str(audit["project_control_recommendation"]["primitive_next_slice"]) != "FROZEN_STAGE1_ORDER_INDEX_72_TO_143_PER_TEMPLATE":
         raise RuntimeError("Stage-2 Primitive slice recommendation drift")
     if (
@@ -162,6 +180,15 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "file_sha256": _sha(pa),
             "payload_sha256": audit_hash,
         },
+        "source_stage2_repair_audit": {
+            "relative_path": str(STAGE2_REPAIR_AUDIT).replace("\\", "/"),
+            "file_sha256": _sha(pr),
+            "payload_sha256": repair_hash,
+            "failed_repo_sha": str(repair["failed_run"]["repo_sha"]),
+            "failed_closed_financial_records": int(repair["failed_run"]["closed_financial_record_count"]),
+            "failed_financial_records_reusable": False,
+            "fresh_restart_required": True,
+        },
         "source_stage15_terminal": {
             "relative_path": str(STAGE15_TERMINAL).replace("\\", "/"),
             "file_sha256": _sha(pt),
@@ -224,6 +251,7 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "search_core_policy_change_requires_separate_project_control_review": True,
             "automatic_policy_change_authorized": False,
         },
+        "failed_stage2_financial_records_reused": False,
         "financial_labels_read_by_builder": False,
         "candidate_evaluation_executed": False,
         "restricted_reads": {

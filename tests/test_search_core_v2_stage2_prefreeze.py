@@ -39,6 +39,11 @@ def test_stage2_prefreeze_completes_original_1008_per_arm_target():
     assert payload["financial_labels_read_by_builder"] is False
     assert not any(payload["restricted_reads"].values())
     assert payload["automatic_policy_change_authorized"] is False
+    repair = payload["source_stage2_repair_audit"]
+    assert repair["failed_closed_financial_records"] == 36
+    assert repair["failed_financial_records_reusable"] is False
+    assert repair["fresh_restart_required"] is True
+    assert payload["failed_stage2_financial_records_reused"] is False
 
 
 def test_stage2_primitive_is_exact_72_to_143_slice_without_prior_reuse():
