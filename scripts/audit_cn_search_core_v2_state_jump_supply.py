@@ -159,8 +159,18 @@ def audit(
     if len(components_by_id) != len(component_rows):
         raise RuntimeError("STATE_JUMP_SUPPLY_COMPONENT_DUPLICATE")
     components_by_role: dict[str, list[Any]] = {}
+    component_field_columns: set[str] = set()
     for component in components_by_id.values():
         components_by_role.setdefault(component.role, []).append(component)
+        for candidate in (component.primary, component.control):
+            for field_key in ("field_ids", "declared_field_ids", "condition_field_ids"):
+                component_field_columns.update(
+                    str(field_id)
+                    for field_id in (candidate.get(field_key) or ())
+                    if str(field_id)
+                )
+    if not component_field_columns:
+        raise RuntimeError("STATE_JUMP_SUPPLY_COMPONENT_FIELD_SURFACE_EMPTY")
     for role in components_by_role:
         components_by_role[role] = sorted(
             components_by_role[role], key=lambda component: component.component_id
@@ -198,7 +208,7 @@ def audit(
     ordered_slots = tuple(entries[0].genes)
     observed_exact: set[str] = set()
     observed_semantic: set[str] = set()
-    field_columns: set[str] = set()
+    generated_field_columns: set[str] = set()
     per_template: dict[str, dict[str, Any]] = {}
     failures: list[dict[str, Any]] = []
 
@@ -229,8 +239,12 @@ def audit(
                 if matched.primary.semantic_program_hash == matched.control.semantic_program_hash:
                     raise RuntimeError("MATCHED_CONTROL_SEMANTIC_NOOP")
                 control_compiled = compiler.compile(matched.control)
-                field_columns.update(map(str, compiled.field_lags))
-                field_columns.update(map(str, control_compiled.field_lags))
+                observed_fields = set(map(str, compiled.field_lags)) | set(
+                    map(str, control_compiled.field_lags)
+                )
+                if not observed_fields.issubset(component_field_columns):
+                    raise RuntimeError("GENERATED_COMPILED_FIELD_OUTSIDE_COMPONENT_POOL_SURFACE")
+                generated_field_columns.update(observed_fields)
                 receipt = composer.build_receipt(
                     program_template_id=template,
                     program=generated.program,
@@ -294,6 +308,10 @@ def audit(
         "all_templates_use_multiple_base_components": all(
             int(row["distinct_base_components"]) >= 4 for row in per_template.values()
         ),
+        "component_pool_field_surface_nonempty": bool(component_field_columns),
+        "generated_compiled_fields_subset_component_pool_surface": generated_field_columns.issubset(
+            component_field_columns
+        ),
         "financial_evaluation_executed": False,
         "restricted_reads_zero": True,
     }
@@ -328,10 +346,18 @@ def audit(
             },
         },
         "resource_field_surface": {
-            "field_column_count": len(field_columns),
-            "field_columns": sorted(field_columns),
-            "field_columns_sha256": stable_hash(sorted(field_columns)),
-            "derived_from_compiled_primary_and_matched_controls": True,
+            "field_column_count": len(component_field_columns),
+            "field_columns": sorted(component_field_columns),
+            "field_columns_sha256": stable_hash(sorted(component_field_columns)),
+            "authority": "FULL_FROZEN_COMPONENT_POOL_FIELD_UNION",
+            "derived_from_component_primary_and_control_field_receipts": True,
+            "generated_probe_field_column_count": len(generated_field_columns),
+            "generated_probe_field_columns_sha256": stable_hash(
+                sorted(generated_field_columns)
+            ),
+            "generated_probe_fields_subset": generated_field_columns.issubset(
+                component_field_columns
+            ),
         },
         "generator": {
             "seed": int(seed),
