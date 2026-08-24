@@ -230,69 +230,92 @@ def audit(
         semantics: list[str] = []
         bases: set[str] = set()
         raw_fields: list[int] = []
+        known_overlap_rejections = 0
+        duplicate_rejections = 0
+        proposal_attempts = 0
         for ordinal in range(int(probes_per_template)):
-            try:
-                generated = generator.propose(
-                    batch_id="ZERO_FINANCIAL_REAL_SUPPLY_AUDIT",
-                    ask_ordinal=ordinal,
-                    template_id=template,
-                )
-                compiled = compiler.compile(generated.program)
-                genes = program_structural_genes_v1(
-                    program_template_id=template,
-                    components=generated.components,
-                    combination_policy=generated.combination_policy,
-                    program=generated.program,
-                    compiled=compiled,
-                )
-                exact = normalized_program_gene_identity_v1(
-                    genes, ordered_slots=ordered_slots
-                )
-                matched = construct_matched_control_program_v1(generated.program)
-                if matched.primary.semantic_program_hash == matched.control.semantic_program_hash:
-                    raise RuntimeError("MATCHED_CONTROL_SEMANTIC_NOOP")
-                control_compiled = compiler.compile(matched.control)
-                observed_fields = set(map(str, compiled.field_lags)) | set(
-                    map(str, control_compiled.field_lags)
-                )
-                if not observed_fields.issubset(component_field_columns):
-                    raise RuntimeError("GENERATED_COMPILED_FIELD_OUTSIDE_COMPONENT_POOL_SURFACE")
-                generated_field_columns.update(observed_fields)
-                receipt = composer.build_receipt(
-                    program_template_id=template,
-                    program=generated.program,
-                    components=tuple(
-                        generated.components[role]
-                        for role in generated.components
-                    ),
-                    combination_policy=generated.combination_policy,
-                    batch_id="ZERO_FINANCIAL_REAL_SUPPLY_AUDIT",
-                    ask_ordinal=ordinal,
-                    generation_arm="SEMANTIC_STATE_JUMP_GENERATOR_V2",
-                )
-                if receipt.semantic_program_hash != generated.program.semantic_program_hash:
-                    raise RuntimeError("RECEIPT_SEMANTIC_IDENTITY_DRIFT")
-                if exact in known_exact:
-                    raise RuntimeError("KNOWN_NORMALIZED_EXACT_OVERLAP")
-                if exact in observed_exact:
-                    raise RuntimeError("AUDIT_NORMALIZED_EXACT_DUPLICATE")
-                if generated.program.semantic_program_hash in observed_semantic:
-                    raise RuntimeError("AUDIT_SEMANTIC_DUPLICATE")
-                observed_exact.add(exact)
-                observed_semantic.add(generated.program.semantic_program_hash)
-                exacts.append(exact)
-                semantics.append(generated.program.semantic_program_hash)
-                bases.add(generated.components["base"].component_id)
-                raw_fields.append(int(genes["raw_field_count"]))
-            except Exception as exc:
-                failures.append(
-                    {
-                        "template_id": template,
-                        "ordinal": ordinal,
-                        "error_type": type(exc).__name__,
-                        "error": str(exc),
-                    }
-                )
+            accepted = False
+            fatal_error = False
+            for attempt in range(generator.maximum_attempts):
+                proposal_attempts += 1
+                try:
+                    generated = generator.propose(
+                        batch_id="ZERO_FINANCIAL_REAL_SUPPLY_AUDIT",
+                        ask_ordinal=ordinal,
+                        template_id=template,
+                    )
+                    compiled = compiler.compile(generated.program)
+                    genes = program_structural_genes_v1(
+                        program_template_id=template,
+                        components=generated.components,
+                        combination_policy=generated.combination_policy,
+                        program=generated.program,
+                        compiled=compiled,
+                    )
+                    exact = normalized_program_gene_identity_v1(
+                        genes, ordered_slots=ordered_slots
+                    )
+                    matched = construct_matched_control_program_v1(generated.program)
+                    if matched.primary.semantic_program_hash == matched.control.semantic_program_hash:
+                        raise RuntimeError("MATCHED_CONTROL_SEMANTIC_NOOP")
+                    control_compiled = compiler.compile(matched.control)
+                    observed_fields = set(map(str, compiled.field_lags)) | set(
+                        map(str, control_compiled.field_lags)
+                    )
+                    if not observed_fields.issubset(component_field_columns):
+                        raise RuntimeError("GENERATED_COMPILED_FIELD_OUTSIDE_COMPONENT_POOL_SURFACE")
+                    generated_field_columns.update(observed_fields)
+                    receipt = composer.build_receipt(
+                        program_template_id=template,
+                        program=generated.program,
+                        components=tuple(
+                            generated.components[role]
+                            for role in generated.components
+                        ),
+                        combination_policy=generated.combination_policy,
+                        batch_id="ZERO_FINANCIAL_REAL_SUPPLY_AUDIT",
+                        ask_ordinal=ordinal,
+                        generation_arm="SEMANTIC_STATE_JUMP_GENERATOR_V2",
+                    )
+                    if receipt.semantic_program_hash != generated.program.semantic_program_hash:
+                        raise RuntimeError("RECEIPT_SEMANTIC_IDENTITY_DRIFT")
+                    if exact in known_exact:
+                        known_overlap_rejections += 1
+                        continue
+                    if exact in observed_exact or generated.program.semantic_program_hash in observed_semantic:
+                        duplicate_rejections += 1
+                        continue
+                    observed_exact.add(exact)
+                    observed_semantic.add(generated.program.semantic_program_hash)
+                    exacts.append(exact)
+                    semantics.append(generated.program.semantic_program_hash)
+                    bases.add(generated.components["base"].component_id)
+                    raw_fields.append(int(genes["raw_field_count"]))
+                    accepted = True
+                    break
+                except Exception as exc:
+                    failures.append(
+                        {
+                            "template_id": template,
+                            "ordinal": ordinal,
+                            "attempt": attempt,
+                            "error_type": type(exc).__name__,
+                            "error": str(exc),
+                        }
+                    )
+                    fatal_error = True
+                    break
+            if not accepted:
+                if not fatal_error:
+                    failures.append(
+                        {
+                            "template_id": template,
+                            "ordinal": ordinal,
+                            "attempts": generator.maximum_attempts,
+                            "error_type": "RuntimeError",
+                            "error": "STATE_JUMP_AUDIT_NO_FRESH_PROGRAM_WITHIN_ATTEMPT_LIMIT",
+                        }
+                    )
                 break
         per_template[template] = {
             "requested": int(probes_per_template),
@@ -302,6 +325,9 @@ def audit(
             "distinct_base_components": len(bases),
             "raw_field_count_min": min(raw_fields) if raw_fields else None,
             "raw_field_count_max": max(raw_fields) if raw_fields else None,
+            "known_overlap_rejections": int(known_overlap_rejections),
+            "duplicate_rejections": int(duplicate_rejections),
+            "proposal_attempts": int(proposal_attempts),
             "normalized_exact_sha256": stable_hash(exacts),
         }
 
