@@ -26,9 +26,9 @@ PRIMARY_EXECUTOR_WORKERS = 24
 CHECKPOINT_SIZE = 24
 TOTAL_PER_ARM = 504
 TOTAL_EVALUATIONS = 1008
-SUPPLY_PROBE_TOTAL = 156
+SUPPLY_PROBE_TOTAL = 168
 EXPECTED_TEMPLATE_BATCH_SIZE = {
-    "BASE_EVENT": 12,
+    "BASE_EVENT": 24,
     "BASE_MARKET": 24,
     "BASE_MARKET_EVENT": 24,
     "BASE_TEMPORAL": 24,
@@ -85,7 +85,7 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or int(pre["stage2"]["total_financial_evaluations"]) != TOTAL_EVALUATIONS
         or int(pre["stage2"]["total_budget_per_arm"]) != TOTAL_PER_ARM
         or dict(pre["stage2"].get("template_batch_size") or {}) != EXPECTED_TEMPLATE_BATCH_SIZE
-        or int(pre["stage2"].get("total_checkpoint_count") or 0) != 48
+        or int(pre["stage2"].get("total_checkpoint_count") or 0) != 42
     ):
         raise ValueError("Stage-2 prefreeze binding drift")
     supply = _bound(root, payload["mature_state_supply_audit"], payload_field="audit_payload_sha256", label="Stage-2 mature supply audit")
@@ -98,7 +98,7 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         or int(supply.get("arm_a_overlap_count", -1)) != 0
         or dict(supply.get("template_batch_size") or {}) != EXPECTED_TEMPLATE_BATCH_SIZE
         or int(supply.get("base_event_microbatch_robustness_state_count") or 0) != 8
-        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0) != 12
+        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0) != 24
         or supply.get("synthetic_tell_used") is not False
         or supply.get("future_checkpoint_supply_fail_closed") is not True
         or str(supply.get("prefreeze_payload_sha256") or "") != str(pre["prefreeze_payload_sha256"])

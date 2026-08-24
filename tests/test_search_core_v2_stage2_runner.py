@@ -30,20 +30,18 @@ def test_stage2_clear_loss_stops():
     d=_decision(_m(196,180,420),_m(180,175,400),_per([28]*7,[25]*7))
     assert d["status"]=="MATURE_GENERATOR_STAGE2_SCALE_CLEAR_LOSS_STOP"
 
-def test_stage2_execution_plan_uses_base_event_microbatches_without_budget_drift():
+def test_stage2_execution_plan_restores_uniform_24_after_collision_rescue_fix():
     prefreeze={"stage2":{"template_batch_size":{
-        "BASE_EVENT":12,"BASE_MARKET":24,"BASE_MARKET_EVENT":24,"BASE_TEMPORAL":24,
+        "BASE_EVENT":24,"BASE_MARKET":24,"BASE_MARKET_EVENT":24,"BASE_TEMPORAL":24,
         "BASE_TEMPORAL_EVENT":24,"BASE_TEMPORAL_MARKET":24,"BASE_TEMPORAL_MARKET_EVENT":24,
     }}}
     plan=_execution_plan(prefreeze)
-    assert len(plan)==24
+    assert len(plan)==21
     assert sum(row["batch_size"] for row in plan)==504
     base=[row for row in plan if row["template_id"]=="BASE_EVENT"]
-    assert len(base)==6
-    assert all(row["batch_size"]==12 for row in base)
+    assert len(base)==3
+    assert all(row["batch_size"]==24 for row in base)
     assert [(row["stage2_round_index"],row["microbatch_index"],row["slice_start"],row["slice_end"]) for row in base]==[
-        (0,0,0,12),(0,1,12,24),(1,0,24,36),(1,1,36,48),(2,0,48,60),(2,1,60,72)
+        (0,0,0,24),(1,0,24,48),(2,0,48,72)
     ]
-    other=[row for row in plan if row["template_id"]!="BASE_EVENT"]
-    assert len(other)==18
-    assert all(row["batch_size"]==24 for row in other)
+    assert all(row["batch_size"]==24 for row in plan)

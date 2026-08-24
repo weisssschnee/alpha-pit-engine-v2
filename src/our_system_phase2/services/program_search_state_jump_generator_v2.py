@@ -438,6 +438,45 @@ class SemanticStateJumpProgramGeneratorV2:
         }
         return components, self._policy_for_template(template_id), (), tuple(f"component:{role}" for role in roles)
 
+    def _diversified_fresh(
+        self, template_id: str
+    ) -> tuple[
+        dict[str, ProgramSourceComponentV0],
+        dict[str, str],
+        tuple[str, ...],
+        tuple[str, ...],
+    ]:
+        """Sample the full legal template surface after repeated collisions.
+
+        This path deliberately ignores learned component shortlists.  It is used
+        only after the normal learned jump policy has spent half of the frozen
+        proposal-attempt budget without finding a novel semantic Program.  The
+        attempt budget itself is unchanged.
+        """
+        roles = PROGRAM_TEMPLATE_COMPONENTS[template_id]
+        components = {
+            role: self.rng.choice(self.components_by_role[role])
+            for role in roles
+        }
+        policy = self._policy_for_template(template_id)
+        changed = [f"component:{role}" for role in roles]
+        if "temporal" in roles:
+            policy["temporal"] = self.rng.choice(
+                sorted(TEMPORAL_COMBINATION_POLICIES)
+            )
+            changed.append("policy:temporal")
+        if "market" in roles:
+            policy["market"] = self.rng.choice(
+                sorted(MARKET_COMBINATION_POLICIES)
+            )
+            changed.append("policy:market")
+        if "event" in roles:
+            policy["event_application"] = self.rng.choice(
+                sorted(EVENT_APPLICATION_POLICIES)
+            )
+            changed.append("policy:event_application")
+        return components, policy, (), tuple(changed)
+
     def _jump(self, template_id: str, operation: str) -> tuple[dict[str, ProgramSourceComponentV0], dict[str, str], tuple[str, ...], tuple[str, ...]]:
         if operation == "FRESH_RECOMPOSE":
             return self._fresh(template_id)
@@ -508,9 +547,18 @@ class SemanticStateJumpProgramGeneratorV2:
         chosen_template = str(template_id or self.rng.choice(templates))
         if chosen_template not in templates:
             raise ValueError("STATE_JUMP_TEMPLATE_NOT_ENHANCED")
-        for _ in range(self.maximum_attempts):
-            operation = self._choose_operation(chosen_template)
-            components, policy, parents, changed = self._jump(chosen_template, operation)
+        diversify_after = max(1, self.maximum_attempts // 2)
+        for attempt_index in range(self.maximum_attempts):
+            if attempt_index < diversify_after:
+                operation = self._choose_operation(chosen_template)
+                components, policy, parents, changed = self._jump(
+                    chosen_template, operation
+                )
+            else:
+                operation = "FRESH_RECOMPOSE"
+                components, policy, parents, changed = self._diversified_fresh(
+                    chosen_template
+                )
             region = program_region_key(
                 template_id=chosen_template,
                 components=components,

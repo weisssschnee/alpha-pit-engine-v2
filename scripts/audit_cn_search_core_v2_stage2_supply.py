@@ -17,7 +17,7 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_STAGE1_STATE = Path("runtime/run_plans/cn_search_core_v2_stage1_final_optimizer_state_47bc94f_20260824.json")
-BASE_EVENT_ROBUSTNESS_BATCH = 12
+BASE_EVENT_ROBUSTNESS_BATCH = 24
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -114,7 +114,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for key, value in dict(prefreeze["stage2"]["template_batch_size"]).items()
     }
     expected_batch_map = {
-        template: (12 if template == "BASE_EVENT" else 24)
+        template: 24
         for template in stage1.TEMPLATES
     }
     if batch_map != expected_batch_map:

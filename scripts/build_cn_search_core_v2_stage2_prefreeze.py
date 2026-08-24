@@ -21,7 +21,7 @@ TOTAL_EVALUATIONS = 1008
 PRIOR_USED_PER_TEMPLATE = 72
 CUMULATIVE_PRIOR_PER_ARM = 504
 TARGET_TOTAL_PER_ARM = 1008
-TEMPLATE_BATCH_SIZE = {template: (12 if template == "BASE_EVENT" else 24) for template in TEMPLATES}
+TEMPLATE_BATCH_SIZE = {template: 24 for template in TEMPLATES}
 CHECKPOINTS_PER_TEMPLATE_PER_ARM = {template: PER_TEMPLATE_PER_ARM // TEMPLATE_BATCH_SIZE[template] for template in TEMPLATES}
 CHECKPOINT_COUNT_PER_ARM = sum(CHECKPOINTS_PER_TEMPLATE_PER_ARM.values())
 TOTAL_CHECKPOINT_COUNT = 2 * CHECKPOINT_COUNT_PER_ARM
@@ -197,7 +197,7 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "source_generated_unique_count": int(diag["generated_unique_count"]),
             "within_stage2_ask_tell_adaptation": True,
             "template_local_batch_size": dict(TEMPLATE_BATCH_SIZE),
-            "base_event_batch_size_reason": "FINAL_MATURE_STATE_PASS_AT_16_FAIL_AT_18; BATCH_12_PASS_ON_STAGE1_FINAL_AND_ALL_7_STAGE15_MATURE_CHECKPOINT_STATES",
+            "collision_rescue_contract": "LEARNED_JUMP_FIRST_HALF_THEN_FULL_POOL_DIVERSIFIED_FRESH_WITHIN_UNCHANGED_MAXIMUM_ATTEMPTS",
             "sealed_feedback_allowed": False,
             "candidate_exact_membership_prefrozen": False,
             "zero_financial_supply_audit_required_before_project_control": True,

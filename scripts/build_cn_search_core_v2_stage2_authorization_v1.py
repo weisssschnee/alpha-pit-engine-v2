@@ -26,7 +26,7 @@ def build(repo:Path,*,canary:Path,supply_audit:Path)->dict[str,Any]:
         or int(supply.get("arm_a_overlap_count",-1))!=0
         or dict(supply.get("template_batch_size") or {})!=runtime.EXPECTED_TEMPLATE_BATCH_SIZE
         or int(supply.get("base_event_microbatch_robustness_state_count") or 0)!=8
-        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0)!=12
+        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0)!=24
         or supply.get("synthetic_tell_used") is not False
         or supply.get("future_checkpoint_supply_fail_closed") is not True
         or str(supply.get("prefreeze_payload_sha256") or "")!=pre_hash

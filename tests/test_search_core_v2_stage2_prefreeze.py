@@ -12,7 +12,7 @@ def test_stage2_prefreeze_completes_original_1008_per_arm_target():
     assert payload["stage2"]["cumulative_prior_budget_per_arm"] == 504
     assert payload["stage2"]["target_cumulative_budget_per_arm"] == 1008
     assert payload["stage2"]["template_batch_size"] == {
-        "BASE_EVENT": 12,
+        "BASE_EVENT": 24,
         "BASE_MARKET": 24,
         "BASE_MARKET_EVENT": 24,
         "BASE_TEMPORAL": 24,
@@ -20,14 +20,12 @@ def test_stage2_prefreeze_completes_original_1008_per_arm_target():
         "BASE_TEMPORAL_MARKET": 24,
         "BASE_TEMPORAL_MARKET_EVENT": 24,
     }
-    assert payload["stage2"]["checkpoints_per_template_per_arm"]["BASE_EVENT"] == 6
     assert all(
         value == 3
-        for template, value in payload["stage2"]["checkpoints_per_template_per_arm"].items()
-        if template != "BASE_EVENT"
+        for value in payload["stage2"]["checkpoints_per_template_per_arm"].values()
     )
-    assert payload["stage2"]["checkpoint_count_per_arm"] == 24
-    assert payload["stage2"]["total_checkpoint_count"] == 48
+    assert payload["stage2"]["checkpoint_count_per_arm"] == 21
+    assert payload["stage2"]["total_checkpoint_count"] == 42
     arm_a = payload["arm_a_primitive"]
     assert arm_a["selected_count"] == 504
     assert len(set(arm_a["selected_exact_identities"])) == 504

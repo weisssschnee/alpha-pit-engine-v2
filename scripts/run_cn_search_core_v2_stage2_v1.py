@@ -202,7 +202,7 @@ def _execution_plan(prefreeze: Mapping[str, Any]) -> list[dict[str, Any]]:
         str(template): int(value)
         for template, value in dict(prefreeze["stage2"]["template_batch_size"]).items()
     }
-    expected = {template: (12 if template == "BASE_EVENT" else 24) for template in TEMPLATES}
+    expected = {template: 24 for template in TEMPLATES}
     if batch_map != expected:
         raise RuntimeError("SEARCH_CORE_V2_STAGE2_TEMPLATE_BATCH_SIZE_DRIFT")
     plan: list[dict[str, Any]] = []
@@ -224,7 +224,7 @@ def _execution_plan(prefreeze: Mapping[str, Any]) -> list[dict[str, Any]]:
                         "slice_end": start + batch_size,
                     }
                 )
-    if len(plan) != 24 or sum(int(row["batch_size"]) for row in plan) != 504:
+    if len(plan) != 21 or sum(int(row["batch_size"]) for row in plan) != 504:
         raise RuntimeError("SEARCH_CORE_V2_STAGE2_EXECUTION_PLAN_DRIFT")
     return plan
 
@@ -451,7 +451,7 @@ def run(args: argparse.Namespace, *, admission: Mapping[str, Any], authorization
             results_by_arm[arm].extend(result_rows)
             checkpoint_ordinal += 1
 
-    if global_ordinal != 1008 or checkpoint_ordinal != 48:
+    if global_ordinal != 1008 or checkpoint_ordinal != 42:
         raise RuntimeError("SEARCH_CORE_V2_STAGE2_EXECUTION_COUNT_DRIFT")
     arm_metrics = {arm: stage1._metric(rows) for arm, rows in results_by_arm.items()}
     per_template = {arm: {template: stage1._metric([r for r in rows if str(r["template_id"]) == template]) for template in TEMPLATES} for arm, rows in results_by_arm.items()}
@@ -479,7 +479,7 @@ def run(args: argparse.Namespace, *, admission: Mapping[str, Any], authorization
         "source_stage15_terminal_payload_sha256": str(prefreeze["source_stage15_terminal"]["payload_sha256"]),
         "initial_mature_snapshot_payload_sha256": initial_snapshot_hash,
         "final_mature_snapshot_payload_sha256": str(final_snapshot["snapshot_hash"]),
-        "evaluated": 1008, "evaluated_per_arm": 504, "checkpoint_count": 48,
+        "evaluated": 1008, "evaluated_per_arm": 504, "checkpoint_count": 42,
         "template_batch_size": dict(prefreeze["stage2"]["template_batch_size"]),
         "last_checkpoint_manifest_file_sha256": previous_manifest,
         "arm_metrics": arm_metrics, "per_template_metrics": per_template,

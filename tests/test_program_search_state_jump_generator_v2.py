@@ -207,3 +207,68 @@ def test_generator_full_snapshot_restore_is_exact(generator_context):
     )
     assert restored.snapshot() == snapshot
     assert restored.diagnostics() == generator.diagnostics()
+
+
+def test_collision_budget_switches_to_full_pool_diversification(generator_context, monkeypatch):
+    registry, pools = generator_context
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    generator = SemanticStateJumpProgramGeneratorV2(
+        adapter=adapter,
+        components_by_role=pools,
+        seed=101,
+        maximum_attempts=4,
+    )
+    collision_components = {"base": pools["base"][0], "event": pools["event"][0]}
+    collision_policy = generator._policy_for_template("BASE_EVENT")
+    collision_program = adapter.compose(
+        "BASE_EVENT",
+        collision_components["base"],
+        event_component=collision_components["event"],
+        combination_policy=collision_policy,
+    )
+    generator.memory.seen_semantic_hashes.add(collision_program.semantic_program_hash)
+
+    rescue_components = {"base": pools["base"][1], "event": pools["event"][1]}
+    rescue_policy = generator._policy_for_template("BASE_EVENT")
+    rescue_policy["event_application"] = "GATE"
+    rescue_program = adapter.compose(
+        "BASE_EVENT",
+        rescue_components["base"],
+        event_component=rescue_components["event"],
+        combination_policy=rescue_policy,
+    )
+    assert rescue_program.semantic_program_hash != collision_program.semantic_program_hash
+
+    monkeypatch.setattr(
+        generator,
+        "_jump",
+        lambda template_id, operation: (
+            dict(collision_components),
+            dict(collision_policy),
+            (),
+            ("component:base", "component:event"),
+        ),
+    )
+    monkeypatch.setattr(
+        generator,
+        "_diversified_fresh",
+        lambda template_id: (
+            dict(rescue_components),
+            dict(rescue_policy),
+            (),
+            ("component:base", "component:event", "policy:event_application"),
+        ),
+    )
+
+    generated = generator.propose(
+        batch_id="collision-rescue",
+        ask_ordinal=0,
+        template_id="BASE_EVENT",
+    )
+    assert generated.operation == "FRESH_RECOMPOSE"
+    assert generated.program.semantic_program_hash == rescue_program.semantic_program_hash
+    assert generated.changed_slots == (
+        "component:base",
+        "component:event",
+        "policy:event_application",
+    )
