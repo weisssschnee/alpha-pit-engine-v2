@@ -400,13 +400,21 @@ class SemanticStateJumpProgramGeneratorV2:
         if not candidates:
             raise RuntimeError(f"STATE_JUMP_NO_COMPONENT_ALTERNATIVE:{role}")
         if exploration:
-            return min(
-                candidates,
-                key=lambda component: (
-                    self.memory.component_stats.get(component_memory_key(component), _OutcomeStats()).observations,
-                    stable_hash({"explore": role, "component": component.component_id}),
-                ),
+            minimum_observations = min(
+                self.memory.component_stats.get(
+                    component_memory_key(component), _OutcomeStats()
+                ).observations
+                for component in candidates
             )
+            least_observed = [
+                component
+                for component in candidates
+                if self.memory.component_stats.get(
+                    component_memory_key(component), _OutcomeStats()
+                ).observations
+                == minimum_observations
+            ]
+            return self.rng.choice(least_observed)
         best_score = max(self.memory.component_score(component) for component in candidates)
         shortlist = [component for component in candidates if self.memory.component_score(component) >= best_score - 0.05]
         return self.rng.choice(shortlist)

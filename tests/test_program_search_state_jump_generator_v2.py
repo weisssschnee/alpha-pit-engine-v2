@@ -88,6 +88,20 @@ def test_generator_v2_emits_new_legal_compiled_programs(generator_context):
     assert len(hashes) == 18
 
 
+def test_exploration_tie_break_spreads_across_least_observed_components(generator_context):
+    registry, pools = generator_context
+    generator = SemanticStateJumpProgramGeneratorV2(
+        adapter=CandidateProgramProposalAdapterV0(registry),
+        components_by_role=pools,
+        seed=20260824,
+    )
+    chosen = {
+        generator._choose_component("base", exploration=True).component_id
+        for _ in range(16)
+    }
+    assert len(chosen) >= 2
+
+
 def test_generator_can_jump_from_productive_elite(generator_context):
     registry, pools = generator_context
     adapter = CandidateProgramProposalAdapterV0(registry)
