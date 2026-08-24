@@ -38,20 +38,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if engine._sha256(snapshot_path) != str(pre["arm_b_state_jump"]["source_snapshot_file_sha256"]):
         raise RuntimeError("STAGE15_SUPPLY_SNAPSHOT_FILE_DRIFT")
     snapshot = _read(snapshot_path)
-    state = StateJumpProgramSearchAdapterV2.restore(
-        snapshot=snapshot, adapter=authority["adapter"], compiler=authority["compiler"],
-        components_by_role=stage1._components_by_role(authority), seed=0,
-    )
-    source_snapshot_hash = str(state.snapshot()["snapshot_hash"])
+    source_snapshot_hash = str(snapshot["snapshot_hash"])
     schedules=[]; operations=Counter(); by_template={}; global_ordinal=0
+    # Zero-financial audit must not fabricate tell() feedback.  Each template is
+    # therefore probed from the exact same mature frozen snapshot.  The live
+    # runner, by contrast, evaluates then tells after every template batch.
     for checkpoint_ordinal, template in enumerate(stage1.TEMPLATES):
+        state = StateJumpProgramSearchAdapterV2.restore(
+            snapshot=snapshot, adapter=authority["adapter"], compiler=authority["compiler"],
+            components_by_role=stage1._components_by_role(authority), seed=0,
+        )
         rows, asks = stage1._generated_schedules(
             state, authority=authority, template_id=template,
             checkpoint_id=f"SEARCH_CORE_V2_STAGE15_SUPPLY_{template}",
             checkpoint_ordinal=checkpoint_ordinal, global_start=global_ordinal, template_start=0,
         )
         global_ordinal += len(rows); schedules.extend(rows); by_template[template]=len(rows)
-        operations.update(str(a.get("operation") or "UNKNOWN") for a in asks)
+        operations.update(str(dict(dict(a.get("acquisition") or {}).get("generator_summary") or {}).get("operation") or "UNKNOWN") for a in asks)
     exacts=[str(s["search_core_exact_identity"]) for s in schedules]
     a_exacts=set(map(str, pre["arm_a_primitive"]["selected_exact_identities"]))
     if len(exacts) != 168 or len(set(exacts)) != 168:
@@ -69,7 +72,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "repo_sha":str(args.repo_sha),
         "prefreeze_payload_sha256":str(pre["prefreeze_payload_sha256"]),
         "source_snapshot_payload_sha256":source_snapshot_hash,
-        "audit_terminal_snapshot_payload_sha256":str(state.snapshot()["snapshot_hash"]),
         "generated_total":len(exacts),
         "unique_exact_count":len(set(exacts)),
         "generated_exact_identities_sha256":stable_hash(sorted(exacts)),
