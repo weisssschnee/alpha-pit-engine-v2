@@ -387,7 +387,7 @@
   "financial_labels_read_by_builder": false,
   "hypothesis": "MATURE_STATE_JUMP_MEMORY_RETAINS_LATE_ROUND_DISCOVERY_ADVANTAGE_ON_FRESH_DEVELOPMENT_CONTINUATION",
   "oos_authority": "NONE",
-  "prefreeze_payload_sha256": "92c2dcc2e264b202e5458b8b0ba818d6f0799a27907da72ecabfb7b441a1c488",
+  "prefreeze_payload_sha256": "048cbde22243876d00c676cade03329645b296c128969c28fe2b837c5f2247d9",
   "promotion_authorized": false,
   "restricted_reads": {
     "forward_2026": 0,
@@ -397,7 +397,7 @@
     "validation": 0
   },
   "schema_version": "cn_search_core_v2_stage15_prefreeze_v1",
-  "source_repo_sha": "af144576c2e5a7568bc356f158c88998605c153c",
+  "source_repo_sha": "1809fe887acc5f0351dd6f4e0808e5b914b6b29a",
   "source_stage1_postrun_audit": {
     "file_sha256": "4ee24be6a7e05349d98abc92af7ebb79a0f7014a98e0082ddc4daa3b2e488de0",
     "payload_sha256": "ba353565395af78fb002a8dabf29ad5373b6a3ee400aefa2cf99c831518f21e6",
