@@ -1,5 +1,5 @@
 {
-  "authorization_payload_sha256": "065ba93d0e44e5f5dcd67065bab08a9f3c6583790c8d818040ab9a2af38d203d",
+  "authorization_payload_sha256": "4c2db9e426220bdd50605d275e0a7dba8e0b0b59c946a89f0ef3451bc9db832f",
   "automatic_stage2_authorized": false,
   "campaign_id": "CN_SEARCH_CORE_V2_STAGE1_V1",
   "campaign_profile": "cn_search_core_v2_stage1_v1",
@@ -8,8 +8,8 @@
   "official_resource_canary": {
     "field_column_count": 87,
     "field_columns_sha256": "a1a6f206741ff1bb26799d5be9f136882d2ce4d8182e78bca294dd73ed2db8d2",
-    "file_sha256": "bab07f9e4cc6dbe2f776acaefe6dd83e857fe6ec9ea193ac2e7f445d19ffcfbc",
-    "payload_sha256": "d3feac93b1d1cf21657ca499ddefe56ffbcfea6846a775dfdd14e038d6f630c0",
+    "file_sha256": "3e446dbb00388ae07bc8aece371a93450180d6a2e9f5ce33e2ac733e939a9a47",
+    "payload_sha256": "62555d2aa97cccf0d9b6914f315f4bb5c5541688accf008e1f320212bd22b1cb",
     "relative_path": "runtime/run_plans/cn_search_core_v2_stage1_official_resource_canary_20260824.json",
     "runner_source_file_sha256": "4f0e4979c27f63d45408f3a6be61ff70cb4346cfe5dd3b5912c06b3044f1bf2f"
   },
@@ -92,9 +92,9 @@
   "state_jump_supply_audit": {
     "field_column_count": 84,
     "field_columns_sha256": "95104b67d94bfccbd87357186f4467ac92116ff83c0809d0056e45337f495b86",
-    "file_sha256": "3bebc199ed3f5bb87eb2a6bbbbd5bdd1da4ae27aa487bc435d8a273e3bb6e46d",
+    "file_sha256": "4b2b30cddde8c2537c122be71a2c60d4ba923404529f723453290a89d6a82d0f",
     "generated_total": 672,
-    "payload_sha256": "b54f9075680fe036ec6db1490f9816d412fd36259242080b6273d8baf3a75ed0",
+    "payload_sha256": "c63e67b6d9866cabeea8cdf87652c349d48a526b1c6323a759d41d94e1d67203",
     "relative_path": "runtime/run_plans/cn_search_core_v2_state_jump_real_supply_audit_20260824.json"
   },
   "status": "SEARCH_CORE_V2_STAGE1_AUTHORIZED_NOT_RUN",
