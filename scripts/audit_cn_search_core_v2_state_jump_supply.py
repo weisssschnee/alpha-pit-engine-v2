@@ -198,6 +198,7 @@ def audit(
     ordered_slots = tuple(entries[0].genes)
     observed_exact: set[str] = set()
     observed_semantic: set[str] = set()
+    field_columns: set[str] = set()
     per_template: dict[str, dict[str, Any]] = {}
     failures: list[dict[str, Any]] = []
 
@@ -227,7 +228,9 @@ def audit(
                 matched = construct_matched_control_program_v1(generated.program)
                 if matched.primary.semantic_program_hash == matched.control.semantic_program_hash:
                     raise RuntimeError("MATCHED_CONTROL_SEMANTIC_NOOP")
-                compiler.compile(matched.control)
+                control_compiled = compiler.compile(matched.control)
+                field_columns.update(map(str, compiled.field_lags))
+                field_columns.update(map(str, control_compiled.field_lags))
                 receipt = composer.build_receipt(
                     program_template_id=template,
                     program=generated.program,
@@ -323,6 +326,12 @@ def audit(
             "per_role": {
                 role: len(rows) for role, rows in sorted(components_by_role.items())
             },
+        },
+        "resource_field_surface": {
+            "field_column_count": len(field_columns),
+            "field_columns": sorted(field_columns),
+            "field_columns_sha256": stable_hash(sorted(field_columns)),
+            "derived_from_compiled_primary_and_matched_controls": True,
         },
         "generator": {
             "seed": int(seed),
