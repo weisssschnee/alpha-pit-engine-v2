@@ -351,7 +351,7 @@ def audit(
         "generated_compiled_fields_subset_component_pool_surface": generated_field_columns.issubset(
             component_field_columns
         ),
-        "financial_evaluation_executed": False,
+        "no_financial_evaluation_executed": True,
         "restricted_reads_zero": True,
     }
     status = STATUS_PASS if all(checks.values()) else STATUS_FAIL
