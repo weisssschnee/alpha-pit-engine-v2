@@ -1,0 +1,137 @@
+{
+  "authorization_payload_sha256": "68324ffefb95993a1e8f141cd507cb936e790c2e97efea8783519108bf426982",
+  "automatic_policy_change_authorized": false,
+  "campaign_id": "CN_SEARCH_CORE_V2_STAGE2_V1",
+  "campaign_profile": "cn_search_core_v2_stage2_v1",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "mature_state_supply_audit": {
+    "field_column_count": 61,
+    "field_columns_sha256": "38e575247f5691642b0325edff7fd72e0e4af1d88ad5e0b891ab018adbbf97d8",
+    "file_sha256": "6e9c1b203e91609b6537aded71b1e36efe8d7b8aaffac4981713ec26e8e080de",
+    "generated_total": 168,
+    "payload_sha256": "a958265684c15b4a53d9dcb15e79f7ec62bcb527ffdd0031819833d1eca410a4",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_mature_supply_audit_20260825.json"
+  },
+  "official_resource_canary": {
+    "field_column_count": 71,
+    "field_columns_sha256": "ae9d3ff1ad7c21d58ac8eef7aa487be9d0a74d37c463833518e1672ec85f80d5",
+    "file_sha256": "bedfbbaed2ab237cdf4ba361ade97ad232cf01598dd84da12a0899bdf69e183e",
+    "payload_sha256": "bca54ffceed67bbdb9a6a94215f0acf1eaa334ac9401a44f11c61241b1a1f693",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_official_resource_canary_20260825.json",
+    "runner_source_file_sha256": "f05dd062574849778e475029623c1ca7b10a7190eb4e817e97bc59fb8a8099bf"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "project_control_route_id": "cn-search-core-v2-stage2-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "executor_workers": 24,
+    "field_column_count": 71,
+    "field_columns_sha256": "ae9d3ff1ad7c21d58ac8eef7aa487be9d0a74d37c463833518e1672ec85f80d5",
+    "profile": "SEARCH_DUAL_24",
+    "template_batch_size": {
+      "BASE_EVENT": 24,
+      "BASE_MARKET": 24,
+      "BASE_MARKET_EVENT": 24,
+      "BASE_TEMPORAL": 24,
+      "BASE_TEMPORAL_EVENT": 24,
+      "BASE_TEMPORAL_MARKET": 24,
+      "BASE_TEMPORAL_MARKET_EVENT": 24
+    }
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_search_core_v2_stage2_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_stage_d_authorization": {
+    "file_sha256": "d6f27e7d8f548ed95f3142c6d5369fbcfffe9c4540a5ca50aa25e502228dabb0",
+    "payload_sha256": "2450845b8ab198c274e095b12918cb92709986c42eda158ae59acd79d03b863d",
+    "relative_path": "runtime/run_plans/cn_program_stage_d_primitive_confirmation_authorization_v1.json"
+  },
+  "stage2_contract": {
+    "automatic_followon_launch": false,
+    "checkpoint_count_per_arm": 21,
+    "checkpoints_per_template_per_arm": {
+      "BASE_EVENT": 3,
+      "BASE_MARKET": 3,
+      "BASE_MARKET_EVENT": 3,
+      "BASE_TEMPORAL": 3,
+      "BASE_TEMPORAL_EVENT": 3,
+      "BASE_TEMPORAL_MARKET": 3,
+      "BASE_TEMPORAL_MARKET_EVENT": 3
+    },
+    "cumulative_prior_budget_per_arm": 504,
+    "maximum_checkpoint_batch_size": 24,
+    "per_template_budget_per_arm": 72,
+    "target_cumulative_budget_per_arm": 1008,
+    "template_batch_size": {
+      "BASE_EVENT": 24,
+      "BASE_MARKET": 24,
+      "BASE_MARKET_EVENT": 24,
+      "BASE_TEMPORAL": 24,
+      "BASE_TEMPORAL_EVENT": 24,
+      "BASE_TEMPORAL_MARKET": 24,
+      "BASE_TEMPORAL_MARKET_EVENT": 24
+    },
+    "templates": [
+      "BASE_EVENT",
+      "BASE_MARKET",
+      "BASE_MARKET_EVENT",
+      "BASE_TEMPORAL",
+      "BASE_TEMPORAL_EVENT",
+      "BASE_TEMPORAL_MARKET",
+      "BASE_TEMPORAL_MARKET_EVENT"
+    ],
+    "total_budget_per_arm": 504,
+    "total_checkpoint_count": 42,
+    "total_financial_evaluations": 1008
+  },
+  "stage2_decision_contract": {
+    "automatic_policy_change_authorized": false,
+    "clear_loss": "B productive < A*0.95 AND B stable <= A stable AND B behavior <= A behavior",
+    "otherwise": "AMBIGUOUS_STAGE2_SCALE_CONFIRMATION_NO_POLICY_CHANGE",
+    "primary_comparator": "SAME_RUN_STAGE2_ARM_A_VS_MATURE_ARM_B",
+    "scale_confirmation_pass": "B productive >= A*1.05 AND B stable >= A*1.00 AND B behavior >= A*0.95 AND B productive wins >=4/7 templates AND max positive productive gain template fraction <=0.40",
+    "search_core_policy_change_requires_separate_project_control_review": true
+  },
+  "stage2_prefreeze": {
+    "arm_a_selected_exact_identities_sha256": "84fb787c92335ddb17718e1dcd5ca0ffc785c3dedb88e567a002bae17f6a6d9b",
+    "budget_per_arm": 504,
+    "file_sha256": "98b30e6a3336f453555188d9f626014c04f69d74bc4a7555bb1df59d6d5acc11",
+    "payload_sha256": "5cfef41674959ba41ab0005eb2e99d11cddd8b5f76265051ad7a51049b32b998",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_prefreeze_20260825.json",
+    "source_mature_snapshot_payload_sha256": "7828bfcd0aeb27e36f53207e5e55718787712b81409c7b8442fdde2aca7adaea",
+    "total_financial_evaluations": 1008
+  },
+  "status": "SEARCH_CORE_V2_STAGE2_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
