@@ -1070,7 +1070,7 @@
   "financial_labels_read_by_builder": false,
   "hypothesis": "MATURE_STATE_JUMP_GENERATOR_SCALES_ITS_CONFIRMED_ADVANTAGE_TO_CUMULATIVE_1008_PER_ARM_DEVELOPMENT_BUDGET",
   "oos_authority": "NONE",
-  "prefreeze_payload_sha256": "12289d7c077501caa8ec44cb69c1e33f20bf18351f5493709832aa6d3fda54fc",
+  "prefreeze_payload_sha256": "5cfef41674959ba41ab0005eb2e99d11cddd8b5f76265051ad7a51049b32b998",
   "promotion_authorized": false,
   "restricted_reads": {
     "forward_2026": 0,
@@ -1080,7 +1080,7 @@
     "validation": 0
   },
   "schema_version": "cn_search_core_v2_stage2_prefreeze_v1",
-  "source_repo_sha": "bb501f40b1413100be9a644e675dfa17d9979e9d",
+  "source_repo_sha": "f5b452e5842876a543e5a4d3d49170d6d8f2c5e3",
   "source_stage15_postrun_audit": {
     "file_sha256": "82a4ebc42993f698d7041fe3b0e0134fb69779a13c8986a84362a71366fb65b8",
     "payload_sha256": "9ddce372adc7e3c19a435523c9dd43a02f9abc150a9e6361240f71dcb9fc3059",
