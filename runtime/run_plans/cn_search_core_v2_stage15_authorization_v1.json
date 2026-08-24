@@ -1,0 +1,107 @@
+{
+  "authorization_payload_sha256": "02a676531e8cc658212f2b1593db3ec8dadede1172e3c2156256ed349a6171b2",
+  "automatic_stage2_authorized": false,
+  "campaign_id": "CN_SEARCH_CORE_V2_STAGE15_V1",
+  "campaign_profile": "cn_search_core_v2_stage15_v1",
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "mature_state_supply_audit": {
+    "field_column_count": 58,
+    "field_columns_sha256": "53ae23d0ff530f465bfd33823fef2ee9873075dcb87c9d87ac0454f84764173b",
+    "file_sha256": "bc25bcdb4bdd96694cb713d42382f3c140af98f9c99a57d69fe975eaada3482e",
+    "generated_total": 168,
+    "payload_sha256": "6cf531319fb7a0cf8e20c19ed365fcd102d824136773e43c5ddc28146d9b9163",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage15_mature_supply_audit_20260824.json"
+  },
+  "official_resource_canary": {
+    "field_column_count": 68,
+    "field_columns_sha256": "9e77276a88e04d78503f2df3fbacf4d176708ecce7678f647f13bbffab75aaa2",
+    "file_sha256": "0db394cc29d7f6cf90d386363fb1acea47966781afc79e488726263710ce1b74",
+    "payload_sha256": "8b943bfd42dc2b3f7f7981febd92b686ba1b26330af160757db3a84da63c376c",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage15_official_resource_canary_20260824.json",
+    "runner_source_file_sha256": "8c3ee4bdfb910db2c5a9863d64ef16752e6c417829c643439db143a2035e05c4"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "project_control_route_id": "cn-search-core-v2-stage15-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "executor_workers": 24,
+    "field_column_count": 68,
+    "field_columns_sha256": "9e77276a88e04d78503f2df3fbacf4d176708ecce7678f647f13bbffab75aaa2",
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_search_core_v2_stage15_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_stage_d_authorization": {
+    "file_sha256": "d6f27e7d8f548ed95f3142c6d5369fbcfffe9c4540a5ca50aa25e502228dabb0",
+    "payload_sha256": "2450845b8ab198c274e095b12918cb92709986c42eda158ae59acd79d03b863d",
+    "relative_path": "runtime/run_plans/cn_program_stage_d_primitive_confirmation_authorization_v1.json"
+  },
+  "stage15_contract": {
+    "automatic_stage2_launch": false,
+    "checkpoint_batch_size": 24,
+    "checkpoints_per_template_per_arm": 1,
+    "per_template_budget_per_arm": 24,
+    "templates": [
+      "BASE_EVENT",
+      "BASE_MARKET",
+      "BASE_MARKET_EVENT",
+      "BASE_TEMPORAL",
+      "BASE_TEMPORAL_EVENT",
+      "BASE_TEMPORAL_MARKET",
+      "BASE_TEMPORAL_MARKET_EVENT"
+    ],
+    "total_budget_per_arm": 168,
+    "total_financial_evaluations": 336
+  },
+  "stage15_decision_contract": {
+    "automatic_stage2_authorized": false,
+    "clear_loss": "B productive < A*0.95 AND B stable <= A stable AND B behavior <= A behavior",
+    "confirmation_pass": "B productive >= A*1.05 AND B stable >= A*0.97 AND B behavior >= A*0.95 AND B productive wins >=4/7 templates AND max positive productive gain template fraction <=0.50",
+    "otherwise": "AMBIGUOUS_MATURE_STATE_CONFIRMATION_NO_STAGE2",
+    "primary_comparator": "SAME_RUN_STAGE15_ARM_A_VS_MATURE_ARM_B",
+    "stage2_requires_separate_project_control_review": true
+  },
+  "stage15_prefreeze": {
+    "arm_a_selected_exact_identities_sha256": "714599eab9f6edbb51339c83098fbe2d1df93d736afbaa13aa51a7debeebfbd8",
+    "budget_per_arm": 168,
+    "file_sha256": "a341ec0ef09270dea0b4f54eb44eb4752437d801a097dffe2a3dd1ad768d4ced",
+    "payload_sha256": "048cbde22243876d00c676cade03329645b296c128969c28fe2b837c5f2247d9",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage15_prefreeze_20260824.json",
+    "source_mature_snapshot_payload_sha256": "ab706b72bb0a764feec96c7631f531d5342041219908a147965d97b1cbbda82e",
+    "total_financial_evaluations": 336
+  },
+  "status": "SEARCH_CORE_V2_STAGE15_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
