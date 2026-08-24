@@ -240,6 +240,7 @@ def _static_schedule(
         {
             "search_core_v2_arm": PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1,
             "search_core_exact_identity": exact,
+            "successor_exact_identity": exact,
             "optimizer_selection_used": True,
             "online_feedback_used": False,
         }
@@ -338,6 +339,7 @@ def _generated_schedules(
                 "optimizer_ask": dict(optimizer_ask),
                 "search_core_v2_arm": SEMANTIC_STATE_JUMP_GENERATOR_V2,
                 "search_core_exact_identity": observed_exact,
+                "successor_exact_identity": observed_exact,
                 "generator_summary": generated.summary(),
                 "optimizer_selection_used": True,
                 "online_feedback_used": True,
