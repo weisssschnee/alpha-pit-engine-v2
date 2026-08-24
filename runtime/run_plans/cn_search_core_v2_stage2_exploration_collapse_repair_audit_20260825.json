@@ -1,0 +1,330 @@
+{
+  "audit_payload_sha256": "158ced319e0fa9d40c93ce6ea285f209738b548c93361d7a518267b4893ecf38",
+  "audit_repo_sha": "70a44c07c812c6e4c2f4912972f0111ca4fedfb9",
+  "automatic_stage2_restart_authorized": false,
+  "candidate_evaluation_executed_by_audit": false,
+  "failed_cp1_optimizer_state": {
+    "file_sha256": "1c33ab5e6507c0e718a6ac7ce78ed64bde9110881847b1c51dcd54fa1a42951a",
+    "generated_exact_count": 516,
+    "history_count": 22,
+    "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_failed_cp1_optimizer_state_452783b_20260825.json",
+    "snapshot_payload_sha256": "b432053e9da2db2a116ca983903cf6c3fea35b3692b9eaecf074ed6fec271226"
+  },
+  "failed_financial_records_reused": false,
+  "failed_run": {
+    "closed_checkpoint_metrics": [
+      {
+        "admission_rate": 1.0,
+        "admitted": 12,
+        "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "checkpoint_ordinal": 0,
+        "distinct_behavior_pair_count": 12,
+        "distinct_behavior_pair_rate": 1.0,
+        "distinct_structural_region_count": 12,
+        "evaluated": 12,
+        "productive": 11,
+        "productive_rate": 0.9166666666666666,
+        "search_core_round_index": 3,
+        "stable": 9,
+        "stable_rate": 0.75,
+        "stage2_batch_size": 12,
+        "stage2_microbatch_index": 0,
+        "stage2_round_index": 0,
+        "template_id": "BASE_EVENT"
+      },
+      {
+        "admission_rate": 0.8333333333333334,
+        "admitted": 10,
+        "arm": "SEMANTIC_STATE_JUMP_GENERATOR_V2",
+        "checkpoint_ordinal": 1,
+        "distinct_behavior_pair_count": 12,
+        "distinct_behavior_pair_rate": 1.0,
+        "distinct_structural_region_count": 12,
+        "evaluated": 12,
+        "productive": 10,
+        "productive_rate": 0.8333333333333334,
+        "search_core_round_index": 3,
+        "stable": 7,
+        "stable_rate": 0.5833333333333334,
+        "stage2_batch_size": 12,
+        "stage2_microbatch_index": 0,
+        "stage2_round_index": 0,
+        "template_id": "BASE_EVENT"
+      },
+      {
+        "admission_rate": 0.75,
+        "admitted": 9,
+        "arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+        "checkpoint_ordinal": 2,
+        "distinct_behavior_pair_count": 12,
+        "distinct_behavior_pair_rate": 1.0,
+        "distinct_structural_region_count": 12,
+        "evaluated": 12,
+        "productive": 6,
+        "productive_rate": 0.5,
+        "search_core_round_index": 3,
+        "stable": 5,
+        "stable_rate": 0.4166666666666667,
+        "stage2_batch_size": 12,
+        "stage2_microbatch_index": 1,
+        "stage2_round_index": 0,
+        "template_id": "BASE_EVENT"
+      }
+    ],
+    "closed_financial_record_count": 36,
+    "failed_checkpoint_artifacts": [
+      "optimizer_state_before.json"
+    ],
+    "failed_checkpoint_ordinal": 3,
+    "failure_fingerprint": "STATE_JUMP_GENERATOR_EXHAUSTED_ATTEMPTS",
+    "financial_results_reusable": false,
+    "fresh_restart_required": true,
+    "job_exit_code": 1,
+    "launcher_exit_code": 1,
+    "lease_released": true,
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage2_20260825_452783b",
+    "repo_sha": "452783ba8e4d33b989f8f9addcbbcb8f9b7997d5",
+    "restricted_reads": {
+      "forward_2026_reads": 0,
+      "forward_b_reads": 0,
+      "historical_2023_reads": 0,
+      "holdout_reads": 0,
+      "validation_reads": 0
+    },
+    "run_id": "cn_search_core_v2_stage2_20260825_452783b"
+  },
+  "failed_state_repaired_supply": {
+    "12": {
+      "generated": 12,
+      "operation_counts": {
+        "FRESH_RECOMPOSE": 4,
+        "HOMOLOGOUS_RECOMBINE": 6,
+        "POLICY_JUMP": 2
+      },
+      "requested": 12,
+      "status": "PASS",
+      "unique_exact_count": 12
+    },
+    "24": {
+      "generated": 24,
+      "operation_counts": {
+        "FRESH_RECOMPOSE": 13,
+        "HOMOLOGOUS_RECOMBINE": 8,
+        "POLICY_JUMP": 3
+      },
+      "requested": 24,
+      "status": "PASS",
+      "unique_exact_count": 24
+    },
+    "48": {
+      "generated": 48,
+      "operation_counts": {
+        "FRESH_RECOMPOSE": 35,
+        "HOMOLOGOUS_RECOMBINE": 9,
+        "POLICY_JUMP": 3,
+        "ROLE_REPLACE": 1
+      },
+      "requested": 48,
+      "status": "PASS",
+      "unique_exact_count": 48
+    },
+    "72": {
+      "generated": 72,
+      "operation_counts": {
+        "FRESH_RECOMPOSE": 59,
+        "HOMOLOGOUS_RECOMBINE": 9,
+        "POLICY_JUMP": 3,
+        "ROLE_REPLACE": 1
+      },
+      "requested": 72,
+      "status": "PASS",
+      "unique_exact_count": 72
+    }
+  },
+  "historical_mature_state_ask24": {
+    "stage15_checkpoint_0001": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 4,
+          "HOMOLOGOUS_RECOMBINE": 12,
+          "POLICY_JUMP": 5,
+          "ROLE_REPLACE": 3
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "bb19204111d510d6231087a5aa21701f887c43b874131191e18baa6b52ef5462",
+      "generated_exact_count": 360,
+      "history_count": 15,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0001\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "c1f84b7e01ebcc59eee03fd2834593d8470e14388075417eb0b4baf4e8abc2b2"
+    },
+    "stage15_checkpoint_0003": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 1,
+          "HOMOLOGOUS_RECOMBINE": 11,
+          "POLICY_JUMP": 6,
+          "ROLE_REPLACE": 6
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "e9724094a1cb79ff17b0d953add16b32850f2fcad2ca7f73b8e290c39f894702",
+      "generated_exact_count": 384,
+      "history_count": 16,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0003\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "0b566beb622c528c9d5c38013fe4d7d132146291e3a9f384b3602075587e434e"
+    },
+    "stage15_checkpoint_0005": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 1,
+          "HOMOLOGOUS_RECOMBINE": 5,
+          "MULTI_ROLE_JUMP": 12,
+          "POLICY_JUMP": 5,
+          "ROLE_REPLACE": 1
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "6aefac1ee70b789bdfd4202d5fab72ffcbb7cc90f55a42fa877fcbc6681e8350",
+      "generated_exact_count": 408,
+      "history_count": 17,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0005\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "39cffc4201c1d845951f03b9bf63cf0aa79ef081608df0e0b587856d0bcc0c08"
+    },
+    "stage15_checkpoint_0007": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 2,
+          "HOMOLOGOUS_RECOMBINE": 4,
+          "MULTI_ROLE_JUMP": 11,
+          "POLICY_JUMP": 4,
+          "ROLE_REPLACE": 3
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "564ee29f42671e46c905d2ea7cac1f29868cf7f1d30c841f205e0203c6c9a669",
+      "generated_exact_count": 432,
+      "history_count": 18,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0007\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "98a94323415389e16a02eec7159840e82d5e71bfc328f1dd196ded87d3416d72"
+    },
+    "stage15_checkpoint_0009": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 3,
+          "HOMOLOGOUS_RECOMBINE": 1,
+          "MULTI_ROLE_JUMP": 13,
+          "POLICY_JUMP": 5,
+          "ROLE_REPLACE": 2
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "eef2acdacb302502f17f6082995686611cf909b5ea49e3c61b19a13fa2a3ed3f",
+      "generated_exact_count": 456,
+      "history_count": 19,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0009\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "10b25f96815f7bd27d13106722c759d052092931b8df9382c3df09c614c3af3a"
+    },
+    "stage15_checkpoint_0011": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 3,
+          "HOMOLOGOUS_RECOMBINE": 1,
+          "MULTI_ROLE_JUMP": 12,
+          "POLICY_JUMP": 5,
+          "ROLE_REPLACE": 3
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "c9c53ed14941b3502cff67c3cf4a9173867877e88678ac04c675dcbbcbe350f0",
+      "generated_exact_count": 480,
+      "history_count": 20,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0011\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "223a2d9eeb0060e2a44f26985996d76f939db34524180d171c6a889158b4ed0f"
+    },
+    "stage15_checkpoint_0013": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "FRESH_RECOMPOSE": 2,
+          "HOMOLOGOUS_RECOMBINE": 15,
+          "POLICY_JUMP": 5,
+          "ROLE_REPLACE": 2
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "838f6a7acf806c7e931b3fcea61a5c167fa8445ceab009fcf0e89c2ca79626c6",
+      "generated_exact_count": 504,
+      "history_count": 21,
+      "path": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_stage15_20260824_a6ba961\\checkpoint_0013\\optimizer_state_after.json",
+      "snapshot_payload_sha256": "7828bfcd0aeb27e36f53207e5e55718787712b81409c7b8442fdde2aca7adaea"
+    },
+    "stage1_final": {
+      "ask24": {
+        "generated": 24,
+        "operation_counts": {
+          "HOMOLOGOUS_RECOMBINE": 12,
+          "POLICY_JUMP": 4,
+          "ROLE_REPLACE": 8
+        },
+        "requested": 24,
+        "status": "PASS",
+        "unique_exact_count": 24
+      },
+      "file_sha256": "a48a7e8f7c7cff1b72edcf4a1a7e30c21cc0761a718e2a929374cbfbafebb36e",
+      "generated_exact_count": 336,
+      "history_count": 14,
+      "path": "D:\\ChengboRemote\\workspace\\cn_searchcore_v2_stage1_20260824\\runtime\\run_plans\\cn_search_core_v2_stage1_final_optimizer_state_47bc94f_20260824.json",
+      "snapshot_payload_sha256": "ab706b72bb0a764feec96c7631f531d5342041219908a147965d97b1cbbda82e"
+    }
+  },
+  "historical_mature_state_count": 8,
+  "oos_authority": "NONE",
+  "repair_contract": {
+    "collision_rescue": "FULL_POOL_DIVERSIFIED_FRESH_FOR_SECOND_HALF_OF_UNCHANGED_MAXIMUM_ATTEMPTS",
+    "maximum_attempts_changed": false,
+    "normal_policy": "LEARNED_JUMP_FOR_FIRST_HALF_OF_UNCHANGED_MAXIMUM_ATTEMPTS",
+    "sealed_feedback_changed": false,
+    "snapshot_schema_changed": false,
+    "stage2_template_batch_size": 24
+  },
+  "root_cause": {
+    "base_component_count": 32,
+    "classification": "MATURE_HEURISTIC_SEMANTIC_COVERAGE_COLLAPSE_NOT_TRUE_SPACE_EXHAUSTION",
+    "enumerated_combination_count": 1792,
+    "event_component_count": 28,
+    "event_policy_count": 2,
+    "learned_heuristic_counts": {
+      "seen_duplicate": 9174,
+      "unseen_hit": 826
+    },
+    "learned_heuristic_sample_count": 10000,
+    "learned_heuristic_unique_semantic_count": 102,
+    "learned_heuristic_unique_unseen_count": 20,
+    "non_dead_unseen_semantic_count": 1585,
+    "unique_semantic_space_count": 1792,
+    "unseen_semantic_count": 1585
+  },
+  "schema_version": "cn_search_core_v2_stage2_exploration_collapse_repair_audit_v1",
+  "status": "SEARCH_CORE_V2_STAGE2_EXPLORATION_COLLAPSE_REPAIR_PASS_FRESH_RESTART_REQUIRED"
+}
