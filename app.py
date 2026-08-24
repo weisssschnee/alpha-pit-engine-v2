@@ -84,6 +84,7 @@ ROUTES: dict[str, str] = {
     "cn-program-stage-d-primitive-confirmation-v1": "our_system_phase2.runtime.cn_program_stage_d_primitive_confirmation_v1",
     "cn-search-core-v2-stage1-v1": "our_system_phase2.runtime.cn_search_core_v2_stage1_v1",
     "cn-search-core-v2-stage15-v1": "our_system_phase2.runtime.cn_search_core_v2_stage15_v1",
+    "cn-search-core-v2-stage2-v1": "our_system_phase2.runtime.cn_search_core_v2_stage2_v1",
     "cn-program-primitive-main-production-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_v1",
     "cn-program-primitive-main-production-recovery-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_recovery_v1",
     "cn-program-primitive-market-successor-v1": "our_system_phase2.runtime.cn_program_primitive_market_successor_v1",
@@ -174,6 +175,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-search-core-v2-stage15-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
+    ),
+    "cn-search-core-v2-stage2-v1": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-program-primitive-main-production-v1": frozenset(
