@@ -461,13 +461,23 @@ def _decision(
         b_beh < a_beh * 0.95 and b_prod <= a_prod
     )
     if clear_win:
-        status = "CLEAR_GENERATOR_V2_STAGE1_WIN_STAGE2_REVIEW_ELIGIBLE"
+        comparator_status = "CLEAR_GENERATOR_V2_STAGE1_WIN_STAGE2_REVIEW_ELIGIBLE"
     elif clear_loss:
-        status = "CLEAR_GENERATOR_V2_STAGE1_LOSS_STOP"
+        comparator_status = "CLEAR_GENERATOR_V2_STAGE1_LOSS_STOP"
     else:
-        status = "AMBIGUOUS_STAGE1_REVIEW_NO_AUTOMATIC_STAGE2"
+        comparator_status = "AMBIGUOUS_STAGE1_REVIEW_NO_AUTOMATIC_STAGE2"
+    # The frozen Stage-1 contract says a material Primitive baseline sanity
+    # deviation triggers audit rather than allowing Generator V2 to rescue the
+    # decision. Preserve the same-run comparator as a diagnostic, but fail
+    # closed before any Stage-2 eligibility can be inferred from it.
+    status = (
+        comparator_status
+        if baseline_sane
+        else "BASELINE_HISTORICAL_SANITY_AUDIT_REQUIRED_NO_STAGE2"
+    )
     return {
         "status": status,
+        "same_run_comparator_status": comparator_status,
         "baseline_historical_sanity_pass": baseline_sane,
         "productive_ratio_b_vs_a": b_prod / a_prod if a_prod else None,
         "productive_delta_b_vs_a": b_prod - a_prod,
@@ -475,7 +485,6 @@ def _decision(
         "behavior_delta_b_vs_a": b_beh - a_beh,
         "automatic_stage2_authorized": False,
     }
-
 
 def _close_checkpoint(
     inflight: Path,
