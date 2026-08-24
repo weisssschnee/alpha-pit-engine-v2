@@ -1,5 +1,5 @@
 {
-  "authorization_payload_sha256": "1c88bbd00c98faaee2ed426fc191868d289f7fde69cc86229940a99720ea73a7",
+  "authorization_payload_sha256": "065ba93d0e44e5f5dcd67065bab08a9f3c6583790c8d818040ab9a2af38d203d",
   "automatic_stage2_authorized": false,
   "campaign_id": "CN_SEARCH_CORE_V2_STAGE1_V1",
   "campaign_profile": "cn_search_core_v2_stage1_v1",
@@ -8,10 +8,10 @@
   "official_resource_canary": {
     "field_column_count": 87,
     "field_columns_sha256": "a1a6f206741ff1bb26799d5be9f136882d2ce4d8182e78bca294dd73ed2db8d2",
-    "file_sha256": "49747ba744d47dfce48a0b86236e08b4cb909ebf3288bc977f25867aaf80d697",
-    "payload_sha256": "a57ebce6e6d2d89c197321763a606da5761e54634ec1456d1486edc7453ccfb4",
+    "file_sha256": "bab07f9e4cc6dbe2f776acaefe6dd83e857fe6ec9ea193ac2e7f445d19ffcfbc",
+    "payload_sha256": "d3feac93b1d1cf21657ca499ddefe56ffbcfea6846a775dfdd14e038d6f630c0",
     "relative_path": "runtime/run_plans/cn_search_core_v2_stage1_official_resource_canary_20260824.json",
-    "runner_source_file_sha256": "3ed4da342d4a8a6fff3e496e945850cef4ad48d95332b94e1c892a71b7ecb8f7"
+    "runner_source_file_sha256": "4f0e4979c27f63d45408f3a6be61ff70cb4346cfe5dd3b5912c06b3044f1bf2f"
   },
   "oos_authority": "NONE",
   "permitted_project_control_actions": [
