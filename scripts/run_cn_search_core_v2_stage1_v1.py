@@ -22,6 +22,7 @@ from our_system_phase2.runtime import cn_search_core_v2_stage1_v1 as runtime
 from our_system_phase2.services.candidate_program_proposal_v0 import PROGRAM_TEMPLATE_COMPONENTS
 from our_system_phase2.services.program_search_optimizer_v1 import (
     ProgramOptimizerObservationV1,
+    normalized_program_gene_identity_v1,
     program_availability_entries_v1,
 )
 from our_system_phase2.services.program_search_primitive_credit_v1 import (
@@ -305,7 +306,14 @@ def _generated_schedules(
         )
         if entry.get("status") != "EXECUTABLE":
             raise RuntimeError("SEARCH_CORE_V2_ARM_B_NOT_EXECUTABLE")
-        observed_exact = stable_hash(dict(entry["program_genes"]))
+        observed_genes = dict(entry["program_genes"])
+        asked_genes = dict(optimizer_ask["program_genes"])
+        if observed_genes != asked_genes:
+            raise RuntimeError("SEARCH_CORE_V2_ARM_B_PROGRAM_GENE_DRIFT")
+        observed_exact = normalized_program_gene_identity_v1(
+            observed_genes,
+            ordered_slots=optimizer.ordered_gene_slots,
+        )
         if observed_exact != str(optimizer_ask["exact_identity"]):
             raise RuntimeError("SEARCH_CORE_V2_ARM_B_NORMALIZED_EXACT_DRIFT")
         ask = _ask_record(
