@@ -165,3 +165,31 @@ def test_generator_diagnostics_never_claim_sealed_feedback(generator_context):
     assert snapshot["holdout_feedback_allowed"] is False
     assert snapshot["forward_feedback_allowed"] is False
     assert generator.diagnostics()["memory_observations"] == 1
+
+
+def test_generator_full_snapshot_restore_is_exact(generator_context):
+    registry, pools = generator_context
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    generator = SemanticStateJumpProgramGeneratorV2(
+        adapter=adapter,
+        components_by_role=pools,
+        seed=47,
+    )
+    first = generator.propose(batch_id="snap", ask_ordinal=0, template_id="BASE_EVENT")
+    generator.observe(
+        first,
+        admitted=True,
+        productive=True,
+        matched_return_increment=0.2,
+        matched_reward_increment=0.7,
+        behavior_identity="snap-behavior",
+    )
+    generator.propose(batch_id="snap", ask_ordinal=1, template_id="BASE_EVENT")
+    snapshot = generator.snapshot()
+    restored = SemanticStateJumpProgramGeneratorV2.restore(
+        adapter=adapter,
+        components_by_role=pools,
+        snapshot=snapshot,
+    )
+    assert restored.snapshot() == snapshot
+    assert restored.diagnostics() == generator.diagnostics()

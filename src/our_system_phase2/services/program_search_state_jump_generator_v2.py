@@ -35,6 +35,7 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 SEMANTIC_STATE_JUMP_GENERATOR_V2 = "SEMANTIC_STATE_JUMP_GENERATOR_V2"
 STATE_JUMP_MEMORY_SCHEMA = "cn_program_state_jump_search_memory_v2"
 STATE_JUMP_GENERATOR_SCHEMA = "cn_program_state_jump_generator_v2"
+STATE_JUMP_GENERATOR_SNAPSHOT_SCHEMA = "cn_program_state_jump_generator_snapshot_v2"
 
 STATE_JUMP_OPERATIONS = (
     "FRESH_RECOMPOSE",
@@ -58,6 +59,20 @@ def _finite(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         return float(default)
     return parsed if math.isfinite(parsed) else float(default)
+
+
+def _listify(value: Any) -> Any:
+    if isinstance(value, tuple):
+        return [_listify(item) for item in value]
+    if isinstance(value, list):
+        return [_listify(item) for item in value]
+    return value
+
+
+def _tupleify(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(_tupleify(item) for item in value)
+    return value
 
 
 def _component_family(component: ProgramSourceComponentV0) -> str:
@@ -587,6 +602,86 @@ class SemanticStateJumpProgramGeneratorV2:
                 for operation in STATE_JUMP_OPERATIONS
             },
         }
+
+    def snapshot(self) -> dict[str, Any]:
+        component_pool = {
+            role: [component.component_id for component in components]
+            for role, components in sorted(self.components_by_role.items())
+        }
+        payload = {
+            "schema_version": STATE_JUMP_GENERATOR_SNAPSHOT_SCHEMA,
+            "maximum_attempts": self.maximum_attempts,
+            "operation_priors": dict(sorted(self.operation_priors.items())),
+            "component_pool": component_pool,
+            "component_pool_sha256": stable_hash(component_pool),
+            "memory": self.memory.snapshot(),
+            "rng_state": _listify(self.rng.getstate()),
+            "generated_semantic_hashes": sorted(self._generated_semantic_hashes),
+            "elites": [
+                {
+                    "template_id": elite.template_id,
+                    "component_ids": dict(sorted(elite.component_ids.items())),
+                    "combination_policy": dict(sorted(elite.combination_policy.items())),
+                    "semantic_program_hash": elite.semantic_program_hash,
+                    "quality": elite.quality,
+                }
+                for elite in self._elites
+            ],
+            "sealed_feedback_allowed": False,
+        }
+        payload["snapshot_sha256"] = stable_hash(payload)
+        return payload
+
+    @classmethod
+    def restore(
+        cls,
+        *,
+        adapter: CandidateProgramProposalAdapterV0,
+        components_by_role: Mapping[str, Sequence[ProgramSourceComponentV0]],
+        snapshot: Mapping[str, Any],
+    ) -> "SemanticStateJumpProgramGeneratorV2":
+        payload = copy.deepcopy(dict(snapshot))
+        body = dict(payload)
+        claimed = str(body.pop("snapshot_sha256", ""))
+        if not claimed or stable_hash(body) != claimed:
+            raise ValueError("STATE_JUMP_GENERATOR_SNAPSHOT_SELF_HASH_DRIFT")
+        if (
+            payload.get("schema_version") != STATE_JUMP_GENERATOR_SNAPSHOT_SCHEMA
+            or bool(payload.get("sealed_feedback_allowed"))
+        ):
+            raise ValueError("STATE_JUMP_GENERATOR_SNAPSHOT_AUTHORITY_DRIFT")
+        state = cls(
+            adapter=adapter,
+            components_by_role=components_by_role,
+            memory=ProgramStateJumpSearchMemoryV2.restore(dict(payload["memory"])),
+            seed=0,
+            operation_priors=dict(payload["operation_priors"]),
+            maximum_attempts=int(payload["maximum_attempts"]),
+        )
+        observed_pool = {
+            role: [component.component_id for component in components]
+            for role, components in sorted(state.components_by_role.items())
+        }
+        if (
+            stable_hash(observed_pool) != str(payload["component_pool_sha256"])
+            or observed_pool != dict(payload["component_pool"])
+        ):
+            raise ValueError("STATE_JUMP_GENERATOR_COMPONENT_POOL_DRIFT")
+        state.rng.setstate(_tupleify(payload["rng_state"]))
+        state._generated_semantic_hashes = set(map(str, payload["generated_semantic_hashes"]))
+        state._elites = [
+            _EliteSpec(
+                template_id=str(row["template_id"]),
+                component_ids={str(k): str(v) for k, v in dict(row["component_ids"]).items()},
+                combination_policy={str(k): str(v) for k, v in dict(row["combination_policy"]).items()},
+                semantic_program_hash=str(row["semantic_program_hash"]),
+                quality=float(row["quality"]),
+            )
+            for row in payload["elites"]
+        ]
+        if state.snapshot() != dict(snapshot):
+            raise ValueError("STATE_JUMP_GENERATOR_SNAPSHOT_REPLAY_DRIFT")
+        return state
 
 
 __all__ = [
