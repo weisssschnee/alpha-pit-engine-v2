@@ -9,3 +9,8 @@ def test_stage2_route_is_high_cost_and_authorization_bound():
     assert runtime.ROUTE_ID in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES
     assert runtime.TOTAL_EVALUATIONS == 1008
     assert runtime.TOTAL_PER_ARM == 504
+
+def test_stage2_runtime_freezes_checkpoint_local_supply_contract():
+    assert runtime.SUPPLY_PROBE_TOTAL == 156
+    assert runtime.EXPECTED_TEMPLATE_BATCH_SIZE["BASE_EVENT"] == 12
+    assert all(value == 24 for key,value in runtime.EXPECTED_TEMPLATE_BATCH_SIZE.items() if key != "BASE_EVENT")

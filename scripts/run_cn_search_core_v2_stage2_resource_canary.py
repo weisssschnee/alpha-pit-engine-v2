@@ -30,9 +30,16 @@ def run(args:argparse.Namespace)->dict[str,Any]:
     pre=stage2.verify_prefreeze(args.stage2_prefreeze.resolve())
     supply=_read(args.mature_state_supply_audit.resolve()); supply_hash=_verify(supply,"audit_payload_sha256","Stage-2 mature supply")
     if (
-        supply.get("status")!="PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_SUPPLY_AUDIT"
+        supply.get("status")!="PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_CHECKPOINT_SUPPLY_AUDIT"
         or bool(supply.get("candidate_evaluation_executed")) or bool(supply.get("financial_sidecar_read"))
-        or int(supply.get("generated_total") or 0)!=504
+        or int(supply.get("generated_total") or 0)!=runtime.SUPPLY_PROBE_TOTAL
+        or int(supply.get("unique_exact_count") or 0)!=runtime.SUPPLY_PROBE_TOTAL
+        or int(supply.get("arm_a_overlap_count",-1))!=0
+        or dict(supply.get("template_batch_size") or {})!=runtime.EXPECTED_TEMPLATE_BATCH_SIZE
+        or int(supply.get("base_event_microbatch_robustness_state_count") or 0)!=8
+        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0)!=12
+        or supply.get("synthetic_tell_used") is not False
+        or supply.get("future_checkpoint_supply_fail_closed") is not True
         or str(supply.get("prefreeze_payload_sha256") or "")!=str(pre["prefreeze_payload_sha256"])
     ): raise RuntimeError("STAGE2_CANARY_SUPPLY_NOT_PASS")
     provisional={
@@ -72,6 +79,7 @@ def run(args:argparse.Namespace)->dict[str,Any]:
         "runner_source_file_sha256":sha256_file(runner),"prefreeze_payload_sha256":str(pre["prefreeze_payload_sha256"]),
         "mature_state_supply_audit_payload_sha256":supply_hash,"source_stage_d_authorization_payload_sha256":str(source_auth["authorization_payload_sha256"]),
         "resource_profile":"SEARCH_DUAL_24","requested_workers":runtime.PRIMARY_EXECUTOR_WORKERS,
+        "template_batch_size":dict(pre["stage2"]["template_batch_size"]),
         "field_column_count":len(fields),"field_columns":list(fields),"field_columns_sha256":stable_hash(list(fields)),
         "arm_a_field_column_count":len(arm_a_fields),"arm_a_field_columns_sha256":stable_hash(sorted(arm_a_fields)),
         "arm_b_field_column_count":len(arm_b_fields),"arm_b_field_columns_sha256":stable_hash(sorted(arm_b_fields)),

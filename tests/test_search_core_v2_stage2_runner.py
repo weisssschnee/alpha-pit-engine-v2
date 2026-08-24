@@ -1,4 +1,4 @@
-from scripts.run_cn_search_core_v2_stage2_v1 import _decision
+from scripts.run_cn_search_core_v2_stage2_v1 import _decision, _execution_plan
 from our_system_phase2.services.program_search_primitive_credit_v1 import PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1 as A
 from our_system_phase2.services.program_search_state_jump_generator_v2 import SEMANTIC_STATE_JUMP_GENERATOR_V2 as B
 
@@ -29,3 +29,21 @@ def test_stage2_concentrated_gain_does_not_pass():
 def test_stage2_clear_loss_stops():
     d=_decision(_m(196,180,420),_m(180,175,400),_per([28]*7,[25]*7))
     assert d["status"]=="MATURE_GENERATOR_STAGE2_SCALE_CLEAR_LOSS_STOP"
+
+def test_stage2_execution_plan_uses_base_event_microbatches_without_budget_drift():
+    prefreeze={"stage2":{"template_batch_size":{
+        "BASE_EVENT":12,"BASE_MARKET":24,"BASE_MARKET_EVENT":24,"BASE_TEMPORAL":24,
+        "BASE_TEMPORAL_EVENT":24,"BASE_TEMPORAL_MARKET":24,"BASE_TEMPORAL_MARKET_EVENT":24,
+    }}}
+    plan=_execution_plan(prefreeze)
+    assert len(plan)==24
+    assert sum(row["batch_size"] for row in plan)==504
+    base=[row for row in plan if row["template_id"]=="BASE_EVENT"]
+    assert len(base)==6
+    assert all(row["batch_size"]==12 for row in base)
+    assert [(row["stage2_round_index"],row["microbatch_index"],row["slice_start"],row["slice_end"]) for row in base]==[
+        (0,0,0,12),(0,1,12,24),(1,0,24,36),(1,1,36,48),(2,0,48,60),(2,1,60,72)
+    ]
+    other=[row for row in plan if row["template_id"]!="BASE_EVENT"]
+    assert len(other)==18
+    assert all(row["batch_size"]==24 for row in other)

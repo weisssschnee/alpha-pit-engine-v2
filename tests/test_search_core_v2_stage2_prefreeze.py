@@ -11,6 +11,23 @@ def test_stage2_prefreeze_completes_original_1008_per_arm_target():
     assert payload["stage2"]["total_financial_evaluations"] == 1008
     assert payload["stage2"]["cumulative_prior_budget_per_arm"] == 504
     assert payload["stage2"]["target_cumulative_budget_per_arm"] == 1008
+    assert payload["stage2"]["template_batch_size"] == {
+        "BASE_EVENT": 12,
+        "BASE_MARKET": 24,
+        "BASE_MARKET_EVENT": 24,
+        "BASE_TEMPORAL": 24,
+        "BASE_TEMPORAL_EVENT": 24,
+        "BASE_TEMPORAL_MARKET": 24,
+        "BASE_TEMPORAL_MARKET_EVENT": 24,
+    }
+    assert payload["stage2"]["checkpoints_per_template_per_arm"]["BASE_EVENT"] == 6
+    assert all(
+        value == 3
+        for template, value in payload["stage2"]["checkpoints_per_template_per_arm"].items()
+        if template != "BASE_EVENT"
+    )
+    assert payload["stage2"]["checkpoint_count_per_arm"] == 24
+    assert payload["stage2"]["total_checkpoint_count"] == 48
     arm_a = payload["arm_a_primitive"]
     assert arm_a["selected_count"] == 504
     assert len(set(arm_a["selected_exact_identities"])) == 504
@@ -19,6 +36,7 @@ def test_stage2_prefreeze_completes_original_1008_per_arm_target():
     assert arm_b["source_history_count"] == 21
     assert arm_b["source_generated_exact_count"] == 504
     assert arm_b["source_memory_observations"] == 504
+    assert arm_b["template_local_batch_size"] == payload["stage2"]["template_batch_size"]
     assert arm_b["sealed_feedback_allowed"] is False
     assert payload["financial_labels_read_by_builder"] is False
     assert not any(payload["restricted_reads"].values())

@@ -104,6 +104,131 @@ def _static_schedule(
     return schedule
 
 
+
+def _generated_schedules_batch(
+    optimizer: StateJumpProgramSearchAdapterV2,
+    *,
+    authority: Mapping[str, Any],
+    template_id: str,
+    checkpoint_id: str,
+    checkpoint_ordinal: int,
+    global_start: int,
+    template_start: int,
+    batch_size: int,
+) -> list[dict[str, Any]]:
+    optimizer_asks = optimizer.ask(
+        checkpoint_id=checkpoint_id,
+        count=int(batch_size),
+        required_program_template_id=template_id,
+        eligible_exact_identities=None,
+        batch_group_constraint=None,
+    )
+    if len(optimizer_asks) != int(batch_size):
+        raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_ASK_UNDERFILL")
+    schedules: list[dict[str, Any]] = []
+    for offset, optimizer_ask in enumerate(optimizer_asks):
+        generated = optimizer.generated_for_proposal(str(optimizer_ask["proposal_id"]))
+        reservoir = stage1._generated_reservoir(generated)
+        entry = engine._catalog_entry(
+            reservoir,
+            components_by_id=authority["components_by_id"],
+            adapter=authority["adapter"],
+            compiler=authority["compiler"],
+        )
+        if entry.get("status") != "EXECUTABLE":
+            raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_NOT_EXECUTABLE")
+        observed_genes = dict(entry["program_genes"])
+        asked_genes = dict(optimizer_ask["program_genes"])
+        if observed_genes != asked_genes:
+            raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_PROGRAM_GENE_DRIFT")
+        observed_exact = stage1.normalized_program_gene_identity_v1(
+            observed_genes,
+            ordered_slots=optimizer.ordered_gene_slots,
+        )
+        if observed_exact != str(optimizer_ask["exact_identity"]):
+            raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_NORMALIZED_EXACT_DRIFT")
+        ask = stage1._ask_record(
+            global_ordinal=global_start + offset,
+            checkpoint_ordinal=checkpoint_ordinal,
+            template_id=template_id,
+            template_ordinal=template_start + offset,
+            arm=SEMANTIC_STATE_JUMP_GENERATOR_V2,
+        )
+        decision = engine._self_hashed(
+            {
+                "schema_version": "cn_search_core_v2_stage2_arm_b_selection_v1",
+                "selection_mode": "CAUSAL_MATURE_SEMANTIC_STATE_JUMP_GENERATOR_V2",
+                "exact_identity": observed_exact,
+                "optimizer_proposal_id": str(optimizer_ask["proposal_id"]),
+                "generator_summary": generated.summary(),
+                "adaptive_template_credit_used": True,
+            },
+            "selection_decision_sha256",
+        )
+        schedule = engine._schedule_record(
+            ask,
+            entry,
+            decision,
+            components_by_id=authority["components_by_id"],
+            adapter=authority["adapter"],
+            compiler=authority["compiler"],
+        )
+        schedule.update(
+            {
+                "optimizer_ask": dict(optimizer_ask),
+                "search_core_v2_arm": SEMANTIC_STATE_JUMP_GENERATOR_V2,
+                "search_core_exact_identity": observed_exact,
+                "successor_exact_identity": observed_exact,
+                "generator_summary": generated.summary(),
+                "optimizer_selection_used": True,
+                "online_feedback_used": True,
+                "search_core_stage": "STAGE2",
+            }
+        )
+        schedule["schedule_record_sha256"] = stable_hash(
+            {key: value for key, value in schedule.items() if key != "schedule_record_sha256"}
+        )
+        schedules.append(schedule)
+    exacts = [str(row["search_core_exact_identity"]) for row in schedules]
+    if len(exacts) != int(batch_size) or len(set(exacts)) != int(batch_size):
+        raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_CHECKPOINT_EXACT_DUPLICATE")
+    if set(exacts).intersection(optimizer.seen_exact_identities):
+        raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_B_KNOWN_SPACE_OVERLAP")
+    return schedules
+
+
+def _execution_plan(prefreeze: Mapping[str, Any]) -> list[dict[str, Any]]:
+    batch_map = {
+        str(template): int(value)
+        for template, value in dict(prefreeze["stage2"]["template_batch_size"]).items()
+    }
+    expected = {template: (12 if template == "BASE_EVENT" else 24) for template in TEMPLATES}
+    if batch_map != expected:
+        raise RuntimeError("SEARCH_CORE_V2_STAGE2_TEMPLATE_BATCH_SIZE_DRIFT")
+    plan: list[dict[str, Any]] = []
+    for stage2_round_index in range(3):
+        for template in TEMPLATES:
+            batch_size = batch_map[template]
+            if 24 % batch_size != 0:
+                raise RuntimeError("SEARCH_CORE_V2_STAGE2_MICROBATCH_GEOMETRY_DRIFT")
+            micro_count = 24 // batch_size
+            for microbatch_index in range(micro_count):
+                start = stage2_round_index * 24 + microbatch_index * batch_size
+                plan.append(
+                    {
+                        "stage2_round_index": stage2_round_index,
+                        "template_id": template,
+                        "microbatch_index": microbatch_index,
+                        "batch_size": batch_size,
+                        "slice_start": start,
+                        "slice_end": start + batch_size,
+                    }
+                )
+    if len(plan) != 24 or sum(int(row["batch_size"]) for row in plan) != 504:
+        raise RuntimeError("SEARCH_CORE_V2_STAGE2_EXECUTION_PLAN_DRIFT")
+    return plan
+
+
 def _decision(arm_a: Mapping[str, Any], arm_b: Mapping[str, Any], per_template: Mapping[str, Any]) -> dict[str, Any]:
     a_prod = float(arm_a["productive"]); b_prod = float(arm_b["productive"])
     a_stable = float(arm_a["stable"]); b_stable = float(arm_b["stable"])
@@ -198,104 +323,135 @@ def run(args: argparse.Namespace, *, admission: Mapping[str, Any], authorization
     checkpoint_ordinal = 0
     started = time.perf_counter()
 
-    for stage2_round_index in range(3):
-        for template in TEMPLATES:
-            for arm in ARMS:
-                inflight = root / f"checkpoint_{checkpoint_ordinal:04d}.inflight"
-                closed = root / f"checkpoint_{checkpoint_ordinal:04d}"
-                inflight.mkdir()
-                if arm == PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1:
-                    candidates = selected[template][
-                        stage2_round_index * CHECKPOINT_SIZE : (stage2_round_index + 1) * CHECKPOINT_SIZE
-                    ]
-                    if len(candidates) != CHECKPOINT_SIZE:
-                        raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_A_ROUND_UNDERFILL")
-                    schedules = []
-                    for exact in candidates:
-                        schedule = _static_schedule(
-                            supply_by_exact[exact], authority=authority,
-                            global_ordinal=global_ordinal, checkpoint_ordinal=checkpoint_ordinal,
-                            template_ordinal=template_ordinals[(arm, template)],
-                        )
-                        schedules.append(schedule)
-                        global_ordinal += 1
-                        template_ordinals[(arm, template)] += 1
-                    engine._write_json(
-                        inflight / "optimizer_state_before.json",
-                        {"arm": arm, "learning": False, "prefrozen": True},
+    execution_plan = _execution_plan(prefreeze)
+    for step in execution_plan:
+        stage2_round_index = int(step["stage2_round_index"])
+        template = str(step["template_id"])
+        microbatch_index = int(step["microbatch_index"])
+        batch_size = int(step["batch_size"])
+        slice_start = int(step["slice_start"])
+        slice_end = int(step["slice_end"])
+        for arm in ARMS:
+            inflight = root / f"checkpoint_{checkpoint_ordinal:04d}.inflight"
+            closed = root / f"checkpoint_{checkpoint_ordinal:04d}"
+            inflight.mkdir()
+            if arm == PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1:
+                candidates = selected[template][slice_start:slice_end]
+                if len(candidates) != batch_size:
+                    raise RuntimeError("SEARCH_CORE_V2_STAGE2_ARM_A_MICROBATCH_UNDERFILL")
+                schedules = []
+                for exact in candidates:
+                    schedule = _static_schedule(
+                        supply_by_exact[exact],
+                        authority=authority,
+                        global_ordinal=global_ordinal,
+                        checkpoint_ordinal=checkpoint_ordinal,
+                        template_ordinal=template_ordinals[(arm, template)],
                     )
-                else:
-                    engine._write_json(inflight / "optimizer_state_before.json", state_jump.snapshot())
-                    schedules, _ = stage1._generated_schedules(
-                        state_jump, authority=authority, template_id=template,
-                        checkpoint_id=f"SEARCH_CORE_V2_STAGE2_R{stage2_round_index}_{template}",
-                        checkpoint_ordinal=checkpoint_ordinal, global_start=global_ordinal,
-                        template_start=template_ordinals[(arm, template)],
-                    )
-                    global_ordinal += len(schedules)
-                    template_ordinals[(arm, template)] += len(schedules)
-                for schedule in schedules:
-                    schedule["stage2_round_index"] = int(stage2_round_index)
-                    schedule["search_core_round_index"] = int(3 + stage2_round_index)
-                    schedule["search_core_stage"] = "STAGE2"
-                    schedule["schedule_record_sha256"] = stable_hash(
-                        {k: v for k, v in schedule.items() if k != "schedule_record_sha256"}
-                    )
-                engine._write_jsonl(inflight / "selected_schedule.jsonl", schedules)
-
-                records = successor._evaluate_schedules(
-                    schedules, record_root=inflight / "records", authority=authority,
-                    input_hash=input_hash, executor_workers=PRIMARY_EXECUTOR_WORKERS,
+                    schedules.append(schedule)
+                    global_ordinal += 1
+                    template_ordinals[(arm, template)] += 1
+                engine._write_json(
+                    inflight / "optimizer_state_before.json",
+                    {"arm": arm, "learning": False, "prefrozen": True},
                 )
-                for record in records:
-                    if any(
-                        int(record.get(k) or 0) != 0
-                        for k in ("validation_reads","holdout_reads","historical_2023_reads","forward_b_reads","forward_2026_reads")
-                    ):
-                        raise RuntimeError("SEARCH_CORE_V2_STAGE2_RESTRICTED_READ_DRIFT")
-                by_ordinal = {int(schedule["main_record_ordinal"]): schedule for schedule in schedules}
-                result_rows = []
-                observations = []
-                for record in records:
-                    schedule = by_ordinal[int(record["main_record_ordinal"])]
-                    result, physical = stage1._result_record(record, schedule)
-                    result["search_core_stage"] = "STAGE2"
-                    result["stage2_round_index"] = int(stage2_round_index)
-                    result["search_core_round_index"] = int(3 + stage2_round_index)
-                    result_rows.append(result)
-                    if arm == SEMANTIC_STATE_JUMP_GENERATOR_V2:
-                        ask = dict(schedule["optimizer_ask"])
-                        observations.append(ProgramOptimizerObservationV1(
-                            proposal_id=str(ask["proposal_id"]), exact_identity=str(ask["exact_identity"]),
-                            admission=physical.admission, uplift=physical.uplift,
-                        ))
+            else:
+                engine._write_json(inflight / "optimizer_state_before.json", state_jump.snapshot())
+                schedules = _generated_schedules_batch(
+                    state_jump,
+                    authority=authority,
+                    template_id=template,
+                    checkpoint_id=(
+                        f"SEARCH_CORE_V2_STAGE2_R{stage2_round_index}_{template}_M{microbatch_index}"
+                    ),
+                    checkpoint_ordinal=checkpoint_ordinal,
+                    global_start=global_ordinal,
+                    template_start=template_ordinals[(arm, template)],
+                    batch_size=batch_size,
+                )
+                global_ordinal += len(schedules)
+                template_ordinals[(arm, template)] += len(schedules)
+            for schedule in schedules:
+                schedule["stage2_round_index"] = stage2_round_index
+                schedule["stage2_microbatch_index"] = microbatch_index
+                schedule["stage2_batch_size"] = batch_size
+                schedule["search_core_round_index"] = 3 + stage2_round_index
+                schedule["search_core_stage"] = "STAGE2"
+                schedule["schedule_record_sha256"] = stable_hash(
+                    {key: value for key, value in schedule.items() if key != "schedule_record_sha256"}
+                )
+            engine._write_jsonl(inflight / "selected_schedule.jsonl", schedules)
+
+            records = successor._evaluate_schedules(
+                schedules,
+                record_root=inflight / "records",
+                authority=authority,
+                input_hash=input_hash,
+                executor_workers=min(PRIMARY_EXECUTOR_WORKERS, batch_size),
+            )
+            for record in records:
+                if any(
+                    int(record.get(key) or 0) != 0
+                    for key in (
+                        "validation_reads", "holdout_reads", "historical_2023_reads",
+                        "forward_b_reads", "forward_2026_reads",
+                    )
+                ):
+                    raise RuntimeError("SEARCH_CORE_V2_STAGE2_RESTRICTED_READ_DRIFT")
+            by_ordinal = {int(schedule["main_record_ordinal"]): schedule for schedule in schedules}
+            result_rows: list[dict[str, Any]] = []
+            observations: list[ProgramOptimizerObservationV1] = []
+            for record in records:
+                schedule = by_ordinal[int(record["main_record_ordinal"])]
+                result, physical = stage1._result_record(record, schedule)
+                result["search_core_stage"] = "STAGE2"
+                result["stage2_round_index"] = stage2_round_index
+                result["stage2_microbatch_index"] = microbatch_index
+                result["stage2_batch_size"] = batch_size
+                result["search_core_round_index"] = 3 + stage2_round_index
+                result_rows.append(result)
                 if arm == SEMANTIC_STATE_JUMP_GENERATOR_V2:
-                    tell = state_jump.tell(observations)
-                    engine._write_json(inflight / "optimizer_tell_receipt.json", tell)
-                    engine._write_json(inflight / "optimizer_state_after.json", state_jump.snapshot())
-                else:
-                    engine._write_json(
-                        inflight / "optimizer_state_after.json",
-                        {"arm": arm, "learning": False, "prefrozen": True},
+                    ask = dict(schedule["optimizer_ask"])
+                    observations.append(
+                        ProgramOptimizerObservationV1(
+                            proposal_id=str(ask["proposal_id"]),
+                            exact_identity=str(ask["exact_identity"]),
+                            admission=physical.admission,
+                            uplift=physical.uplift,
+                        )
                     )
-                engine._write_jsonl(inflight / "candidate_results.jsonl", result_rows)
-                metric = {
-                    "checkpoint_ordinal": checkpoint_ordinal,
-                    "stage2_round_index": int(stage2_round_index),
-                    "search_core_round_index": int(3 + stage2_round_index),
-                    "template_id": template,
-                    "arm": arm,
-                    **stage1._metric(result_rows),
-                }
-                engine._write_json(inflight / "checkpoint_metric.json", metric)
-                previous_manifest = stage1._close_checkpoint(
-                    inflight, closed, previous_sha=previous_manifest, checkpoint_ordinal=checkpoint_ordinal
+            if arm == SEMANTIC_STATE_JUMP_GENERATOR_V2:
+                tell = state_jump.tell(observations)
+                engine._write_json(inflight / "optimizer_tell_receipt.json", tell)
+                engine._write_json(inflight / "optimizer_state_after.json", state_jump.snapshot())
+            else:
+                engine._write_json(
+                    inflight / "optimizer_state_after.json",
+                    {"arm": arm, "learning": False, "prefrozen": True},
                 )
-                checkpoint_metrics.append(metric)
-                results_by_arm[arm].extend(result_rows)
-                checkpoint_ordinal += 1
+            engine._write_jsonl(inflight / "candidate_results.jsonl", result_rows)
+            metric = {
+                "checkpoint_ordinal": checkpoint_ordinal,
+                "stage2_round_index": stage2_round_index,
+                "stage2_microbatch_index": microbatch_index,
+                "stage2_batch_size": batch_size,
+                "search_core_round_index": 3 + stage2_round_index,
+                "template_id": template,
+                "arm": arm,
+                **stage1._metric(result_rows),
+            }
+            engine._write_json(inflight / "checkpoint_metric.json", metric)
+            previous_manifest = stage1._close_checkpoint(
+                inflight,
+                closed,
+                previous_sha=previous_manifest,
+                checkpoint_ordinal=checkpoint_ordinal,
+            )
+            checkpoint_metrics.append(metric)
+            results_by_arm[arm].extend(result_rows)
+            checkpoint_ordinal += 1
 
-    if global_ordinal != 1008 or checkpoint_ordinal != 42:
+    if global_ordinal != 1008 or checkpoint_ordinal != 48:
         raise RuntimeError("SEARCH_CORE_V2_STAGE2_EXECUTION_COUNT_DRIFT")
     arm_metrics = {arm: stage1._metric(rows) for arm, rows in results_by_arm.items()}
     per_template = {arm: {template: stage1._metric([r for r in rows if str(r["template_id"]) == template]) for template in TEMPLATES} for arm, rows in results_by_arm.items()}
@@ -323,7 +479,8 @@ def run(args: argparse.Namespace, *, admission: Mapping[str, Any], authorization
         "source_stage15_terminal_payload_sha256": str(prefreeze["source_stage15_terminal"]["payload_sha256"]),
         "initial_mature_snapshot_payload_sha256": initial_snapshot_hash,
         "final_mature_snapshot_payload_sha256": str(final_snapshot["snapshot_hash"]),
-        "evaluated": 1008, "evaluated_per_arm": 504, "checkpoint_count": 42,
+        "evaluated": 1008, "evaluated_per_arm": 504, "checkpoint_count": 48,
+        "template_batch_size": dict(prefreeze["stage2"]["template_batch_size"]),
         "last_checkpoint_manifest_file_sha256": previous_manifest,
         "arm_metrics": arm_metrics, "per_template_metrics": per_template,
         "round_metrics": round_metrics, "checkpoint_metrics": checkpoint_metrics, "decision": decision,

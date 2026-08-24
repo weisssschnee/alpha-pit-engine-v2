@@ -21,6 +21,10 @@ TOTAL_EVALUATIONS = 1008
 PRIOR_USED_PER_TEMPLATE = 72
 CUMULATIVE_PRIOR_PER_ARM = 504
 TARGET_TOTAL_PER_ARM = 1008
+TEMPLATE_BATCH_SIZE = {template: (12 if template == "BASE_EVENT" else 24) for template in TEMPLATES}
+CHECKPOINTS_PER_TEMPLATE_PER_ARM = {template: PER_TEMPLATE_PER_ARM // TEMPLATE_BATCH_SIZE[template] for template in TEMPLATES}
+CHECKPOINT_COUNT_PER_ARM = sum(CHECKPOINTS_PER_TEMPLATE_PER_ARM.values())
+TOTAL_CHECKPOINT_COUNT = 2 * CHECKPOINT_COUNT_PER_ARM
 
 STAGE1_PREFREEZE = Path("runtime/run_plans/cn_search_core_v2_stage1_prefreeze_20260824.json")
 STAGE15_PREFREEZE = Path("runtime/run_plans/cn_search_core_v2_stage15_prefreeze_20260824.json")
@@ -134,8 +138,11 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "per_template_budget_per_arm": PER_TEMPLATE_PER_ARM,
             "total_budget_per_arm": TOTAL_PER_ARM,
             "total_financial_evaluations": TOTAL_EVALUATIONS,
-            "checkpoint_batch_size": 24,
-            "checkpoints_per_template_per_arm": 3,
+            "maximum_checkpoint_batch_size": 24,
+            "template_batch_size": dict(TEMPLATE_BATCH_SIZE),
+            "checkpoints_per_template_per_arm": dict(CHECKPOINTS_PER_TEMPLATE_PER_ARM),
+            "checkpoint_count_per_arm": CHECKPOINT_COUNT_PER_ARM,
+            "total_checkpoint_count": TOTAL_CHECKPOINT_COUNT,
             "cumulative_prior_budget_per_arm": CUMULATIVE_PRIOR_PER_ARM,
             "target_cumulative_budget_per_arm": TARGET_TOTAL_PER_ARM,
             "automatic_followon_launch": False,
@@ -189,6 +196,8 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "source_elite_count": int(diag["elite_count"]),
             "source_generated_unique_count": int(diag["generated_unique_count"]),
             "within_stage2_ask_tell_adaptation": True,
+            "template_local_batch_size": dict(TEMPLATE_BATCH_SIZE),
+            "base_event_batch_size_reason": "FINAL_MATURE_STATE_PASS_AT_16_FAIL_AT_18; BATCH_12_PASS_ON_STAGE1_FINAL_AND_ALL_7_STAGE15_MATURE_CHECKPOINT_STATES",
             "sealed_feedback_allowed": False,
             "candidate_exact_membership_prefrozen": False,
             "zero_financial_supply_audit_required_before_project_control": True,

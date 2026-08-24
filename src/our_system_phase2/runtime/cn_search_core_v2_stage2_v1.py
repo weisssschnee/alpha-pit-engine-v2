@@ -26,6 +26,16 @@ PRIMARY_EXECUTOR_WORKERS = 24
 CHECKPOINT_SIZE = 24
 TOTAL_PER_ARM = 504
 TOTAL_EVALUATIONS = 1008
+SUPPLY_PROBE_TOTAL = 156
+EXPECTED_TEMPLATE_BATCH_SIZE = {
+    "BASE_EVENT": 12,
+    "BASE_MARKET": 24,
+    "BASE_MARKET_EVENT": 24,
+    "BASE_TEMPORAL": 24,
+    "BASE_TEMPORAL_EVENT": 24,
+    "BASE_TEMPORAL_MARKET": 24,
+    "BASE_TEMPORAL_MARKET_EVENT": 24,
+}
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -70,14 +80,27 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
     if source_auth.get("authorization_payload_sha256") != source["payload_sha256"]:
         raise ValueError("Stage-2 source Stage-D authorization payload drift")
     pre = _bound(root, payload["stage2_prefreeze"], payload_field="prefreeze_payload_sha256", label="Stage-2 prefreeze")
-    if pre.get("status") != "SEARCH_CORE_V2_STAGE2_PREFROZEN_BEFORE_FINANCIAL_READ" or int(pre["stage2"]["total_financial_evaluations"]) != TOTAL_EVALUATIONS:
+    if (
+        pre.get("status") != "SEARCH_CORE_V2_STAGE2_PREFROZEN_BEFORE_FINANCIAL_READ"
+        or int(pre["stage2"]["total_financial_evaluations"]) != TOTAL_EVALUATIONS
+        or int(pre["stage2"]["total_budget_per_arm"]) != TOTAL_PER_ARM
+        or dict(pre["stage2"].get("template_batch_size") or {}) != EXPECTED_TEMPLATE_BATCH_SIZE
+        or int(pre["stage2"].get("total_checkpoint_count") or 0) != 48
+    ):
         raise ValueError("Stage-2 prefreeze binding drift")
     supply = _bound(root, payload["mature_state_supply_audit"], payload_field="audit_payload_sha256", label="Stage-2 mature supply audit")
     if (
-        supply.get("status") != "PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_SUPPLY_AUDIT"
+        supply.get("status") != "PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_CHECKPOINT_SUPPLY_AUDIT"
         or bool(supply.get("candidate_evaluation_executed"))
         or bool(supply.get("financial_sidecar_read"))
-        or int(supply.get("generated_total") or 0) != TOTAL_PER_ARM
+        or int(supply.get("generated_total") or 0) != SUPPLY_PROBE_TOTAL
+        or int(supply.get("unique_exact_count") or 0) != SUPPLY_PROBE_TOTAL
+        or int(supply.get("arm_a_overlap_count", -1)) != 0
+        or dict(supply.get("template_batch_size") or {}) != EXPECTED_TEMPLATE_BATCH_SIZE
+        or int(supply.get("base_event_microbatch_robustness_state_count") or 0) != 8
+        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0) != 12
+        or supply.get("synthetic_tell_used") is not False
+        or supply.get("future_checkpoint_supply_fail_closed") is not True
         or str(supply.get("prefreeze_payload_sha256") or "") != str(pre["prefreeze_payload_sha256"])
     ):
         raise ValueError("Stage-2 mature supply evidence drift")
@@ -86,6 +109,7 @@ def verify_authorization(path: Path, *, repo_root: Path | None = None) -> dict[s
         resource.get("profile") != "SEARCH_DUAL_24" or int(resource.get("cpu_threads") or 0) != 24
         or int(resource.get("executor_workers") or 0) != PRIMARY_EXECUTOR_WORKERS
         or int(resource.get("checkpoint_size") or 0) != CHECKPOINT_SIZE
+        or dict(resource.get("template_batch_size") or {}) != EXPECTED_TEMPLATE_BATCH_SIZE
         or resource.get("candidate_evaluation_during_canary") is not False
         or int(resource.get("field_column_count") or 0) != int(canary.get("field_column_count") or 0)
         or str(resource.get("field_columns_sha256") or "") != str(canary.get("field_columns_sha256") or "")

@@ -20,15 +20,28 @@ def build(repo:Path,*,canary:Path,supply_audit:Path)->dict[str,Any]:
     pre_path=repo/runtime.PREFREEZE_RELATIVE_PATH; pre=stage2.verify_prefreeze(pre_path); pre_hash=str(pre["prefreeze_payload_sha256"])
     supply_path=supply_audit.resolve(); supply,supply_hash=_self(supply_path,"audit_payload_sha256","Stage-2 mature supply")
     if (
-        supply.get("status")!="PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_SUPPLY_AUDIT" or bool(supply.get("candidate_evaluation_executed"))
-        or bool(supply.get("financial_sidecar_read")) or int(supply.get("generated_total") or 0)!=runtime.TOTAL_PER_ARM
+        supply.get("status")!="PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_STAGE2_CHECKPOINT_SUPPLY_AUDIT" or bool(supply.get("candidate_evaluation_executed"))
+        or bool(supply.get("financial_sidecar_read")) or int(supply.get("generated_total") or 0)!=runtime.SUPPLY_PROBE_TOTAL
+        or int(supply.get("unique_exact_count") or 0)!=runtime.SUPPLY_PROBE_TOTAL
+        or int(supply.get("arm_a_overlap_count",-1))!=0
+        or dict(supply.get("template_batch_size") or {})!=runtime.EXPECTED_TEMPLATE_BATCH_SIZE
+        or int(supply.get("base_event_microbatch_robustness_state_count") or 0)!=8
+        or int(supply.get("base_event_microbatch_robustness_batch_size") or 0)!=12
+        or supply.get("synthetic_tell_used") is not False
+        or supply.get("future_checkpoint_supply_fail_closed") is not True
         or str(supply.get("prefreeze_payload_sha256") or "")!=pre_hash
     ): raise ValueError("Stage-2 mature supply not PASS")
     raw=canary.resolve().read_bytes(); canary_file=hashlib.sha256(raw).hexdigest(); c=json.loads(raw.decode("utf-8-sig")); body=dict(c); canary_hash=str(body.pop("official_canary_payload_sha256",""))
     if not canary_hash or stable_hash(body)!=canary_hash or c.get("status")!="PASS" or c.get("candidate_evaluation_executed") is not False:
         raise ValueError("Stage-2 canary not PASS")
     runner=repo/"scripts/run_cn_search_core_v2_stage2_v1.py"; runner_sha=sha256_file(runner)
-    if c.get("runner_source_file_sha256")!=runner_sha or c.get("prefreeze_payload_sha256")!=pre_hash or c.get("mature_state_supply_audit_payload_sha256")!=supply_hash or int(c.get("requested_workers") or 0)!=runtime.PRIMARY_EXECUTOR_WORKERS:
+    if (
+        c.get("runner_source_file_sha256")!=runner_sha
+        or c.get("prefreeze_payload_sha256")!=pre_hash
+        or c.get("mature_state_supply_audit_payload_sha256")!=supply_hash
+        or int(c.get("requested_workers") or 0)!=runtime.PRIMARY_EXECUTOR_WORKERS
+        or dict(c.get("template_batch_size") or {})!=runtime.EXPECTED_TEMPLATE_BATCH_SIZE
+    ):
         raise ValueError("Stage-2 canary binding drift")
     payload={
         "schema_version":runtime.AUTHORIZATION_SCHEMA,"status":"SEARCH_CORE_V2_STAGE2_AUTHORIZED_NOT_RUN","execution_authorized":True,
@@ -39,7 +52,7 @@ def build(repo:Path,*,canary:Path,supply_audit:Path)->dict[str,Any]:
         "stage2_prefreeze":{"relative_path":str(runtime.PREFREEZE_RELATIVE_PATH).replace("\\","/"),"file_sha256":sha256_file(pre_path),"payload_sha256":pre_hash,"arm_a_selected_exact_identities_sha256":str(pre["arm_a_primitive"]["selected_exact_identities_sha256"]),"source_mature_snapshot_payload_sha256":str(pre["arm_b_state_jump"]["source_snapshot_payload_sha256"]),"budget_per_arm":runtime.TOTAL_PER_ARM,"total_financial_evaluations":runtime.TOTAL_EVALUATIONS},
         "mature_state_supply_audit":{"relative_path":str(supply_path.relative_to(repo)).replace("\\","/"),"file_sha256":sha256_file(supply_path),"payload_sha256":supply_hash,"generated_total":int(supply["generated_total"]),"field_column_count":int(supply["resource_field_surface"]["field_column_count"]),"field_columns_sha256":str(supply["resource_field_surface"]["field_columns_sha256"])},
         "official_resource_canary":{"relative_path":str(canary.resolve().relative_to(repo)).replace("\\","/"),"file_sha256":canary_file,"payload_sha256":canary_hash,"runner_source_file_sha256":runner_sha,"field_column_count":int(c["field_column_count"]),"field_columns_sha256":str(c["field_columns_sha256"])},
-        "resource_contract":{"profile":"SEARCH_DUAL_24","cpu_threads":24,"executor_workers":runtime.PRIMARY_EXECUTOR_WORKERS,"checkpoint_size":runtime.CHECKPOINT_SIZE,"candidate_evaluation_during_canary":False,"field_column_count":int(c["field_column_count"]),"field_columns_sha256":str(c["field_columns_sha256"])},
+        "resource_contract":{"profile":"SEARCH_DUAL_24","cpu_threads":24,"executor_workers":runtime.PRIMARY_EXECUTOR_WORKERS,"checkpoint_size":runtime.CHECKPOINT_SIZE,"template_batch_size":dict(pre["stage2"]["template_batch_size"]),"candidate_evaluation_during_canary":False,"field_column_count":int(c["field_column_count"]),"field_columns_sha256":str(c["field_columns_sha256"])},
         "stage2_contract":dict(pre["stage2"]),"stage2_decision_contract":dict(pre["stage2_decision_contract"]),
         "restricted_reads":{"validation":0,"holdout":0,"historical_2023":0,"forward_b":0,"forward_2026":0},
         "validation_feedback_used":False,"promotion_authorized":False,"oos_authority":"NONE","automatic_policy_change_authorized":False,
