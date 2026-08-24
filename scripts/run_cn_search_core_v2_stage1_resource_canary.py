@@ -53,11 +53,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     supply_hash = _verify_self(
         supply_audit, "audit_payload_sha256", "Search Core V2 state-jump supply audit"
     )
+    supply_generator = dict(supply_audit["generator"])
+    frozen_generator = dict(prefreeze["arm_b_state_jump"])
     if (
         supply_audit.get("status")
         != "PASS_ZERO_FINANCIAL_STATE_JUMP_REAL_SUPPLY_AUDIT"
         or bool(supply_audit.get("candidate_evaluation_executed"))
         or bool(supply_audit.get("financial_sidecar_read"))
+        or str(supply_generator.get("prefreeze_payload_sha256") or "")
+        != str(prefreeze["prefreeze_payload_sha256"])
+        or int(supply_generator.get("seed") or -1) != int(frozen_generator["seed"])
+        or dict(supply_generator.get("operation_priors") or {})
+        != dict(frozen_generator["operation_priors"])
+        or int(supply_generator.get("maximum_attempts") or -1)
+        != int(frozen_generator["maximum_attempts"])
     ):
         raise RuntimeError("SEARCH_CORE_V2_RESOURCE_CANARY_SUPPLY_AUDIT_NOT_PASS")
 

@@ -42,8 +42,8 @@ Write-Host "[1/4] real component-pool state-jump supply audit (zero financial)"
   --repo-root $RepoRoot `
   --source-freeze-root $SourceFreeze `
   --registry $Registry `
+  --stage1-prefreeze $Prefreeze `
   --probes-per-template 96 `
-  --seed 826241 `
   --output $SupplyAudit
 if ($LASTEXITCODE -ne 0) { throw "state-jump real-supply audit failed" }
 

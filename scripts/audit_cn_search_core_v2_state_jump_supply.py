@@ -111,12 +111,24 @@ def audit(
     *,
     source_freeze_root: Path,
     registry_path: Path,
+    stage1_prefreeze_path: Path,
     probes_per_template: int,
-    seed: int,
 ) -> dict[str, Any]:
     repo = repo.resolve()
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError("STATE_JUMP_SUPPLY_AUDIT_UNAUTHORIZED_HOST")
+    stage1_prefreeze_path = stage1_prefreeze_path.resolve()
+    prefreeze = _read(stage1_prefreeze_path)
+    prefreeze_hash = _verify_self(
+        prefreeze, "prefreeze_payload_sha256", "Search Core V2 Stage-1 prefreeze"
+    )
+    if (
+        prefreeze.get("status")
+        != "SEARCH_CORE_V2_STAGE1_PREFROZEN_BEFORE_FINANCIAL_READ"
+        or bool(prefreeze.get("financial_labels_read_by_builder"))
+    ):
+        raise RuntimeError("STATE_JUMP_SUPPLY_STAGE1_PREFREEZE_DRIFT")
+    generator_contract = dict(prefreeze["arm_b_state_jump"])
     source_freeze_root = source_freeze_root.resolve()
     registry_path = registry_path.resolve()
     closure_path = source_freeze_root / SOURCE_FREEZE_CLOSURE
@@ -202,8 +214,9 @@ def audit(
     generator = SemanticStateJumpProgramGeneratorV2(
         adapter=composer,
         components_by_role=components_by_role,
-        seed=int(seed),
-        maximum_attempts=256,
+        seed=int(generator_contract["seed"]),
+        operation_priors=dict(generator_contract["operation_priors"]),
+        maximum_attempts=int(generator_contract["maximum_attempts"]),
     )
     ordered_slots = tuple(entries[0].genes)
     observed_exact: set[str] = set()
@@ -360,7 +373,10 @@ def audit(
             ),
         },
         "generator": {
-            "seed": int(seed),
+            "prefreeze_payload_sha256": prefreeze_hash,
+            "seed": int(generator_contract["seed"]),
+            "operation_priors": dict(generator_contract["operation_priors"]),
+            "maximum_attempts": int(generator_contract["maximum_attempts"]),
             "probes_per_template": int(probes_per_template),
             "requested_total": len(TEMPLATES) * int(probes_per_template),
             "generated_total": len(observed_exact),
@@ -387,8 +403,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=PROJECT_ROOT)
     parser.add_argument("--source-freeze-root", type=Path, default=Path(SOURCE_FREEZE_ROOT))
     parser.add_argument("--registry", type=Path, default=Path(SOURCE_REGISTRY_PATH))
+    parser.add_argument("--stage1-prefreeze", type=Path, required=True)
     parser.add_argument("--probes-per-template", type=int, default=DEFAULT_PROBES_PER_TEMPLATE)
-    parser.add_argument("--seed", type=int, default=826241)
     parser.add_argument(
         "--output",
         type=Path,
@@ -399,8 +415,8 @@ def main(argv: list[str] | None = None) -> int:
         args.repo_root,
         source_freeze_root=args.source_freeze_root,
         registry_path=args.registry,
+        stage1_prefreeze_path=args.stage1_prefreeze,
         probes_per_template=args.probes_per_template,
-        seed=args.seed,
     )
     output = args.output if args.output.is_absolute() else args.repo_root / args.output
     output.parent.mkdir(parents=True, exist_ok=True)

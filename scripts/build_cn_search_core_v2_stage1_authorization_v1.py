@@ -55,16 +55,24 @@ def build(repo: Path, *, canary: Path, supply_audit: Path) -> dict[str, Any]:
         "audit_payload_sha256",
         "Search Core V2 real state-jump supply audit",
     )
+    supply_generator = dict(supply["generator"])
+    frozen_generator = dict(prefreeze["arm_b_state_jump"])
     if (
         supply.get("status")
         != "PASS_ZERO_FINANCIAL_STATE_JUMP_REAL_SUPPLY_AUDIT"
         or bool(supply.get("candidate_evaluation_executed"))
         or bool(supply.get("financial_sidecar_read"))
-        or int(supply["generator"]["generated_total"]) < runtime.TOTAL_EVALUATIONS
+        or int(supply_generator["generated_total"]) < runtime.TOTAL_EVALUATIONS
         or any(
             int(row.get("generated") or 0) < 48
-            for row in dict(supply["generator"]["per_template"]).values()
+            for row in dict(supply_generator["per_template"]).values()
         )
+        or str(supply_generator.get("prefreeze_payload_sha256") or "") != pre_hash
+        or int(supply_generator.get("seed") or -1) != int(frozen_generator["seed"])
+        or dict(supply_generator.get("operation_priors") or {})
+        != dict(frozen_generator["operation_priors"])
+        or int(supply_generator.get("maximum_attempts") or -1)
+        != int(frozen_generator["maximum_attempts"])
     ):
         raise ValueError("Search Core V2 real state-jump supply audit not PASS")
 
