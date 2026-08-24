@@ -79,7 +79,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         or supply.get("status") != "PASS_ZERO_FINANCIAL_MATURE_STATE_JUMP_SUPPLY_AUDIT"
         or int(supply.get("generated_total") or 0) != 168
         or int(supply.get("unique_exact_count") or 0) != 168
-        or int(supply.get("arm_a_overlap_count") or -1) != 0
+        or int(supply.get("arm_a_overlap_count", -1)) != 0
         or bool(supply.get("candidate_evaluation_executed"))
         or bool(supply.get("financial_sidecar_read"))
         or canary.get("status") != "PASS"
