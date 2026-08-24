@@ -86,6 +86,7 @@ CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
         "cn-program-primitive-local-stage-b-benchmark-v1",
         "cn-program-stage-c-system-search-v1",
         "cn-program-stage-d-primitive-confirmation-v1",
+        "cn-search-core-v2-stage1-v1",
         "cn-program-primitive-main-production-v1",
         "cn-program-primitive-main-production-recovery-v1",
         "cn-program-primitive-market-successor-v1",
