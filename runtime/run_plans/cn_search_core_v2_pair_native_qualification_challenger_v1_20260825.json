@@ -1,0 +1,158 @@
+{
+  "authority_boundaries": {
+    "automatic_challenger_adoption_authorized": false,
+    "current_search_policy_changed": false,
+    "current_validation_shortlist_policy_changed": false,
+    "forward_read": false,
+    "holdout_read": false,
+    "next_required_evidence": "DISTINCT_UNSEEN_EVALUATION_DOMAIN_WITH_RULE_FROZEN_BEFORE_LABEL_ACCESS",
+    "promotion_authorized": false,
+    "same_slice_reselection_allowed": false,
+    "wave1_validation_domain_consumed": true,
+    "wave1_validation_reuse_for_prospective_claim": false
+  },
+  "challenger_payload_sha256": "5951cf5335ed295b5e7dd80ceb4371b89fc00ce93c343e6a388cbd7a0c3b411b",
+  "financial_evaluation_executed": false,
+  "historical_consistency_checks": {
+    "all_three_cohorts_nonempty": true,
+    "all_three_productive_rate_improved": true,
+    "all_three_stable_2of3_rate_improved": true
+  },
+  "historical_d1_aggregate": {
+    "base": {
+      "n": 183,
+      "productive": 50,
+      "productive_rate": 0.273224043715847,
+      "stable_2of3": 42,
+      "stable_2of3_rate": 0.22950819672131148
+    },
+    "coverage": 0.21311475409836064,
+    "productive_lift_pp": 0.2908785203867171,
+    "selected": {
+      "n": 39,
+      "productive": 22,
+      "productive_rate": 0.5641025641025641,
+      "stable_2of3": 18,
+      "stable_2of3_rate": 0.46153846153846156
+    },
+    "stable_2of3_lift_pp": 0.23203026481715008
+  },
+  "per_cohort_retrospective_diagnostics": {
+    "D1_CONTINUATION_B": {
+      "base": {
+        "n": 63,
+        "productive": 20,
+        "productive_rate": 0.31746031746031744,
+        "stable_2of3": 16,
+        "stable_2of3_rate": 0.25396825396825395
+      },
+      "coverage": 0.1746031746031746,
+      "productive_lift_pp": 0.40981240981240985,
+      "selected": {
+        "n": 11,
+        "productive": 8,
+        "productive_rate": 0.7272727272727273,
+        "stable_2of3": 7,
+        "stable_2of3_rate": 0.6363636363636364
+      },
+      "stable_2of3_lift_pp": 0.3823953823953824
+    },
+    "D1_FRESH": {
+      "base": {
+        "n": 64,
+        "productive": 16,
+        "productive_rate": 0.25,
+        "stable_2of3": 13,
+        "stable_2of3_rate": 0.203125
+      },
+      "coverage": 0.234375,
+      "productive_lift_pp": 0.35,
+      "selected": {
+        "n": 15,
+        "productive": 9,
+        "productive_rate": 0.6,
+        "stable_2of3": 6,
+        "stable_2of3_rate": 0.4
+      },
+      "stable_2of3_lift_pp": 0.19687500000000002
+    },
+    "SEARCH_CORE_V2_WAVE1": {
+      "base": {
+        "n": 42,
+        "productive": 8,
+        "productive_rate": 0.19047619047619047,
+        "stable_2of3": 5,
+        "stable_2of3_rate": 0.11904761904761904
+      },
+      "coverage": 0.07142857142857142,
+      "productive_lift_pp": 0.14285714285714285,
+      "selected": {
+        "n": 3,
+        "productive": 1,
+        "productive_rate": 0.3333333333333333,
+        "stable_2of3": 1,
+        "stable_2of3_rate": 0.3333333333333333
+      },
+      "stable_2of3_lift_pp": 0.21428571428571427
+    },
+    "SUCCESSOR_D1": {
+      "base": {
+        "n": 56,
+        "productive": 14,
+        "productive_rate": 0.25,
+        "stable_2of3": 13,
+        "stable_2of3_rate": 0.23214285714285715
+      },
+      "coverage": 0.23214285714285715,
+      "productive_lift_pp": 0.13461538461538464,
+      "selected": {
+        "n": 13,
+        "productive": 5,
+        "productive_rate": 0.38461538461538464,
+        "stable_2of3": 5,
+        "stable_2of3_rate": 0.38461538461538464
+      },
+      "stable_2of3_lift_pp": 0.15247252747252749
+    }
+  },
+  "rule_contract": {
+    "control_positive_development_window_count_minimum": 2,
+    "development_window_count": 3,
+    "primary_positive_development_window_count_required": 3,
+    "threshold_tuning": false,
+    "uses_learned_parameters": false,
+    "uses_template_identity": false,
+    "uses_validation_features": false,
+    "uses_validation_labels_at_application_time": false
+  },
+  "rule_id": "PAIR_NATIVE_PRIMARY_3OF3_CONTROL_2OF3_POSITIVE_V1",
+  "schema_version": "cn_search_core_v2_pair_native_qualification_challenger_v1",
+  "source_payload_sha256": {
+    "d1_pair": "23a26f303452f6f0a47767d5a1da2a068a1db2c75b348086f8350688b46379d9",
+    "stability": "d04a844b752ce3fe61a2052e3d8f7d58cc209fa91eb7efc7e7ceecaae318335d",
+    "v3": "69f780ac75c77d3192ed01ed7ebdaf2d9ac9066ff75e7ac79ad9b84f9ba6f32e",
+    "wave_pair": "844505eed0dc7ace70589ae0e44152ca12e226f8c776db42af54eb3f9e1f3ebc"
+  },
+  "source_transfer_v4_benchmark_payload_sha256": "7dc2f0583952490f81d6167e89b33f165747bbc89f33c8331241c8c0102c8168",
+  "status": "PAIR_NATIVE_CONTROL_ROBUST_CHALLENGER_V1_FROZEN_DIAGNOSTIC_ONLY_UNSEEN_TEST_REQUIRED",
+  "wave1_retrospective_external_check": {
+    "base": {
+      "n": 42,
+      "productive": 8,
+      "productive_rate": 0.19047619047619047,
+      "stable_2of3": 5,
+      "stable_2of3_rate": 0.11904761904761904
+    },
+    "coverage": 0.07142857142857142,
+    "productive_lift_pp": 0.14285714285714285,
+    "sample_size_warning": "SELECTED_N_TOO_SMALL_FOR_POLICY_ADOPTION",
+    "selected": {
+      "n": 3,
+      "productive": 1,
+      "productive_rate": 0.3333333333333333,
+      "stable_2of3": 1,
+      "stable_2of3_rate": 0.3333333333333333
+    },
+    "stable_2of3_lift_pp": 0.21428571428571427
+  }
+}
