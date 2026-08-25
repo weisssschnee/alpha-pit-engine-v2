@@ -87,6 +87,7 @@ ROUTES: dict[str, str] = {
     "cn-search-core-v2-stage2-v1": "our_system_phase2.runtime.cn_search_core_v2_stage2_v1",
     "cn-search-core-v2-production-wave1-v1": "our_system_phase2.runtime.cn_search_core_v2_production_wave1_v1",
     "cn-search-core-v2-production-wave2-v1": "our_system_phase2.runtime.cn_search_core_v2_production_wave2_v1",
+    "cn-search-core-v2-production-wave3-v1": "our_system_phase2.runtime.cn_search_core_v2_production_wave3_v1",
     "cn-search-core-v2-production-wave1-report-only-validation-v1": "our_system_phase2.runtime.cn_search_core_v2_production_wave1_report_only_validation_v1",
     "cn-program-primitive-main-production-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_v1",
     "cn-program-primitive-main-production-recovery-v1": "our_system_phase2.runtime.cn_program_primitive_main_production_recovery_v1",
@@ -187,6 +188,9 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-search-core-v2-production-wave2-v1": frozenset(
+        {ACTION_LAUNCH, ACTION_RETRY}
+    ),
+    "cn-search-core-v2-production-wave3-v1": frozenset(
         {ACTION_LAUNCH, ACTION_RETRY}
     ),
     "cn-search-core-v2-production-wave1-report-only-validation-v1": frozenset(
