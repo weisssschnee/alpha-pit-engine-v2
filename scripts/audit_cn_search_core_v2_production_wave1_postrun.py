@@ -103,7 +103,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         ):
             raise RuntimeError("Production Wave 1 checkpoint chain drift")
         for artifact in list(manifest.get("artifacts") or ()):
-            artifact_path = checkpoint / Path(str(artifact["relative_path"]))
+            artifact_path = checkpoint / Path(str(artifact["path"]))
             if not artifact_path.is_file() or _sha(artifact_path) != str(artifact["sha256"]):
                 raise RuntimeError("Production Wave 1 checkpoint artifact drift")
         previous = _sha(manifest_path)
