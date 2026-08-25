@@ -1,0 +1,173 @@
+{
+  "active_templates": [
+    "BASE_EVENT",
+    "BASE_MARKET_EVENT",
+    "BASE_TEMPORAL_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT"
+  ],
+  "aggregate_checks": {
+    "behavior_pair_rate": true,
+    "productive_rate": true,
+    "stable_rate": true,
+    "total_productive": true
+  },
+  "automatic_validation_authorized": false,
+  "budget": {
+    "batch_size": 24,
+    "checkpoint_count": 8,
+    "per_active_template_evaluations": 48,
+    "reduction_vs_equal_7_template_wave": 0.4285714285714286,
+    "rounds": 2,
+    "total_financial_evaluations": 192
+  },
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "financial_evaluation_executed_by_review": false,
+  "focus_review_payload_sha256": "69b354d6dddf20a21824b3c3c92d2db31f3dc89e8426e84b496fc47a08c006b9",
+  "forward_read": false,
+  "held_templates": [
+    "BASE_MARKET",
+    "BASE_TEMPORAL",
+    "BASE_TEMPORAL_MARKET"
+  ],
+  "holdout_read": false,
+  "pair_native_annotation_contract": {
+    "application_scope": "DEVELOPMENT_RESULT_ANNOTATION_AND_ARCHIVE_ONLY",
+    "automatic_policy_adoption": false,
+    "candidate_admission_changed": false,
+    "generator_ask_order_changed": false,
+    "optimizer_feedback_write": false,
+    "rule_contract": {
+      "control_positive_development_window_count_minimum": 2,
+      "development_window_count": 3,
+      "primary_positive_development_window_count_required": 3,
+      "threshold_tuning": false,
+      "uses_learned_parameters": false,
+      "uses_template_identity": false,
+      "uses_validation_features": false,
+      "uses_validation_labels_at_application_time": false
+    },
+    "rule_id": "PAIR_NATIVE_PRIMARY_3OF3_CONTROL_2OF3_POSITIVE_V1",
+    "source_file_sha256": "29f229c61cc1f9f7b344b763034f4d1dfd610e1c20661bf4b46525831f3a1f26",
+    "source_payload_sha256": "5951cf5335ed295b5e7dd80ceb4371b89fc00ce93c343e6a388cbd7a0c3b411b",
+    "source_relative_path": "runtime/run_plans/cn_search_core_v2_pair_native_qualification_challenger_v1_20260825.json",
+    "validation_label_read_at_application": false
+  },
+  "promotion_authorized": false,
+  "schema_version": "cn_search_core_v2_wave4_focus_budget_review_v1",
+  "source_gate": {
+    "aggregate_gate": {
+      "behavior_pair_rate_min": 0.7,
+      "productive_rate_min": 0.4,
+      "stable_rate_min": 0.3,
+      "total_productive_count_min": 100
+    },
+    "file_sha256": "34d0064bfdd7796307a17ac3f55223b3ba98f11fa9cfd0d7838f7aaef01ccef4",
+    "payload_sha256": "39aebf4872f6c2baadd745ba03f9b58f1cb8cf347783b8cc5ef1febe9574de48",
+    "productive_rate_min": 0.3,
+    "relative_path": "runtime/run_plans/cn_program_primitive_market_successor_v3_plan.json",
+    "stable_rate_min": 0.25
+  },
+  "source_wave3_focus_review": {
+    "active_templates": [
+      "BASE_EVENT",
+      "BASE_MARKET_EVENT",
+      "BASE_TEMPORAL_EVENT",
+      "BASE_TEMPORAL_MARKET",
+      "BASE_TEMPORAL_MARKET_EVENT"
+    ],
+    "file_sha256": "368861dece45ad0818863828a6115b3c058587a58341e75bb70a534f5fdb9b65",
+    "held_templates": [
+      "BASE_MARKET",
+      "BASE_TEMPORAL"
+    ],
+    "payload_sha256": "25b8996e58713f4b5413b2300924700ff8da3b7675fcc8ab1d9b5545a53e723d",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_wave3_focus_budget_review_20260826.json"
+  },
+  "source_wave3_postrun_audit": {
+    "file_sha256": "dff5df266ad6b56794d698533bc90eba259cedc5430f4ecae4a8f09b34c18e3f",
+    "payload_sha256": "caff6f08e06ed8f5debc7103db3ba5275f6c04e6c5ea03e0956d870af0ca4502",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave3_postrun_audit_20260826.json"
+  },
+  "source_wave3_prefreeze": {
+    "file_sha256": "109de3947e61cde92c1779eedc13e01275850a92f4e3ae717ccd973338d9d766",
+    "payload_sha256": "a89193e482cfccc67f859dcf827d9ec743db9e88679cccaac690ef27b2e86815",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave3_prefreeze_20260826.json"
+  },
+  "source_wave3_terminal": {
+    "file_sha256": "91b40e3e2a7ce565983792c6f0d25a00704657ea0f327faa5c3c1afdec56df8c",
+    "payload_sha256": "c9ee163ae497dac4887f2e87ee6c6e4efdad209d3313ee9f09d5e24c92b44d91",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave3_complete_79592cb_20260826.json"
+  },
+  "status": "SEARCH_CORE_V2_WAVE4_FOCUS_BUDGET_FROZEN_DEVELOPMENT_ONLY",
+  "template_decisions": {
+    "BASE_EVENT": {
+      "checks": {
+        "productive_rate": true,
+        "stable_rate": true
+      },
+      "distinct_behavior_pair_rate": 0.9375,
+      "productive_rate": 0.3958333333333333,
+      "stable_rate": 0.2916666666666667,
+      "wave4_role": "ACTIVE_SEARCH"
+    },
+    "BASE_MARKET": {
+      "checks": {
+        "inherited_hold": true
+      },
+      "distinct_behavior_pair_rate": null,
+      "productive_rate": null,
+      "stable_rate": null,
+      "wave4_role": "HOLD_INHERITED_NO_FINANCIAL_BUDGET"
+    },
+    "BASE_MARKET_EVENT": {
+      "checks": {
+        "productive_rate": true,
+        "stable_rate": true
+      },
+      "distinct_behavior_pair_rate": 0.9791666666666666,
+      "productive_rate": 0.7916666666666666,
+      "stable_rate": 0.7083333333333334,
+      "wave4_role": "ACTIVE_SEARCH"
+    },
+    "BASE_TEMPORAL": {
+      "checks": {
+        "inherited_hold": true
+      },
+      "distinct_behavior_pair_rate": null,
+      "productive_rate": null,
+      "stable_rate": null,
+      "wave4_role": "HOLD_INHERITED_NO_FINANCIAL_BUDGET"
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "checks": {
+        "productive_rate": true,
+        "stable_rate": true
+      },
+      "distinct_behavior_pair_rate": 0.9583333333333334,
+      "productive_rate": 0.6458333333333334,
+      "stable_rate": 0.5208333333333334,
+      "wave4_role": "ACTIVE_SEARCH"
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "checks": {
+        "productive_rate": false,
+        "stable_rate": false
+      },
+      "distinct_behavior_pair_rate": 1.0,
+      "productive_rate": 0.20833333333333334,
+      "stable_rate": 0.1875,
+      "wave4_role": "HOLD_NO_FINANCIAL_BUDGET"
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "checks": {
+        "productive_rate": true,
+        "stable_rate": true
+      },
+      "distinct_behavior_pair_rate": 0.9375,
+      "productive_rate": 0.5208333333333334,
+      "stable_rate": 0.4583333333333333,
+      "wave4_role": "ACTIVE_SEARCH"
+    }
+  },
+  "validation_read": false
+}
