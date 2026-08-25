@@ -1,0 +1,41 @@
+{
+  "archive_summary_payload_sha256": "4239f47a045d9334f1362e65aad54c876c37500e66f1e3eb986f9e1f7d4c0ed2",
+  "automatic_promotion_authorized": false,
+  "behavior_cluster_count": 166,
+  "behavior_representative_count": 166,
+  "classification": "DEVELOPMENT_ONLY_NOT_ALPHA_QUALIFIED",
+  "diversity_frontier_count": 166,
+  "financial_evaluation_executed": false,
+  "forward_read": false,
+  "holdout_read": false,
+  "oos_authority": "NONE",
+  "postrun_audit_payload_sha256": "154cdeb38912432550e4a80cf2c3183749d0f65ee0ddcba589a474ec87496ca7",
+  "productive_candidate_count": 175,
+  "ranking_contract": [
+    "stable_desc",
+    "cross_window_positive_increment_count_desc",
+    "cross_window_matched_consistency_desc",
+    "lower_tail_window_return_increment_desc",
+    "robust_median_window_return_increment_desc",
+    "matched_cumulative_net_return_increment_desc",
+    "matched_net_reward_increment_desc",
+    "abs_turnover_differential_asc",
+    "exact_identity_asc"
+  ],
+  "schema_version": "cn_search_core_v2_production_wave1_development_archive_summary_v1",
+  "source_productive_file_sha256": "91965a7ada0708c8a0684acfb73f8341289c7e171c1b453f2dc779aa805268d5",
+  "source_stable_file_sha256": "411cd0ac524ebf8aac468cbce88e0cc74a46c2b585efbaa5d4339cecdb230bfb",
+  "stable_behavior_representative_count": 142,
+  "stable_candidate_count": 151,
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE1_DEVELOPMENT_ARCHIVE_READY_NOT_ALPHA_QUALIFIED",
+  "template_representative_counts": {
+    "BASE_EVENT": 22,
+    "BASE_MARKET": 7,
+    "BASE_MARKET_EVENT": 33,
+    "BASE_TEMPORAL": 14,
+    "BASE_TEMPORAL_EVENT": 34,
+    "BASE_TEMPORAL_MARKET": 23,
+    "BASE_TEMPORAL_MARKET_EVENT": 33
+  },
+  "validation_read": false
+}
