@@ -90,6 +90,7 @@ CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
         "cn-search-core-v2-stage15-v1",
         "cn-search-core-v2-stage2-v1",
         "cn-search-core-v2-production-wave1-v1",
+        "cn-search-core-v2-production-wave2-v1",
         "cn-search-core-v2-production-wave1-report-only-validation-v1",
         "cn-program-primitive-main-production-v1",
         "cn-program-primitive-main-production-recovery-v1",
