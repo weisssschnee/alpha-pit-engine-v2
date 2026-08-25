@@ -1,0 +1,104 @@
+{
+  "authorization_payload_sha256": "30799193fa616e5fce688557e7f36fda56b708e8a003743a19da8af9642d2d9b",
+  "automatic_followon_authorized": false,
+  "campaign_id": "CN_SEARCH_CORE_V2_PRODUCTION_WAVE1_V1",
+  "campaign_profile": "cn_search_core_v2_production_wave1_v1",
+  "capital_action_authorized": false,
+  "evaluation_data_role": "DEVELOPMENT_ONLY",
+  "execution_authorized": true,
+  "official_resource_canary": {
+    "field_column_count": 64,
+    "field_columns_sha256": "4f78ea7d19ad6543dee962370d6959ef3a7938bd82170b8a5dd120d60755de52",
+    "file_sha256": "060219e6ddfa44fda9beb9f701f7bd3bb75eebe630dd44160040a50cb9c4b32e",
+    "payload_sha256": "e9178aee4d0762fc184c3cd71da7ea740cba457475a336f203f9460889b6c6ac",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_official_resource_canary_20260825.json",
+    "runner_source_file_sha256": "025084940ad842ef35575f784fa402d296c07235dfac4655212e7ab23e7ac5e7"
+  },
+  "oos_authority": "NONE",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "production_contract": {
+    "arm": "SEMANTIC_STATE_JUMP_GENERATOR_V2",
+    "automatic_followon": false,
+    "batch_size": 24,
+    "checkpoint_size": 24,
+    "per_template_budget": 48,
+    "rounds": 2,
+    "templates": [
+      "BASE_EVENT",
+      "BASE_MARKET",
+      "BASE_MARKET_EVENT",
+      "BASE_TEMPORAL",
+      "BASE_TEMPORAL_EVENT",
+      "BASE_TEMPORAL_MARKET",
+      "BASE_TEMPORAL_MARKET_EVENT"
+    ],
+    "total_checkpoint_count": 14,
+    "total_financial_evaluations": 336
+  },
+  "production_wave1_prefreeze": {
+    "file_sha256": "8f8f06454c9f4bdee38406f16a6986a6943815b83d07003ed100b44dabac8d99",
+    "payload_sha256": "e511833326b7d975b5ee4d1751845e20c8c8f5bb1f8a01afb7c7301d74cb5bdf",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_prefreeze_20260825.json"
+  },
+  "production_wave1_supply_audit": {
+    "field_column_count": 64,
+    "field_columns_sha256": "4f78ea7d19ad6543dee962370d6959ef3a7938bd82170b8a5dd120d60755de52",
+    "file_sha256": "3d553539692d6046fea25b5e9cc00abe6d97bbd88a73d3b9828dabbdbaa97d13",
+    "generated_total": 168,
+    "payload_sha256": "4cf484876a6042990a6df4310ca723713fa74722fd3a45a8e9bb92acca0ebf89",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_supply_audit_20260825.json"
+  },
+  "project_control_route_id": "cn-search-core-v2-production-wave1-v1",
+  "promotion_authorized": false,
+  "resource_contract": {
+    "candidate_evaluation_during_canary": false,
+    "checkpoint_count": 14,
+    "checkpoint_size": 24,
+    "cpu_threads": 24,
+    "executor_workers": 24,
+    "field_column_count": 64,
+    "field_columns_sha256": "4f78ea7d19ad6543dee962370d6959ef3a7938bd82170b8a5dd120d60755de52",
+    "profile": "SEARCH_DUAL_24"
+  },
+  "restricted_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "historical_2023": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "schema_version": "cn_search_core_v2_production_wave1_authorization_v1",
+  "source_evaluator_authority": {
+    "component_pool_file_sha256": "64ff0e47dab2d92a2bfc53049bf2fc9d42ae2bc757c1dc5e81139e059ee9d12e",
+    "execution_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "node_capacity_sha256": "48abcebe9324fdfdb4923b5de5b1e85fff28ca310e80ff90f22b0c403bb308a5",
+    "raw_reservoir_file_sha256": "c284a095171b3634083484a0e810d8a8bbc6876328adf1972dc473e4ae7f5608",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "source_freeze_closure_file_sha256": "c8a621f2e9344cbfb7ff5942351f7c15a88dca811a71cbc5ae210469db2fcad0",
+    "source_freeze_closure_payload_sha256": "54ec9a239dac99cf779b187c113dba672b2ba2cc0865c56724f9e762d2110a18",
+    "source_run_contract_file_sha256": "b0af1e2c08f6e877a9f5ad4c35d1192756375f5b2a5bcfed8c2ae89df9d65452",
+    "source_run_contract_payload_sha256": "6ed3da590c83f90f84d5488e74a713bdcc14480b07e14b8ac44e1788e230d282"
+  },
+  "source_policy_review": {
+    "file_sha256": "7030b645aa1866459639666b7daf4e49344ed319c0c90dcec7daa7368af783f3",
+    "payload_sha256": "81ad19f856302a9772cca24dd3bd0ecdc9af43bdb5ad1fd77aa22dd97117a9cd",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_policy_review_20260825.json"
+  },
+  "source_prior_exact": {
+    "count": 1310,
+    "exact_identities_sha256": "90b0f3b13ffdc83e4a3398fc4c78499a7273b1dd72dbc86a04db4cbc84d6ab18",
+    "identity_field": "combined_prior_exact_identities",
+    "payload_sha256": "7d9c18e664326a53cebaf699a077672b7185ff89a81a17c2e0471703bcf862fa",
+    "relative_path": "runtime/run_plans/cn_program_optimizer_d1_continuation_C_postrun_prior_exact_freeze_20260817.json"
+  },
+  "source_stage_d_authorization": {
+    "file_sha256": "d6f27e7d8f548ed95f3142c6d5369fbcfffe9c4540a5ca50aa25e502228dabb0",
+    "payload_sha256": "2450845b8ab198c274e095b12918cb92709986c42eda158ae59acd79d03b863d",
+    "relative_path": "runtime/run_plans/cn_program_stage_d_primitive_confirmation_authorization_v1.json"
+  },
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE1_AUTHORIZED_NOT_RUN",
+  "validation_feedback_used": false
+}
