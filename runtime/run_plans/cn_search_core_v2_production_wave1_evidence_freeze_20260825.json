@@ -1,0 +1,41 @@
+{
+  "artifacts": {
+    "final_optimizer_state": {
+      "bytes": 1824264,
+      "file_sha256": "6149050caeba836564fd038f052b72fa83107ea46322cded0245a7a9181b5aef",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_final_optimizer_state_412d51c_20260825.json"
+    },
+    "productive_candidates": {
+      "bytes": 490440,
+      "file_sha256": "91965a7ada0708c8a0684acfb73f8341289c7e171c1b453f2dc779aa805268d5",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_productive_candidates_412d51c_20260825.jsonl"
+    },
+    "stable_candidates": {
+      "bytes": 422892,
+      "file_sha256": "411cd0ac524ebf8aac468cbce88e0cc74a46c2b585efbaa5d4339cecdb230bfb",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_stable_candidates_412d51c_20260825.jsonl"
+    },
+    "terminal": {
+      "bytes": 13768,
+      "file_sha256": "ad87463d2cf965d50f3f9a46eb7730fdf44cd48820371b790c64f6e3dca90bb9",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_complete_412d51c_20260825.json"
+    }
+  },
+  "automatic_promotion_authorized": false,
+  "classification": "DEVELOPMENT_ONLY_NOT_ALPHA_QUALIFIED",
+  "evidence_freeze_payload_sha256": "33d3406651070d6e36c21be8d49627c1e73cf806b1a2e08a76e9a7d949acada1",
+  "final_mature_observations": 1344,
+  "financial_evaluation_executed_by_freeze": false,
+  "forward_read": false,
+  "holdout_read": false,
+  "oos_authority": "NONE",
+  "postrun_audit_file_sha256": "4d4c00ebfa7ce9d148002d2f89960cd22c78eaaa86da2531506983915b2605e3",
+  "postrun_audit_payload_sha256": "154cdeb38912432550e4a80cf2c3183749d0f65ee0ddcba589a474ec87496ca7",
+  "productive_candidate_count": 175,
+  "schema_version": "cn_search_core_v2_production_wave1_evidence_freeze_v1",
+  "source_output_root": "G:\\Chengbo\\tmp\\wave1_freeze\\source",
+  "source_run_id": "cn_search_core_v2_production_wave1_20260825_412d51c",
+  "stable_candidate_count": 151,
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE1_EVIDENCE_FROZEN_DEVELOPMENT_ONLY",
+  "validation_read": false
+}
