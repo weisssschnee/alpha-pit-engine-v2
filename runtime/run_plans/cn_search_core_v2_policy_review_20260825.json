@@ -1,0 +1,75 @@
+{
+  "authority_boundaries": {
+    "alpha_promotion_authorized": false,
+    "capital_action_authorized": false,
+    "evaluation_data_role": "DEVELOPMENT_ONLY",
+    "forward_feedback_allowed": false,
+    "holdout_feedback_allowed": false,
+    "oos_authority": "NONE",
+    "validation_feedback_allowed": false
+  },
+  "evidence": {
+    "mature_state": {
+      "development_observations": 1008,
+      "file_sha256": "283e24377349fd51d8c3243db89f08e08faa014787ef7bb676ca48e4a1fde187",
+      "history_count": 42,
+      "payload_sha256": "1d5e44533c9627ea4d28e13fa62b0d994eb2af90016556a5dd5082398f453a88",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_final_optimizer_state_888a276_20260825.json"
+    },
+    "stage1": {
+      "file_sha256": "4ee24be6a7e05349d98abc92af7ebb79a0f7014a98e0082ddc4daa3b2e488de0",
+      "payload_sha256": "ba353565395af78fb002a8dabf29ad5373b6a3ee400aefa2cf99c831518f21e6",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_stage1_postrun_audit_20260824.json",
+      "round0_productive": {
+        "generator": 34,
+        "primitive": 67
+      },
+      "round1_productive": {
+        "generator": 71,
+        "primitive": 59
+      }
+    },
+    "stage15": {
+      "file_sha256": "82a4ebc42993f698d7041fe3b0e0134fb69779a13c8986a84362a71366fb65b8",
+      "payload_sha256": "9ddce372adc7e3c19a435523c9dd43a02f9abc150a9e6361240f71dcb9fc3059",
+      "productive_ratio_b_vs_a": 1.75,
+      "relative_path": "runtime/run_plans/cn_search_core_v2_stage15_postrun_audit_20260825.json",
+      "template_wins_b": 5
+    },
+    "stage2": {
+      "behavior_ratio_b_vs_a": 1.0653753026634383,
+      "file_sha256": "cee9937e73140203967b0ee7fb6f3e393cdbef54867751eb60d2459cf051627b",
+      "max_positive_gain_template_fraction": 0.3445378151260504,
+      "payload_sha256": "d33e29e5046acdb0ca5cf7b9e553f09c03d49f31e481a76f64754e6f1305cd24",
+      "productive_ratio_b_vs_a": 1.8880597014925373,
+      "relative_path": "runtime/run_plans/cn_search_core_v2_stage2_postrun_audit_20260825.json",
+      "stable_ratio_b_vs_a": 1.8782608695652174,
+      "template_wins_b": 7
+    }
+  },
+  "financial_evaluation_executed": false,
+  "next_action": "USE_MATURE_STATE_JUMP_GENERATOR_V2_AS_PRIMARY_FOR_FUTURE_DEVELOPMENT_SEARCH;_RETAIN_PRIMITIVE_AS_BOOTSTRAP_CONTROL",
+  "policy": {
+    "cold_start_primary_arm": "PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1",
+    "current_mature_observations": 1008,
+    "current_primary_arm": "SEMANTIC_STATE_JUMP_GENERATOR_V2",
+    "generator_restore_failure": "FAIL_CLOSED_NO_SILENT_PRIMITIVE_FALLBACK",
+    "mature_primary_arm": "SEMANTIC_STATE_JUMP_GENERATOR_V2",
+    "mature_snapshot_reuse_scope": "DEVELOPMENT_SEARCH_ONLY_HASH_BOUND",
+    "mature_switch_threshold_development_observations": 168,
+    "mcts_role": "CHALLENGER_DIAGNOSTIC_ONLY",
+    "primitive_role": "BOOTSTRAP_AND_CONTROL"
+  },
+  "policy_id": "BOOTSTRAP_PRIMITIVE_THEN_MATURE_STATE_JUMP_V1",
+  "policy_review_payload_sha256": "81ad19f856302a9772cca24dd3bd0ecdc9af43bdb5ad1fd77aa22dd97117a9cd",
+  "project_control_decision": {
+    "active_mature_snapshot_payload_sha256": "1d5e44533c9627ea4d28e13fa62b0d994eb2af90016556a5dd5082398f453a88",
+    "active_mature_snapshot_relative_path": "runtime/run_plans/cn_search_core_v2_stage2_final_optimizer_state_888a276_20260825.json",
+    "automatic_financial_campaign_launch_authorized": false,
+    "search_core_policy_change_authorized": true,
+    "verdict": "ADOPT_MATURE_STATE_JUMP_PRIMARY_FOR_FUTURE_DEVELOPMENT_SEARCH"
+  },
+  "schema_version": "cn_search_core_v2_policy_review_v1",
+  "source_repo_sha": "90a722d41cf7c32a6e33a641bb305439d6a0a885",
+  "status": "SEARCH_CORE_V2_POLICY_REVIEW_COMPLETE_MATURE_STATE_JUMP_PRIMARY"
+}
