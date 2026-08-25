@@ -1,0 +1,13 @@
+{
+  "schema_version": "cn_project_control_execution_identity_v1",
+  "project_id": "alpha_pit_true1min_engine_evalreset_20260711",
+  "repo_sha": "0438beb4b8aea662f4ca5f5c046d6e5689f85e8a",
+  "target_campaign_id": "cn-search-core-v2-production-wave1-report-only-validation-v1",
+  "target_run_id": "cn_search_core_v2_production_wave1_report_only_validation_20260825_0438beb",
+  "target_output_root": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_production_wave1_report_only_validation_20260825_0438beb",
+  "root_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+  "root_admission_file_sha256": "d4a4b9ea3180fd3553ea7487c7dda6bb7cc34548038823296707cc10e3952ec7",
+  "campaign_authorization_file_sha256": "3d0f3d296de032a82a232e32a99ed1ce28dc5e12f56fddb171a6ef73d45d2522",
+  "target_campaign_instance_id": "CN_SEARCH_CORE_V2_PRODUCTION_WAVE1_REPORT_ONLY_VALIDATION_V1",
+  "target_campaign_profile": "cn_search_core_v2_production_wave1_report_only_validation_v1"
+}

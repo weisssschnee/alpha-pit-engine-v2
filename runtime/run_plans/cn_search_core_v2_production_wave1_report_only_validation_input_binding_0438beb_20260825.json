@@ -1,0 +1,50 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "c14508eb4e8504453b6c36785ed5d01db3ac08ceab21a93055282ff8232aa4ae",
+  "candidate_exact_identities_sha256": "b7c0a9d62b223b3b875b7014c2f0f454e66c6fc2790913ca63196eda1ebc91c9",
+  "data_role": "validation_report_only",
+  "evaluation_role": "validation",
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "holdout_reads": 0,
+  "input_binding_sha256": "10c7feb01473b3fb75f25bc7a5f0a80f9926fdde377e604dde99635a58cc126e",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "policy_memory_write": "FORBIDDEN",
+  "prepared_binding_file_sha256": "987a8a0aef5221f681b876e6a307a0165289070141131365efba922c40aa9504",
+  "prepared_binding_payload_sha256": "378baba885051c67a1357c9cbcd1683eba7739f68715450333ea93df65c14604",
+  "promotion": "FORBIDDEN",
+  "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+  "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+  "repo_sha": "0438beb4b8aea662f4ca5f5c046d6e5689f85e8a",
+  "resolved_schedule_file_sha256": "2879dffc347c04a6d893fa06ed89d763b6a45397b36aee51aeae99050f8581ef",
+  "same_slice_reselection_allowed": false,
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_search_core_v2_production_wave1_validation_input_binding_v1",
+  "shortlist_freeze_payload_sha256": "9c7b701ddc806de8a495e946c367932d339cab597667d4e6045f77e9a663f292",
+  "source_contract_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+  "source_contract_sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+  "threshold_tuning_allowed": false,
+  "usage": "REPORT_ONLY_FROZEN_WAVE1_SHORTLIST",
+  "validation_field_manifest_sha256": "dcd1060ddab1c98ad39cc38370653e9697c113fa26631053e9ba53c3de88976f",
+  "validation_session_authority_manifest_sha256": "b2480beaac6325b6947e8864b955f55a748f48cb14e2b11faee992a16bc178dc",
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
