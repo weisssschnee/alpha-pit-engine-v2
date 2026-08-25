@@ -131,7 +131,8 @@ def freeze(
 
     output_rows: list[dict[str, Any]] = []
     source_result_files: list[dict[str, Any]] = []
-    source_raw_record_files: list[dict[str, Any]] = []
+    raw_cache: dict[tuple[str, int], dict[str, dict[str, Any]]] = {}
+    source_raw_record_files: dict[str, dict[str, Any]] = {}
     for (root_text, wave), group in sorted(grouped.items(), key=lambda item: (item[0][0], item[0][1])):
         run_root = Path(root_text).resolve()
         result_path = _result_path(run_root, wave).resolve()
@@ -144,7 +145,6 @@ def freeze(
         by_exact = {str(row.get("exact_identity") or ""): dict(row) for row in result_rows}
         if len(by_exact) != len(result_rows):
             raise RuntimeError(f"duplicate exact identity in {result_path}")
-        raw_by_hash = _raw_records(run_root, wave)
         source_result_files.append({"path": str(result_path), "file_sha256": actual_hash, "wave": wave})
 
         for member in group:
@@ -157,9 +157,24 @@ def freeze(
             if str(result.get("physical_result_hash") or "") != str(member.get("physical_result_hash") or ""):
                 raise RuntimeError(f"physical_result_hash drift for {exact}")
             source_hash = str(result["source_record_sha256"])
-            raw = raw_by_hash.get(source_hash)
+            raw_source_wave = int(result.get("source_wave", wave))
+            raw_key = (str(run_root).lower(), raw_source_wave)
+            if raw_key not in raw_cache:
+                raw_cache[raw_key] = _raw_records(run_root, raw_source_wave)
+                for record_path in sorted(
+                    (run_root / f"wave_{raw_source_wave:03d}" / "records").glob("record_*.json")
+                ):
+                    resolved_record = record_path.resolve()
+                    source_raw_record_files[str(resolved_record).lower()] = {
+                        "path": str(resolved_record),
+                        "file_sha256": _sha(resolved_record),
+                        "wave": raw_source_wave,
+                    }
+            raw = raw_cache[raw_key].get(source_hash)
             if raw is None:
-                raise RuntimeError(f"raw source record missing for {exact}: {source_hash}")
+                raise RuntimeError(
+                    f"raw source record missing for {exact}: {source_hash} source_wave={raw_source_wave}"
+                )
             if raw.get("primary") is None or raw.get("base_control") is None:
                 raise RuntimeError(f"pair-native source record incomplete for {exact}")
             if str(raw.get("template_id") or "") != str(member.get("template_id") or ""):
@@ -199,7 +214,8 @@ def freeze(
                     "source_cohort": str(member["source_cohort"]),
                     "template_id": str(member["template_id"]),
                     "selection_kind": str(member["selection_kind"]),
-                    "source_wave": wave,
+                    "selection_wave": wave,
+                    "raw_source_wave": raw_source_wave,
                     "primary_cumulative_net_return": float(raw["primary"]["cumulative_net_return"]),
                     "control_cumulative_net_return": float(raw["base_control"]["cumulative_net_return"]),
                     "matched_cumulative_net_return_increment": matched_return,
@@ -220,9 +236,6 @@ def freeze(
                     "physical_result_hash": str(result["physical_result_hash"]),
                 }
             )
-        for record_path in sorted((run_root / f"wave_{wave:03d}" / "records").glob("record_*.json")):
-            source_raw_record_files.append({"path": str(record_path.resolve()), "file_sha256": _sha(record_path), "wave": wave})
-
     output_rows.sort(key=lambda row: str(row["exact_identity"]))
     if len(output_rows) != 183 or len({row["exact_identity"] for row in output_rows}) != 183:
         raise RuntimeError("D1 pair-native output exact coverage drift")
@@ -239,6 +252,7 @@ def freeze(
         "SUCCESSOR_D1": 56,
     }:
         raise RuntimeError(f"D1 pair-native cohort geometry drift: {cohort_counts}")
+    raw_file_rows = [source_raw_record_files[key] for key in sorted(source_raw_record_files)]
 
     payload = {
         "schema_version": "cn_program_optimizer_d1_pair_native_development_features_v1",
@@ -250,8 +264,9 @@ def freeze(
         "source_development_window_evidence_payload_sha256": evidence_hash,
         "source_candidate_member_files": source_member_files,
         "source_physical_result_files": source_result_files,
-        "source_raw_record_file_count": len(source_raw_record_files),
-        "source_raw_record_files_sha256": stable_hash(source_raw_record_files),
+        "source_raw_record_files": raw_file_rows,
+        "source_raw_record_file_count": len(raw_file_rows),
+        "source_raw_record_files_sha256": stable_hash(raw_file_rows),
         "feature_rows": output_rows,
         "feature_rows_sha256": stable_hash(output_rows),
         "research_boundaries": {
