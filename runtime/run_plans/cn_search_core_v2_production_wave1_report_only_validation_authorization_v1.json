@@ -1,0 +1,96 @@
+{
+  "archive_write": "FORBIDDEN",
+  "authorization_payload_sha256": "c14508eb4e8504453b6c36785ed5d01db3ac08ceab21a93055282ff8232aa4ae",
+  "automatic_followon_authorized": false,
+  "campaign_id": "CN_SEARCH_CORE_V2_PRODUCTION_WAVE1_REPORT_ONLY_VALIDATION_V1",
+  "campaign_profile": "cn_search_core_v2_production_wave1_report_only_validation_v1",
+  "candidate_count": 42,
+  "candidate_exact_identities_sha256": "b7c0a9d62b223b3b875b7014c2f0f454e66c6fc2790913ca63196eda1ebc91c9",
+  "candidate_generation_authorized": false,
+  "evaluation_role": "validation",
+  "execution_authorized": true,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "holdout_reads": 0,
+  "implementation": {
+    "runner_source_file_sha256": "a7fb7821b9f3d9154058a0b5721dd86941afd007bf08df93b251d86c92858fa9",
+    "runtime_source_file_sha256": "ad95fd57135573851c550e718f1f7a8394856cfccd02210c058a49c8b10e6fc0"
+  },
+  "oos_authority": "VALIDATION_REPORT_ONLY_EVIDENCE_ONLY",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY"
+  ],
+  "policy_memory_write": "FORBIDDEN",
+  "prep_authorization_payload_sha256": "ce43d337b788bc0f61f3c5244f92c49e3ec8232f460e545abbc615f728313fd2",
+  "prepared_binding": {
+    "file_sha256": "987a8a0aef5221f681b876e6a307a0165289070141131365efba922c40aa9504",
+    "payload_sha256": "378baba885051c67a1357c9cbcd1683eba7739f68715450333ea93df65c14604",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_prepared_binding_20260825.json"
+  },
+  "prepared_binding_payload_sha256": "378baba885051c67a1357c9cbcd1683eba7739f68715450333ea93df65c14604",
+  "project_control_route_id": "cn-search-core-v2-production-wave1-report-only-validation-v1",
+  "promotion_authorized": false,
+  "registry": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+  },
+  "resolved_schedules": {
+    "file_sha256": "2879dffc347c04a6d893fa06ed89d763b6a45397b36aee51aeae99050f8581ef",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_resolved_schedules_20260825.jsonl"
+  },
+  "resource_contract": {
+    "candidate_count": 42,
+    "cpu_threads": 8,
+    "evaluator_workers": 4,
+    "profile": "VALIDATION_DUAL_8"
+  },
+  "same_slice_reselection_allowed": false,
+  "schedule_resolution": {
+    "file_sha256": "6080029c26f423c00543fa79f85e77336d2680004d4406f34a9a7c3777a4b0ac",
+    "payload_sha256": "039b1081dda0bf5a083a0637c68ff5489e1c8a2c58610d6768da28d7d8a7a8f1",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_schedule_resolution_20260825.json"
+  },
+  "schedule_resolution_payload_sha256": "039b1081dda0bf5a083a0637c68ff5489e1c8a2c58610d6768da28d7d8a7a8f1",
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_search_core_v2_production_wave1_report_only_validation_authorization_v1",
+  "shortlist_freeze": {
+    "file_sha256": "219c32071fc2b5f667748d8619e2d98e391d38368fb729b8c8739ccef00937e7",
+    "payload_sha256": "9c7b701ddc806de8a495e946c367932d339cab597667d4e6045f77e9a663f292",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_shortlist_freeze_20260825.json"
+  },
+  "shortlist_freeze_payload_sha256": "9c7b701ddc806de8a495e946c367932d339cab597667d4e6045f77e9a663f292",
+  "shortlist_members": {
+    "file_sha256": "3e4e73fa5f2c6b0493d3a66a2dd8125eb59ccaab8c2cbfeaeb175dad42dacd35",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_shortlist_members_20260825.jsonl"
+  },
+  "source_contract": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+  },
+  "source_repo_sha": "46bbaad65044e7682811bead7fcabf7fcfb64ef4",
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE1_REPORT_ONLY_VALIDATION_AUTHORIZED_NOT_RUN",
+  "threshold_tuning_allowed": false,
+  "usage": "REPORT_ONLY_FROZEN_WAVE1_SHORTLIST",
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
