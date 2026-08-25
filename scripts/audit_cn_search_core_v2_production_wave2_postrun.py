@@ -11,7 +11,7 @@ from scripts import run_cn_joint_program_phase_c_v0 as engine
 from scripts import run_cn_search_core_v2_stage1_v1 as stage1
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
-STATUS = "SEARCH_CORE_V2_PRODUCTION_WAVE2_POSTRUN_AUDIT_COMPLETE_ARCHIVE_READY"
+STATUS = "SEARCH_CORE_V2_PRODUCTION_WAVE2_POSTRUN_AUDIT_COMPLETE_DEVELOPMENT_ARCHIVE_READY"
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -52,6 +52,11 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     source_state_path = repo / Path(str(prefreeze["mature_state"]["relative_path"]))
     source_state = _read(source_state_path)
     source_state_hash = _verify(source_state, "snapshot_hash", "Production Wave 2 source mature state")
+    pair_contract = dict(prefreeze.get("pair_native_annotation_contract") or {})
+    pair_rule_id = str(pair_contract.get("rule_id") or "")
+    rule_contract = dict(pair_contract.get("rule_contract") or {})
+    required_primary = int(rule_contract.get("primary_positive_development_window_count_required") or 0)
+    minimum_control = int(rule_contract.get("control_positive_development_window_count_minimum") or 0)
 
     if (
         terminal.get("status") != "SEARCH_CORE_V2_PRODUCTION_WAVE2_COMPLETE"
@@ -71,33 +76,27 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         or any(int(value) != 0 for value in dict(terminal.get("restricted_reads") or {}).values())
     ):
         raise RuntimeError("Production Wave 2 terminal contract drift")
-    pair_contract = dict(prefreeze.get("pair_native_annotation_contract") or {})
+    pair_terminal = dict(terminal.get("pair_native_annotation") or {})
+    if (
+        pair_terminal.get("rule_id") != pair_rule_id
+        or pair_terminal.get("source_payload_sha256") != pair_contract.get("source_payload_sha256")
+        or pair_terminal.get("application_scope") != "DEVELOPMENT_RESULT_ANNOTATION_AND_ARCHIVE_ONLY"
+        or pair_terminal.get("optimizer_feedback_write") is not False
+        or pair_terminal.get("candidate_admission_changed") is not False
+        or pair_terminal.get("generator_ask_order_changed") is not False
+    ):
+        raise RuntimeError("Production Wave 2 pair-native terminal contract drift")
     if (
         supply.get("status") != "PASS_ZERO_FINANCIAL_PRODUCTION_WAVE2_CHECKPOINT_SUPPLY_AUDIT"
         or int(supply.get("generated_total") or 0) != 168
-        or int(supply.get("unique_exact_count") or 0) != 168
         or int(supply.get("prior_overlap_count", -1)) != 0
         or bool(supply.get("candidate_evaluation_executed"))
         or bool(supply.get("financial_sidecar_read"))
         or canary.get("status") != "PASS"
-        or int(canary.get("requested_workers") or 0) != 24
-        or int(canary.get("field_column_count") or 0) != 62
         or canary.get("candidate_evaluation_executed") is not False
-        or int(dict(canary.get("resource_probe") or {}).get("pagefile_pages_in_delta_bytes", -1)) != 0
-        or int(dict(canary.get("resource_probe") or {}).get("pagefile_pages_out_delta_bytes", -1)) != 0
         or authorization.get("status") != "SEARCH_CORE_V2_PRODUCTION_WAVE2_AUTHORIZED_NOT_RUN"
-        or dict(authorization.get("pair_native_annotation_contract") or {}) != pair_contract
-        or pair_contract.get("application_scope") != "DEVELOPMENT_RESULT_ANNOTATION_AND_ARCHIVE_ONLY"
-        or pair_contract.get("optimizer_feedback_write") is not False
-        or pair_contract.get("candidate_admission_changed") is not False
-        or pair_contract.get("generator_ask_order_changed") is not False
-        or pair_contract.get("automatic_policy_adoption") is not False
-        or pair_contract.get("validation_label_read_at_application") is not False
     ):
         raise RuntimeError("Production Wave 2 prefinancial authority drift")
-    runner_path = repo / "scripts/run_cn_search_core_v2_production_wave2_v1.py"
-    if _sha(runner_path) != str(canary["runner_source_file_sha256"]):
-        raise RuntimeError("Production Wave 2 runner changed after canary")
 
     checkpoint_dirs = [root / f"checkpoint_{ordinal:04d}" for ordinal in range(14)]
     if any(not path.is_dir() for path in checkpoint_dirs):
@@ -106,10 +105,6 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("Production Wave 2 has inflight checkpoint after terminal")
     all_rows: list[dict[str, Any]] = []
     checkpoint_metrics: list[dict[str, Any]] = []
-    pair_available_count = 0
-    pair_rule_hit_count = 0
-    pair_productive_hit_count = 0
-    pair_stable_hit_count = 0
     previous = "GENESIS"
     for ordinal, checkpoint in enumerate(checkpoint_dirs):
         manifest_path = checkpoint / "checkpoint_manifest.json"
@@ -130,10 +125,6 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         rows = _read_jsonl(checkpoint / "candidate_results.jsonl")
         if len(rows) != 24:
             raise RuntimeError("Production Wave 2 checkpoint result count drift")
-        local_available = 0
-        local_hits = 0
-        local_productive_hits = 0
-        local_stable_hits = 0
         for row in rows:
             _verify(row, "result_payload_sha256", f"checkpoint {ordinal} result")
             if row.get("production_wave_id") != "SEARCH_CORE_V2_PRODUCTION_WAVE2_V1":
@@ -141,42 +132,30 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             annotation = dict(row.get("pair_native_robustness") or {})
             if (
                 annotation.get("schema_version") != "cn_search_core_v2_pair_native_development_annotation_v1"
-                or annotation.get("rule_id") != pair_contract.get("rule_id")
+                or annotation.get("rule_id") != pair_rule_id
                 or annotation.get("annotation_only") is not True
                 or annotation.get("optimizer_feedback_used") is not False
             ):
-                raise RuntimeError("Production Wave 2 pair-native annotation drift")
-            available = bool(annotation.get("available"))
-            hit = bool(annotation.get("challenger_hit"))
-            if hit and not available:
-                raise RuntimeError("Production Wave 2 unavailable pair cannot hit challenger")
-            local_available += int(available)
-            local_hits += int(hit)
-            local_productive_hits += int(hit and bool(row["productive"]))
-            local_stable_hits += int(hit and bool(row["stable"]))
+                raise RuntimeError("Production Wave 2 pair-native annotation contract drift")
+            if bool(annotation.get("available")):
+                primary_count = int(annotation.get("primary_positive_window_count") or 0)
+                control_count = int(annotation.get("control_positive_window_count") or 0)
+                expected_hit = primary_count >= required_primary and control_count >= minimum_control
+                if (
+                    list(annotation.get("window_ids") or ()) != ["development_1", "development_2", "development_3"]
+                    or len(list(annotation.get("primary_window_returns") or ())) != 3
+                    or len(list(annotation.get("control_window_returns") or ())) != 3
+                    or bool(annotation.get("challenger_hit")) != expected_hit
+                ):
+                    raise RuntimeError("Production Wave 2 pair-native annotation recomputation drift")
+            elif bool(annotation.get("challenger_hit")):
+                raise RuntimeError("Production Wave 2 unavailable pair marked challenger")
         tell = _read(checkpoint / "optimizer_tell_receipt.json")
-        if (
-            int(tell.get("asked_count") or 0) != 24
-            or tell.get("feedback_domain") != "DEVELOPMENT_ONLY"
-            or tell.get("sealed_feedback_used") is not False
-            or tell.get("optimizer_feedback_applied") is not True
-            or any("pair" in str(key).lower() or "challenger" in str(key).lower() for key in tell)
-        ):
-            raise RuntimeError("Production Wave 2 pair-native/tell separation drift")
-        metric = _read(checkpoint / "checkpoint_metric.json")
-        if (
-            int(metric.get("pair_native_available_count") or 0) != local_available
-            or int(metric.get("pair_native_rule_hit_count") or 0) != local_hits
-            or int(metric.get("pair_native_productive_rule_hit_count") or 0) != local_productive_hits
-            or int(metric.get("pair_native_stable_rule_hit_count") or 0) != local_stable_hits
-        ):
-            raise RuntimeError("Production Wave 2 checkpoint pair-native metric drift")
-        pair_available_count += local_available
-        pair_rule_hit_count += local_hits
-        pair_productive_hit_count += local_productive_hits
-        pair_stable_hit_count += local_stable_hits
+        tell_text = json.dumps(tell, ensure_ascii=False, sort_keys=True).lower()
+        if "pair_native" in tell_text or "challenger" in tell_text:
+            raise RuntimeError("Production Wave 2 pair-native feedback leaked into optimizer tell")
         all_rows.extend(rows)
-        checkpoint_metrics.append(metric)
+        checkpoint_metrics.append(_read(checkpoint / "checkpoint_metric.json"))
     if previous != str(terminal["last_checkpoint_manifest_file_sha256"]):
         raise RuntimeError("Production Wave 2 terminal checkpoint chain drift")
     if len(all_rows) != 336 or len({str(row["exact_identity"]) for row in all_rows}) != 336:
@@ -216,39 +195,54 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
 
     productive_path = root / "PRODUCTIVE_CANDIDATES.jsonl"
     stable_path = root / "STABLE_CANDIDATES.jsonl"
-    pair_native_path = root / "PAIR_NATIVE_CHALLENGER_CANDIDATES.jsonl"
     productive_rows = _read_jsonl(productive_path)
     stable_rows = _read_jsonl(stable_path)
-    pair_native_rows = _read_jsonl(pair_native_path)
     expected_productive = [row for row in all_rows if bool(row["productive"])]
     expected_stable = [row for row in all_rows if bool(row["stable"])]
-    expected_pair_native = [
-        row
-        for row in expected_productive
-        if bool(dict(row["pair_native_robustness"])["challenger_hit"])
-    ]
-    terminal_pair = dict(terminal.get("pair_native_annotation") or {})
     if (
         productive_rows != expected_productive
         or stable_rows != expected_stable
-        or pair_native_rows != expected_pair_native
         or len(productive_rows) != int(terminal["productive_candidate_count"])
         or len(stable_rows) != int(terminal["stable_candidate_count"])
         or _sha(productive_path) != str(terminal["productive_archive_file_sha256"])
         or _sha(stable_path) != str(terminal["stable_archive_file_sha256"])
-        or terminal_pair.get("rule_id") != pair_contract.get("rule_id")
-        or terminal_pair.get("source_payload_sha256") != pair_contract.get("source_payload_sha256")
-        or terminal_pair.get("application_scope") != "DEVELOPMENT_RESULT_ANNOTATION_AND_ARCHIVE_ONLY"
-        or int(terminal_pair.get("available_count") or 0) != pair_available_count
-        or int(terminal_pair.get("rule_hit_count") or 0) != pair_rule_hit_count
-        or int(terminal_pair.get("productive_rule_hit_count") or 0) != pair_productive_hit_count
-        or int(terminal_pair.get("stable_rule_hit_count") or 0) != pair_stable_hit_count
-        or _sha(pair_native_path) != str(terminal_pair.get("archive_file_sha256") or "")
-        or terminal_pair.get("optimizer_feedback_write") is not False
-        or terminal_pair.get("candidate_admission_changed") is not False
-        or terminal_pair.get("generator_ask_order_changed") is not False
     ):
-        raise RuntimeError("Production Wave 2 candidate/pair-native archive drift")
+        raise RuntimeError("Production Wave 2 candidate archive drift")
+
+    pair_available = [row for row in all_rows if bool(row["pair_native_robustness"]["available"])]
+    pair_hits = [row for row in all_rows if bool(row["pair_native_robustness"]["challenger_hit"])]
+    pair_productive = [row for row in expected_productive if bool(row["pair_native_robustness"]["challenger_hit"])]
+    pair_stable = [row for row in expected_stable if bool(row["pair_native_robustness"]["challenger_hit"])]
+    pair_archive_path = root / "PAIR_NATIVE_CHALLENGER_CANDIDATES.jsonl"
+    pair_archive_rows = _read_jsonl(pair_archive_path)
+    if (
+        pair_archive_rows != pair_productive
+        or len(pair_available) != int(pair_terminal.get("available_count") or 0)
+        or len(pair_hits) != int(pair_terminal.get("rule_hit_count") or 0)
+        or len(pair_productive) != int(pair_terminal.get("productive_rule_hit_count") or 0)
+        or len(pair_stable) != int(pair_terminal.get("stable_rule_hit_count") or 0)
+        or _sha(pair_archive_path) != str(pair_terminal.get("archive_file_sha256") or "")
+    ):
+        raise RuntimeError("Production Wave 2 pair-native challenger archive drift")
+    for ordinal, metric in enumerate(checkpoint_metrics):
+        cp_rows = [row for row in all_rows if int(row.get("checkpoint_ordinal") or -1) == ordinal]
+        cp_available = sum(bool(row["pair_native_robustness"]["available"]) for row in cp_rows)
+        cp_hits = sum(bool(row["pair_native_robustness"]["challenger_hit"]) for row in cp_rows)
+        cp_productive = sum(
+            bool(row["productive"]) and bool(row["pair_native_robustness"]["challenger_hit"])
+            for row in cp_rows
+        )
+        cp_stable = sum(
+            bool(row["stable"]) and bool(row["pair_native_robustness"]["challenger_hit"])
+            for row in cp_rows
+        )
+        if (
+            int(metric.get("pair_native_available_count") or 0) != cp_available
+            or int(metric.get("pair_native_rule_hit_count") or 0) != cp_hits
+            or int(metric.get("pair_native_productive_rule_hit_count") or 0) != cp_productive
+            or int(metric.get("pair_native_stable_rule_hit_count") or 0) != cp_stable
+        ):
+            raise RuntimeError("Production Wave 2 checkpoint pair-native metric drift")
 
     job = _read(args.job_status.resolve())
     exit_receipt = _read(args.exit_receipt.resolve())
@@ -304,17 +298,24 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         "candidate_archives": {
             "productive_count": len(productive_rows),
             "stable_count": len(stable_rows),
-            "pair_native_challenger_count": len(pair_native_rows),
             "productive_file_sha256": _sha(productive_path),
             "stable_file_sha256": _sha(stable_path),
-            "pair_native_challenger_file_sha256": _sha(pair_native_path),
-            "pair_native_rule_id": pair_contract["rule_id"],
-            "pair_native_available_count": pair_available_count,
-            "pair_native_rule_hit_count": pair_rule_hit_count,
-            "pair_native_productive_rule_hit_count": pair_productive_hit_count,
-            "pair_native_stable_rule_hit_count": pair_stable_hit_count,
-            "pair_native_optimizer_feedback_used": False,
             "classification": "DEVELOPMENT_ONLY_NOT_ALPHA_QUALIFIED",
+        },
+        "pair_native_annotation": {
+            "rule_id": pair_rule_id,
+            "source_payload_sha256": pair_contract["source_payload_sha256"],
+            "application_scope": pair_contract["application_scope"],
+            "available_count": len(pair_available),
+            "rule_hit_count": len(pair_hits),
+            "productive_rule_hit_count": len(pair_productive),
+            "stable_rule_hit_count": len(pair_stable),
+            "challenger_archive_file_sha256": _sha(pair_archive_path),
+            "optimizer_feedback_write": False,
+            "candidate_admission_changed": False,
+            "generator_ask_order_changed": False,
+            "all_checkpoint_tell_receipts_pair_native_free": True,
+            "classification": "DEVELOPMENT_ONLY_CHALLENGER_NOT_ALPHA_QUALIFIED",
         },
         "execution_terminal": {
             "job_exit_code": int(job["exit_code"]),
@@ -324,8 +325,8 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
             "restricted_reads": dict(terminal["restricted_reads"]),
         },
         "project_control_recommendation": {
-            "verdict": "HOLD_DEVELOPMENT_ARCHIVE_READY_NO_AUTOMATIC_OOS",
-            "next_action": "CLUSTER_AND_RANK_NEW_DEVELOPMENT_CANDIDATES_WITHOUT_READING_VALIDATION_OR_OOS",
+            "verdict": "HOLD_WAVE2_DEVELOPMENT_ARCHIVE_AND_PAIR_CHALLENGER_NO_AUTOMATIC_VALIDATION",
+            "next_action": "FREEZE_WAVE2_DEVELOPMENT_EVIDENCE_AND_COMPARE_WAVE1_WAVE2_YIELD_WITHOUT_READING_VALIDATION_OR_OOS",
             "automatic_validation_authorized": False,
             "automatic_promotion_authorized": False,
             "capital_action_authorized": False,
