@@ -1,0 +1,227 @@
+{
+  "autopsy_payload_sha256": "c435cd8b26c1fd732e4d6dba627acbc7771de83e50ec1d0e348eeaf65e7f2423",
+  "candidate_count": 42,
+  "diagnosis": {
+    "development_priority_rank_transfer_predictive": false,
+    "development_stability_filter_sufficient": false,
+    "same_validation_slice_can_support_prospective_selector_claim": false,
+    "search_policy_development_efficiency_invalidated": false,
+    "search_policy_role": "RETAIN_AS_DEVELOPMENT_SEARCH_ENGINE_ONLY",
+    "selection_layer_status": "UNSOLVED_DEVELOPMENT_TO_VALIDATION_TRANSFER"
+  },
+  "feature_diagnostics": {
+    "cross_window_matched_consistency": {
+      "bottom_quartile_productive_count": 1,
+      "bottom_quartile_stable_2of3_count": 1,
+      "max": 1.0,
+      "median": 1.0,
+      "min": 0.6666666666666666,
+      "nonproductive_mean": 0.9509803921568627,
+      "productive_mean": 1.0,
+      "spearman_vs_validation_matched_return_increment": -0.2638993092200271,
+      "spearman_vs_validation_productive": 0.178315737905373,
+      "spearman_vs_validation_stable_2of3": 0.13513513513513514,
+      "top_quartile_productive_count": 0,
+      "top_quartile_stable_2of3_count": 0,
+      "unique_value_count": 2
+    },
+    "cross_window_positive_increment_count": {
+      "bottom_quartile_productive_count": 1,
+      "bottom_quartile_stable_2of3_count": 1,
+      "max": 3.0,
+      "median": 3.0,
+      "min": 2.0,
+      "nonproductive_mean": 2.8529411764705883,
+      "productive_mean": 3.0,
+      "spearman_vs_validation_matched_return_increment": -0.2638993092200271,
+      "spearman_vs_validation_productive": 0.178315737905373,
+      "spearman_vs_validation_stable_2of3": 0.13513513513513514,
+      "top_quartile_productive_count": 0,
+      "top_quartile_stable_2of3_count": 0,
+      "unique_value_count": 2
+    },
+    "lower_tail_window_return_increment": {
+      "bottom_quartile_productive_count": 2,
+      "bottom_quartile_stable_2of3_count": 1,
+      "max": 0.44158875352138016,
+      "median": 0.17936528119100614,
+      "min": -0.1340240107960038,
+      "nonproductive_mean": 0.17367338412997932,
+      "productive_mean": 0.15449046879946265,
+      "spearman_vs_validation_matched_return_increment": -0.23576609972822354,
+      "spearman_vs_validation_productive": -0.07503931660860506,
+      "spearman_vs_validation_stable_2of3": 0.0454943497841263,
+      "top_quartile_productive_count": 2,
+      "top_quartile_stable_2of3_count": 2,
+      "unique_value_count": 41
+    },
+    "matched_cumulative_net_return_increment": {
+      "bottom_quartile_productive_count": 2,
+      "bottom_quartile_stable_2of3_count": 1,
+      "max": 1.2463817646688544,
+      "median": 0.890323530835859,
+      "min": 0.07409841903963366,
+      "nonproductive_mean": 0.7444613846774154,
+      "productive_mean": 0.6825751879680775,
+      "spearman_vs_validation_matched_return_increment": -0.16363415446933083,
+      "spearman_vs_validation_productive": -0.03501834775068236,
+      "spearman_vs_validation_stable_2of3": 0.015164783261375433,
+      "top_quartile_productive_count": 2,
+      "top_quartile_stable_2of3_count": 2,
+      "unique_value_count": 41
+    },
+    "matched_net_reward_increment": {
+      "bottom_quartile_productive_count": 2,
+      "bottom_quartile_stable_2of3_count": 1,
+      "max": 5.580820766395584,
+      "median": 3.32257191412843,
+      "min": 0.1636640215022307,
+      "nonproductive_mean": 2.8816576069376474,
+      "productive_mean": 2.383994483437455,
+      "spearman_vs_validation_matched_return_increment": -0.4341694727549308,
+      "spearman_vs_validation_productive": -0.1350707698954891,
+      "spearman_vs_validation_stable_2of3": -0.06369208969777682,
+      "top_quartile_productive_count": 1,
+      "top_quartile_stable_2of3_count": 1,
+      "unique_value_count": 41
+    },
+    "robust_median_window_return_increment": {
+      "bottom_quartile_productive_count": 3,
+      "bottom_quartile_stable_2of3_count": 2,
+      "max": 0.5762883617500064,
+      "median": 0.27810597927765374,
+      "min": 0.0005610499943629055,
+      "nonproductive_mean": 0.27302188970694946,
+      "productive_mean": 0.1987603143176518,
+      "spearman_vs_validation_matched_return_increment": -0.273371967818253,
+      "spearman_vs_validation_productive": -0.18009435986065214,
+      "spearman_vs_validation_stable_2of3": -0.06975800300232698,
+      "top_quartile_productive_count": 1,
+      "top_quartile_stable_2of3_count": 1,
+      "unique_value_count": 41
+    },
+    "turnover_differential": {
+      "bottom_quartile_productive_count": 1,
+      "bottom_quartile_stable_2of3_count": 0,
+      "max": 0.34047015614901344,
+      "median": -0.10409822965513843,
+      "min": -0.7655633901761875,
+      "nonproductive_mean": -0.10025838861299691,
+      "productive_mean": -0.10363107643762191,
+      "spearman_vs_validation_matched_return_increment": 0.3693317691514317,
+      "spearman_vs_validation_productive": 0.005002621107240338,
+      "spearman_vs_validation_stable_2of3": 0.10615348282962803,
+      "top_quartile_productive_count": 2,
+      "top_quartile_stable_2of3_count": 0,
+      "unique_value_count": 41
+    }
+  },
+  "features_ranked_by_abs_spearman_to_validation_increment": [
+    {
+      "feature": "matched_net_reward_increment",
+      "spearman": -0.4341694727549308
+    },
+    {
+      "feature": "turnover_differential",
+      "spearman": 0.3693317691514317
+    },
+    {
+      "feature": "robust_median_window_return_increment",
+      "spearman": -0.273371967818253
+    },
+    {
+      "feature": "cross_window_positive_increment_count",
+      "spearman": -0.2638993092200271
+    },
+    {
+      "feature": "cross_window_matched_consistency",
+      "spearman": -0.2638993092200271
+    },
+    {
+      "feature": "lower_tail_window_return_increment",
+      "spearman": -0.23576609972822354
+    },
+    {
+      "feature": "matched_cumulative_net_return_increment",
+      "spearman": -0.16363415446933083
+    }
+  ],
+  "observed_transfer": {
+    "development_stable_input_count": 42,
+    "development_stable_to_validation_stable_2of3_rate": 0.11904761904761904,
+    "productive": 8,
+    "stable_2of3": 5,
+    "stable_3of3": 0
+  },
+  "research_boundaries": {
+    "automatic_selector_adoption_authorized": false,
+    "financial_evaluation_executed": false,
+    "forward_read": false,
+    "holdout_read": false,
+    "next_action": "DESIGN_TRANSFER_LAYER_DIAGNOSTIC_OR_FROZEN_SELECTOR_REQUIRING_DISTINCT_UNSEEN_EVALUATION_DOMAIN",
+    "promotion_authorized": false,
+    "validation_data_reused_for_diagnostic_only": true,
+    "validation_domain_consumed": true
+  },
+  "schema_version": "cn_search_core_v2_wave1_validation_transfer_autopsy_v1",
+  "source_validation_audit_payload_sha256": "aea495cdb04e2125c51eaff2808a1a1dc863bebd1b18fc761bb38f31c90eb31b",
+  "status": "SEARCH_CORE_V2_WAVE1_VALIDATION_TRANSFER_AUTOPSY_COMPLETE_DIAGNOSTIC_ONLY",
+  "template_diagnostics": {
+    "BASE_EVENT": {
+      "admitted": 0,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.23654551027764836,
+      "productive": 0,
+      "stable_2of3": 0,
+      "stable_3of3": 0
+    },
+    "BASE_MARKET": {
+      "admitted": 4,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.018796990349098763,
+      "productive": 0,
+      "stable_2of3": 0,
+      "stable_3of3": 0
+    },
+    "BASE_MARKET_EVENT": {
+      "admitted": 2,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.18180036932049987,
+      "productive": 1,
+      "stable_2of3": 0,
+      "stable_3of3": 0
+    },
+    "BASE_TEMPORAL": {
+      "admitted": 5,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.11188154382440013,
+      "productive": 2,
+      "stable_2of3": 2,
+      "stable_3of3": 0
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "admitted": 5,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.25635981018994947,
+      "productive": 1,
+      "stable_2of3": 0,
+      "stable_3of3": 0
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "admitted": 5,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.10120128171284981,
+      "productive": 2,
+      "stable_2of3": 1,
+      "stable_3of3": 0
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "admitted": 6,
+      "count": 6,
+      "median_validation_matched_return_increment": -0.05770414089144915,
+      "productive": 2,
+      "stable_2of3": 2,
+      "stable_3of3": 0
+    }
+  }
+}
