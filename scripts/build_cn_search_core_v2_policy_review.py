@@ -100,6 +100,13 @@ def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
             "stage2": {"relative_path": str(s2_path.relative_to(repo)).replace("\\", "/"), "file_sha256": _sha(s2_path), "payload_sha256": s2_hash, "productive_ratio_b_vs_a": d2["productive_ratio_b_vs_a"], "stable_ratio_b_vs_a": d2["stable_ratio_b_vs_a"], "behavior_ratio_b_vs_a": d2["behavior_ratio_b_vs_a"], "template_wins_b": d2["productive_template_win_count_b"], "max_positive_gain_template_fraction": d2["maximum_positive_productive_gain_template_fraction"]},
             "mature_state": {"relative_path": str(state_path.relative_to(repo)).replace("\\", "/"), "file_sha256": _sha(state_path), "payload_sha256": state_hash, "development_observations": current["development_observations"], "history_count": current["history_count"]},
         },
+        "project_control_decision": {
+            "verdict": "ADOPT_MATURE_STATE_JUMP_PRIMARY_FOR_FUTURE_DEVELOPMENT_SEARCH",
+            "search_core_policy_change_authorized": True,
+            "automatic_financial_campaign_launch_authorized": False,
+            "active_mature_snapshot_relative_path": str(state_path.relative_to(repo)).replace("\\", "/"),
+            "active_mature_snapshot_payload_sha256": state_hash,
+        },
         "authority_boundaries": {
             "evaluation_data_role": "DEVELOPMENT_ONLY",
             "validation_feedback_allowed": False,
