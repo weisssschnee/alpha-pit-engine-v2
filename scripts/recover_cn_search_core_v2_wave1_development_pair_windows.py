@@ -21,7 +21,7 @@ def extract(root:Path, target_path:Path|None)->dict[str,Any]:
     target=None
     if target_path is not None:
         members=read_jsonl(target_path.resolve()); target={str(r['exact_identity']) for r in members}
-        if len(members)!=42 or len(target)!=42: raise RuntimeError('target shortlist exact coverage drift')
+        if not members or len(target)!=len(members): raise RuntimeError('target exact coverage/duplicate drift')
     rows=[]; skipped_no_pair=0
     for cp in range(14):
         rr=root/f'checkpoint_{cp:04d}'/'records'; files=sorted(rr.glob('record_*.json'))
