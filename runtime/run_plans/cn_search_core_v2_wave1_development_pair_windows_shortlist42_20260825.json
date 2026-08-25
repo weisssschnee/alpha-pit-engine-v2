@@ -1,0 +1,1572 @@
+{
+  "candidate_count": 42,
+  "evidence_payload_sha256": "844505eed0dc7ace70589ae0e44152ca12e226f8c776db42af54eb3f9e1f3ebc",
+  "research_boundaries": {
+    "financial_evaluation_performed": false,
+    "forward_read": false,
+    "holdout_read": false,
+    "promotion_authorized": false,
+    "validation_read": false
+  },
+  "rows": [
+    {
+      "checkpoint_ordinal": 0,
+      "control_cumulative_net_return": -0.2576592070775675,
+      "control_program_id": "cn.program.922db2db283eae58b202be92daca9bc3",
+      "control_window_returns": [
+        -0.0719129432599408,
+        0.1000166784944232,
+        -0.2728645128588414
+      ],
+      "exact_identity": "001e16c6d71eee6e502f56b6585b9ad7b1c6c3249d7731efb88fb67c27cdf897",
+      "main_record_ordinal": 1,
+      "matched_cumulative_return_increment": 0.4906412189840691,
+      "matched_window_return_increments": [
+        0.12834058251383684,
+        0.06836176796661309,
+        0.2717908158461948
+      ],
+      "primary_cumulative_net_return": 0.23298201190650158,
+      "primary_window_returns": [
+        0.056427639253896045,
+        0.16837844646103628,
+        -0.0010736970126465906
+      ],
+      "program_id": "cn.program.67a6f3b7bde6bb13f463229740271dd1",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "3c6b2a40d3e8980f764a4381a6ac297fc9575abacc327aa230eb9b593715e81a",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 0,
+      "control_cumulative_net_return": -0.8104394166519346,
+      "control_program_id": "cn.program.c69438eabdc696127cffdbd43f9e64c8",
+      "control_window_returns": [
+        -0.5909860648882255,
+        -0.29342314023087535,
+        -0.34408053141262185
+      ],
+      "exact_identity": "22096f4d99ba0de7918b3ee1bfb3044647056858a2c4e065cf9e5318e391c875",
+      "main_record_ordinal": 9,
+      "matched_cumulative_return_increment": 0.9322042430181046,
+      "matched_window_return_increments": [
+        0.6424869722920015,
+        0.38356846147459,
+        0.3226862996610209
+      ],
+      "primary_cumulative_net_return": 0.12176482636616992,
+      "primary_window_returns": [
+        0.051500907403776,
+        0.09014532124371466,
+        -0.021394231751600934
+      ],
+      "program_id": "cn.program.ecf99a07608552c99bcef9fceb6d2fe0",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "a6fd8be96aa4217f5a33f66f26c484bf4aac24d8e764cf66c54f35043d9baec5",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 0,
+      "control_cumulative_net_return": -0.8200963377227907,
+      "control_program_id": "cn.program.83d9d4dbcbf28f18ccf7916a219627f3",
+      "control_window_returns": [
+        -0.5909860648882255,
+        -0.304400777861932,
+        -0.3676714193411832
+      ],
+      "exact_identity": "5414e214189bc909de563931ab1479efba5fc54c1d7c8387135877efb62608db",
+      "main_record_ordinal": 10,
+      "matched_cumulative_return_increment": 0.829079925193876,
+      "matched_window_return_increments": [
+        0.6340698801218398,
+        0.2713175276735096,
+        0.3680763222768444
+      ],
+      "primary_cumulative_net_return": 0.008983587471085297,
+      "primary_window_returns": [
+        0.043083815233614375,
+        -0.0330832501884224,
+        0.00040490293566119995
+      ],
+      "program_id": "cn.program.b494ec46d0956fc7902a3a4b976eea6d",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "6519c0b2bf6e3e9edb409f19184dfe03ced3821cc29291c09dc2058a0b530cac",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 1,
+      "control_cumulative_net_return": -0.06912210187118628,
+      "control_program_id": "cn.program.7d64559fcf6369e100934718b2fceb62",
+      "control_window_returns": [
+        -0.2798589098822837,
+        0.1619098953900513,
+        0.1125068065927679
+      ],
+      "exact_identity": "8a5d96bcd88bcdd5660908eb192c1678bc41066a88bf2369503babab8fc9bcba",
+      "main_record_ordinal": 34,
+      "matched_cumulative_return_increment": 0.3507213006001886,
+      "matched_window_return_increments": [
+        0.1231423913941575,
+        0.135114179419908,
+        0.059231414713777575
+      ],
+      "primary_cumulative_net_return": 0.2815991987290023,
+      "primary_window_returns": [
+        -0.15671651848812618,
+        0.2970240748099593,
+        0.17173822130654548
+      ],
+      "program_id": "cn.program.57e1e185358da8c41918968424584d91",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "2acba7c113e733863267219503fccef11b302ab0c1ce2f6f00908e5acdaa9ba6",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 1,
+      "control_cumulative_net_return": 0.1200509365877358,
+      "control_program_id": "cn.program.ffc03e74311f976d922976e65aa1ca59",
+      "control_window_returns": [
+        -0.28599860674765665,
+        0.574010932652016,
+        -0.0033768526327533355
+      ],
+      "exact_identity": "cc9235260b77fc5264d203a59d85b24be20a52afccb983db63ab235e5057e749",
+      "main_record_ordinal": 35,
+      "matched_cumulative_return_increment": 0.1073018891173132,
+      "matched_window_return_increments": [
+        0.10985610941939505,
+        -0.1334353570536717,
+        0.037521476428678646
+      ],
+      "primary_cumulative_net_return": 0.227352825705049,
+      "primary_window_returns": [
+        -0.1761424973282616,
+        0.44057557559834426,
+        0.03414462379592531
+      ],
+      "program_id": "cn.program.1dfeae54b761e8d8c75db9eeffc74208",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "d7e59b7e7d070441562ed886e573eae74284e38abcd931da0d8ecfba23a5f53f",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 1,
+      "control_cumulative_net_return": 0.09175313278662478,
+      "control_program_id": "cn.program.f831f3a48c8866d101f7b04b4e1099de",
+      "control_window_returns": [
+        -0.3076773980686651,
+        0.574599586394348,
+        0.0014881241875634998
+      ],
+      "exact_identity": "0207f9771fa47b70007fb580d85bda01bd3856e7ceb97f825415d725e87f7995",
+      "main_record_ordinal": 36,
+      "matched_cumulative_return_increment": 0.13134605519835096,
+      "matched_window_return_increments": [
+        0.13153490074040353,
+        -0.1340240107960038,
+        0.0290724637161055
+      ],
+      "primary_cumulative_net_return": 0.22309918798497574,
+      "primary_window_returns": [
+        -0.1761424973282616,
+        0.44057557559834426,
+        0.030560587903669
+      ],
+      "program_id": "cn.program.9dbc348b61b656a594036d4ff0c02ebe",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "102f478accd69fcf13862137f97ef79ab2500209fa0caecf246c76e8070a5981",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 1,
+      "control_cumulative_net_return": 0.1200509365877358,
+      "control_program_id": "cn.program.52d59b2216bdcbd2660d3d605c9d380c",
+      "control_window_returns": [
+        -0.28599860674765665,
+        0.574010932652016,
+        -0.0033768526327533355
+      ],
+      "exact_identity": "b68704de46ce432985011b431b6c4c6c7a1e2a9a759b14405da6a2dffa2e31b2",
+      "main_record_ordinal": 37,
+      "matched_cumulative_return_increment": 0.1073018891173132,
+      "matched_window_return_increments": [
+        0.10985610941939505,
+        -0.1334353570536717,
+        0.037521476428678646
+      ],
+      "primary_cumulative_net_return": 0.227352825705049,
+      "primary_window_returns": [
+        -0.1761424973282616,
+        0.44057557559834426,
+        0.03414462379592531
+      ],
+      "program_id": "cn.program.e221a50df9c1c53875479b979da2fa01",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "d3c667f1abaff1be5148bc287babaa595f98ee8329b4f099b6c7b49324beb0f6",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 1,
+      "control_cumulative_net_return": 0.05882190916094787,
+      "control_program_id": "cn.program.9e1d55eeec108c5a9c823dd3e31e51b6",
+      "control_window_returns": [
+        -0.32028240657599094,
+        0.44664757170309066,
+        0.0767916165876752
+      ],
+      "exact_identity": "153948509d56aaf68e5a5059192e702501e08e4fcefa2c31b25c80f5678d1770",
+      "main_record_ordinal": 40,
+      "matched_cumulative_return_increment": 0.20523908817934067,
+      "matched_window_return_increments": [
+        0.13172973230934248,
+        0.0005610499943629055,
+        -0.000384508680189688
+      ],
+      "primary_cumulative_net_return": 0.26406099734028854,
+      "primary_window_returns": [
+        -0.18855267426664846,
+        0.44720862169745357,
+        0.0764071079074855
+      ],
+      "program_id": "cn.program.753cb7888c66a51ca16bd2b89f6f7b7e",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "8c03952c9b01a14134a98884ede4803e9a3c66d9f427b85efecde14185b30fe7",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 2,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.05f90f663b69803f9e8e0e0b93a1077e",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "f67cdcfe3faba579eb9d0d4356445575baebd1444246bc34156773741dd1377a",
+      "main_record_ordinal": 58,
+      "matched_cumulative_return_increment": 0.9892134242918516,
+      "matched_window_return_increments": [
+        0.8117480289269969,
+        0.23641623602301975,
+        0.37307317884281255
+      ],
+      "primary_cumulative_net_return": 0.15359491600807562,
+      "primary_window_returns": [
+        0.14321988326114532,
+        -0.09346213960042948,
+        0.11310880357117314
+      ],
+      "program_id": "cn.program.adfe461e0e5b8e149c80f9e634b2c63b",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "4254a689572970ac6f6bb26a449aadf3975caf2b85054c90e167571fb283837e",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 2,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.fe1e36f8d5800159fbac93799879a5b0",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "9710d8b273438479cee507194e32ac3b92e837449ba11e383eaffd3bfba94838",
+      "main_record_ordinal": 59,
+      "matched_cumulative_return_increment": 1.0207965682804088,
+      "matched_window_return_increments": [
+        0.8296027147428606,
+        0.28397038300593425,
+        0.3298398514687295
+      ],
+      "primary_cumulative_net_return": 0.18517805999663284,
+      "primary_window_returns": [
+        0.161074569077009,
+        -0.04590799261751499,
+        0.06987547619709011
+      ],
+      "program_id": "cn.program.0bb52c9d6f6a81497591f2ed464b77e2",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "ce105eeb00866d70a437eac7ebd78ed690b50305810eeec2026b22164db81a48",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 3,
+      "control_cumulative_net_return": -0.8479402461861859,
+      "control_program_id": "cn.program.cb87db72007cc88d4fc8390946f28c1c",
+      "control_window_returns": [
+        -0.6775525379286702,
+        -0.31525884304251905,
+        -0.31130189547099496
+      ],
+      "exact_identity": "e5856f4551e8a1d5e24471aaa399dfb214c496ba51809ae3d690e83340c74fa6",
+      "main_record_ordinal": 74,
+      "matched_cumulative_return_increment": 1.072800216619762,
+      "matched_window_return_increments": [
+        0.5122687243705825,
+        0.7586790494210326,
+        0.327912945216853
+      ],
+      "primary_cumulative_net_return": 0.2248599704335763,
+      "primary_window_returns": [
+        -0.16528381355808774,
+        0.44342020637851354,
+        0.01661104974585803
+      ],
+      "program_id": "cn.program.f40fadd37993f058f0415cf5dc83366e",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "df1b5b5edcc9db2e67be4a75a95a4d962640a4e366d80176b2df21136a776cb9",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 3,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.4dd978736871116fd1f847db7e533272",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "7c03915bee02e4f9d31dfddf7f35b223a14994d6600c54b670bffebefe45c89f",
+      "main_record_ordinal": 75,
+      "matched_cumulative_return_increment": 1.1103692842445705,
+      "matched_window_return_increments": [
+        0.5537832278379301,
+        0.6397657347576559,
+        0.3592812771445357
+      ],
+      "primary_cumulative_net_return": 0.27475077596079456,
+      "primary_window_returns": [
+        -0.11474491782792151,
+        0.3098873591342066,
+        0.09931690187289632
+      ],
+      "program_id": "cn.program.9d39ebb556118d8884ab2222d7607888",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "e8449c5e56f94616f6c64fa654c04850baee06c2dd56c2c569012564836478df",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 3,
+      "control_cumulative_net_return": -0.33092775646055395,
+      "control_program_id": "cn.program.f1642ad6c29cd9a01240eb9d3e822a48",
+      "control_window_returns": [
+        -0.3973741901781178,
+        0.29031225621751533,
+        -0.13954044231912266
+      ],
+      "exact_identity": "da6b41de2bb69ed6ef1465a3100ca23b044a1654ba0cf79202c08344cc7438d4",
+      "main_record_ordinal": 79,
+      "matched_cumulative_return_increment": 0.38047371876346614,
+      "matched_window_return_increments": [
+        0.10698296380901207,
+        0.07643018836161586,
+        0.22171122405189503
+      ],
+      "primary_cumulative_net_return": 0.049545962302912194,
+      "primary_window_returns": [
+        -0.29039122636910575,
+        0.3667424445791312,
+        0.08217078173277237
+      ],
+      "program_id": "cn.program.8772364aa9a5571b8b9cb33d77a331a3",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "8cd3a8db474815ba5bdb3bf9f88b7e4f5ceb9c3fec26c649adeb41a181bb6466",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 3,
+      "control_cumulative_net_return": -0.09050423577089439,
+      "control_program_id": "cn.program.e19eb11002f43195131094242427dd4f",
+      "control_window_returns": [
+        -0.1107564761663784,
+        0.13621144211325076,
+        -0.09983771835950361
+      ],
+      "exact_identity": "266c9329f71b3c4a720b9dc3f8fe8ba070982156ae93cc2f99f850279d902c60",
+      "main_record_ordinal": 89,
+      "matched_cumulative_return_increment": 0.309322038212147,
+      "matched_window_return_increments": [
+        0.04090962110858298,
+        0.1698280601728137,
+        0.10313126199031974
+      ],
+      "primary_cumulative_net_return": 0.2188178024412526,
+      "primary_window_returns": [
+        -0.06984685505779542,
+        0.30603950228606447,
+        0.0032935436308161314
+      ],
+      "program_id": "cn.program.0281adad4d5213615b86777ef36ce80e",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "d6b6666339defa0e4ef03606bff0fb6cce92d403829be3133cd8fddec2639672",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 3,
+      "control_cumulative_net_return": -0.243966750631194,
+      "control_program_id": "cn.program.c3e9c4836f93c3e883037ca30516026a",
+      "control_window_returns": [
+        -0.40080376184858557,
+        0.20593617406249698,
+        0.046278966597088855
+      ],
+      "exact_identity": "9c505894b3dee1bf0916cc1907056244724ef75b2eb3602b0c5f3a1db8d1a4ab",
+      "main_record_ordinal": 95,
+      "matched_cumulative_return_increment": 0.5009482595657111,
+      "matched_window_return_increments": [
+        0.25468553928087656,
+        0.09547375006828962,
+        0.0848627755900162
+      ],
+      "primary_cumulative_net_return": 0.2569815089345171,
+      "primary_window_returns": [
+        -0.146118222567709,
+        0.3014099241307866,
+        0.13114174218710506
+      ],
+      "program_id": "cn.program.826d5a43808f8454a8cd87c0ba9d75b4",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "f4594eda3a7b2286a6864a9ac5ea5005f5836ae08d67117092e692dd849cba71",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 4,
+      "control_cumulative_net_return": -0.7785566185960341,
+      "control_program_id": "cn.program.b19f91194e80f9b68c1c4654bd7afe4b",
+      "control_window_returns": [
+        -0.6365761271231363,
+        -0.2610450003602388,
+        -0.17542291725454506
+      ],
+      "exact_identity": "e963e3a487f041ac4b31ae069616bba693748573d219cf6ad35945665bc809be",
+      "main_record_ordinal": 101,
+      "matched_cumulative_return_increment": 0.9414137338778773,
+      "matched_window_return_increments": [
+        0.7398843590366719,
+        0.24528763867328485,
+        0.24626966225664038
+      ],
+      "primary_cumulative_net_return": 0.1628571152818432,
+      "primary_window_returns": [
+        0.10330823191353566,
+        -0.015757361686953963,
+        0.07084674500209531
+      ],
+      "program_id": "cn.program.118e7ee1d00da0ee4c3fa5e9b678c9a7",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "15102cfb7d581310eb153c49dba77c0ae1e9bbc733f8955f761a93ceb00fd1e7",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 4,
+      "control_cumulative_net_return": -0.486935665122436,
+      "control_program_id": "cn.program.e1eb171c1815657766e3890a972c4b7d",
+      "control_window_returns": [
+        -0.46363409930623234,
+        0.04867483656470606,
+        -0.08784252967182193
+      ],
+      "exact_identity": "e0cdb0ef1a38f3d982cc260b85abae366d6b7cddaf8691ffc0665c05ef9bf3b7",
+      "main_record_ordinal": 107,
+      "matched_cumulative_return_increment": 0.757345011862634,
+      "matched_window_return_increments": [
+        0.4684726110717,
+        0.17462238914471673,
+        0.12135427823731493
+      ],
+      "primary_cumulative_net_return": 0.270409346740198,
+      "primary_window_returns": [
+        0.004838511765467679,
+        0.2232972257094228,
+        0.033511748565492994
+      ],
+      "program_id": "cn.program.8a6bead5f8114a58f3eb7536d183abbf",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "9c2837d48715e1772128d23a47854624e7983d00b125e8821f7a263f56074ec8",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 5,
+      "control_cumulative_net_return": -0.15494735102796953,
+      "control_program_id": "cn.program.77cb5ea28ea3a8fbe9b86be8db298eae",
+      "control_window_returns": [
+        -0.28763146772955384,
+        0.14106938996229657,
+        0.03960171017313163
+      ],
+      "exact_identity": "94def57c8bd6859b2af843e8eb0ebe99e7bdb72d2172d37aa493c497727b2254",
+      "main_record_ordinal": 122,
+      "matched_cumulative_return_increment": 0.9559650902546444,
+      "matched_window_return_increments": [
+        0.289856376249629,
+        0.13444462919264688,
+        0.3692573914639756
+      ],
+      "primary_cumulative_net_return": 0.8010177392266749,
+      "primary_window_returns": [
+        0.002224908520075175,
+        0.27551401915494345,
+        0.40885910163710726
+      ],
+      "program_id": "cn.program.3427de56a2a385a3a6e0625b192adfbb",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "ec2792b59d59d488a2dad5d0ab7920a9924a2175daec6b3d169e2be48db29536",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 5,
+      "control_cumulative_net_return": 0.12271314064911709,
+      "control_program_id": "cn.program.566adfdf4897da668695ea76e6cfe4ff",
+      "control_window_returns": [
+        -0.07405330363855578,
+        0.20368041482818522,
+        0.007329668250579235
+      ],
+      "exact_identity": "1bee92f3e1073ebf47ae81b0b302a5a147f91c8b4a76ef4fcf37da75017a754c",
+      "main_record_ordinal": 125,
+      "matched_cumulative_return_increment": 0.1275042612279509,
+      "matched_window_return_increments": [
+        0.052360063917030075,
+        0.023258014043684216,
+        0.03423854081319422
+      ],
+      "primary_cumulative_net_return": 0.250217401877068,
+      "primary_window_returns": [
+        -0.021693239721525703,
+        0.22693842887186944,
+        0.041568209063773454
+      ],
+      "program_id": "cn.program.cd2b5d5b1684f3679f06f20c89448d5c",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "19940bb18ffa59823411f8f43f8debe26467062f617411d98c0a4b49b378a282",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 5,
+      "control_cumulative_net_return": -0.15494735102796953,
+      "control_program_id": "cn.program.b23b6e6de7563747831f8dcd224d997a",
+      "control_window_returns": [
+        -0.28763146772955384,
+        0.14106938996229657,
+        0.03960171017313163
+      ],
+      "exact_identity": "0fe9e449d2055b79b81075917002b4351313c04163aab645c67b9103aae982e0",
+      "main_record_ordinal": 127,
+      "matched_cumulative_return_increment": 0.9428917081140109,
+      "matched_window_return_increments": [
+        0.29410898354724135,
+        0.1265623715405133,
+        0.3617811750771891
+      ],
+      "primary_cumulative_net_return": 0.7879443570860414,
+      "primary_window_returns": [
+        0.006477515817687518,
+        0.2676317615028099,
+        0.40138288525032073
+      ],
+      "program_id": "cn.program.82bf12db2e9b1e1c89fd8a88f4a5560d",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "b0b78ee409fd428555b35cd9918f9046eb1dc6841238696361f25565c865b050",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 5,
+      "control_cumulative_net_return": 0.08165251215006175,
+      "control_program_id": "cn.program.2756dd06d4656b49f471ff14800ca628",
+      "control_window_returns": [
+        -0.10138571138557739,
+        0.18974366060149106,
+        0.01172165078615417
+      ],
+      "exact_identity": "e723236e2bba189341ccbb9af5e320800769e419033cecc3b7a507d4622b7bf0",
+      "main_record_ordinal": 132,
+      "matched_cumulative_return_increment": 0.44585935385298026,
+      "matched_window_return_increments": [
+        0.2325712849121946,
+        0.12457831953577414,
+        0.015700592870086183
+      ],
+      "primary_cumulative_net_return": 0.527511866003042,
+      "primary_window_returns": [
+        0.1311855735266172,
+        0.3143219801372652,
+        0.027422243656240353
+      ],
+      "program_id": "cn.program.a8e03fae604ce0b24ac8a462a69111f8",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "c348e3902134aac0dbc9cb8d800d2a6187d1bfbb75ed84002cb221dee1508c63",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 6,
+      "control_cumulative_net_return": -0.8138585004713357,
+      "control_program_id": "cn.program.c1aa63041a498c9d0a06ea7b7e4e2553",
+      "control_window_returns": [
+        -0.5940536145637711,
+        -0.29449407235261893,
+        -0.3500591075952869
+      ],
+      "exact_identity": "458ff22abf8631de4d453fed8721b1e7bb9213f3c8e50cecba656b303680084c",
+      "main_record_ordinal": 150,
+      "matched_cumulative_return_increment": 1.2133423476604834,
+      "matched_window_return_increments": [
+        0.6917195552931394,
+        0.5762883617500064,
+        0.3447299081791857
+      ],
+      "primary_cumulative_net_return": 0.39948384718914776,
+      "primary_window_returns": [
+        0.0976659407293683,
+        0.2817942893973875,
+        -0.005329199416101216
+      ],
+      "program_id": "cn.program.0d6038c4ba1628fb7726d0718236f049",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "b280d690cedf1e5c208d8d4b0b4ae77d82a7144865728140123f85442865b4b6",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 6,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.b2e1eabf6d45f998083581971c344068",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "f252dfa3262929434f301fac68024f05578d9edcae1a101ea85227d6f239748e",
+      "main_record_ordinal": 157,
+      "matched_cumulative_return_increment": 0.9920751136511021,
+      "matched_window_return_increments": [
+        0.73952517446447,
+        0.32849141138022586,
+        0.3412585020698242
+      ],
+      "primary_cumulative_net_return": 0.1564566053673262,
+      "primary_window_returns": [
+        0.07099702879861836,
+        -0.0013869642432233764,
+        0.08129412679818482
+      ],
+      "program_id": "cn.program.fd254a191e93353373b6f7f1f727f5e7",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "63b38068670d5f8a764292d7fca8db9ac9be824f601287a1e76c98e4f9ec0d99",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 7,
+      "control_cumulative_net_return": -0.8104394166519346,
+      "control_program_id": "cn.program.f1a652db4401a32a3a07cb2df2d4e6ae",
+      "control_window_returns": [
+        -0.5909860648882255,
+        -0.29342314023087535,
+        -0.34408053141262185
+      ],
+      "exact_identity": "eec190a32fd50d1597291fc2ad1bc5e7361238c72e9978cf72a5950abebee054",
+      "main_record_ordinal": 172,
+      "matched_cumulative_return_increment": 0.9200129117614404,
+      "matched_window_return_increments": [
+        0.597519216428245,
+        0.4365825414970008,
+        0.30840058476491716
+      ],
+      "primary_cumulative_net_return": 0.10957349510950576,
+      "primary_window_returns": [
+        0.006533151540019544,
+        0.14315940126612547,
+        -0.035679946647704686
+      ],
+      "program_id": "cn.program.b87028acce1559f959febb923211f63b",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "120b57f5e23a7117616b6380e05a9e5e2683e5b21e8922b450668d61f6427875",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 7,
+      "control_cumulative_net_return": -0.8200963377227907,
+      "control_program_id": "cn.program.f9c9cd562cfe537fcca9a254fbf94cbc",
+      "control_window_returns": [
+        -0.5909860648882255,
+        -0.304400777861932,
+        -0.3676714193411832
+      ],
+      "exact_identity": "91f9d7c038dee973f04a3eb7b1be7721ccbd16d845d94863a60c80754c1656e3",
+      "main_record_ordinal": 181,
+      "matched_cumulative_return_increment": 0.9123994000700081,
+      "matched_window_return_increments": [
+        0.65140812262095,
+        0.3249026707277085,
+        0.3770418633914354
+      ],
+      "primary_cumulative_net_return": 0.09230306234721741,
+      "primary_window_returns": [
+        0.06042205773272458,
+        0.020501892865776528,
+        0.009370444050252225
+      ],
+      "program_id": "cn.program.5eab2c944a0a493155c4da21315ce567",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "693f2f3ee8b8c4dee565b3b7ff17d6ace467af7ff5a434964d07f1a20f7ac4e0",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 7,
+      "control_cumulative_net_return": -0.2729748769889647,
+      "control_program_id": "cn.program.47a8d64c7197cd0b5dd79b95d36ec6d8",
+      "control_window_returns": [
+        -0.10173375729843992,
+        0.10586767992194757,
+        -0.26811781830025316
+      ],
+      "exact_identity": "69ad8be2325144ffd9a6a1d4924e0f94bdc3b8bea3f75a72d0002fa732205f29",
+      "main_record_ordinal": 186,
+      "matched_cumulative_return_increment": 0.42948428566411534,
+      "matched_window_return_increments": [
+        0.1303968052531813,
+        0.04195014124593821,
+        0.24761472248290617
+      ],
+      "primary_cumulative_net_return": 0.15650940867515062,
+      "primary_window_returns": [
+        0.028663047954741394,
+        0.14781782116788578,
+        -0.020503095817346995
+      ],
+      "program_id": "cn.program.727a0e44905c1fcffca48d8c622c288e",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "0229f7b6902faff3eba5985d70dfeeabad014ccaad1ad302bdf12b298a9f23fe",
+      "template_id": "BASE_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 8,
+      "control_cumulative_net_return": 0.05882190916094787,
+      "control_program_id": "cn.program.b0cdb850135721e2b3426435b968a491",
+      "control_window_returns": [
+        -0.32028240657599094,
+        0.44664757170309066,
+        0.0767916165876752
+      ],
+      "exact_identity": "8ba5bac6438221c40b4f99b1df30696f3592905d4168cd792c658f8b8272b861",
+      "main_record_ordinal": 207,
+      "matched_cumulative_return_increment": 0.07409841903963366,
+      "matched_window_return_increments": [
+        0.047250987824789537,
+        -0.0004300572759048382,
+        0.000789844717535626
+      ],
+      "primary_cumulative_net_return": 0.13292032820058153,
+      "primary_window_returns": [
+        -0.2730314187512014,
+        0.4462175144271858,
+        0.07758146130521082
+      ],
+      "program_id": "cn.program.256be019fca739010a3ecb5fbddd94a7",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "91c8effae39ab2aa6f2cd7efe1018f402f0f608a85fce5c735d31770e3304030",
+      "template_id": "BASE_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 9,
+      "control_cumulative_net_return": -0.49175680570902724,
+      "control_program_id": "cn.program.d7b6af677afab634d96d14508f108b7d",
+      "control_window_returns": [
+        -0.4643617093056307,
+        0.04661745010076035,
+        -0.09340778585343734
+      ],
+      "exact_identity": "2a9bc211f075e8fbbc46af9172d75886f43c3b86e97af68ceee6978e2add8b95",
+      "main_record_ordinal": 219,
+      "matched_cumulative_return_increment": 0.9918726808467656,
+      "matched_window_return_increments": [
+        0.5207831344753668,
+        0.28318570153747147,
+        0.16123318975877454
+      ],
+      "primary_cumulative_net_return": 0.5001158751377384,
+      "primary_window_returns": [
+        0.05642142516973614,
+        0.3298031516382318,
+        0.0678254039053372
+      ],
+      "program_id": "cn.program.fb28aa84fe5b92dc87663089c21206c2",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "8b2e25503cf272d073e8000a7d79e2a5670452b4398fc370d64a96099b951239",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 9,
+      "control_cumulative_net_return": -0.30554943658981604,
+      "control_program_id": "cn.program.12ec1dd6490be603e4909fbdf5fada5d",
+      "control_window_returns": [
+        -0.4166241285371609,
+        0.324566344119086,
+        -0.10129086514010555
+      ],
+      "exact_identity": "16c70a49b2f2fbb3cfcca2237496fd3d726e7d8495479bbbabf85d3dad8881d7",
+      "main_record_ordinal": 220,
+      "matched_cumulative_return_increment": 1.2463817646688544,
+      "matched_window_return_increments": [
+        0.5314197000388686,
+        0.18345437853072255,
+        0.2557683651777497
+      ],
+      "primary_cumulative_net_return": 0.9408323280790383,
+      "primary_window_returns": [
+        0.11479557150170772,
+        0.5080207226498086,
+        0.15447750003764416
+      ],
+      "program_id": "cn.program.e88fa8bd9d979c4ab661f90f91f60b9d",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "7c87c3556bdee2204b4371b62d5448054c144a1577dbd4d24f4d95f7832af709",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 9,
+      "control_cumulative_net_return": -0.2576592070775675,
+      "control_program_id": "cn.program.ade9cd7eb406cfc87be3f78f33d5964e",
+      "control_window_returns": [
+        -0.0719129432599408,
+        0.1000166784944232,
+        -0.2728645128588414
+      ],
+      "exact_identity": "04e145842f730cc06f68940db84e859bdd6b32f76b74e37945d3c5217afec924",
+      "main_record_ordinal": 224,
+      "matched_cumulative_return_increment": 0.8520251916695482,
+      "matched_window_return_increments": [
+        0.23925171608753026,
+        0.17527618385128974,
+        0.34384406850560945
+      ],
+      "primary_cumulative_net_return": 0.5943659845919806,
+      "primary_window_returns": [
+        0.16733877282758947,
+        0.27529286234571293,
+        0.07097955564676806
+      ],
+      "program_id": "cn.program.975c3f3a3a965d1db1b8f0350f88de11",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "2568a11d9e49b703f2f42ab0a4ff9a28fddd7d8116b8d145f5ff67709f05bab0",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 9,
+      "control_cumulative_net_return": -0.8104394166519346,
+      "control_program_id": "cn.program.859171b58d1b924f0ea4ed7fe441ceb4",
+      "control_window_returns": [
+        -0.5909860648882255,
+        -0.29342314023087535,
+        -0.34408053141262185
+      ],
+      "exact_identity": "6dce5f0b1ee7b1133160c175ec64f5ad0e71df59e8df569a2197f1bf7bb08b16",
+      "main_record_ordinal": 230,
+      "matched_cumulative_return_increment": 0.9031141374435381,
+      "matched_window_return_increments": [
+        0.7318435735208193,
+        0.1965778018703418,
+        0.4045480300869613
+      ],
+      "primary_cumulative_net_return": 0.09267472079160344,
+      "primary_window_returns": [
+        0.14085750863259383,
+        -0.09684533836053355,
+        0.060467498674339426
+      ],
+      "program_id": "cn.program.c7dd6d61580246e03664c9a97ed4adb9",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "cf5737c7d07a524c66bc4350077bccc9594c9ee67e5f79682f6d9c71168984a2",
+      "template_id": "BASE_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 10,
+      "control_cumulative_net_return": -0.49175680570902724,
+      "control_program_id": "cn.program.91daeddb1611db6192decad5dc774428",
+      "control_window_returns": [
+        -0.4643617093056307,
+        0.04661745010076035,
+        -0.09340778585343734
+      ],
+      "exact_identity": "f7b5b695e1bb6cff0988581368b0100d44f455544d756cf01a1184721d7ddaa2",
+      "main_record_ordinal": 251,
+      "matched_cumulative_return_increment": 0.5429509246649998,
+      "matched_window_return_increments": [
+        0.26442480436045435,
+        0.13310335537416873,
+        0.20713657466719193
+      ],
+      "primary_cumulative_net_return": 0.05119411895597259,
+      "primary_window_returns": [
+        -0.19993690494517635,
+        0.17972080547492908,
+        0.11372878881375459
+      ],
+      "program_id": "cn.program.1b15c3d5717cb9200eed4fc58fd96b84",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "36802659efecb2773112dc01a609b392530d315a6963f7bbdf85e5eecced2299",
+      "template_id": "BASE_TEMPORAL",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 11,
+      "control_cumulative_net_return": -0.7473049077407128,
+      "control_program_id": "cn.program.63ecfbd078a9534a10d4747cc3af41ec",
+      "control_window_returns": [
+        -0.5551870837067614,
+        -0.21460922347173617,
+        -0.276674758021626
+      ],
+      "exact_identity": "44fd4a03da56752e0cebfc5fffd1cbf6e13eef0b6376f59e6118a36c4bc489d6",
+      "main_record_ordinal": 271,
+      "matched_cumulative_return_increment": 0.8654035984267059,
+      "matched_window_return_increments": [
+        0.502984519265448,
+        0.37043050561144486,
+        0.2973179023110011
+      ],
+      "primary_cumulative_net_return": 0.1180986906859931,
+      "primary_window_returns": [
+        -0.05220256444131344,
+        0.1558212821397087,
+        0.02064314428937508
+      ],
+      "program_id": "cn.program.d79af287f0d036712fd55b20ad077c43",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "e3fd6e0bf05cf7565fafd7af6c36bb82c6ce929ad5400c6f15d0ba804e4a8968",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 11,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.022e9c2aba4c52c9fcd11dec5f923ca0",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "48d52f49c28470d041c6b72db70afd9c22a381fac2f813d6a0e76101befdf8a2",
+      "main_record_ordinal": 279,
+      "matched_cumulative_return_increment": 0.9792876250749187,
+      "matched_window_return_increments": [
+        0.8500883615871404,
+        0.241122036975164,
+        0.3221734658478108
+      ],
+      "primary_cumulative_net_return": 0.1436691167911428,
+      "primary_window_returns": [
+        0.1815602159212888,
+        -0.08875633864828525,
+        0.06220909057617141
+      ],
+      "program_id": "cn.program.1ab5da5f6ed4db4d34ec4030f44af29a",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "d6a5e472626e86ed2eda417dd2c0200ad4e1261eb8d106847f2003a2b6bb84c3",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 11,
+      "control_cumulative_net_return": -0.7785566185960341,
+      "control_program_id": "cn.program.b02b533f5bf051f4b21e7e929fcfd2e3",
+      "control_window_returns": [
+        -0.6365761271231363,
+        -0.2610450003602388,
+        -0.17542291725454506
+      ],
+      "exact_identity": "ad1a84bdc328b6cfa0d668966399de3fde5e50b0bf8d88d66e02c33a1dc402b3",
+      "main_record_ordinal": 285,
+      "matched_cumulative_return_increment": 0.8775329242281801,
+      "matched_window_return_increments": [
+        0.6896117621953113,
+        0.2118683560273833,
+        0.273026257017836
+      ],
+      "primary_cumulative_net_return": 0.09897630563214599,
+      "primary_window_returns": [
+        0.053035635072175014,
+        -0.04917664433285551,
+        0.09760333976329094
+      ],
+      "program_id": "cn.program.4c43671a1e2321478634399085edb830",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "8e3062d783c1bf5870e336bc0317facf922c5156410554ff89a0563d62e7be57",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 11,
+      "control_cumulative_net_return": -0.8356185082837759,
+      "control_program_id": "cn.program.f4951cb5ee9e1061661a91d14984f892",
+      "control_window_returns": [
+        -0.6685281456658516,
+        -0.32987837562344924,
+        -0.2599643752716394
+      ],
+      "exact_identity": "92816f451ff22247d6c342b246f15f9e53c5f36b543a98243050ccc16f669caa",
+      "main_record_ordinal": 286,
+      "matched_cumulative_return_increment": 1.0954802710151152,
+      "matched_window_return_increments": [
+        0.8633910916698988,
+        0.2732257929147235,
+        0.3776846709666468
+      ],
+      "primary_cumulative_net_return": 0.2598617627313393,
+      "primary_window_returns": [
+        0.1948629460040472,
+        -0.05665258270872575,
+        0.11772029569500742
+      ],
+      "program_id": "cn.program.a6606b4953cbe31766d6d4f5c18778b8",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "4ab26f3dda87ee6b2462c08c2c851449522fc427ed28793896cc3524842d6a46",
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 12,
+      "control_cumulative_net_return": 0.0027582910313590503,
+      "control_program_id": "cn.program.0a4c5e030c566dd94c7dfe853e5bb562",
+      "control_window_returns": [
+        -0.3116215716271541,
+        0.20344158261211365,
+        0.21044203063717348
+      ],
+      "exact_identity": "603c406dbe65a43625837455cc3759efd623fd829c19724f89f3e9be42034e90",
+      "main_record_ordinal": 292,
+      "matched_cumulative_return_increment": 0.15201846942933894,
+      "matched_window_return_increments": [
+        0.09352040368108927,
+        0.0062625606762873876,
+        0.010424822575806125
+      ],
+      "primary_cumulative_net_return": 0.154776760460698,
+      "primary_window_returns": [
+        -0.21810116794606482,
+        0.20970414328840103,
+        0.2208668532129796
+      ],
+      "program_id": "cn.program.782ff049d1a887b5d291dec04c9335cb",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "4c33220651d05f3498be270eac3ff65227beba8669fb53cadd41aa7aa31508d4",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 12,
+      "control_cumulative_net_return": -0.15494735102796953,
+      "control_program_id": "cn.program.e95f907cabb6a492c8422e1960ad3641",
+      "control_window_returns": [
+        -0.28763146772955384,
+        0.14106938996229657,
+        0.03960171017313163
+      ],
+      "exact_identity": "8eb5aeaa39b97f5906f4abedc91efeedd3742237f3359ca7d6c3f3b344162ddd",
+      "main_record_ordinal": 299,
+      "matched_cumulative_return_increment": 0.594118688031307,
+      "matched_window_return_increments": [
+        0.26728450625937794,
+        0.20840780715093854,
+        0.04901415823484512
+      ],
+      "primary_cumulative_net_return": 0.43917133700333744,
+      "primary_window_returns": [
+        -0.020346961470175895,
+        0.3494771971132351,
+        0.08861586840797675
+      ],
+      "program_id": "cn.program.0a4e3bc56aefd19b05614b40d3e8c4cc",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "8a1b348a5e88eb373eb2c6af4faaa83f896d19b15cef44fa4df3945676d56c4e",
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 13,
+      "control_cumulative_net_return": -0.8138585004713357,
+      "control_program_id": "cn.program.0a45e674891fa6b06837ac83c7fd048b",
+      "control_window_returns": [
+        -0.5940536145637711,
+        -0.29449407235261893,
+        -0.3500591075952869
+      ],
+      "exact_identity": "660702bde10bbee3e1a2be05ba78adcc267747ea3de906098248c1641d922462",
+      "main_record_ordinal": 325,
+      "matched_cumulative_return_increment": 1.0914647489095315,
+      "matched_window_return_increments": [
+        0.658703738549955,
+        0.511092964723269,
+        0.33643557258893064
+      ],
+      "primary_cumulative_net_return": 0.2776062484381958,
+      "primary_window_returns": [
+        0.06465012398618386,
+        0.2165988923706501,
+        -0.013623535006356269
+      ],
+      "program_id": "cn.program.7078eac16480fbb7cbc00057d235235c",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "86c4e68b1058a70877975a0c5bb948604527809a17dcf6309656fbfe508e21d8",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 13,
+      "control_cumulative_net_return": -0.8429386672429198,
+      "control_program_id": "cn.program.c845490d22464b7f9b1db276ebb51745",
+      "control_window_returns": [
+        -0.671080962796252,
+        -0.3444538658278766,
+        -0.27158814164581524
+      ],
+      "exact_identity": "9cb0898ae3eaf3e8c2059ce6959dcaa440645447eef49cf3c68e09c3b6ca60c7",
+      "main_record_ordinal": 327,
+      "matched_cumulative_return_increment": 0.987205064014204,
+      "matched_window_return_increments": [
+        0.7664358592559228,
+        0.33726385157914085,
+        0.3238071758044627
+      ],
+      "primary_cumulative_net_return": 0.14426639677128428,
+      "primary_window_returns": [
+        0.09535489645967088,
+        -0.0071900142487357765,
+        0.05221903415864748
+      ],
+      "program_id": "cn.program.07b4ad78f1b27543088c1534b217411d",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "9fe4ec92d04e30bc151ce8d268b9acd45e8607d94d0faf62e4b5ff753184bef1",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 13,
+      "control_cumulative_net_return": -0.8138585004713357,
+      "control_program_id": "cn.program.dcba801bcad3222cca857f8eff6b688f",
+      "control_window_returns": [
+        -0.5940536145637711,
+        -0.29449407235261893,
+        -0.3500591075952869
+      ],
+      "exact_identity": "0875b2fa4a48eab273899c5c124f729cea863bafa55a1de7c283981bdd189fff",
+      "main_record_ordinal": 329,
+      "matched_cumulative_return_increment": 1.1032728421577587,
+      "matched_window_return_increments": [
+        0.7315698239736106,
+        0.4104865929062681,
+        0.36577820591397947
+      ],
+      "primary_cumulative_net_return": 0.289414341686423,
+      "primary_window_returns": [
+        0.13751620940983944,
+        0.11599252055364917,
+        0.01571909831869256
+      ],
+      "program_id": "cn.program.e2609c2c12ed88d1c65acd99932e21ef",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "9d1f2c680da6a3d5c7c69846e6cbb994aecf721de6a3b0fdda19dadd5e9028d8",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    },
+    {
+      "checkpoint_ordinal": 13,
+      "control_cumulative_net_return": -0.8138585004713357,
+      "control_program_id": "cn.program.d291c892651a604595f3bf95d9bb5288",
+      "control_window_returns": [
+        -0.5940536145637711,
+        -0.29449407235261893,
+        -0.3500591075952869
+      ],
+      "exact_identity": "d4ea8db7b6649bc5e50f2df907309d1a1b1b6d571086a1b3e573738e91a0da2b",
+      "main_record_ordinal": 335,
+      "matched_cumulative_return_increment": 1.240008895772622,
+      "matched_window_return_increments": [
+        0.7207189184269895,
+        0.44158875352138016,
+        0.45355606580032004
+      ],
+      "primary_cumulative_net_return": 0.4261503953012864,
+      "primary_window_returns": [
+        0.1266653038632184,
+        0.14709468116876123,
+        0.10349695820503313
+      ],
+      "program_id": "cn.program.018d5a54caceb379b11782fd50086341",
+      "session_counts": [
+        121,
+        121,
+        122
+      ],
+      "source_record_payload_sha256": "9b55e52efdf62a8fb80acd4cc0c44a46a78460c426bcdf7d83b5b671fec797fc",
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "window_ids": [
+        "development_1",
+        "development_2",
+        "development_3"
+      ]
+    }
+  ],
+  "schema_version": "cn_search_core_v2_wave1_development_pair_windows_v1",
+  "skipped_no_pair_count": 0,
+  "source_output_root": "D:\\ChengboRemote\\runtime\\cn_search_core_v2_production_wave1_20260825_412d51c",
+  "status": "RECOVERED_FROM_IMMUTABLE_DEVELOPMENT_RESULTS_NO_FINANCIAL_READ",
+  "targeted_shortlist": true
+}

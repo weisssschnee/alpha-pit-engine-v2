@@ -1,0 +1,519 @@
+{
+  "annualized_window_summaries": {
+    "development_control_1": {
+      "mean": -0.6621092029928688,
+      "median": -0.727519186993606,
+      "n": 42,
+      "positive_count": 0,
+      "positive_rate": 0.0
+    },
+    "development_control_2": {
+      "mean": 0.058460337753676726,
+      "median": 0.09954070688598574,
+      "n": 42,
+      "positive_count": 22,
+      "positive_rate": 0.5238095238095238
+    },
+    "development_control_3": {
+      "mean": -0.27306315109611534,
+      "median": -0.3958355129134869,
+      "n": 42,
+      "positive_count": 11,
+      "positive_rate": 0.2619047619047619
+    },
+    "development_primary_1": {
+      "mean": 0.013103309447500404,
+      "median": 0.07622264627635529,
+      "n": 42,
+      "positive_count": 26,
+      "positive_rate": 0.6190476190476191
+    },
+    "development_primary_2": {
+      "mean": 0.49690989072457614,
+      "median": 0.5129410929201726,
+      "n": 42,
+      "positive_count": 32,
+      "positive_rate": 0.7619047619047619
+    },
+    "development_primary_3": {
+      "mean": 0.1711530739458413,
+      "median": 0.13896527333601,
+      "n": 42,
+      "positive_count": 36,
+      "positive_rate": 0.8571428571428571
+    },
+    "validation_control_1": {
+      "mean": 3.139739532071674,
+      "median": 2.598891165913513,
+      "n": 42,
+      "positive_count": 39,
+      "positive_rate": 0.9285714285714286
+    },
+    "validation_control_2": {
+      "mean": 4.878455263769827,
+      "median": -0.0003430137736254779,
+      "n": 42,
+      "positive_count": 19,
+      "positive_rate": 0.4523809523809524
+    },
+    "validation_control_3": {
+      "mean": 0.4625902839924433,
+      "median": 0.31916271738474267,
+      "n": 42,
+      "positive_count": 23,
+      "positive_rate": 0.5476190476190477
+    },
+    "validation_primary_1": {
+      "mean": 0.33068633221369487,
+      "median": 0.17235839165929087,
+      "n": 42,
+      "positive_count": 37,
+      "positive_rate": 0.8809523809523809
+    },
+    "validation_primary_2": {
+      "mean": 1.9744118934840689,
+      "median": 0.27271436703324525,
+      "n": 42,
+      "positive_count": 27,
+      "positive_rate": 0.6428571428571429
+    },
+    "validation_primary_3": {
+      "mean": 0.42995821726251127,
+      "median": 0.032416114795353994,
+      "n": 42,
+      "positive_count": 22,
+      "positive_rate": 0.5238095238095238
+    }
+  },
+  "autopsy_payload_sha256": "325112c2ef2916e941fc5660fd991841061dd680e11b3448da1ddbe98baecebf",
+  "candidate_count": 42,
+  "classification_checks": {
+    "control_programs_unique": true,
+    "control_regime_shift_broad_across_candidates": true,
+    "development_uplift_more_control_driven_than_primary": true,
+    "development_uplift_negatively_transfers_to_validation1": true,
+    "validation1_control_dominates_matched_pair": true,
+    "validation1_control_mostly_positive": true,
+    "validation1_primary_mostly_positive": true
+  },
+  "control_regime_transition": {
+    "validation1_minus_development1_control_annualized": {
+      "candidate_count": 42,
+      "median_delta": 3.1426556191877566,
+      "positive_delta_count": 39,
+      "spearman_development_control_vs_validation1_control": -0.6873293246015575
+    },
+    "validation1_minus_development2_control_annualized": {
+      "candidate_count": 42,
+      "median_delta": 2.2738370445152563,
+      "positive_delta_count": 38,
+      "spearman_development_control_vs_validation1_control": -0.5313828044364626
+    },
+    "validation1_minus_development3_control_annualized": {
+      "candidate_count": 42,
+      "median_delta": 2.522111299195913,
+      "positive_delta_count": 38,
+      "spearman_development_control_vs_validation1_control": -0.1238996568098517
+    }
+  },
+  "decomposition_spearman": {
+    "development_matched_vs_development_control_total_spearman": -0.7980689837736601,
+    "development_matched_vs_development_primary_total_spearman": 0.25705024311183144,
+    "development_matched_vs_validation1_control_spearman": 0.48678837092936666,
+    "development_matched_vs_validation1_matched_spearman": -0.6375977678109092,
+    "development_matched_vs_validation1_primary_spearman": -0.4341694727549308
+  },
+  "development_to_validation_matched_window_spearman": [
+    [
+      -0.7325850035900353,
+      0.14629006875539483,
+      -0.41504235019189856
+    ],
+    [
+      -0.6170117969167982,
+      0.12651456915632758,
+      -0.27758641855248045
+    ],
+    [
+      -0.47420675473009144,
+      -0.04708838224204121,
+      -0.26526725486781566
+    ]
+  ],
+  "distinct_control_program_count": 42,
+  "interpretation": {
+    "next_diagnostic": "PAIR_NATIVE_TRANSFER_FEATURES_SEPARATING_PRIMARY_ABSOLUTE_STRENGTH_FROM_CONTROL_WEAKNESS",
+    "primary_failure": "DEVELOPMENT_MATCHED_UPLIFT_IS_DOMINATED_BY_WEAK_CONTROL_SELECTION_MORE_THAN_PRIMARY_STRENGTH",
+    "selector_implication": "DO_NOT_TREAT_MATCHED_UPLIFT_ALONE_AS_TRANSFERABLE_ALPHA_STRENGTH",
+    "validation1_failure": "SAME_HASH_BOUND_BASE_CONTROLS_BECOME_SYSTEMICALLY_STRONG_AND_REVERSE_MATCHED_UPLIFT"
+  },
+  "per_template_validation1": {
+    "BASE_EVENT": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 0.7523036641152689,
+        "median": 0.870739662631942,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.045645533796999684,
+        "median": 0.09634368363549939,
+        "n": 6,
+        "positive_count": 4,
+        "positive_rate": 0.6666666666666666
+      },
+      "validation1_matched_increment": {
+        "mean": -0.031455920758649704,
+        "median": -0.07310295514880027,
+        "n": 6,
+        "positive_count": 2,
+        "positive_rate": 0.3333333333333333
+      },
+      "validation1_primary_return": {
+        "mean": 0.01418961303834998,
+        "median": 0.016184083954600137,
+        "n": 6,
+        "positive_count": 4,
+        "positive_rate": 0.6666666666666666
+      }
+    },
+    "BASE_MARKET": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 0.1626681068753567,
+        "median": 0.11932397215783208,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.13038962289304953,
+        "median": 0.12968747895319954,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_matched_increment": {
+        "mean": -0.06760019464931644,
+        "median": -0.06569557976819929,
+        "n": 6,
+        "positive_count": 0,
+        "positive_rate": 0.0
+      },
+      "validation1_primary_return": {
+        "mean": 0.06278942824373308,
+        "median": 0.06148796050549965,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      }
+    },
+    "BASE_MARKET_EVENT": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 1.0005672945334945,
+        "median": 0.9905430525693086,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.10366890288669946,
+        "median": 0.08592082293724967,
+        "n": 6,
+        "positive_count": 5,
+        "positive_rate": 0.8333333333333334
+      },
+      "validation1_matched_increment": {
+        "mean": -0.09006073359623289,
+        "median": -0.07610959976229975,
+        "n": 6,
+        "positive_count": 1,
+        "positive_rate": 0.16666666666666666
+      },
+      "validation1_primary_return": {
+        "mean": 0.01360816929046658,
+        "median": 0.012667783103499919,
+        "n": 6,
+        "positive_count": 5,
+        "positive_rate": 0.8333333333333334
+      }
+    },
+    "BASE_TEMPORAL": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 0.6528107403451094,
+        "median": 0.5219495921153554,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.13113172740553292,
+        "median": 0.10751219655659983,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_matched_increment": {
+        "mean": -0.09024128479948323,
+        "median": -0.042219250809550135,
+        "n": 6,
+        "positive_count": 0,
+        "positive_rate": 0.0
+      },
+      "validation1_primary_return": {
+        "mean": 0.04089044260604968,
+        "median": 0.04580062216324965,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      }
+    },
+    "BASE_TEMPORAL_EVENT": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 0.9194105274142386,
+        "median": 0.9094733290530287,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.17480611361166673,
+        "median": 0.18047807892600087,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_matched_increment": {
+        "mean": -0.1604318541361001,
+        "median": -0.1736142897164007,
+        "n": 6,
+        "positive_count": 0,
+        "positive_rate": 0.0
+      },
+      "validation1_primary_return": {
+        "mean": 0.014374259475566623,
+        "median": 0.013915560134950322,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      }
+    },
+    "BASE_TEMPORAL_MARKET": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 0.5363929284850387,
+        "median": 0.5199890209421436,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.08943373187660027,
+        "median": 0.09561425117605005,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_matched_increment": {
+        "mean": -0.07861971285886693,
+        "median": -0.09175175471705,
+        "n": 6,
+        "positive_count": 0,
+        "positive_rate": 0.0
+      },
+      "validation1_primary_return": {
+        "mean": 0.010814019017733342,
+        "median": 0.013112430690050192,
+        "n": 6,
+        "positive_count": 4,
+        "positive_rate": 0.6666666666666666
+      }
+    },
+    "BASE_TEMPORAL_MARKET_EVENT": {
+      "candidate_count": 6,
+      "development_matched_return": {
+        "mean": 1.104561502027617,
+        "median": 1.097368795533645,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_control_return": {
+        "mean": 0.1681328567692002,
+        "median": 0.13300341806710092,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      },
+      "validation1_matched_increment": {
+        "mean": -0.15825625654221678,
+        "median": -0.1257088178285508,
+        "n": 6,
+        "positive_count": 0,
+        "positive_rate": 0.0
+      },
+      "validation1_primary_return": {
+        "mean": 0.009876600226983409,
+        "median": 0.007931108845800283,
+        "n": 6,
+        "positive_count": 6,
+        "positive_rate": 1.0
+      }
+    }
+  },
+  "raw_window_summaries": {
+    "development_control_1": {
+      "mean": -0.4436384651969888,
+      "median": -0.4643617093056307,
+      "n": 42,
+      "positive_count": 0,
+      "positive_rate": 0.0
+    },
+    "development_control_2": {
+      "mean": -0.01999981295280021,
+      "median": 0.04661745010076035,
+      "n": 42,
+      "positive_count": 22,
+      "positive_rate": 0.5238095238095238
+    },
+    "development_control_3": {
+      "mean": -0.1598045192931796,
+      "median": -0.21769364626309223,
+      "n": 42,
+      "positive_count": 11,
+      "positive_rate": 0.2619047619047619
+    },
+    "development_primary_1": {
+      "mean": -0.003445537762364038,
+      "median": 0.035873431594177885,
+      "n": 42,
+      "positive_count": 26,
+      "positive_rate": 0.6190476190476191
+    },
+    "development_primary_2": {
+      "mean": 0.19996391890771376,
+      "median": 0.21994805904003645,
+      "n": 42,
+      "positive_count": 32,
+      "positive_rate": 0.7619047619047619
+    },
+    "development_primary_3": {
+      "mean": 0.07532676323725862,
+      "median": 0.0650172472407543,
+      "n": 42,
+      "positive_count": 36,
+      "positive_rate": 0.8571428571428571
+    },
+    "validation_control_1": {
+      "mean": 0.12045835560567841,
+      "median": 0.12968747895319954,
+      "n": 42,
+      "positive_count": 39,
+      "positive_rate": 0.9285714285714286
+    },
+    "validation_control_2": {
+      "mean": 0.05568584858106559,
+      "median": -3.267304872967003e-05,
+      "n": 42,
+      "positive_count": 19,
+      "positive_rate": 0.4523809523809524
+    },
+    "validation_control_3": {
+      "mean": 0.026872625491505094,
+      "median": 0.027844229829334433,
+      "n": 42,
+      "positive_count": 23,
+      "positive_rate": 0.5476190476190477
+    },
+    "validation_primary_1": {
+      "mean": 0.02379179027126896,
+      "median": 0.015259678733300142,
+      "n": 42,
+      "positive_count": 37,
+      "positive_rate": 0.8809523809523809
+    },
+    "validation_primary_2": {
+      "mean": 0.03382666985876191,
+      "median": 0.02322209345054571,
+      "n": 42,
+      "positive_count": 27,
+      "positive_rate": 0.6428571428571429
+    },
+    "validation_primary_3": {
+      "mean": 0.016481891901887185,
+      "median": 0.003159325983599137,
+      "n": 42,
+      "positive_count": 22,
+      "positive_rate": 0.5238095238095238
+    }
+  },
+  "research_boundaries": {
+    "consumed_validation_results_used": true,
+    "financial_evaluation_executed": false,
+    "forward_read": false,
+    "holdout_read": false,
+    "model_adoption_authorized": false,
+    "promotion_authorized": false,
+    "prospective_claim_authorized": false,
+    "search_policy_change_authorized": false,
+    "validation_domain_already_consumed": true
+  },
+  "schema_version": "cn_search_core_v2_wave1_control_regime_autopsy_v1",
+  "source_authority": {
+    "development_pair_evidence_file_sha256": "30cadc1286d94c00dd8d320e0b981568de1355b4f93fb52dac4cef2009873455",
+    "development_pair_evidence_payload_sha256": "844505eed0dc7ace70589ae0e44152ca12e226f8c776db42af54eb3f9e1f3ebc",
+    "transfer_v3_dataset_file_sha256": "21f14450fd171eb68da9a88b701f4a25b52838ecaa50f1163ca6f5a3e3cf32bd",
+    "transfer_v3_dataset_payload_sha256": "69f780ac75c77d3192ed01ed7ebdaf2d9ac9066ff75e7ac79ad9b84f9ba6f32e",
+    "validation_pair_records_file_sha256": "985daee0ef4a4acf50baec77b8adb7603afa255124f731a5e21ce59cb4f4f76a",
+    "validation_postrun_audit_file_sha256": "8a2c02db151d1cce3a64e058da8a6a453724945d18e79f23201cc722c4075e62",
+    "validation_postrun_audit_payload_sha256": "aea495cdb04e2125c51eaff2808a1a1dc863bebd1b18fc761bb38f31c90eb31b",
+    "validation_shortlist_file_sha256": "219c32071fc2b5f667748d8619e2d98e391d38368fb729b8c8739ccef00937e7",
+    "validation_shortlist_payload_sha256": "9c7b701ddc806de8a495e946c367932d339cab597667d4e6045f77e9a663f292"
+  },
+  "status": "SEARCH_CORE_V2_WAVE1_WEAK_CONTROL_SELECTION_BIAS_WITH_VALIDATION1_BASE_CONTROL_REGIME_INVERSION",
+  "validation_matched_cross_window_spearman": [
+    [
+      1.0,
+      -0.4000162113966118,
+      0.3958012482775391
+    ],
+    [
+      -0.4000162113966118,
+      1.0,
+      0.00024317094917727163
+    ],
+    [
+      0.3958012482775391,
+      0.00024317094917727163,
+      1.0
+    ]
+  ],
+  "validation_matched_window_summaries": {
+    "validation_1": {
+      "mean": -0.09666656533440943,
+      "median": -0.09047286945319966,
+      "n": 42,
+      "positive_count": 3,
+      "positive_rate": 0.07142857142857142
+    },
+    "validation_2": {
+      "mean": -0.021859178722303658,
+      "median": 0.0003595952328216412,
+      "n": 42,
+      "positive_count": 21,
+      "positive_rate": 0.5
+    },
+    "validation_3": {
+      "mean": -0.010390733589617906,
+      "median": -0.015420370499361014,
+      "n": 42,
+      "positive_count": 19,
+      "positive_rate": 0.4523809523809524
+    }
+  }
+}
