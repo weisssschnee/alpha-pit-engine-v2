@@ -1,0 +1,59 @@
+{
+  "already_validated_shortlist_count": 42,
+  "automatic_filter_adoption_authorized": false,
+  "diagnostic_interpretation": "WEAK_PRODUCTIVITY_ENRICHMENT_BUT_NO_STABILITY_ENRICHMENT",
+  "filter_id": "CN_D1_TRANSFER_FILTER_TEMPORAL_ECON_LOGIT_V2",
+  "filter_payload_sha256": "512c81728e3fca363ffcb3a148b3fd09f088e1f56d9f3f330b9a9f1170466081",
+  "filter_was_frozen_before_wave1": true,
+  "formal_test_blocker": "ONLY_42_OF_175_WAVE1_PRODUCTIVE_PROGRAMS_HAVE_FROZEN_VALIDATION_RESULTS;_DO_NOT_EXPAND_SAME_VALIDATION_AFTER_OBSERVING_RESULTS",
+  "formal_v2_acceptance_test": false,
+  "forward_reads": 0,
+  "holdout_reads": 0,
+  "new_financial_reads": 0,
+  "original_v2_acceptance_contract": {
+    "all_conditions_required": true,
+    "filtered_minus_unfiltered_precision_minimum": 0.1,
+    "filtered_precision_minimum": 0.35,
+    "filtered_recall_minimum": 0.6,
+    "minimum_development_productive_population": 30,
+    "rule_change_after_C_development_or_validation": "FORBIDDEN"
+  },
+  "productive_auc_on_validated_shortlist": 0.6286764705882353,
+  "productive_average_precision_on_validated_shortlist": 0.2954625952248235,
+  "productive_precision_lift_vs_validated_all": 0.08730158730158732,
+  "productive_precision_lift_vs_validated_nonselected": 0.1527777777777778,
+  "productive_recall_within_validated_shortlist": 0.625,
+  "promotion_authorized": false,
+  "replay_payload_sha256": "78921dae69d345be659ec8a265baa0d795c41069d296a76b520afc336ec06d9d",
+  "schema_version": "cn_search_core_v2_wave1_d1_transfer_v2_external_replay_v1",
+  "selected_count_contract": 70,
+  "selected_exact_identities_sha256": "5fea0849dfbb07b727413d485d9a5483956b79b36ea0055f1170e25c13ff0081",
+  "selected_fraction_contract": 0.4,
+  "stable2_auc_on_validated_shortlist": 0.4864864864864865,
+  "stable2_average_precision_on_validated_shortlist": 0.17053140096618358,
+  "stable2_recall_within_validated_shortlist": 0.4,
+  "status": "SEARCH_CORE_V2_WAVE1_D1_TRANSFER_V2_EXTERNAL_REPLAY_COMPLETE_WEAK_PRODUCTIVITY_NO_STABILITY",
+  "validated_all": {
+    "n": 42,
+    "productive": 8,
+    "productive_rate": 0.19047619047619047,
+    "stable_2of3": 5,
+    "stable_2of3_rate": 0.11904761904761904
+  },
+  "validated_not_selected_intersection": {
+    "n": 24,
+    "productive": 3,
+    "productive_rate": 0.125,
+    "stable_2of3": 3,
+    "stable_2of3_rate": 0.125
+  },
+  "validated_selected_intersection": {
+    "n": 18,
+    "productive": 5,
+    "productive_rate": 0.2777777777777778,
+    "stable_2of3": 2,
+    "stable_2of3_rate": 0.1111111111111111
+  },
+  "wave1_development_productive_population": 175,
+  "wave1_validation_audit_payload_sha256": "aea495cdb04e2125c51eaff2808a1a1dc863bebd1b18fc761bb38f31c90eb31b"
+}
