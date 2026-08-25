@@ -1,0 +1,105 @@
+{
+  "authorization_payload_sha256": "91f7d150bab4fa07ac17349b37ecc5b3c6205e3366c39300279ae06eb2d9e20d",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "candidate_evaluation_authorized": false,
+  "candidate_generation_authorized": false,
+  "evaluation_role": "validation",
+  "forward_read_authorized": false,
+  "holdout_read_authorized": false,
+  "implementation_file_sha256": {
+    "build_cn_core_pack_validation_session_sidecar.py": "8fdad0bf1943ada43318c1e194807d342059c527d9f706b490cd4f51ca934f3c",
+    "build_cn_validation_session_authority.py": "0feaf24db0126c76040eaef7e774bf0a174c07226f53c9bca5679fe10f4af99e",
+    "prepare_cn_search_core_v2_production_wave1_validation_v1.py": "68e2b5838f19c40dae3bfa9b906a418b8681e9d7a1f0bcdd4c9d50df9da2cd61",
+    "run_cn_portfolio_decoder_v2_oos.py": "44873f557a8e12f087bc0e8e5de8cf3d261ac7eaf16899b98fd737e5d2193a5e",
+    "verify_cn_validation_session_authority.py": "18090c2631f7ecf352b9b0c84dcef571f9dc3e71d04d3bffee6aa619df565502"
+  },
+  "oos_authority": "VALIDATION_PREP_CONTEXT_ONLY",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "policy_memory_write": "FORBIDDEN",
+  "promotion": "FORBIDDEN",
+  "same_slice_reselection_allowed": false,
+  "schedule_resolution": {
+    "file_sha256": "6080029c26f423c00543fa79f85e77336d2680004d4406f34a9a7c3777a4b0ac",
+    "payload_sha256": "039b1081dda0bf5a083a0637c68ff5489e1c8a2c58610d6768da28d7d8a7a8f1",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_schedule_resolution_20260825.json",
+    "required_physical_leaf_count": 47,
+    "required_physical_leaf_ids_sha256": "97c5db0335018aa8f8cc2dc2c5f59f449024e647b677b8ee1416429eabf16166",
+    "schedules_file_sha256": "2879dffc347c04a6d893fa06ed89d763b6a45397b36aee51aeae99050f8581ef",
+    "schedules_relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_resolved_schedules_20260825.jsonl"
+  },
+  "scheduler_write": "FORBIDDEN",
+  "schema_version": "cn_search_core_v2_production_wave1_validation_prep_authorization_v1",
+  "shortlist_freeze": {
+    "candidate_count": 42,
+    "exact_identities_sha256": "b7c0a9d62b223b3b875b7014c2f0f454e66c6fc2790913ca63196eda1ebc91c9",
+    "file_sha256": "219c32071fc2b5f667748d8619e2d98e391d38368fb729b8c8739ccef00937e7",
+    "members_file_sha256": "3e4e73fa5f2c6b0493d3a66a2dd8125eb59ccaab8c2cbfeaeb175dad42dacd35",
+    "members_relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_shortlist_members_20260825.jsonl",
+    "payload_sha256": "9c7b701ddc806de8a495e946c367932d339cab597667d4e6045f77e9a663f292",
+    "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave1_validation_shortlist_freeze_20260825.json"
+  },
+  "source_validation_authority_plan": {
+    "file_sha256": "669cd369e52f96d4ab8abfc2cff02405defb5ccec3faf0f321d2968d7fd89e8a",
+    "payload_sha256": "81523e5c48d45d30794bad6f56c1d555bc50f17577ae73397634e3e8c61f0672",
+    "relative_path": "runtime/run_plans/cn_program_base_event_tier_a_report_only_validation_plan.json",
+    "source_data": {
+      "chip_manifest": {
+        "path": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713\\chip_sidecar_manifest_v1.json",
+        "sha256": "b619eeb3f73e7041b8b0de2166b933651c7bbf03e3be4d3db0904f57dd6f5cd9"
+      },
+      "chip_root": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713",
+      "daily_st_source": {
+        "path": "D:\\ChengboRemote\\data\\20260730_142854_hfq_daily_2024_2025\\hfq_daily_2024_2025\\year=2025\\part.parquet",
+        "sha256": "7060dd78cde6b826157f10c03541a4c302d11fe3213517236dc893393c071e68"
+      },
+      "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+      "minute_source_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+      "public_source_manifest": {
+        "path": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41\\source_snapshot_manifest.json",
+        "sha256": "0c06baa7c24109ea8a1064a291565ce6352ab2a0ca32f20f6cc257261e25514d"
+      },
+      "public_source_root": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41",
+      "registry": {
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+        "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+      },
+      "source_contract": {
+        "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+        "sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9"
+      },
+      "split_manifest": {
+        "path": "D:\\ChengboRemote\\workspace\\cn_phase3cm_1024_sidecar_closure_0aba8c5\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+        "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+      },
+      "validation_label_manifest": {
+        "path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\validation_session_labels\\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+        "sha256": "a7ecab7d11bc2e585a0cdfc63a4b0f08194dd6065b277d7a6e5a9e0f80f92721"
+      },
+      "validation_label_root": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\sidecars\\validation_session_labels"
+    }
+  },
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE1_VALIDATION_PREP_AUTHORIZED_NOT_RUN",
+  "threshold_tuning_allowed": false,
+  "usage": "VALIDATION_INFRASTRUCTURE_PREP_ONLY",
+  "validation_context_materialization_authorized": true,
+  "validation_windows": [
+    {
+      "end_date": "2025-08-08",
+      "session_count": 24,
+      "start_date": "2025-07-08",
+      "window_id": "validation_1"
+    },
+    {
+      "end_date": "2025-09-11",
+      "session_count": 24,
+      "start_date": "2025-08-11",
+      "window_id": "validation_2"
+    },
+    {
+      "end_date": "2025-10-24",
+      "session_count": 25,
+      "start_date": "2025-09-12",
+      "window_id": "validation_3"
+    }
+  ]
+}
