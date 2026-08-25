@@ -1,0 +1,193 @@
+{
+  "audit_payload_sha256": "9fa6d711eb94ae6ef540c4f13fedcc8bdca3283e9a06f4cfd89d376350589beb",
+  "audit_repo_sha": "16d37e8d5347d228a9786773b8c2ebf3e6bd46df",
+  "candidate_archives": {
+    "classification": "DEVELOPMENT_ONLY_NOT_ALPHA_QUALIFIED",
+    "productive_count": 150,
+    "productive_file_sha256": "c4c7135388c355c0b3c6d04df8710888ed1ace268954355417a34e892c43bd3b",
+    "stable_count": 129,
+    "stable_file_sha256": "0c08c6df20c7a6454669c324b0430da0483d29756946a32bc294ee9ae62e5a8c"
+  },
+  "development_yield": {
+    "distinct_behavior_pair_count": 297,
+    "evaluated": 336,
+    "per_round": {
+      "0": {
+        "admission_rate": 0.625,
+        "admitted": 105,
+        "distinct_behavior_pair_count": 150,
+        "distinct_behavior_pair_rate": 0.8928571428571429,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 83,
+        "productive_rate": 0.49404761904761907,
+        "stable": 68,
+        "stable_rate": 0.40476190476190477
+      },
+      "1": {
+        "admission_rate": 0.5238095238095238,
+        "admitted": 88,
+        "distinct_behavior_pair_count": 152,
+        "distinct_behavior_pair_rate": 0.9047619047619048,
+        "distinct_structural_region_count": 168,
+        "evaluated": 168,
+        "productive": 67,
+        "productive_rate": 0.39880952380952384,
+        "stable": 61,
+        "stable_rate": 0.3630952380952381
+      }
+    },
+    "per_template": {
+      "BASE_EVENT": {
+        "admission_rate": 0.7916666666666666,
+        "admitted": 38,
+        "distinct_behavior_pair_count": 38,
+        "distinct_behavior_pair_rate": 0.7916666666666666,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 31,
+        "productive_rate": 0.6458333333333334,
+        "stable": 24,
+        "stable_rate": 0.5
+      },
+      "BASE_MARKET": {
+        "admission_rate": 0.3958333333333333,
+        "admitted": 19,
+        "distinct_behavior_pair_count": 38,
+        "distinct_behavior_pair_rate": 0.7916666666666666,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 3,
+        "productive_rate": 0.0625,
+        "stable": 2,
+        "stable_rate": 0.041666666666666664
+      },
+      "BASE_MARKET_EVENT": {
+        "admission_rate": 0.7916666666666666,
+        "admitted": 38,
+        "distinct_behavior_pair_count": 43,
+        "distinct_behavior_pair_rate": 0.8958333333333334,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 35,
+        "productive_rate": 0.7291666666666666,
+        "stable": 32,
+        "stable_rate": 0.6666666666666666
+      },
+      "BASE_TEMPORAL": {
+        "admission_rate": 0.25,
+        "admitted": 12,
+        "distinct_behavior_pair_count": 43,
+        "distinct_behavior_pair_rate": 0.8958333333333334,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 8,
+        "productive_rate": 0.16666666666666666,
+        "stable": 4,
+        "stable_rate": 0.08333333333333333
+      },
+      "BASE_TEMPORAL_EVENT": {
+        "admission_rate": 0.8125,
+        "admitted": 39,
+        "distinct_behavior_pair_count": 45,
+        "distinct_behavior_pair_rate": 0.9375,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 37,
+        "productive_rate": 0.7708333333333334,
+        "stable": 34,
+        "stable_rate": 0.7083333333333334
+      },
+      "BASE_TEMPORAL_MARKET": {
+        "admission_rate": 0.4583333333333333,
+        "admitted": 22,
+        "distinct_behavior_pair_count": 43,
+        "distinct_behavior_pair_rate": 0.8958333333333334,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 17,
+        "productive_rate": 0.3541666666666667,
+        "stable": 16,
+        "stable_rate": 0.3333333333333333
+      },
+      "BASE_TEMPORAL_MARKET_EVENT": {
+        "admission_rate": 0.5208333333333334,
+        "admitted": 25,
+        "distinct_behavior_pair_count": 48,
+        "distinct_behavior_pair_rate": 1.0,
+        "distinct_structural_region_count": 48,
+        "evaluated": 48,
+        "productive": 19,
+        "productive_rate": 0.3958333333333333,
+        "stable": 17,
+        "stable_rate": 0.3541666666666667
+      }
+    },
+    "productive": 150,
+    "productive_rate": 0.44642857142857145,
+    "stable": 129,
+    "stable_rate": 0.38392857142857145
+  },
+  "execution_terminal": {
+    "active_lease_count": 0,
+    "job_exit_code": 0,
+    "launcher_exit_code": 0,
+    "restricted_reads": {
+      "forward_2026": 0,
+      "forward_b": 0,
+      "historical_2023": 0,
+      "holdout": 0,
+      "validation": 0
+    },
+    "stderr_bytes": 0
+  },
+  "financial_evaluation_executed_by_audit": false,
+  "mature_state_lineage": {
+    "final_generated_exact_count": 1680,
+    "final_history_count": 70,
+    "final_memory_observations": 1680,
+    "final_snapshot_payload_sha256": "cb5283f378a7204a5f361b3bf89ecfbe0865ef5611d60b0f76bce73004d63aee",
+    "new_generated_exact_count": 336,
+    "new_generated_vs_source_seen_overlap_count": 0,
+    "source_generated_exact_count": 1344,
+    "source_history_count": 56,
+    "source_snapshot_payload_sha256": "9142991b6af81ec655b0986e9d94a755a1c57f4db0d50691d838c32740f69351"
+  },
+  "pair_native_annotation": {
+    "all_checkpoint_tell_receipts_pair_native_free": true,
+    "application_scope": "DEVELOPMENT_RESULT_ANNOTATION_AND_ARCHIVE_ONLY",
+    "available_count": 326,
+    "candidate_admission_changed": false,
+    "challenger_archive_file_sha256": "34312b3059a1b56eed70ec1cf3e767e9b318e5507d2f7fe69185ba4b25aba2a0",
+    "classification": "DEVELOPMENT_ONLY_CHALLENGER_NOT_ALPHA_QUALIFIED",
+    "generator_ask_order_changed": false,
+    "optimizer_feedback_write": false,
+    "productive_rule_hit_count": 24,
+    "rule_hit_count": 40,
+    "rule_id": "PAIR_NATIVE_PRIMARY_3OF3_CONTROL_2OF3_POSITIVE_V1",
+    "source_payload_sha256": "5951cf5335ed295b5e7dd80ceb4371b89fc00ce93c343e6a388cbd7a0c3b411b",
+    "stable_rule_hit_count": 15
+  },
+  "prefinancial_authority": {
+    "authorization_payload_sha256": "a54b003fb5bdaaf7efa75b727154dad18b890903faaa727fe9963f163f8a9e5b",
+    "canary_payload_sha256": "9597b63c960f1177dca9560e83da8fd27fe03bd82b9e180e7edb67f2a6a790e0",
+    "prefreeze_payload_sha256": "15ad047e391488ee7b9b184ae2cb6d6a4f7465fc194586272e62541e55256ffe",
+    "supply_audit_payload_sha256": "e4877f4e30fc80054de927e44ec9104f4c2bd091d67cf87d6a15d866a2a8243f"
+  },
+  "project_control_recommendation": {
+    "automatic_promotion_authorized": false,
+    "automatic_validation_authorized": false,
+    "capital_action_authorized": false,
+    "next_action": "FREEZE_WAVE2_DEVELOPMENT_EVIDENCE_AND_COMPARE_WAVE1_WAVE2_YIELD_WITHOUT_READING_VALIDATION_OR_OOS",
+    "verdict": "HOLD_WAVE2_DEVELOPMENT_ARCHIVE_AND_PAIR_CHALLENGER_NO_AUTOMATIC_VALIDATION"
+  },
+  "schema_version": "cn_search_core_v2_production_wave2_postrun_audit_v1",
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE2_POSTRUN_AUDIT_COMPLETE_DEVELOPMENT_ARCHIVE_READY",
+  "terminal": {
+    "checkpoint_count": 14,
+    "closure_payload_sha256": "0a9eaf2dc1a2a394ccfd27973b264c4361cc1f35d2e31bf895f8e8773281ff95",
+    "evaluated": 336,
+    "file_sha256": "77fcd033a18ded9c481aac43481a4e6392e0175b25ef48b54fdc9fbf98543b0a",
+    "repo_sha": "57f0abddef284c52a46af2f4f86336ecdbfc1c1f"
+  }
+}

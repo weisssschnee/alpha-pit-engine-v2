@@ -1,0 +1,47 @@
+{
+  "artifacts": {
+    "final_optimizer_state": {
+      "bytes": 1978133,
+      "file_sha256": "bbd37e3909e31cfce0d8041ec3a97269359ee3d9164928df6b14a1cf80636c2a",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave2_final_optimizer_state_57f0abd_20260826.json"
+    },
+    "pair_native_challenger_candidates": {
+      "bytes": 84180,
+      "file_sha256": "34312b3059a1b56eed70ec1cf3e767e9b318e5507d2f7fe69185ba4b25aba2a0",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave2_pair_native_challenger_candidates_57f0abd_20260826.jsonl"
+    },
+    "productive_candidates": {
+      "bytes": 525598,
+      "file_sha256": "c4c7135388c355c0b3c6d04df8710888ed1ace268954355417a34e892c43bd3b",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave2_productive_candidates_57f0abd_20260826.jsonl"
+    },
+    "stable_candidates": {
+      "bytes": 451831,
+      "file_sha256": "0c08c6df20c7a6454669c324b0430da0483d29756946a32bc294ee9ae62e5a8c",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave2_stable_candidates_57f0abd_20260826.jsonl"
+    },
+    "terminal": {
+      "bytes": 16922,
+      "file_sha256": "77fcd033a18ded9c481aac43481a4e6392e0175b25ef48b54fdc9fbf98543b0a",
+      "relative_path": "runtime/run_plans/cn_search_core_v2_production_wave2_complete_57f0abd_20260826.json"
+    }
+  },
+  "automatic_promotion_authorized": false,
+  "classification": "DEVELOPMENT_ONLY_NOT_ALPHA_QUALIFIED",
+  "evidence_freeze_payload_sha256": "b4570684bae7079c8f5a54983edb20495a5f656b8b8f354f99d59debbf098543",
+  "final_mature_observations": 1680,
+  "financial_evaluation_executed_by_freeze": false,
+  "forward_read": false,
+  "holdout_read": false,
+  "oos_authority": "NONE",
+  "pair_native_challenger_candidate_count": 24,
+  "postrun_audit_file_sha256": "89f10a0df75d862fcccf66c5ba82edf2f09b493555e84121f0acfe7c6f1865dc",
+  "postrun_audit_payload_sha256": "9fa6d711eb94ae6ef540c4f13fedcc8bdca3283e9a06f4cfd89d376350589beb",
+  "productive_candidate_count": 150,
+  "schema_version": "cn_search_core_v2_production_wave2_evidence_freeze_v1",
+  "source_output_root": "G:\\Chengbo\\tmp\\wave2_freeze\\source",
+  "source_run_id": "cn_search_core_v2_production_wave2_20260825_57f0abd",
+  "stable_candidate_count": 129,
+  "status": "SEARCH_CORE_V2_PRODUCTION_WAVE2_EVIDENCE_FROZEN_DEVELOPMENT_ONLY",
+  "validation_read": false
+}
