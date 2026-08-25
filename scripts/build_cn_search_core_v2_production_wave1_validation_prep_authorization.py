@@ -14,6 +14,7 @@ STATUS="SEARCH_CORE_V2_PRODUCTION_WAVE1_VALIDATION_PREP_AUTHORIZED_NOT_RUN"
 
 def _read(p:Path)->dict[str,Any]: return json.loads(p.read_text(encoding="utf-8-sig"))
 def _sha(p:Path)->str: return hashlib.sha256(p.read_bytes()).hexdigest()
+def _source_sha(p:Path)->str: return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 def _verify(x:Mapping[str,Any],field:str,label:str)->str:
  b=dict(x); c=str(b.pop(field,""));
  if not c or stable_hash(b)!=c: raise RuntimeError(f"{label} self-hash drift")
@@ -43,7 +44,7 @@ def build(repo:Path)->dict[str,Any]:
   "shortlist_freeze":{"relative_path":FREEZE.as_posix(),"file_sha256":_sha(repo/FREEZE),"payload_sha256":fh,"candidate_count":42,"exact_identities_sha256":freeze["candidate_exact_identities_sha256"],"members_relative_path":MEMBERS.as_posix(),"members_file_sha256":_sha(repo/MEMBERS)},
   "schedule_resolution":{"relative_path":RESOLUTION.as_posix(),"file_sha256":_sha(repo/RESOLUTION),"payload_sha256":rh,"schedules_relative_path":SCHEDULES.as_posix(),"schedules_file_sha256":_sha(repo/SCHEDULES),"required_physical_leaf_count":47,"required_physical_leaf_ids_sha256":resolution["required_physical_leaf_ids_sha256"]},
   "source_validation_authority_plan":{"relative_path":SOURCE_PLAN.as_posix(),"file_sha256":_sha(repo/SOURCE_PLAN),"payload_sha256":ph,"source_data":source},
-  "implementation_file_sha256":{n:_sha(repo/"scripts"/n) for n in impl_names},
+  "implementation_canonical_lf_sha256":{n:_source_sha(repo/"scripts"/n) for n in impl_names},
   "validation_windows":list(plan["validation_windows"]),
   "validation_context_materialization_authorized":True,
   "candidate_evaluation_authorized":False,

@@ -17,6 +17,7 @@ STATUS="SEARCH_CORE_V2_PRODUCTION_WAVE1_VALIDATION_PREFINANCIAL_READY"
 def _read(p:Path)->dict[str,Any]: return json.loads(p.read_text(encoding="utf-8-sig"))
 def _rows(p:Path)->list[dict[str,Any]]: return [json.loads(x) for x in p.read_text(encoding="utf-8-sig").splitlines() if x.strip()]
 def _sha(p:Path)->str: return hashlib.sha256(p.read_bytes()).hexdigest()
+def _source_sha(p:Path)->str: return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 def _verify(x:Mapping[str,Any],field:str,label:str)->str:
  b=dict(x);c=str(b.pop(field,""));
  if not c or stable_hash(b)!=c: raise RuntimeError(f"{label} self-hash drift")
@@ -39,9 +40,9 @@ def prepare(args:argparse.Namespace)->dict[str,Any]:
  auth=_read(args.authorization.resolve()); ah=_verify(auth,"authorization_payload_sha256","Wave1 validation prep authorization")
  if auth.get("status")!="SEARCH_CORE_V2_PRODUCTION_WAVE1_VALIDATION_PREP_AUTHORIZED_NOT_RUN" or auth.get("authorized_host")!="DESKTOP-77OPJ6F" or not bool(auth.get("validation_context_materialization_authorized")) or bool(auth.get("candidate_evaluation_authorized")): raise RuntimeError("Wave1 validation prep authorization drift")
  if str(args.repo_sha).lower()!=str(args.repo_sha) or len(str(args.repo_sha))!=40: raise RuntimeError("repo SHA format drift")
- for n,expected in dict(auth["implementation_file_sha256"]).items():
+ for n,expected in dict(auth["implementation_canonical_lf_sha256"]).items():
   p=repo/"scripts"/n
-  if not p.is_file() or _sha(p)!=str(expected): raise RuntimeError(f"validation prep implementation drift: {n}")
+  if not p.is_file() or _source_sha(p)!=str(expected): raise RuntimeError(f"validation prep implementation drift: {n}")
  freeze_path=repo/Path(auth["shortlist_freeze"]["relative_path"]); members_path=repo/Path(auth["shortlist_freeze"]["members_relative_path"]); resolution_path=repo/Path(auth["schedule_resolution"]["relative_path"]); schedules_path=repo/Path(auth["schedule_resolution"]["schedules_relative_path"])
  freeze=_read(freeze_path); fh=_verify(freeze,"freeze_payload_sha256","shortlist freeze"); resolution=_read(resolution_path); rh=_verify(resolution,"resolution_payload_sha256","schedule resolution")
  if _sha(freeze_path)!=auth["shortlist_freeze"]["file_sha256"] or fh!=auth["shortlist_freeze"]["payload_sha256"] or _sha(members_path)!=auth["shortlist_freeze"]["members_file_sha256"] or _sha(resolution_path)!=auth["schedule_resolution"]["file_sha256"] or rh!=auth["schedule_resolution"]["payload_sha256"] or _sha(schedules_path)!=auth["schedule_resolution"]["schedules_file_sha256"]: raise RuntimeError("Wave1 validation frozen input drift")
