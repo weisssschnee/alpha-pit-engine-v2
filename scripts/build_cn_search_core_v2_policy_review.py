@@ -36,7 +36,8 @@ def _verify(payload: Mapping[str, Any], field: str, label: str) -> str:
 
 
 def build(repo: Path, *, source_repo_sha: str) -> dict[str, Any]:
-    root = repo.resolve() / "runtime" / "run_plans"
+    repo = repo.resolve()
+    root = repo / "runtime" / "run_plans"
     s1_path = root / "cn_search_core_v2_stage1_postrun_audit_20260824.json"
     s15_path = root / "cn_search_core_v2_stage15_postrun_audit_20260825.json"
     s2_path = root / "cn_search_core_v2_stage2_postrun_audit_20260825.json"

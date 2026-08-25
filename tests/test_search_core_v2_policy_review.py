@@ -14,3 +14,8 @@ def test_policy_review_freezes_mature_generator_primary_without_financial_read()
     assert p['evidence']['stage2']['template_wins_b']==7
     assert p['financial_evaluation_executed'] is False
     assert p['authority_boundaries']['alpha_promotion_authorized'] is False
+
+def test_policy_review_accepts_relative_repo_root(monkeypatch):
+    monkeypatch.chdir(REPO)
+    p=builder.build(Path('.'),source_repo_sha='b'*40)
+    assert p['status']==builder.STATUS
