@@ -1039,6 +1039,7 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
         "cn-search-core-v2-stage15-v1",
         "cn-search-core-v2-stage2-v1",
         "cn-search-core-v2-production-wave1-v1",
+        "cn-search-core-v2-production-wave1-report-only-validation-v1",
         "cn-program-primitive-main-production-v1",
         "cn-program-primitive-main-production-recovery-v1",
         "cn-program-primitive-market-successor-v1",
