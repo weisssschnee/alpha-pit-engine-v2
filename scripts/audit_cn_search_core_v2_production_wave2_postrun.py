@@ -225,7 +225,7 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise RuntimeError("Production Wave 2 pair-native challenger archive drift")
     for ordinal, metric in enumerate(checkpoint_metrics):
-        cp_rows = [row for row in all_rows if int(row.get("checkpoint_ordinal") or -1) == ordinal]
+        cp_rows = [row for row in all_rows if row.get("checkpoint_ordinal") is not None and int(row["checkpoint_ordinal"]) == ordinal]
         cp_available = sum(bool(row["pair_native_robustness"]["available"]) for row in cp_rows)
         cp_hits = sum(bool(row["pair_native_robustness"]["challenger_hit"]) for row in cp_rows)
         cp_productive = sum(
