@@ -12,6 +12,9 @@ from our_system_phase2.services.candidate_program_v1 import ProgramCompilerV1
 from our_system_phase2.services.program_search_optimizer_v1 import (
     ProgramOptimizerObservationV1,
 )
+from our_system_phase2.services.program_search_core_policy_v2 import (
+    resolve_search_core_v2_primary_arm,
+)
 from our_system_phase2.services.program_search_primitive_credit_v1 import (
     PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1,
     PrimitiveLocalProgramSearchAdapterV1,
@@ -285,6 +288,11 @@ class SearchCoreV2TournamentState:
         if state.snapshot() != dict(snapshot):
             raise ValueError("SEARCH_CORE_V2_STATE_REPLAY_DRIFT")
         return state
+
+    def primary_policy_decision(self) -> dict[str, Any]:
+        """Resolve the frozen primary arm between checkpoints without mutating state."""
+        adapter = self.adapters[SEMANTIC_STATE_JUMP_GENERATOR_V2]
+        return resolve_search_core_v2_primary_arm(adapter.snapshot())
 
     def optimizer_metadata(self) -> dict[str, Any]:
         return {

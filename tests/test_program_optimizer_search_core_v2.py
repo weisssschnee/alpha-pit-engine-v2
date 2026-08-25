@@ -220,6 +220,9 @@ def test_search_core_v2_arm_coverage_and_metadata(search_core_context):
     assert set(metadata) == set(SEARCH_CORE_V2_ARMS)
     assert metadata[SEMANTIC_STATE_JUMP_GENERATOR_V2]["frozen_catalog_required"] is False
     assert metadata[SEMANTIC_MCTS_PROGRAM_V1]["semantic_decision_surface"]["derived_lag_class"] is False
+    primary = state.primary_policy_decision()
+    assert primary["primary_arm"] == PRIMITIVE_LOCAL_HIERARCHICAL_PROGRAM_V1
+    assert primary["development_observations"] == 0
 
 
 def test_search_core_v2_snapshot_restore_exact(search_core_context):
