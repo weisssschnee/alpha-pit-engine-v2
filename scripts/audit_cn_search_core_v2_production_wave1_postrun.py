@@ -95,7 +95,12 @@ def audit(args: argparse.Namespace) -> dict[str, Any]:
         manifest_path = checkpoint / "checkpoint_manifest.json"
         manifest = _read(manifest_path)
         manifest_hash = _verify(manifest, "manifest_payload_sha256", f"checkpoint {ordinal} manifest")
-        if int(manifest.get("checkpoint_ordinal") or -1) != ordinal or str(manifest.get("previous_checkpoint_manifest_file_sha256") or "") != previous:
+        observed_checkpoint_ordinal = manifest.get("checkpoint_ordinal")
+        if (
+            observed_checkpoint_ordinal is None
+            or int(observed_checkpoint_ordinal) != ordinal
+            or str(manifest.get("previous_checkpoint_manifest_file_sha256") or "") != previous
+        ):
             raise RuntimeError("Production Wave 1 checkpoint chain drift")
         for artifact in list(manifest.get("artifacts") or ()):
             artifact_path = checkpoint / Path(str(artifact["relative_path"]))
